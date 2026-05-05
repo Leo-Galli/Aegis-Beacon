@@ -4,9 +4,10 @@ name: C Syntax Check
 # Aegis-Beacon — C/C++ Syntax Validation
 #
 # Runs on every push and pull request that touches the firmware source.
-# Uses two independent checks:
-#   1. cppcheck  — static analysis (undefined behaviour, bad API use, style)
-#   2. gcc -fsyntax-only — pure C/C++ syntax parse with Arduino stubs
+# Uses three independent checks:
+#   1. cppcheck       — static analysis (undefined behaviour, bad API use, style)
+#   2. gcc -fsyntax-only — pure C/C++ syntax parse with Arduino/ESP32 stubs
+#   3. arduino-lint   — official Arduino sketch structure & naming checks
 #
 # Badge URL (replace <owner>/<repo> with your GitHub path):
 #   https://img.shields.io/github/actions/workflow/status/<owner>/<repo>/c-syntax-check.yml?branch=main&label=C%20Syntax%20Check&logo=github
@@ -53,6 +54,7 @@ jobs:
             --enable=warning,style,performance,portability \
             --suppress=missingIncludeSystem \
             --suppress=unusedFunction \
+            --suppress=missingInclude \
             --inline-suppr \
             --error-exitcode=1 \
             --template='{file}:{line}: [{severity}] {id} — {message}' \
@@ -63,9 +65,18 @@ jobs:
         run: cppcheck --version
 
   # ────────────────────────────────────────────────────────────────────────────
-  # Job 2 — GCC syntax-only parse with minimal Arduino/ESP32 stubs
-  # Compiles the .ino as a plain .cpp file against a thin stub header
-  # so the compiler can validate syntax without a full toolchain install.
+  # Job 2 — GCC syntax-only parse with Arduino/ESP32 stubs
+  #
+  # Stubs are written to exactly match how AegisBeacon.ino uses each API:
+  #   • String           : operator+ with const char* on both sides, +=, c_str()
+  #   • WebServer        : send() overloads for const char* AND String body
+  #   • StaticJsonDocument/JsonVariant/JsonArray:
+  #       operator[], operator|, cast operators (int/uint32_t), .as<JsonArray>()
+  #   • constrain        : inline template (Arduino macro equivalent)
+  #   • strlen_P         : inline wrapper around strlen
+  #   • HSPI             : integer constant for SPIClass(HSPI)
+  #   • SPIClass         : explicit(int) constructor + begin(sck,miso,mosi,ss)
+  #   • Module           : correct signature (cs,irq,rst,gpio, SPIClass&)
   # ────────────────────────────────────────────────────────────────────────────
   gcc-syntax:
     name: GCC syntax-only parse
@@ -75,15 +86,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install GCC and G++
+      - name: Install G++
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y gcc g++
+          sudo apt-get install -y g++
 
-      - name: Create Arduino/ESP32 stub header
+      - name: Write Arduino.h stub
         run: |
-          mkdir -p /tmp/arduino_stubs
-          cat > /tmp/arduino_stubs/Arduino.h << 'EOF'
+          mkdir -p /tmp/stubs
+          cat > /tmp/stubs/Arduino.h << 'STUB'
           #pragma once
           #include <stdint.h>
           #include <stddef.h>
@@ -91,215 +102,320 @@ jobs:
           #include <stdio.h>
           #include <stdlib.h>
           #include <ctype.h>
+          #include <stdarg.h>
 
-          // ── Primitive types ───────────────────────────────────────────────
-          typedef bool      boolean;
-          typedef uint8_t   byte;
-          typedef uint16_t  word;
+          typedef bool     boolean;
+          typedef uint8_t  byte;
+          typedef uint16_t word;
 
-          // ── String class stub ─────────────────────────────────────────────
+          // ── String ────────────────────────────────────────────────────────
+          // Supports every usage in AegisBeacon.ino:
+          //   String(int), String(float,int), String(unsigned long)
+          //   "literal" + String(...)
+          //   String += "literal" / String
+          //   server.send(..., String)  via const String& overload
           struct String {
-            String() {}
-            String(const char*) {}
-            String(int, int = 10) {}
-            String(float, int = 2) {}
-            String(unsigned long) {}
-            String& operator+=(const String&) { return *this; }
-            String& operator+=(const char*) { return *this; }
-            String  operator+(const String&) const { return *this; }
-            String  operator+(const char*) const { return *this; }
-            const char* c_str() const { return ""; }
-            int   length() const { return 0; }
-            bool  operator==(const String&) const { return false; }
+            String()                         {}
+            String(const char* s)            { (void)s; }
+            String(char c)                   { (void)c; }
+            String(int v, int base = 10)     { (void)v; (void)base; }
+            String(unsigned int v)           { (void)v; }
+            String(long v, int base = 10)    { (void)v; (void)base; }
+            String(unsigned long v)          { (void)v; }
+            String(float v, int d = 2)       { (void)v; (void)d; }
+            String(double v, int d = 2)      { (void)v; (void)d; }
+            String(const String&)            = default;
+            String(String&&)                 = default;
+            String& operator=(const String&) = default;
+            String& operator=(String&&)      = default;
+
+            String  operator+(const String& r) const { (void)r; return {}; }
+            String  operator+(const char* r)   const { (void)r; return {}; }
+            String& operator+=(const String& r)      { (void)r; return *this; }
+            String& operator+=(const char* r)        { (void)r; return *this; }
+            String& operator+=(char c)               { (void)c; return *this; }
+            bool    operator==(const String& r) const{ (void)r; return false; }
+            bool    operator==(const char* r)   const{ (void)r; return false; }
+
+            const char* c_str()   const { return ""; }
+            int         length()  const { return 0; }
+            bool        isEmpty() const { return true; }
           };
 
-          // ── Serial stub ───────────────────────────────────────────────────
-          struct SerialClass {
-            void begin(int) {}
-            void println() {}
-            void println(const char*) {}
-            void println(int) {}
-            void printf(const char*, ...) {}
-            void flush() {}
-          };
-          extern SerialClass Serial;
+          // Free function: "c-string literal" + String  (used in buildConfigJson)
+          inline String operator+(const char* lhs, const String& rhs)
+            { (void)lhs; (void)rhs; return {}; }
 
-          // ── Arduino functions ─────────────────────────────────────────────
-          void     delay(unsigned long ms);
+          // ── Serial ────────────────────────────────────────────────────────
+          struct HardwareSerial {
+            void begin(unsigned long)      {}
+            void println()                 {}
+            void println(const char*)      {}
+            void println(int)              {}
+            void println(const String&)    {}
+            void printf(const char*, ...)  {}
+            void print(const char*)        {}
+            void flush()                   {}
+          };
+          extern HardwareSerial Serial;
+
+          // ── Arduino API ───────────────────────────────────────────────────
+          void          delay(unsigned long ms);
           unsigned long millis();
           unsigned long micros();
-          void     pinMode(uint8_t, uint8_t);
-          void     digitalWrite(uint8_t, uint8_t);
-          int      digitalRead(uint8_t);
-          void     yield();
+          void          pinMode(uint8_t pin, uint8_t mode);
+          void          digitalWrite(uint8_t pin, uint8_t val);
+          int           digitalRead(uint8_t pin);
+          void          yield();
 
-          #define INPUT         0
-          #define OUTPUT        1
-          #define INPUT_PULLUP  2
-          #define HIGH          1
-          #define LOW           0
+          // constrain — Arduino macro, reproduced as inline template
+          template<typename T, typename L, typename H>
+          inline T constrain(T val, L lo, H hi) {
+            return (val < (T)lo) ? (T)lo : ((val > (T)hi) ? (T)hi : val);
+          }
 
-          // ── ESP32 specific stubs ──────────────────────────────────────────
-          #define RTC_DATA_ATTR __attribute__((section(".rtc.data")))
-          #define PROGMEM
+          // strlen_P — PROGMEM helper (identity on Linux)
+          inline size_t strlen_P(const char* s) { return s ? strlen(s) : 0; }
 
-          typedef enum { ESP_RST_UNKNOWN } esp_reset_reason_t;
+          #define INPUT        0
+          #define OUTPUT       1
+          #define INPUT_PULLUP 2
+          #define HIGH         1
+          #define LOW          0
+          #define PROGMEM      /* nothing */
+
+          // ── ESP32-C3 ──────────────────────────────────────────────────────
+          #define RTC_DATA_ATTR   /* nothing */
+          // HSPI is an integer constant on ESP32 (value 2)
+          static constexpr int HSPI = 2;
+
+          typedef enum { ESP_RST_UNKNOWN = 0 } esp_reset_reason_t;
           esp_reset_reason_t esp_reset_reason();
-          void esp_deep_sleep(uint64_t time_in_us);
+          void               esp_deep_sleep(uint64_t time_in_us);
 
           struct EspClass {
-            void     restart();
-            uint32_t getFreeHeap();
-            uint32_t getFlashChipSize();
+            void     restart()          {}
+            uint32_t getFreeHeap()      { return 0; }
+            uint32_t getFlashChipSize() { return 0; }
           };
           extern EspClass ESP;
 
-          int  getCpuFrequencyMhz();
-          void btStop();
-
+          int      getCpuFrequencyMhz();
+          void     btStop();
           uint32_t uxTaskGetStackHighWaterMark(void*);
 
-          // ── IPAddress stub ────────────────────────────────────────────────
+          // ── IPAddress ─────────────────────────────────────────────────────
           struct IPAddress {
             IPAddress() {}
-            IPAddress(uint8_t, uint8_t, uint8_t, uint8_t) {}
+            IPAddress(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
+              { (void)a;(void)b;(void)c;(void)d; }
           };
+          STUB
 
-          // ── toupper / millis already available via C includes ─────────────
-          EOF
-
-      - name: Create WiFi/DNS/WebServer/Preferences stubs
+      - name: Write SPI stub
         run: |
-          cat > /tmp/arduino_stubs/WiFi.h << 'EOF'
+          cat > /tmp/stubs/SPI.h << 'STUB'
           #pragma once
           #include "Arduino.h"
-          #define WIFI_OFF  0
-          #define WIFI_AP   2
+          struct SPIClass {
+            explicit SPIClass(int bus) { (void)bus; }
+            void begin(int sck, int miso, int mosi, int ss)
+              { (void)sck;(void)miso;(void)mosi;(void)ss; }
+            void end() {}
+          };
+          STUB
+
+      - name: Write RadioLib stub
+        run: |
+          cat > /tmp/stubs/RadioLib.h << 'STUB'
+          #pragma once
+          #include "Arduino.h"
+          #include "SPI.h"
+
+          #define RADIOLIB_ERR_NONE  0
+          #define RADIOLIB_NC       -1
+
+          // Module(cs, irq, rst, gpio, spi)  — correct signature, no void&
+          struct Module {
+            Module(int cs, int irq, int rst, int gpio, SPIClass& spi)
+              { (void)cs;(void)irq;(void)rst;(void)gpio;(void)spi; }
+          };
+
+          // SX1276 takes Module* (RadioLib uses `new Module(...)`)
+          struct SX1276 {
+            explicit SX1276(Module* mod) { (void)mod; }
+            int beginFSK(float freq, float br, float fDev,
+                         float rxBw, int8_t pwr, int preamble, bool ook)
+              { (void)freq;(void)br;(void)fDev;(void)rxBw;
+                (void)pwr;(void)preamble;(void)ook; return 0; }
+            int setOOK(bool en)          { (void)en;  return 0; }
+            int setOutputPower(int8_t p) { (void)p;   return 0; }
+            int transmitDirect()         { return 0; }
+            int standby()                { return 0; }
+            int sleep()                  { return 0; }
+            int setFrequency(float f)    { (void)f;   return 0; }
+          };
+          STUB
+
+      - name: Write WiFi / DNS / WebServer stubs
+        run: |
+          cat > /tmp/stubs/WiFi.h << 'STUB'
+          #pragma once
+          #include "Arduino.h"
+          #define WIFI_OFF 0
+          #define WIFI_AP  2
           struct WiFiClass {
-            void mode(int) {}
-            void softAP(const char*) {}
-            void softAPConfig(IPAddress, IPAddress, IPAddress) {}
-            int  softAPgetStationNum() { return 0; }
+            void mode(int m)                                           { (void)m; }
+            void softAP(const char* ssid)                             { (void)ssid; }
+            void softAPConfig(IPAddress l, IPAddress g, IPAddress s)  { (void)l;(void)g;(void)s; }
+            int  softAPgetStationNum()                                 { return 0; }
           };
           extern WiFiClass WiFi;
-          EOF
+          STUB
 
-          cat > /tmp/arduino_stubs/DNSServer.h << 'EOF'
+          cat > /tmp/stubs/DNSServer.h << 'STUB'
           #pragma once
           #include "Arduino.h"
           struct DNSServer {
-            void start(int, const char*, IPAddress) {}
+            void start(int port, const char* pattern, IPAddress ip)
+              { (void)port;(void)pattern;(void)ip; }
             void processNextRequest() {}
           };
-          EOF
+          STUB
 
-          cat > /tmp/arduino_stubs/WebServer.h << 'EOF'
+          cat > /tmp/stubs/WebServer.h << 'STUB'
           #pragma once
           #include "Arduino.h"
           #define HTTP_GET  0
           #define HTTP_POST 1
           struct WebServer {
-            WebServer(int) {}
-            void on(const char*, int, void(*)()) {}
-            void onNotFound(void(*)()) {}
-            void begin() {}
+            explicit WebServer(int port)                              { (void)port; }
+            void on(const char* uri, int m, void(*h)())              { (void)uri;(void)m;(void)h; }
+            void onNotFound(void(*h)())                              { (void)h; }
+            void begin()        {}
             void handleClient() {}
-            void send(int, const char*, const char*) {}
-            void send_P(int, const char*, const char*) {}
-            void sendHeader(const char*, String, bool = false) {}
-            bool hasArg(const char*) { return false; }
-            String arg(const char*) { return String(); }
-            String uri() { return String(); }
+            // Both overloads needed: handleConfig() passes String, others pass const char*
+            void send(int code, const char* type, const char* body)  { (void)code;(void)type;(void)body; }
+            void send(int code, const char* type, const String& body){ (void)code;(void)type;(void)body; }
+            void send_P(int code, const char* type, const char* body){ (void)code;(void)type;(void)body; }
+            void sendHeader(const char* n, const String& v, bool f=false){ (void)n;(void)v;(void)f; }
+            void sendHeader(const char* n, const char*   v, bool f=false){ (void)n;(void)v;(void)f; }
+            bool   hasArg(const char* n) { (void)n; return false; }
+            String arg(const char* n)    { (void)n; return {}; }
+            String uri()                 { return {}; }
           };
-          EOF
+          STUB
 
-          cat > /tmp/arduino_stubs/Preferences.h << 'EOF'
+      - name: Write Preferences stub
+        run: |
+          cat > /tmp/stubs/Preferences.h << 'STUB'
           #pragma once
           #include "Arduino.h"
           struct Preferences {
-            void   begin(const char*, bool = false) {}
-            void   end() {}
-            uint8_t getUChar(const char*, uint8_t = 0) { return 0; }
-            float   getFloat(const char*, float = 0) { return 0; }
-            void    getString(const char*, char*, size_t) {}
-            int8_t  getChar(const char*, int8_t = 0) { return 0; }
-            uint32_t getULong(const char*, uint32_t = 0) { return 0; }
-            void   putUChar(const char*, uint8_t) {}
-            void   putFloat(const char*, float) {}
-            void   putString(const char*, const char*) {}
-            void   putChar(const char*, char) {}
-            void   putULong(const char*, uint32_t) {}
+            void     begin(const char* ns, bool ro = false) { (void)ns;(void)ro; }
+            void     end() {}
+            uint8_t  getUChar(const char* k, uint8_t d=0)   { (void)k; return d; }
+            float    getFloat(const char* k, float d=0)      { (void)k; return d; }
+            size_t   getString(const char* k, char* b, size_t l)
+                       { (void)k; if(b&&l) b[0]=0; return 0; }
+            int8_t   getChar(const char* k, int8_t d=0)      { (void)k; return d; }
+            uint32_t getULong(const char* k, uint32_t d=0)   { (void)k; return d; }
+            bool     putUChar(const char* k, uint8_t v)      { (void)k;(void)v; return true; }
+            bool     putFloat(const char* k, float v)        { (void)k;(void)v; return true; }
+            bool     putString(const char* k, const char* v) { (void)k;(void)v; return true; }
+            bool     putChar(const char* k, int8_t v)        { (void)k;(void)v; return true; }
+            bool     putULong(const char* k, uint32_t v)     { (void)k;(void)v; return true; }
           };
-          EOF
+          STUB
 
-      - name: Create RadioLib stub
+      - name: Write ArduinoJson stub
         run: |
-          cat > /tmp/arduino_stubs/RadioLib.h << 'EOF'
+          cat > /tmp/stubs/ArduinoJson.h << 'STUB'
           #pragma once
           #include "Arduino.h"
-          #define RADIOLIB_ERR_NONE  0
-          #define RADIOLIB_NC       -1
-          struct Module {
-            Module(int, int, int, int, ...) {}
-            Module(int, int, int, int, void&) {}
-          };
-          struct SPIClass {
-            SPIClass(int) {}
-            void begin(int, int, int, int) {}
-          };
-          struct SX1276 {
-            SX1276(Module) {}
-            SX1276(Module*) {}
-            int  beginFSK(float, float, float, float, int8_t, int, bool) { return 0; }
-            int  setOOK(bool) { return 0; }
-            int  setOutputPower(int8_t) { return 0; }
-            int  transmitDirect() { return 0; }
-            int  standby() { return 0; }
-            int  sleep() { return 0; }
-            int  setFrequency(float) { return 0; }
-          };
-          EOF
 
-          cat > /tmp/arduino_stubs/ArduinoJson.h << 'EOF'
-          #pragma once
-          #include "Arduino.h"
-          struct DeserializationError {
-            bool operator!() { return true; }
-            const char* c_str() { return ""; }
-            explicit operator bool() { return false; }
+          // ── Forward declarations ──────────────────────────────────────────
+          struct JsonArray;
+
+          // ── JsonVariant — returned by doc["key"] ──────────────────────────
+          // Must support every usage in handleSave():
+          //   doc["message"] | DEFAULT_MESSAGE    → operator|(const char*)
+          //   (int)doc["wpm"]                     → operator int()
+          //   (uint32_t)doc["sleep"]              → operator unsigned long()
+          //   doc["freqs"].as<JsonArray>()         → .as<T>()
+          struct JsonVariant {
+            // Implicit casts to numeric/string types
+            operator bool()           const { return false; }
+            operator int()            const { return 0; }
+            operator unsigned int()   const { return 0; }
+            operator long()           const { return 0; }
+            operator unsigned long()  const { return 0; }
+            operator float()          const { return 0.0f; }
+            operator double()         const { return 0.0; }
+            operator const char*()    const { return ""; }
+
+            // Fallback / default value operator
+            const char*   operator|(const char* def)  const { return def; }
+            int           operator|(int def)           const { return def; }
+            float         operator|(float def)         const { return def; }
+            unsigned long operator|(unsigned long def) const { return def; }
+
+            // .as<T>() — specialised below for JsonArray
+            template<typename T>
+            T as() const;
           };
+
+          // ── JsonArray — range-for iterable over float ─────────────────────
           struct JsonArray {
-            struct iterator { float operator*() { return 0; } iterator& operator++() { return *this; } bool operator!=(const iterator&) { return false; } };
-            iterator begin() { return {}; }
-            iterator end()   { return {}; }
+            struct iterator {
+              float    operator*()                    { return 0.0f; }
+              iterator& operator++()                  { return *this; }
+              bool     operator!=(const iterator&) const { return false; }
+            };
+            iterator begin() const { return {}; }
+            iterator end()   const { return {}; }
           };
+
+          // Specialisation: doc["freqs"].as<JsonArray>()
+          template<>
+          inline JsonArray JsonVariant::as<JsonArray>() const { return {}; }
+
+          // ── DeserializationError ──────────────────────────────────────────
+          struct DeserializationError {
+            explicit operator bool() const { return false; } // false = no error
+            bool        operator!()  const { return true;  }
+            const char* c_str()      const { return ""; }
+          };
+
+          // ── StaticJsonDocument<N> ─────────────────────────────────────────
+          // doc["key"]  →  JsonVariant
           template<size_t N>
           struct StaticJsonDocument {
-            JsonArray as_array;
-            JsonArray operator[](const char*) { return {}; }
-            template<typename T> T operator|(T def) { return def; }
-            DeserializationError deserialize(const String&) { return {}; }
+            JsonVariant operator[](const char* key) const { (void)key; return {}; }
           };
-          DeserializationError deserializeJson(StaticJsonDocument<1024>&, const String&);
-          template<size_t N> JsonArray getArray(StaticJsonDocument<N>&) { return {}; }
-          EOF
 
-      - name: Compile .ino as C++ with stubs (syntax-only)
+          // Free function: deserializeJson(doc, String)
+          template<size_t N>
+          DeserializationError deserializeJson(StaticJsonDocument<N>& doc,
+                                               const String& src)
+            { (void)doc; (void)src; return {}; }
+          STUB
+
+      - name: Compile AegisBeacon.ino as C++ (syntax-only)
         run: |
           g++ -fsyntax-only \
             -std=c++17 \
             -w \
             -x c++ \
-            -I /tmp/arduino_stubs \
+            -I /tmp/stubs \
             -DARDUINO=10819 \
             -DESP32 \
             -DCONFIG_IDF_TARGET_ESP32C3 \
             AegisBeacon.ino
-          echo "✅ Syntax check passed"
+          echo "✅ GCC syntax check passed"
 
   # ────────────────────────────────────────────────────────────────────────────
-  # Job 3 — arduino-lint (official Arduino linter)
-  # Checks sketch structure, library.properties format, and naming conventions.
+  # Job 3 — arduino-lint
   # ────────────────────────────────────────────────────────────────────────────
   arduino-lint:
     name: arduino-lint sketch check
@@ -318,7 +434,7 @@ jobs:
           project-type: sketch
 
   # ────────────────────────────────────────────────────────────────────────────
-  # Summary job — fails the whole workflow if any check job failed
+  # Summary — fails the whole workflow if any job above failed
   # ────────────────────────────────────────────────────────────────────────────
   all-checks-pass:
     name: All syntax checks passed
@@ -327,18 +443,11 @@ jobs:
     if: always()
 
     steps:
-      - name: Check all jobs succeeded
+      - name: Evaluate results
         run: |
-          if [ "${{ needs.cppcheck.result }}" != "success" ]; then
-            echo "❌ cppcheck failed"
-            exit 1
-          fi
-          if [ "${{ needs.gcc-syntax.result }}" != "success" ]; then
-            echo "❌ gcc syntax-only check failed"
-            exit 1
-          fi
-          if [ "${{ needs.arduino-lint.result }}" != "success" ]; then
-            echo "❌ arduino-lint failed"
-            exit 1
-          fi
-          echo "✅ All C syntax and lint checks passed"
+          FAILED=0
+          [ "${{ needs.cppcheck.result }}"     != "success" ] && echo "❌ cppcheck failed"     && FAILED=1
+          [ "${{ needs.gcc-syntax.result }}"   != "success" ] && echo "❌ gcc-syntax failed"   && FAILED=1
+          [ "${{ needs.arduino-lint.result }}" != "success" ] && echo "❌ arduino-lint failed" && FAILED=1
+          [ $FAILED -eq 0 ] && echo "✅ All C syntax and lint checks passed"
+          exit $FAILED
