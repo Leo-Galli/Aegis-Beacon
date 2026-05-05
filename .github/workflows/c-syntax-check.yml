@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p /tmp/stubs
           
-          # --- Arduino.h Integrato ---
+          # --- Arduino.h ---
           cat > /tmp/stubs/Arduino.h << 'STUB'
           #pragma once
           #include <stdint.h>
@@ -58,6 +58,8 @@ jobs:
             String() {}
             String(const char* s) {}
             String(int v, int base=10) {}
+            String(unsigned int v) {}
+            String(long v, int base=10) {}
             String(unsigned long v) {}
             String(float v, int dec=2) {}
             const char* c_str() const { return ""; }
@@ -71,6 +73,9 @@ jobs:
 
           struct HardwareSerial {
             void begin(unsigned long) {}
+            void print(const char* s) {}
+            void println() {}
+            void println(const char* s) {}
             void printf(const char* f, ...) {}
             void flush() {}
           };
@@ -84,6 +89,11 @@ jobs:
           void yield();
           
           #define HSPI 2
+          struct SPIClass { 
+            SPIClass(int bus=0) {} 
+            void begin(int s, int m, int o, int c) {} 
+          };
+          
           struct EspClass { 
             void restart() {} 
             uint32_t getFreeHeap() { return 0; }
@@ -96,9 +106,12 @@ jobs:
           int esp_reset_reason();
           void esp_deep_sleep(uint64_t);
           uint32_t uxTaskGetStackHighWaterMark(void*);
-          template<typename T> T constrain(T x, T a, T b) { return x; }
+          
+          // Constrain corretto per tipi misti
+          template<typename T, typename A, typename B> 
+          T constrain(T x, A a, B b) { return x; }
+          
           size_t strlen_P(const char* s) { return strlen(s); }
-
           struct IPAddress { IPAddress(int a, int b, int c, int d) {} };
           STUB
 
@@ -106,22 +119,21 @@ jobs:
           cat > /tmp/stubs/RadioLib.h << 'STUB'
           #pragma once
           #include "Arduino.h"
-          struct SPIClass { void begin(int s, int m, int o, int c) {} };
           #define RADIOLIB_NC -1
           #define RADIOLIB_ERR_NONE 0
           struct Module { Module(int c, int i, int r, int g, SPIClass& s) {} };
           struct SX1276 {
             SX1276(Module* m) {}
-            int beginFSK(float f, float b, float d, float r, int8_t p, int pr, bool o) { return 0; }
-            void setOOK(bool e) {}
-            void setOutputPower(int8_t p) {}
+            int beginFSK(...) { return 0; }
+            int setOOK(bool e) { return 0; }
+            int setOutputPower(int8_t p) { return 0; }
             int transmitDirect() { return 0; }
-            void standby() {}
-            void sleep() {}
+            int standby() { return 0; }
+            int sleep() { return 0; }
           };
           STUB
 
-          # --- WiFi, WebServer, DNS, Preferences, Json ---
+          # --- Altri Header ---
           cat > /tmp/stubs/WiFi.h << 'STUB'
           #define WIFI_AP 1
           #define WIFI_OFF 0
@@ -152,11 +164,11 @@ jobs:
           struct Preferences {
             void begin(const char* n, bool b) {}
             void end() {}
-            uint8_t getUChar(const char* k, uint8_t d) { return 0; }
-            float getFloat(const char* k, float d) { return 0; }
-            void getString(const char* k, char* b, int l) {}
-            int8_t getChar(const char* k, int8_t d) { return 0; }
-            uint32_t getULong(const char* k, uint32_t d) { return 0; }
+            uint8_t getUChar(...) { return 0; }
+            float getFloat(...) { return 0; }
+            void getString(...) {}
+            int8_t getChar(...) { return 0; }
+            uint32_t getULong(...) { return 0; }
             void putUChar(...) {}
             void putFloat(...) {}
             void putString(...) {}
@@ -166,17 +178,22 @@ jobs:
           STUB
 
           cat > /tmp/stubs/ArduinoJson.h << 'STUB'
+          #include "Arduino.h"
           template<int N> struct StaticJsonDocument { 
             struct Proxy { 
               template<typename T> T as() { return T(); } 
               operator int() { return 0; }
+              operator uint32_t() { return 0; }
               operator const char*() { return ""; }
               const char* operator|(const char* d) { return d; }
             };
             Proxy operator[](const char* k) { return Proxy(); }
           };
           struct JsonArray { float* begin() { return nullptr; } float* end() { return nullptr; } };
-          struct DeserializationError { operator bool() { return false; } };
+          struct DeserializationError { 
+            operator bool() { return false; } 
+            const char* c_str() { return ""; }
+          };
           template<typename T, typename S> DeserializationError deserializeJson(T& d, S& s) { return DeserializationError(); }
           STUB
 
