@@ -8,7 +8,7 @@
 [![RadioLib](https://img.shields.io/badge/RadioLib-%E2%89%A56.0-purple?style=for-the-badge)](https://github.com/jgromes/RadioLib)
 [![ArduinoJson](https://img.shields.io/badge/ArduinoJson-%E2%89%A57.0-yellow?style=for-the-badge)](https://arduinojson.org/)
 [![Frequency: 433 MHz](https://img.shields.io/badge/Frequency-433%20MHz-red?style=for-the-badge)](https://en.wikipedia.org/wiki/433_MHz)
-[![C Syntax Check](https://img.shields.io/github/actions/workflow/status/your-org/aegis-beacon/c-syntax-check.yml?branch=main&label=C%20Syntax%20Check&style=for-the-badge&logo=github)](../../.github/workflows/c-syntax-check.yml)
+[![C Syntax Check](https://img.shields.io/github/actions/workflow/status/your-org/aegis-beacon/c-syntax-check.yml?branch=main&label=C%20Syntax%20Check&style=for-the-badge&logo=github)](.github/workflows/c-syntax-check.yml)
 [![Version](https://img.shields.io/badge/Version-1.0-orange?style=for-the-badge)](../README.md)
 [![Back to README](https://img.shields.io/badge/←%20Back%20to-README-lightgrey?style=for-the-badge)](../README.md)
 

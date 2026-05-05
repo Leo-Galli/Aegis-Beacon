@@ -24,7 +24,7 @@
 [![ArduinoJson](https://img.shields.io/badge/ArduinoJson-%E2%89%A57.0-yellow?style=for-the-badge)](https://arduinojson.org/)
 [![Frequency: 433 MHz](https://img.shields.io/badge/Frequency-433%20MHz-red?style=for-the-badge)](https://en.wikipedia.org/wiki/433_MHz)
 [![Build Cost](https://img.shields.io/badge/Build%20Cost-%248--12%20USD-brightgreen?style=for-the-badge)](https://github.com)
-[![C Syntax Check](https://img.shields.io/github/actions/workflow/status/your-org/aegis-beacon/c-syntax-check.yml?branch=main&label=C%20Syntax%20Check&style=for-the-badge&logo=github)](../../.github/workflows/c-syntax-check.yml)
+[![C Syntax Check](https://img.shields.io/github/actions/workflow/status/your-org/aegis-beacon/c-syntax-check.yml?branch=main&label=C%20Syntax%20Check&style=for-the-badge&logo=github)](.github/workflows/c-syntax-check.yml)
 [![Version](https://img.shields.io/badge/Version-1.0-orange?style=for-the-badge)](../README.md)
 [![Go to TECHNICAL_DATASHEET](https://img.shields.io/badge/%20Go%20to-TECHNICAL_DATASHEET-lightgrey?style=for-the-badge)](../TECHNICAL_DATASHEET.md)
 
