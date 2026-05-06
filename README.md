@@ -13,9 +13,9 @@
 
 ### Professional Dual-Mode Avalanche Rescue System
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue?style=for-the-badge&logo=github)](https://github.com/your-org/aegis-beacon/releases)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue?style=for-the-badge&logo=github)](https://github.com/leo-galli/aegis-beacon/releases)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
-[![CI — Build & Test](https://img.shields.io/github/actions/workflow/status/leo-galli/aegis-beacon/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20Build)](https://github.com/your-org/aegis-beacon/actions/workflows/ci.yml)
+[![CI — Build & Test](https://img.shields.io/github/actions/workflow/status/leo-galli/aegis-beacon/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20Build)](https://github.com/leo-galli/aegis-beacon/actions/workflows/ci.yml)
 [![Platform](https://img.shields.io/badge/platform-ESP32--C3-red?style=for-the-badge&logo=espressif)](https://www.espressif.com/en/products/socs/esp32-c3)
 [![Radio](https://img.shields.io/badge/radio-SX1276_OOK%2FCW-orange?style=for-the-badge)](https://www.semtech.com/products/wireless-rf/lora-connect/sx1276)
 [![Framework](https://img.shields.io/badge/framework-Arduino_PlatformIO-teal?style=for-the-badge&logo=arduino)](https://platformio.org)
@@ -704,10 +704,10 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 **Built with ❤️ for mountain safety.**
 
-[![Stars](https://img.shields.io/github/stars/your-org/aegis-beacon?style=social)](https://github.com/your-org/aegis-beacon)
-[![Forks](https://img.shields.io/github/forks/your-org/aegis-beacon?style=social)](https://github.com/your-org/aegis-beacon/fork)
-[![Issues](https://img.shields.io/github/issues/your-org/aegis-beacon?style=flat-square)](https://github.com/your-org/aegis-beacon/issues)
-[![CI](https://img.shields.io/github/actions/workflow/status/your-org/aegis-beacon/ci.yml?branch=main&label=CI&style=flat-square&logo=githubactions)](https://github.com/your-org/aegis-beacon/actions/workflows/ci.yml)
+[![Stars](https://img.shields.io/github/stars/leo-galli/aegis-beacon?style=social)](https://github.com/leo-galli/aegis-beacon)
+[![Forks](https://img.shields.io/github/forks/leo-galli/aegis-beacon?style=social)](https://github.com/leo-galli/aegis-beacon/fork)
+[![Issues](https://img.shields.io/github/issues/leo-galli/aegis-beacon?style=flat-square)](https://github.com/leo-galli/aegis-beacon/issues)
+[![CI](https://img.shields.io/github/actions/workflow/status/leo-galli/aegis-beacon/ci.yml?branch=main&label=CI&style=flat-square&logo=githubactions)](https://github.com/leo-galli/aegis-beacon/actions/workflows/ci.yml)
 
 *If this project saves a life, please open a PR and let us know.*
 

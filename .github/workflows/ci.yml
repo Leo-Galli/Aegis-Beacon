@@ -46,7 +46,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FIRMWARE_FILE: AegisBeacon_v3.ino
+  FIRMWARE_FILE: AegisBeacon.ino
   ARDUINO_FQBN:  esp32:esp32:esp32c3
   PIO_ENV:       esp32-c3-supermin
   # Flash budget: warn if sketch exceeds this percentage of available flash
