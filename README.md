@@ -16,8 +16,8 @@
 [![Version](https://img.shields.io/badge/version-3.0.0-blue?style=for-the-badge&logo=github)](https://github.com/leo-galli/aegis-beacon/releases)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 
-[![CI Build](https://img.shields.io/github/actions/workflow/status/Leo-Galli/Aegis-Beacon/main.yml?branch=main&event=push&style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20Build)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/main.yml)
-[![Code Quality](https://img.shields.io/github/actions/workflow/status/Leo-Galli/Aegis-Beacon/main.yml?style=for-the-badge&logo=cppcheck&logoColor=white&label=Code%20Quality)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/main.yml)
+[![CI Build](https://img.shields.io/github/actions/workflow/status/Leo-Galli/Aegis-Beacon/aegis_suite.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20Build)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/aegis_suite.yml)
+[![Code Quality](https://img.shields.io/github/actions/workflow/status/Leo-Galli/Aegis-Beacon/aegis_suite.yml?style=for-the-badge&logo=cppcheck&logoColor=white&label=Code%20Quality)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/aegis_suite.yml)
 [![Release](https://img.shields.io/github/v/release/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&color=blue&label=Firmware)](https://github.com/Leo-Galli/Aegis-Beacon/releases)
 
 [![Platform](https://img.shields.io/badge/platform-ESP32--C3-red?style=for-the-badge&logo=espressif)](https://www.espressif.com/en/products/socs/esp32-c3)
