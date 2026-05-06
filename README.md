@@ -706,12 +706,12 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 <div align="center">
 
-**Built with ❤️ for mountain safety.**
+**Built with ❤️ by @Leo-Galli for mountain safety.**
 
 [![Stars](https://img.shields.io/github/stars/leo-galli/aegis-beacon?style=social)](https://github.com/leo-galli/aegis-beacon)
 [![Forks](https://img.shields.io/github/forks/leo-galli/aegis-beacon?style=social)](https://github.com/leo-galli/aegis-beacon/fork)
 [![Issues](https://img.shields.io/github/issues/leo-galli/aegis-beacon?style=flat-square)](https://github.com/leo-galli/aegis-beacon/issues)
-[![CI](https://img.shields.io/github/actions/workflow/status/leo-galli/aegis-beacon/ci.yml?branch=main&label=CI&style=flat-square&logo=githubactions)](https://github.com/leo-galli/aegis-beacon/actions/workflows/ci.yml)
+
 
 *If this project saves a life, please open a PR and let us know.*
 
