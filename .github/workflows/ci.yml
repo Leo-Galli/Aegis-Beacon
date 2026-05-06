@@ -15,6 +15,7 @@
 #    4. static-analysis— cppcheck static analysis on firmware
 #    5. size-report    — Flash/RAM usage report as PR comment
 #    6. release        — On tag: create GitHub Release + attach .bin
+#    7. notify         — CI summary (always runs)
 # ============================================================
 
 name: CI — Build & Test
@@ -47,6 +48,7 @@ concurrency:
 
 env:
   FIRMWARE_FILE: AegisBeacon.ino
+  SKETCH_NAME:   AegisBeacon        # folder name = .ino name without extension
   ARDUINO_FQBN:  esp32:esp32:esp32c3
   PIO_ENV:       esp32-c3-supermin
   # Flash budget: warn if sketch exceeds this percentage of available flash
@@ -78,7 +80,6 @@ jobs:
         run: |
           npm install -g \
             markdownlint-cli@0.39.0 \
-            @ibm/mdd@1.0.0 \
             js-yaml@4.1.0
 
       - name: Lint Markdown files
@@ -101,7 +102,7 @@ jobs:
       - name: Check firmware file exists
         run: |
           if [ ! -f "${{ env.FIRMWARE_FILE }}" ]; then
-            echo "::error file=${{ env.FIRMWARE_FILE }}::Firmware file not found!"
+            echo "::error file=${{ env.FIRMWARE_FILE }}::Firmware file not found in repository root!"
             exit 1
           fi
           echo "✓ Firmware file found: ${{ env.FIRMWARE_FILE }}"
@@ -214,15 +215,13 @@ jobs:
           arduino-cli lib list
 
       - name: Prepare sketch directory
+        # arduino-cli requires the .ino to be inside a folder with the SAME name.
+        # The .ino lives in the repo root, so we create a sibling folder and copy it.
         run: |
-          # arduino-cli requires sketch to be in a folder matching the .ino name
-          SKETCH_DIR="${{ env.FIRMWARE_FILE %.ino }}"
-          SKETCH_DIR="${{ env.FIRMWARE_FILE }}"
-          SKETCH_DIR="${SKETCH_DIR%.ino}"
+          SKETCH_DIR="${{ env.SKETCH_NAME }}"
           mkdir -p "$SKETCH_DIR"
           cp "${{ env.FIRMWARE_FILE }}" "$SKETCH_DIR/"
-          echo "SKETCH_DIR=$SKETCH_DIR" >> $GITHUB_ENV
-          echo "Sketch directory: $SKETCH_DIR"
+          echo "✓ Sketch prepared at ./$SKETCH_DIR/${{ env.FIRMWARE_FILE }}"
 
       - name: Compile firmware (${{ matrix.board_name }})
         id: compile
@@ -237,14 +236,13 @@ jobs:
             --build-property "build.extra_flags=-DCPU_FREQ_MHZ=${{ matrix.cpu_freq }}" \
             --output-dir ./build_output \
             $VERBOSE_FLAG \
-            "${{ env.SKETCH_DIR }}" \
+            "./${{ env.SKETCH_NAME }}" \
             2>&1 | tee build.log
 
           BUILD_EXIT=${PIPESTATUS[0]}
 
           if [ $BUILD_EXIT -ne 0 ]; then
             echo "::error::Compilation FAILED for ${{ matrix.board_name }}"
-            # Extract and annotate error lines
             grep -n "error:" build.log | while IFS=: read file line col msg; do
               echo "::error file=$file,line=$line::$msg"
             done
@@ -257,7 +255,6 @@ jobs:
         if: success()
         id: size
         run: |
-          # Parse arduino-cli size output
           SKETCH_SIZE=$(grep -oP 'Sketch uses \K[0-9]+' build.log || echo "0")
           MAX_SKETCH=$(grep -oP 'Maximum is \K[0-9]+' build.log | head -1 || echo "1")
           GLOBAL_SIZE=$(grep -oP 'Global variables use \K[0-9]+' build.log || echo "0")
@@ -266,12 +263,12 @@ jobs:
           FLASH_PCT=$(( SKETCH_SIZE * 100 / MAX_SKETCH ))
           RAM_PCT=$(( GLOBAL_SIZE * 100 / MAX_GLOBAL ))
 
-          echo "flash_bytes=$SKETCH_SIZE"     >> $GITHUB_OUTPUT
-          echo "flash_max=$MAX_SKETCH"        >> $GITHUB_OUTPUT
-          echo "flash_pct=$FLASH_PCT"         >> $GITHUB_OUTPUT
-          echo "ram_bytes=$GLOBAL_SIZE"       >> $GITHUB_OUTPUT
-          echo "ram_max=$MAX_GLOBAL"          >> $GITHUB_OUTPUT
-          echo "ram_pct=$RAM_PCT"             >> $GITHUB_OUTPUT
+          echo "flash_bytes=$SKETCH_SIZE"  >> $GITHUB_OUTPUT
+          echo "flash_max=$MAX_SKETCH"     >> $GITHUB_OUTPUT
+          echo "flash_pct=$FLASH_PCT"      >> $GITHUB_OUTPUT
+          echo "ram_bytes=$GLOBAL_SIZE"    >> $GITHUB_OUTPUT
+          echo "ram_max=$MAX_GLOBAL"       >> $GITHUB_OUTPUT
+          echo "ram_pct=$RAM_PCT"          >> $GITHUB_OUTPUT
 
           echo ""
           echo "═══════════════════════════════════════"
@@ -281,7 +278,6 @@ jobs:
           printf "  RAM   : %d / %d bytes  (%d%%)\n" $GLOBAL_SIZE $MAX_GLOBAL $RAM_PCT
           echo "═══════════════════════════════════════"
 
-          # Warn if over budget
           if [ $FLASH_PCT -gt ${{ env.FLASH_WARN_PCT }} ]; then
             echo "::warning::Flash usage $FLASH_PCT% exceeds warning threshold ${{ env.FLASH_WARN_PCT }}%"
           fi
@@ -370,16 +366,11 @@ jobs:
           cat platformio.ini
 
       - name: Prepare sketch for PlatformIO
+        # PlatformIO expects sources in src/. The .ino sits in the repo root.
         run: |
           mkdir -p src
-          # PlatformIO uses src/ directory for the main source
-          if [ -f "${{ env.FIRMWARE_FILE }}" ]; then
-            cp "${{ env.FIRMWARE_FILE }}" src/main.cpp
-            echo "✓ Copied ${{ env.FIRMWARE_FILE }} → src/main.cpp"
-          else
-            echo "::error::Firmware source file not found: ${{ env.FIRMWARE_FILE }}"
-            exit 1
-          fi
+          cp "${{ env.FIRMWARE_FILE }}" src/main.cpp
+          echo "✓ Copied ${{ env.FIRMWARE_FILE }} → src/main.cpp"
 
       - name: Run PlatformIO build
         id: pio_build
@@ -455,11 +446,10 @@ jobs:
 
           echo "cppcheck exit code: $?"
 
-          # Count issues by severity
-          ERRORS=$(grep -c ":error:" cppcheck_report.txt 2>/dev/null || echo "0")
-          WARNINGS=$(grep -c ":warning:" cppcheck_report.txt 2>/dev/null || echo "0")
-          STYLE=$(grep -c ":style:" cppcheck_report.txt 2>/dev/null || echo "0")
-          PERF=$(grep -c ":performance:" cppcheck_report.txt 2>/dev/null || echo "0")
+          ERRORS=$(grep -c ":error:"       cppcheck_report.txt 2>/dev/null || echo "0")
+          WARNINGS=$(grep -c ":warning:"   cppcheck_report.txt 2>/dev/null || echo "0")
+          STYLE=$(grep -c ":style:"        cppcheck_report.txt 2>/dev/null || echo "0")
+          PERF=$(grep -c ":performance:"   cppcheck_report.txt 2>/dev/null || echo "0")
 
           echo ""
           echo "═══════════════════════════════════════"
@@ -549,7 +539,6 @@ jobs:
           script: |
             const fs = require('fs');
 
-            // Parse build log for sizes
             function extractSize(logPath) {
               if (!fs.existsSync(logPath)) return null;
               const log = fs.readFileSync(logPath, 'utf8');
@@ -557,10 +546,10 @@ jobs:
               const globalMatch = log.match(/Global variables use (\d+) bytes.*Maximum is (\d+)/);
               if (!sketchMatch || !globalMatch) return null;
               return {
-                flash: parseInt(sketchMatch[1]),
+                flash:    parseInt(sketchMatch[1]),
                 flashMax: parseInt(sketchMatch[2]),
-                ram: parseInt(globalMatch[1]),
-                ramMax: parseInt(globalMatch[2]),
+                ram:      parseInt(globalMatch[1]),
+                ramMax:   parseInt(globalMatch[2]),
               };
             }
 
@@ -594,10 +583,9 @@ jobs:
 
             body += `\n---\n*Generated by [Aegis-Beacon CI](${ context.payload.repository.html_url }/actions/runs/${ process.env.GITHUB_RUN_ID })*`;
 
-            // Find existing comment to update, or create new
             const comments = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo:  context.repo.repo,
+              owner:        context.repo.owner,
+              repo:         context.repo.repo,
               issue_number: context.issue.number,
             });
 
@@ -647,7 +635,7 @@ jobs:
         id: version
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "tag=$TAG"         >> $GITHUB_OUTPUT
           echo "version=${TAG#v}" >> $GITHUB_OUTPUT
           echo "Release version: $TAG"
 
@@ -660,13 +648,11 @@ jobs:
         run: |
           mkdir -p release_assets
 
-          # Copy and rename .bin files with version
           find ./all-artifacts -name "*.bin" | while read f; do
-            ARTIFACT_NAME=$(basename "$(dirname "$(dirname "$f")")")
-            cp "$f" "release_assets/AegisBeacon_${{ steps.version.outputs.tag }}_${ARTIFACT_NAME}.bin"
+            ARTIFACT_DIR=$(basename "$(dirname "$(dirname "$f")")")
+            cp "$f" "release_assets/AegisBeacon_${{ steps.version.outputs.tag }}_${ARTIFACT_DIR}.bin"
           done
 
-          # Create source archive
           git archive --format=zip --prefix="aegis-beacon-${{ steps.version.outputs.tag }}/" \
             HEAD -o "release_assets/AegisBeacon_${{ steps.version.outputs.tag }}_source.zip"
 
@@ -676,7 +662,6 @@ jobs:
       - name: Generate changelog from commits
         id: changelog
         run: |
-          # Get commits since last tag
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
           if [ -n "$PREV_TAG" ]; then
             RANGE="$PREV_TAG..HEAD"
@@ -740,7 +725,6 @@ jobs:
     steps:
       - name: Write final CI summary
         run: |
-          # Determine overall status
           VALIDATE="${{ needs.validate.result }}"
           ARDUINO="${{ needs.build-arduino.result }}"
           PIO="${{ needs.build-pio.result }}"
@@ -748,11 +732,11 @@ jobs:
 
           status_emoji() {
             case "$1" in
-              success)  echo "✅" ;;
-              failure)  echo "❌" ;;
-              skipped)  echo "⏭️" ;;
-              cancelled)echo "🚫" ;;
-              *)        echo "⚪" ;;
+              success)   echo "✅" ;;
+              failure)   echo "❌" ;;
+              skipped)   echo "⏭️" ;;
+              cancelled) echo "🚫" ;;
+              *)         echo "⚪" ;;
             esac
           }
 
@@ -773,7 +757,6 @@ jobs:
 
           EOF
 
-          # Set exit code based on critical jobs
           if [ "$ARDUINO" = "failure" ] || [ "$PIO" = "failure" ] || [ "$VALIDATE" = "failure" ]; then
             echo "> ❌ **Pipeline FAILED** — check the jobs above for details." >> $GITHUB_STEP_SUMMARY
             exit 1
