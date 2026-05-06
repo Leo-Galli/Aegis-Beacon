@@ -4,6 +4,11 @@
 **Revision:** 3.0.0 — May 2025  
 **Status:** [![Released](https://img.shields.io/badge/status-released-brightgreen?style=flat-square)](.)
 
+![BEACON mode](https://img.shields.io/badge/BEACON-SOS_TX_on_all_freqs-red?style=flat-square)
+![SEARCH mode](https://img.shields.io/badge/SEARCH-RSSI_scan_continuous-blue?style=flat-square)
+![Config mode](https://img.shields.io/badge/CONFIG-WiFi_captive_portal-grey?style=flat-square)
+![Emergency mode](https://img.shields.io/badge/EMERGENCY-max_power_no_sleep-orange?style=flat-square)
+
 -----
 
 ## 1. Product Overview
