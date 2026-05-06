@@ -189,8 +189,8 @@ jobs:
       - name: Install Arduino CLI
         run: |
           curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-          echo "$HOME/bin" >> $GITHUB_PATH
-          echo "$PATH=$PATH:$HOME/bin" >> $GITHUB_ENV
+          echo "/home/runner/bin" >> $GITHUB_PATH
+          echo "PATH=$PATH:/home/runner/bin" >> $GITHUB_ENV
 
       - name: Configure Arduino CLI
         run: |
@@ -211,6 +211,12 @@ jobs:
           arduino-cli lib install "RadioLib@6.6.0"
           echo "Installing ArduinoJson..."
           arduino-cli lib install "ArduinoJson@7.0.4"
+          echo "Installing Adafruit GFX Library..."
+          arduino-cli lib install "Adafruit GFX Library"
+          echo "Installing Adafruit SSD1306..."
+          arduino-cli lib install "Adafruit SSD1306"
+          echo "Installing Adafruit BusIO..."
+          arduino-cli lib install "Adafruit BusIO"
           echo "Installed libraries:"
           arduino-cli lib list
 
@@ -429,6 +435,7 @@ jobs:
       - name: Run cppcheck on firmware
         id: cppcheck
         run: |
+          # Eseguiamo cppcheck e forziamo l'uscita a 0 per gestire i conteggi dopo
           cppcheck \
             --enable=warning,performance,portability,style \
             --suppress=missingIncludeSystem \
@@ -441,48 +448,46 @@ jobs:
             --template="{file}:{line}:{severity}:{id}: {message}" \
             --output-file=cppcheck_report.txt \
             "${{ env.FIRMWARE_FILE }}" \
-            2>&1
+            2>&1 || true
 
-          echo "cppcheck exit code: $?"
+          # Estrazione pulita dei numeri: prendiamo solo la prima riga se grep restituisce duplicati
+          ERRORS=$(grep -c ":error:" cppcheck_report.txt | head -n 1 || echo "0")
+          WARNINGS=$(grep -c ":warning:" cppcheck_report.txt | head -n 1 || echo "0")
+          STYLE=$(grep -c ":style:" cppcheck_report.txt | head -n 1 || echo "0")
+          PERF=$(grep -c ":performance:" cppcheck_report.txt | head -n 1 || echo "0")
 
-          ERRORS=$(grep -c ":error:"       cppcheck_report.txt 2>/dev/null || echo "0")
-          WARNINGS=$(grep -c ":warning:"   cppcheck_report.txt 2>/dev/null || echo "0")
-          STYLE=$(grep -c ":style:"        cppcheck_report.txt 2>/dev/null || echo "0")
-          PERF=$(grep -c ":performance:"   cppcheck_report.txt 2>/dev/null || echo "0")
-
-          echo ""
-          echo "═══════════════════════════════════════"
+          echo "---------------------------------------"
           echo "  STATIC ANALYSIS REPORT"
           echo "  Errors:      $ERRORS"
           echo "  Warnings:    $WARNINGS"
           echo "  Style:       $STYLE"
           echo "  Performance: $PERF"
-          echo "═══════════════════════════════════════"
+          echo "---------------------------------------"
 
           if [ -s cppcheck_report.txt ]; then
-            echo ""
             echo "Issues found:"
             cat cppcheck_report.txt
           else
             echo "  ✓ No issues detected"
           fi
 
-          echo "errors=$ERRORS"     >> $GITHUB_OUTPUT
+          # Esporta i risultati per gli step successivi
+          echo "errors=$ERRORS" >> $GITHUB_OUTPUT
           echo "warnings=$WARNINGS" >> $GITHUB_OUTPUT
 
-          # Hard fail only on errors
-          if [ "$ERRORS" -gt "0" ]; then
+          # Fallisce il job solo se ci sono ERRORI (non avvisi)
+          if [ "$ERRORS" -ne "0" ]; then
             echo "::error::cppcheck found $ERRORS error(s). Fix before merging."
             exit 1
           fi
 
-          # Annotate warnings
+          # Crea annotazioni automatiche su GitHub per gli avvisi
           while IFS= read -r line; do
             if echo "$line" | grep -q ":warning:"; then
               FILE=$(echo "$line" | cut -d: -f1)
-              LINENO=$(echo "$line" | cut -d: -f2)
+              LINE=$(echo "$line" | cut -d: -f2)
               MSG=$(echo "$line" | cut -d: -f5-)
-              echo "::warning file=$FILE,line=$LINENO::$MSG"
+              echo "::warning file=$FILE,line=$LINE::$MSG"
             fi
           done < cppcheck_report.txt
 
@@ -503,7 +508,7 @@ jobs:
           | ❌ Errors | ${{ steps.cppcheck.outputs.errors }} |
           | ⚠️ Warnings | ${{ steps.cppcheck.outputs.warnings }} |
 
-          $([ -s cppcheck_report.txt ] && echo '```' && cat cppcheck_report.txt && echo '```' || echo '_No issues found ✓_')
+          $( [ -s cppcheck_report.txt ] && echo '### Detailed Log' && echo '```' && cat cppcheck_report.txt && echo '```' || echo '*No issues found ✓*' )
           EOF
 
 # ============================================================
@@ -518,6 +523,7 @@ jobs:
 
     permissions:
       pull-requests: write
+      content: read
 
     steps:
       - name: Download Arduino build artifacts
