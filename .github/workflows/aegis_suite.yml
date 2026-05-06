@@ -1,0 +1,97 @@
+name: "Aegis-Beacon CI/CD Suite"
+
+on:
+  push:
+    branches: [ "main", "master" ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # Permette l'avvio manuale
+
+permissions:
+  contents: write # Necessario per creare le Release
+
+jobs:
+  # --- JOB 1: COMPILAZIONE E VALIDAZIONE ---
+  build:
+    name: Build & Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Cache Pip & PlatformIO
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install PlatformIO
+        run: pip install -U platformio
+
+      - name: Compile Firmware (ESP32-C3)
+        run: pio run
+        # Nota: Assicurati di avere il file platformio.ini nella root
+
+      - name: Upload Artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-binaries
+          path: .pio/build/*/firmware.bin
+
+  # --- JOB 2: ANALISI QUALITÀ CODICE ---
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install CppCheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+
+      - name: Static Analysis (AegisBeacon.ino)
+        run: |
+          cppcheck --enable=all --inline-suppr --suppress=missingIncludeSystem \
+          --error-exitcode=1 AegisBeacon.ino
+
+  # --- JOB 3: SICUREZZA DIPENDENZE ---
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: PlatformIO Library Audit
+        run: |
+          pip install -U platformio
+          pio lib update --dry-run
+
+  # --- JOB 4: RELEASE AUTOMATICA (Solo su Tag v*) ---
+  release:
+    name: Production Release
+    needs: [build, lint]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: firmware-binaries
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            **/firmware.bin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
