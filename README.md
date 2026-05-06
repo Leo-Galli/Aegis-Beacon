@@ -15,7 +15,7 @@
 
 [![Version](https://img.shields.io/badge/version-3.0.0-blue?style=for-the-badge&logo=github)](https://github.com/your-org/aegis-beacon/releases)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
-[![CI — Build & Test](https://img.shields.io/github/actions/workflow/status/your-org/aegis-beacon/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20Build)](https://github.com/your-org/aegis-beacon/actions/workflows/ci.yml)
+[![CI — Build & Test](https://img.shields.io/github/actions/workflow/status/leo-galli/aegis-beacon/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20Build)](https://github.com/your-org/aegis-beacon/actions/workflows/ci.yml)
 [![Platform](https://img.shields.io/badge/platform-ESP32--C3-red?style=for-the-badge&logo=espressif)](https://www.espressif.com/en/products/socs/esp32-c3)
 [![Radio](https://img.shields.io/badge/radio-SX1276_OOK%2FCW-orange?style=for-the-badge)](https://www.semtech.com/products/wireless-rf/lora-connect/sx1276)
 [![Framework](https://img.shields.io/badge/framework-Arduino_PlatformIO-teal?style=for-the-badge&logo=arduino)](https://platformio.org)
