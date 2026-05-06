@@ -90,7 +90,7 @@ jobs:
             DATASHEET.md \
             || true  # Non-blocking: report but don't fail on style issues
 
-- name: Validate workflow YAML syntax
+      - name: Validate workflow YAML syntax
         run: |
           for f in .github/workflows/*.yml; do
             echo "Validating $f"
