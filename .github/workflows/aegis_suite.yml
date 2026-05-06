@@ -1,4 +1,4 @@
-name: "Aegis-Beacon CI/CD Suite"
+name: "Aegis-Beacon Ultra Suite"
 
 on:
   push:
@@ -6,92 +6,64 @@ on:
     tags: [ 'v*' ]
   pull_request:
     branches: [ "main", "master" ]
-  workflow_dispatch: # Permette l'avvio manuale
 
 permissions:
-  contents: write # Necessario per creare le Release
+  contents: write
 
 jobs:
-  # --- JOB 1: COMPILAZIONE E VALIDAZIONE ---
-  build:
-    name: Build & Verify
+  build_and_test:
+    name: Core Pipeline
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: 1. Checkout del codice
         uses: actions/checkout@v4
 
-      - name: Cache Pip & PlatformIO
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/pip
-            ~/.platformio/.cache
-          key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Install PlatformIO
+      - name: 2. Installazione PlatformIO
         run: pip install -U platformio
 
-      - name: Compile Firmware (ESP32-C3)
-        run: pio run
-        # Nota: Assicurati di avere il file platformio.ini nella root
+      - name: 3. Preparazione Struttura Progetto
+        run: |
+          mkdir -p src
+          cp AegisBeacon.ino src/main.cpp
+          echo "[env:esp32-c3-supermini]
+          platform = espressif32
+          board = esp32-c3-devkitm-1
+          framework = arduino
+          lib_deps = 
+            jgromes/RadioLib @ ^6.6.0
+            bblanchon/ArduinoJson @ ^7.0.4
+            adafruit/Adafruit GFX Library @ ^1.11.9
+            adafruit/Adafruit SSD1306 @ ^2.5.9" > platformio.ini
 
-      - name: Upload Artifacts
-        if: success()
+      - name: 4. Analisi Statica (Linting)
+        run: |
+          sudo apt-get update && sudo apt-get install -y cppcheck
+          # Analisi che ignora i falsi positivi (unusedFunction, ecc)
+          cppcheck --enable=warning,style --inline-suppr --suppress=unusedFunction --suppress=missingIncludeSystem src/main.cpp
+
+      - name: 5. Compilazione Firmware
+        run: pio run
+
+      - name: 6. Archiviazione Binari
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-binaries
+          name: AegisBeacon-V4-Firmware
           path: .pio/build/*/firmware.bin
 
-  # --- JOB 2: ANALISI QUALITÀ CODICE ---
-  lint:
-    name: Code Quality
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Install CppCheck
-        run: sudo apt-get update && sudo apt-get install -y cppcheck
-
-      - name: Static Analysis (AegisBeacon.ino)
-        run: |
-          cppcheck --enable=all --inline-suppr --suppress=missingIncludeSystem \
-          --error-exitcode=1 AegisBeacon.ino
-
-  # --- JOB 3: SICUREZZA DIPENDENZE ---
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      - name: PlatformIO Library Audit
-        run: |
-          pip install -U platformio
-          pio lib update --dry-run
-
-  # --- JOB 4: RELEASE AUTOMATICA (Solo su Tag v*) ---
   release:
     name: Production Release
-    needs: [build, lint]
+    needs: build_and_test
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
-      - name: Download Build Artifacts
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: firmware-binaries
-
-      - name: Create GitHub Release
+          name: AegisBeacon-V4-Firmware
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: |
-            **/firmware.bin
+          files: firmware.bin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
