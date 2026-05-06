@@ -78,7 +78,7 @@ jobs:
 
       - name: Install linters
         run: |
-          npm install -g \
+          npm install \
             markdownlint-cli@0.39.0 \
             js-yaml@4.1.0
 
@@ -90,11 +90,11 @@ jobs:
             DATASHEET.md \
             || true  # Non-blocking: report but don't fail on style issues
 
-      - name: Validate workflow YAML syntax
+- name: Validate workflow YAML syntax
         run: |
           for f in .github/workflows/*.yml; do
             echo "Validating $f"
-            node -e "require('js-yaml').load(require('fs').readFileSync('$f','utf8'))" \
+            node -e "const yaml = require('./node_modules/js-yaml'); const fs = require('fs'); yaml.load(fs.readFileSync('$f','utf8'))" \
               && echo "  ✓ $f is valid YAML" \
               || (echo "  ✗ $f has YAML errors" && exit 1)
           done
