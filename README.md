@@ -254,7 +254,7 @@ Both libraries are available in the Arduino Library Manager and via PlatformIO�
 1. **Select port:**  
    `Tools → Port → COMx (Windows) / /dev/ttyUSB0 (Linux) / /dev/cu.usbmodem... (macOS)`
 1. **Upload:**  
-   Open `AegisBeacon_v3.ino` → click Upload (→)
+   Open `AegisBeacon.ino` → click Upload (→)
 
 > ⚠️ If upload fails, hold the BOOT button (GPIO9/SW_MODE) while clicking Upload, then release after “Connecting…” appears.
 
@@ -472,7 +472,7 @@ Connect at **115200 baud, 8N1** to receive full real-time diagnostics.
 
 ```
 ╔════════════════════════════════════════════════════════╗
-║    ⬡  AEGIS-BEACON v3.0  —  DUAL-MODE RESCUE SYSTEM   ║
+║    ⬡  AEGIS-BEACON v3.0  —  DUAL-MODE RESCUE SYSTEM    ║
 ╚════════════════════════════════════════════════════════╝
     Active mode: BEACON
 
