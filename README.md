@@ -1,5 +1,3 @@
-# 🏔️ Aegis-Beacon
-
 <div align="center">
 
 ```
@@ -11,324 +9,706 @@
 ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝╚══════╝    ╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝╚═╝  ╚═══╝
 ```
 
-**Ultra-Low-Cost DIY Avalanche Rescue Beacon**  
-*ESP32-C3 SuperMini + RA-02 SX1276 · OOK/CW Morse · ~$8–12 USD total build cost*
+# Aegis-Beacon v3.0
 
----
+### Professional Dual-Mode Avalanche Rescue System
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
-[![Platform: ESP32-C3](https://img.shields.io/badge/Platform-ESP32--C3-blue?style=for-the-badge&logo=espressif)](https://www.espressif.com/en/products/socs/esp32-c3)
-[![Framework: Arduino](https://img.shields.io/badge/Framework-Arduino-00979D?style=for-the-badge&logo=arduino)](https://www.arduino.cc/)
-[![Framework: PlatformIO](https://img.shields.io/badge/Framework-PlatformIO-FF7F00?style=for-the-badge&logo=platformio)](https://platformio.org/)
-[![RadioLib](https://img.shields.io/badge/RadioLib-%E2%89%A56.0-purple?style=for-the-badge)](https://github.com/jgromes/RadioLib)
-[![ArduinoJson](https://img.shields.io/badge/ArduinoJson-%E2%89%A57.0-yellow?style=for-the-badge)](https://arduinojson.org/)
-[![Frequency: 433 MHz](https://img.shields.io/badge/Frequency-433%20MHz-red?style=for-the-badge)](https://en.wikipedia.org/wiki/433_MHz)
-[![Build Cost](https://img.shields.io/badge/Build%20Cost-%248--12%20USD-brightgreen?style=for-the-badge)](https://github.com)
-![C Syntax Check](https://img.shields.io/github/actions/workflow/status/Leo-Galli/Aegis-Beacon/c-syntax-check.yml?branch=main&label=C%20Syntax%20Check&logo=github&style=for-the-badge)
-[![Version](https://img.shields.io/badge/Version-1.0-orange?style=for-the-badge)](../README.md)
-[![Go to TECHNICAL_DATASHEET](https://img.shields.io/badge/%20Go%20to-TECHNICAL_DATASHEET-lightgrey?style=for-the-badge)](../TECHNICAL_DATASHEET.md)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue?style=for-the-badge&logo=github)](https://github.com/your-org/aegis-beacon/releases)
+[![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
+[![CI — Build & Test](https://img.shields.io/github/actions/workflow/status/your-org/aegis-beacon/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20Build)](https://github.com/your-org/aegis-beacon/actions/workflows/ci.yml)
+[![Platform](https://img.shields.io/badge/platform-ESP32--C3-red?style=for-the-badge&logo=espressif)](https://www.espressif.com/en/products/socs/esp32-c3)
+[![Radio](https://img.shields.io/badge/radio-SX1276_OOK%2FCW-orange?style=for-the-badge)](https://www.semtech.com/products/wireless-rf/lora-connect/sx1276)
+[![Framework](https://img.shields.io/badge/framework-Arduino_PlatformIO-teal?style=for-the-badge&logo=arduino)](https://platformio.org)
+[![RadioLib](https://img.shields.io/badge/RadioLib-≥6.0-purple?style=for-the-badge)](https://github.com/jgromes/RadioLib)
+[![ArduinoJson](https://img.shields.io/badge/ArduinoJson-≥7.0-blue?style=for-the-badge)](https://arduinojson.org)
+[![Cost](https://img.shields.io/badge/BOM_cost-~%248_USD-yellow?style=for-the-badge)](DATASHEET.md)
+
+<br/>
+
+
+> **⚡ BEACON mode** — transmits Morse SOS on multiple frequencies via OOK/CW carrier, audible on any AM scanner or SDR.  
+> **🔍 SEARCH mode** — continuously scans all configured frequencies, measures RSSI, and logs detected signals.  
+> Switchable instantly with a single physical button press, or via a web dashboard over WiFi.
+
+<br/>
+
+![BEACON mode](https://img.shields.io/badge/BEACON-SOS_TX_on_all_freqs-red?style=flat-square)
+![SEARCH mode](https://img.shields.io/badge/SEARCH-RSSI_scan_continuous-blue?style=flat-square)
+![Config mode](https://img.shields.io/badge/CONFIG-WiFi_captive_portal-grey?style=flat-square)
+![Emergency mode](https://img.shields.io/badge/EMERGENCY-max_power_no_sleep-orange?style=flat-square)
 
 </div>
 
----
+-----
 
-## 📖 Overview
+## Table of Contents
 
-**Aegis-Beacon** is an open-source, ultra-low-cost avalanche rescue beacon firmware for the ESP32-C3 SuperMini + RA-02 (SX1276) combo. It transmits a configurable Morse code message on one or more 433 MHz frequencies using OOK (On-Off Keying / CW) modulation — detectable by any AM-mode scanner, SDR receiver, or compatible rescue device.
+- [Overview](#overview)
+- [Features](#features)
+- [Hardware](#hardware)
+  - [Bill of Materials](#bill-of-materials)
+  - [Wiring Table](#wiring-table)
+  - [Schematic Notes](#schematic-notes)
+- [Firmware](#firmware)
+  - [Dependencies](#dependencies)
+  - [Installation — Arduino IDE](#installation--arduino-ide)
+  - [Installation — PlatformIO](#installation--platformio)
+  - [Configuration](#configuration)
+- [Operating Modes](#operating-modes)
+  - [BEACON Mode](#beacon-mode)
+  - [SEARCH Mode](#search-mode)
+  - [CONFIG Mode (Dashboard)](#config-mode-dashboard)
+  - [EMERGENCY Mode](#emergency-mode)
+- [Physical Button Reference](#physical-button-reference)
+- [Dashboard Features](#dashboard-features)
+- [Serial Debug System](#serial-debug-system)
+- [Morse Engine](#morse-engine)
+- [Deep Sleep & Battery Life](#deep-sleep--battery-life)
+- [Antenna Guide](#antenna-guide)
+- [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
+- [License](#license)
 
-The entire device can be built for **under $12 USD** using widely available AliExpress / LCSC components, with no RF design experience required.
+-----
 
-> ⚠️ **DISCLAIMER**: This project is a hobbyist/educational tool. It does **not** comply with ETSI EN 300 718 or any certified avalanche beacon standard. Do **not** use it as a replacement for a certified avalanche transceiver (e.g., Mammut, Pieps, Ortovox) in real backcountry situations.
+## Overview
 
----
+**Aegis-Beacon** is an open-source, ultra-low-cost emergency rescue beacon designed for avalanche survival, backcountry emergencies, and SAR (Search and Rescue) operations. It fits in a jacket pocket, costs under $10 to build, and can operate for **72+ hours** on a single 18650 cell.
 
-## ✨ Features
+The device operates in two modes, switchable in real time with a physical button:
 
-- 📡 **OOK/CW Morse transmission** on 433 MHz (or any SX1276-supported frequency)
-- 🔁 **Multi-frequency hopping** — transmit on up to 10 frequencies per cycle
-- 💤 **Ultra-deep sleep** between TX cycles (ESP32-C3 deep sleep, ~10 µA)
-- ⚙️ **Wi-Fi captive portal** for browser-based configuration (no app needed)
-- 💾 **NVS persistence** — settings survive power cycles and deep sleep
-- 🐛 **Rich ANSI debug logging** over USB-CDC Serial (115200 baud)
-- 🔋 **USB-C charging** via TP4056 module (18650 or 14500 Li-ion)
-- 💰 **~$8–12 USD total BOM** (AliExpress / LCSC pricing)
+|Mode           |LED       |What it does                                                |
+|---------------|----------|------------------------------------------------------------|
+|🔴 **BEACON**   |Red blink |Transmits Morse SOS on 1–10 frequencies via OOK carrier     |
+|🔵 **SEARCH**   |Blue blink|Scans all frequencies, logs RSSI, alerts on signal detection|
+|⚙️ **CONFIG**   |Both blink|WiFi AP + captive portal dashboard                          |
+|⚡ **EMERGENCY**|Red fast  |Max power, continuous TX, no sleep                          |
 
----
+All settings are stored in NVS (non-volatile storage) and survive reboots and deep sleep cycles. A **fail-safe** system ensures the device defaults to `433.500 MHz / "SOS" / 13 WPM / 17 dBm` if NVS is ever empty or corrupt.
 
-## 🛒 Bill of Materials
+-----
 
-| Ref | Part | ~Cost (USD) | Notes |
-|-----|------|:-----------:|-------|
-| U1 | ESP32-C3 SuperMini | $1.50 | Built-in LDO + USB-CDC, no extra regulator needed |
-| U2 | AI-Thinker RA-02 (SX1276) 433 MHz | $2.50 | ~17 dBm, spring antenna included |
-| B1 | 18650 Li-ion 3.7V (any brand) | $1.50 | LiFePO4 better for cold, but 3× cost |
-| IC1 | TP4056 USB-C charge module (DW01A) | $0.50 | Charging + over-discharge protection |
-| SW1 | Tactile switch 6×6mm | $0.05 | BOOT / config mode |
-| C1 | 100 µF 10V electrolytic (or 47µF X7R ceramic) | $0.05 | Bulk cap on 3.3V rail |
-| C2 | 100 nF ceramic 0805 | $0.02 | Decoupling |
-| R1 | 10 kΩ 0805 | $0.01 | RST pull-up |
-| R2 | 330 Ω 0805 | $0.01 | LED current limit |
-| D1 | Red LED 3mm | $0.05 | Status indicator |
-| ANT | 17.3 cm wire (¼-wave 433 MHz) | $0.00 | Any wire — FREE |
-| BOX | Hammond 1551 (60×35×20mm) OR 3D-printed PLA | $0.30–$1.50 | Print your own |
-| **Total** | | **~$8–10 USD** | |
+## Features
 
-> 💡 **Why so cheap?** The ESP32-C3 SuperMini has a built-in LDO (no external regulator), the RA-02 has a complete RF front-end (no RF design), the TP4056 has protection built-in (no separate BMS), and the antenna is just a wire. Only 4 passive components total.
+### RF & Transmission
 
----
+- ✅ **OOK/CW mode** — carrier on/off keying, audible on any AM-mode scanner or SDR receiver
+- ✅ **Frequency hopping** — up to 10 configurable frequencies per cycle
+- ✅ **PARIS-standard Morse timing** — `dot=1u, dash=3u, inter-char=3u, word=7u`
+- ✅ **Configurable WPM** — 5 to 30 WPM via dashboard slider
+- ✅ **Configurable TX power** — +2 to +17 dBm (RA-02 hardware limit)
+- ✅ **Configurable repeat count** — 1–5 message repetitions per cycle
+- ✅ **Mid-TX interrupt** — mode button can abort a transmission instantly
 
-## 🔌 Wiring
+### Search / Scan Engine
 
-### ESP32-C3 SuperMini ↔ RA-02 (SX1276)
+- ✅ **Per-frequency RSSI measurement** with configurable dwell time (100–5000 ms)
+- ✅ **Configurable detection threshold** (-120 to -40 dBm)
+- ✅ **Rolling hit log** — last 20 detections stored in RTC RAM (survives deep sleep)
+- ✅ **Signal classification** — STRONG (≥ -60 dBm) / MEDIUM (≥ -80) / WEAK (≥ threshold)
+- ✅ **ASCII signal bar** printed to Serial on every scan pass
+- ✅ **LED alert** — blue LED blinks on detection, fast blink on strong signal
 
-| RA-02 Pin | ESP32-C3 GPIO | Notes |
-|-----------|:-------------:|-------|
-| VCC (3.3V) | 3V3 | **MAX 3.6V — do NOT connect to 5V/VBUS** |
-| GND | GND | Common ground |
-| SCK | GPIO 4 | SPI Clock |
-| MOSI | GPIO 6 | SPI MOSI |
-| MISO | GPIO 5 | SPI MISO |
-| NSS / CS | GPIO 7 | Chip Select (active LOW) |
-| RESET | GPIO 3 | Active LOW reset |
-| DIO0 | GPIO 2 | TX/RX Done IRQ |
-| DIO1 | N/C | Not needed for OOK/CW |
-| ANT | — | 17.3 cm wire soldered directly to ANT pad |
+### Dashboard & Configuration
 
-### Other connections
+- ✅ **WiFi captive portal** — connect any phone/laptop, browser opens automatically
+- ✅ **Dark military-aesthetic UI** — Orbitron / Share Tech Mono fonts, responsive
+- ✅ **Live Morse preview** — message decoded to dots/dashes as you type
+- ✅ **Frequency manager** — add/remove up to 10 frequencies with band labels
+- ✅ **Scan history panel** — RSSI bar charts, auto-refreshes every 5 s
+- ✅ **Device status panel** — boot cycles, TX/scan counts, free heap, uptime
+- ✅ **Test TX button** — sends single SOS burst from browser
+- ✅ **Test Scan button** — scans all frequencies live, returns RSSI per freq
+- ✅ **Emergency override** — activate max-power SOS from browser
+- ✅ **5-minute AP timeout** — auto-reverts to beacon mode if nobody connects
 
-| Component | ESP32-C3 GPIO | Notes |
-|-----------|:-------------:|-------|
-| LED anode | GPIO 8 | Through R2 (330 Ω) to GND |
-| SW1 (BOOT) | GPIO 9 | Between GPIO9 and GND |
+### Reliability & Safety
 
-### Battery wiring
+- ✅ **Hardware watchdog** — 30 s WDT resets device if firmware hangs
+- ✅ **NVS fail-safe** — hardcoded defaults if storage is empty or corrupt
+- ✅ **Factory reset** — hold both buttons at boot for 5 s
+- ✅ **RTC RAM state** — mode, cycle counters, scan hits survive deep sleep
+- ✅ **Interrupt-driven buttons** — responsive even during TX delays
+- ✅ **Debounced button logic** — 50 ms hardware debounce + hold duration measurement
+- ✅ **Deep sleep** — ESP32-C3 draws ~10 µA between TX cycles
+
+### Debug System
+
+- ✅ **Color-coded ANSI serial log** — `[INFO]`, `[OK]`, `[WARN]`, `[ERROR]`, `[SCAN]`, `[BTN]`, `[MODE]`, `[CFG]`
+- ✅ **Verbose mode** — `DEBUG_VERBOSE 1` adds per-symbol Morse timing + RadioLib state codes
+- ✅ **Per-scan ASCII bar graph** — visual RSSI display at 115200 baud
+- ✅ **Boot diagnostics** — reset reason, free heap, CPU freq, SDK version on every boot
+
+-----
+
+## Hardware
+
+### Bill of Materials
+
+> **Total estimated cost: ~$7–10 USD** (AliExpress / LCSC pricing, May 2025)
+
+|# |Ref|Component                                       |Qty|Unit Cost|Notes                                                     |
+|--|---|------------------------------------------------|---|---------|----------------------------------------------------------|
+|1 |U1 |**ESP32-C3 SuperMini**                          |1  |$1.50    |Built-in LDO + USB-C. No external regulator needed.       |
+|2 |U2 |**AI-Thinker RA-02** (SX1276)                   |1  |$2.50    |433 MHz, includes spring antenna, ~17 dBm max.            |
+|3 |B1 |**18650 Li-ion 3.7 V** (any brand)              |1  |$1.50    |Or 14500 AA-size for smaller builds.                      |
+|4 |IC1|**TP4056 USB-C module** (with DW01A protection) |1  |$0.50    |Handles charge + over-discharge. No extra BMS needed.     |
+|5 |SW1|**Tactile switch 6×6 mm**                       |2  |$0.05    |MODE button (GPIO9) + CONFIG button (GPIO1).              |
+|6 |C1 |**100 µF 10 V electrolytic**                    |1  |$0.05    |Bulk cap on 3.3 V rail. Swap for X7R ceramic below −10 °C.|
+|7 |C2 |**100 nF ceramic 0805**                         |1  |$0.02    |Decoupling on VCC.                                        |
+|8 |R1 |**10 kΩ 0805**                                  |3  |$0.03    |Pull-ups: SW1, SW2, RST.                                  |
+|9 |R2 |**330 Ω 0805**                                  |2  |$0.02    |LED current limiters.                                     |
+|10|D1 |**Red LED 3 mm**                                |1  |$0.05    |BEACON mode indicator.                                    |
+|11|D2 |**Blue LED 3 mm**                               |1  |$0.05    |SEARCH mode indicator.                                    |
+|12|ANT|**17.3 cm wire** (¼-wave @ 433 MHz)             |1  |$0.00    |Any stiff copper wire. Solder directly to RA-02 ANT pad.  |
+|13|BOX|**Hammond 1551 (60×35×20 mm)** or 3D-printed PLA|1  |$1.00    |Small, pocketable enclosure.                              |
+
+**Total: ~$7.27 – $9.27 USD**
+
+> 💡 **Cold weather note:** Below −10 °C, replace C1 electrolytic with a 47 µF X7R ceramic capacitor. Electrolytic capacitors freeze and lose capacitance in extreme cold.
+
+-----
+
+### Wiring Table
+
+#### ESP32-C3 SuperMini ↔ RA-02 (SX1276)
+
+|RA-02 Pin|ESP32-C3 GPIO|Wire colour (suggested)|Notes                                      |
+|---------|-------------|-----------------------|-------------------------------------------|
+|VCC      |3V3          |Red                    |**MAX 3.6 V — never connect to 5 V / VBUS**|
+|GND      |GND          |Black                  |Common ground                              |
+|SCK      |GPIO 4       |Yellow                 |SPI Clock                                  |
+|MOSI     |GPIO 6       |Green                  |SPI Master-Out                             |
+|MISO     |GPIO 5       |Blue                   |SPI Master-In                              |
+|NSS / CS |GPIO 7       |Orange                 |Chip Select (active LOW)                   |
+|RESET    |GPIO 3       |White                  |Active LOW reset pulse                     |
+|DIO0     |GPIO 2       |Purple                 |TX/RX Done IRQ                             |
+|DIO1     |GPIO 10      |Grey                   |RX Timeout (search mode)                   |
+|ANT      |—            |—                      |Solder 17.3 cm wire to ANT pad             |
+
+#### Other Connections
+
+|Component     |From         |To                |Notes                      |
+|--------------|-------------|------------------|---------------------------|
+|LED_RED anode |GPIO 8       |—                 |Via 330 Ω to GND           |
+|LED_BLUE anode|GPIO 20      |—                 |Via 330 Ω to GND           |
+|SW_MODE       |GPIO 9 (BOOT)|GND               |10 kΩ pull-up to 3V3       |
+|SW_CONFIG     |GPIO 1       |GND               |10 kΩ pull-up to 3V3       |
+|TP4056 OUT+   |—            |ESP32-C3 5V (VBUS)|Battery → regulator → ESP32|
+|TP4056 BAT+   |18650 (+)    |—                 |                           |
+|TP4056 BAT−   |18650 (−)    |GND               |                           |
+
+#### Battery Circuit
 
 ```
-18650 (+) → TP4056 BAT+ → ESP32-C3 SuperMini 5V (VBUS input)
-18650 (-) → TP4056 BAT- → GND
-TP4056 USB-C port → any USB-C cable for charging
+[USB-C charger] ──► [TP4056 IN]
+                         │
+                    [TP4056 BAT+/BAT−] ──► [18650]
+                         │
+                    [TP4056 OUT+/OUT−] ──► [ESP32-C3 5V + GND]
+                                                  │
+                                            [onboard LDO]
+                                                  │
+                                              [3.3 V rail]──►[RA-02 VCC]
 ```
 
-> ℹ️ The ESP32-C3 SuperMini has an onboard AMS1117-3.3 LDO powered from VBUS. Running 3.7V Li-ion through the TP4056 OUT+ → VBUS works without any extra regulator.
+-----
 
----
+### Schematic Notes
 
-## 📐 System Architecture
+- The ESP32-C3 SuperMini has an **AMS1117-3.3 LDO** powered from the 5 V / VBUS rail. This means the battery feeds through the TP4056’s `OUT+` pin directly into the ESP32’s VBUS pin, and the 3.3 V rail is regulated internally. **No external LDO is required.**
+- The TP4056 module with DW01A includes **over-charge, over-discharge, and short-circuit protection**. No external BMS chip is needed.
+- RA-02 SPI lines must be **3.3 V only**. The ESP32-C3 GPIO outputs are 3.3 V natively — no level shifting required.
+- Solder the **17.3 cm wire antenna** vertically upward from the RA-02 ANT pad for best omni-directional radiation pattern. A helical wound coil reduces physical length to ~6 cm with ~1–2 dBi loss.
 
-```
-POWER ON / DEEP-SLEEP WAKE
-│
-├─ BOOT button held? ──YES──► runConfigMode()
-│                              WiFi AP + Captive Portal dashboard
-│                              blocks until save/reboot or 5-min timeout
-└─ NO
-     │
-     ▼
-loadConfig()  ← NVS
-NVS empty? → inject hardcoded defaults (433.5 MHz, "SOS", 13 WPM)
-     │
-     ▼
-Disable WiFi + BT (saves ~120 mA during beacon mode)
-     │
-     ▼
-initRadio(freq, power)  — OOK mode via RadioLib
-     │
-╔══════════════════════════════════════════╗
-║  BEACON LOOP (one pass, then deep sleep) ║
-║  for each freq in cfg.freqs[]:           ║
-║      setFrequency(freq)                  ║
-║      for each char in message:           ║
-║          morse encode → dot/dash timing  ║
-║          txOn() / txOff() via OOK        ║
-║      inter-freq guard delay (50 ms)      ║
-╚══════════════════════════════════════════╝
-     │
-     ▼
-radio.sleep()
-esp_deep_sleep(cfg.sleepSec × 1e6)
-→ wakes → setup() → repeat
-```
+-----
 
----
+## Firmware
 
-## 🚀 Getting Started
+### Dependencies
 
-### Prerequisites
+|Library                           |Version  |Install                             |
+|----------------------------------|---------|------------------------------------|
+|**RadioLib** by Jan Gromes        |`≥ 6.0.0`|Arduino Library Manager / PlatformIO|
+|**ArduinoJson** by Benoît Blanchon|`≥ 7.0.0`|Arduino Library Manager / PlatformIO|
 
-- [Arduino IDE 2.x](https://www.arduino.cc/en/software) **or** [PlatformIO](https://platformio.org/)
-- ESP32 board support package (Arduino: `esp32` by Espressif ≥ 2.0)
-- Libraries:
-  - [RadioLib](https://github.com/jgromes/RadioLib) **≥ 6.0**
-  - [ArduinoJson](https://arduinojson.org/) **≥ 7.0**
+Both libraries are available in the Arduino Library Manager and via PlatformIO’s registry.
 
-### Arduino IDE
+-----
 
-1. Open **Sketch → Include Library → Manage Libraries**
-2. Install `RadioLib` by Jan Gromes (≥ 6.0)
-3. Install `ArduinoJson` by Benoît Blanchon (≥ 7.0)
-4. Select board: **ESP32C3 Dev Module**
-5. Open `AegisBeacon.ino` and click **Upload**
+### Installation — Arduino IDE
 
-### PlatformIO
+1. **Install libraries:**  
+   `Sketch → Include Library → Manage Libraries`  
+   Search and install: `RadioLib` (Jan Gromes, ≥ 6.0) and `ArduinoJson` (Benoît Blanchon, ≥ 7.0)
+1. **Add ESP32-C3 board support:**  
+   `File → Preferences → Additional boards URL`:
+   
+   ```
+   https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+   ```
+   
+   Then: `Tools → Board Manager → search "esp32" → install "esp32 by Espressif"`
+1. **Select board:**  
+   `Tools → Board → ESP32C3 Dev Module`
+1. **Select port:**  
+   `Tools → Port → COMx (Windows) / /dev/ttyUSB0 (Linux) / /dev/cu.usbmodem... (macOS)`
+1. **Upload:**  
+   Open `AegisBeacon_v3.ino` → click Upload (→)
+
+> ⚠️ If upload fails, hold the BOOT button (GPIO9/SW_MODE) while clicking Upload, then release after “Connecting…” appears.
+
+-----
+
+### Installation — PlatformIO
+
+Create `platformio.ini` in the repo root (required by the CI workflow too):
 
 ```ini
-; platformio.ini
-[env:esp32-c3-supermini]
-platform = espressif32
-board = esp32-c3-devkitm-1
+[env:esp32-c3-supermin]
+platform  = espressif32
+board     = esp32-c3-devkitm-1
 framework = arduino
+
 lib_deps =
     jgromes/RadioLib @ ^6.6.0
     bblanchon/ArduinoJson @ ^7.0.0
+
+monitor_speed = 115200
+upload_speed  = 921600
+
+build_flags =
+    -DARDUINO_USB_MODE=1
+    -DARDUINO_USB_CDC_ON_BOOT=1
+
+; CI: flash + RAM budget warnings (see .github/workflows/ci.yml)
+board_build.flash_size = 4MB
 ```
+
+Then:
 
 ```bash
 pio run --target upload
 pio device monitor --baud 115200
 ```
 
----
+-----
 
-## ⚙️ Configuration
+### Configuration
 
-### First boot (hardcoded defaults)
+All runtime settings are stored in ESP32 NVS and can be changed via the dashboard or by editing the defaults in the firmware header:
 
-On first boot with an empty NVS, the beacon uses these defaults:
-
-| Parameter | Default |
-|-----------|---------|
-| Frequency | 433.500 MHz |
-| Message | `SOS` |
-| WPM | 13 |
-| TX Power | 17 dBm |
-| Sleep interval | 10 seconds |
-
-### Config mode (Wi-Fi captive portal)
-
-1. **Hold the BOOT button** while powering on (or pressing reset)
-2. Connect to Wi-Fi network **`AegisBeacon-Config`**
-3. Open a browser to **`http://192.168.4.1`** (captive portal auto-redirects)
-4. Edit message, frequencies (up to 10), WPM, TX power, sleep interval
-5. Click **Save** — settings are written to NVS and the device reboots into beacon mode
-6. Config mode auto-times-out after **5 minutes** if no save occurs
-
----
-
-## 🐛 Debug / Serial Monitor
-
-Connect via USB-CDC at **115200 baud**. The firmware uses ANSI colour codes for easy reading in any terminal that supports them (VS Code, picocom, minicom, PuTTY).
-
-### Log level tags
-
-| Tag | Colour | Meaning |
-|-----|--------|---------|
-| `[INFO ]` | Cyan | Normal operation |
-| `[OK   ]` | Green | Successful operation |
-| `[WARN ]` | Yellow | Non-fatal anomaly |
-| `[ERROR]` | Red | Failure — check wiring/hardware |
-| `[MORSE]` | Gray | Per-symbol Morse log *(verbose only)* |
-| `[RF   ]` | Gray | RadioLib SPI/register log *(verbose only)* |
-
-Enable full verbose logging by setting `#define DEBUG_VERBOSE 1` at the top of the sketch.
-
-### Typical healthy boot log
-
-```
-╔══════════════════════════════════════════════════════╗
-║       AEGIS-BEACON v1.0  — BOOT                      ║
-║   ESP32-C3 SuperMini + RA-02 SX1276  OOK/CW Beacon   ║
-╚══════════════════════════════════════════════════════╝
-
-[    150][INFO ] Boot cycle #1
-[    151][INFO ] Loading 1 frequencies from NVS
-[    210][INFO ] Disabling WiFi + BT stacks...
-[    280][OK   ] Radio ready — 433.500 MHz, 17 dBm, OOK/CW
-[    285][INFO ] TX START: "SOS" @ 13 WPM (dot=92 ms)
-[   3015][OK   ] TX DONE: 3 chars in 2730 ms
-[   3020][OK   ] Full TX cycle done in 2845 ms
-[   3021][INFO ] Entering deep sleep for 10 seconds...
+```cpp
+#define DEFAULT_FREQ_MHZ      433.500f   // Default frequency (MHz)
+#define DEFAULT_MESSAGE       "SOS"      // Default Morse message
+#define DEFAULT_WPM           13         // Default words per minute
+#define DEFAULT_POWER_DBM     17         // Default TX power (dBm)
+#define DEFAULT_SLEEP_SEC     10         // Deep sleep between cycles (s)
+#define DEFAULT_SCAN_DWELL_MS 400        // RSSI dwell time per frequency (ms)
+#define DEFAULT_RSSI_THRESH   -90        // Detection threshold (dBm)
 ```
 
-### Common errors and fixes
+To enable verbose per-symbol debug logging:
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `Radio beginFSK failed! Code: -2` | SPI wiring wrong | Double-check CS/SCK/MOSI/MISO/RST pins |
-| `Radio beginFSK failed! Code: -7` | RA-02 not receiving SPI clock | Check solder joints on RA-02 |
-| `NVS empty — using hardcoded defaults` | First boot | Normal — configure via AP mode |
-
----
-
-## 📡 RF / Morse Technical Details
-
-- **Modulation**: OOK (On-Off Keying) — RF carrier ON = key down, OFF = key up
-- **Encoding**: Standard ITU Morse (A–Z, 0–9, space)
-- **Timing**: PARIS standard — 1 unit = `1200 / WPM` ms
-- **Frequency**: 433 MHz band (EU ISM, 433.050–434.790 MHz)
-- **TX power**: Up to 17 dBm on RFO pin (RA-02 default); 20 dBm via PA_BOOST variant
-- **Antenna**: ¼-wave monopole = **17.3 cm** of any wire, or the spring antenna included with RA-02
-- **Reception**: Audible on any AM-mode scanner, SDR (RTL-SDR, HackRF), or compatible receiver
-
----
-
-## 📁 Project Structure
-
-```
-AegisBeacon/
-├── AegisBeacon.ino        # Main firmware (single-file Arduino sketch)
-├── README.md              # This file
-└── LICENSE                # MIT License
+```cpp
+#define DEBUG_VERBOSE   1   // 0 = clean log | 1 = full symbol-level log
 ```
 
----
+-----
 
-## 🔧 Customization
+## Operating Modes
 
-| What | Where | Notes |
-|------|-------|-------|
-| Default frequency | `#define DEFAULT_FREQ_MHZ` | Any SX1276-supported frequency |
-| Default message | `#define DEFAULT_MESSAGE` | Any string with A-Z, 0-9, spaces |
-| Default WPM | `#define DEFAULT_WPM` | Standard CW: 5–25 WPM |
-| TX power | `#define DEFAULT_POWER_DBM` | 2–17 dBm (RFO), up to 20 dBm (PA_BOOST) |
-| Sleep interval | `#define DEFAULT_SLEEP_SEC` | Seconds between TX cycles |
-| Max frequencies | `#define MAX_FREQUENCIES` | Default 10, limited by NVS space |
-| Config AP name | `#define AP_SSID` | Wi-Fi network name in config mode |
-| Config timeout | `#define CONFIG_TIMEOUT_MS` | Default 5 min (300 000 ms) |
+### BEACON Mode
 
----
+The primary emergency mode. On each cycle the device:
 
-## 🤝 Contributing
+1. Disables WiFi and Bluetooth stacks (saves ~120 mA)
+1. Iterates through all configured frequencies
+1. On each frequency: initialises SX1276 in OOK mode, transmits the full Morse message (repeated N times)
+1. Puts the SX1276 into sleep mode
+1. Enters ESP32 deep sleep for the configured interval
+1. Wakes up and repeats
 
-Contributions, bug reports, and feature requests are welcome! Please open an issue or pull request.
+**Morse timing (PARIS standard):**
 
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m 'Add my feature'`
-4. Push: `git push origin feature/my-feature`
-5. Open a Pull Request
+|Element            |Duration       |
+|-------------------|---------------|
+|Dot                |`1200 / WPM` ms|
+|Dash               |`3 × dot` ms   |
+|Intra-character gap|`1 × dot` ms   |
+|Inter-character gap|`3 × dot` ms   |
+|Word gap           |`7 × dot` ms   |
 
----
+At 13 WPM: dot = 92 ms, dash = 277 ms. “SOS” takes ~2.7 seconds.
 
-## 📜 License
+**The OOK carrier is detectable on:**
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+- Any AM-mode analog receiver (shortwave, ham radio, scanner)
+- Any SDR (RTL-SDR, HackRF, etc.) in AM or spectrum mode
+- Dedicated 433 MHz ISM receivers
+
+-----
+
+### SEARCH Mode
+
+Continuous scan mode for locating other beacons. The device:
+
+1. Disables WiFi and Bluetooth stacks
+1. Loops through all configured frequencies indefinitely
+1. On each frequency: opens FSK receive window, measures peak RSSI over the dwell period
+1. Logs all detections above the configured threshold to RTC RAM
+1. Blinks the blue LED on detection (fast blink = strong signal)
+1. Prints an ASCII signal bar graph to Serial for each frequency
+
+**Sample serial output (SEARCH mode):**
 
 ```
-MIT License — Use freely, save lives.
+[  42381][SCAN ] Scan pass — 3 frequencies
+[  42382][SCAN ] [0] 433.500 MHz  RSSI=-112 dBm  |....................| quiet
+[  42784][SCAN ] [1] 434.500 MHz  RSSI= -87 dBm  |#########...........| *** SIGNAL ***
+[  42785][SCAN ] HIT recorded: 434.500 MHz -87 dBm [MEDIUM]  total hits=1
+[  43188][SCAN ] [2] 435.000 MHz  RSSI=-109 dBm  |....................| quiet
+[  43189][SCAN ] Pass complete — elapsed 0 s | total detections: 1
 ```
 
----
+-----
 
-## ⚠️ Legal & Safety Notice
+### CONFIG Mode (Dashboard)
 
-- In most countries, 433 MHz ISM band transmissions are permitted under short-range device regulations, but **always verify local regulations** before operating.
-- This device is **not certified** as an avalanche rescue transceiver and **must not** be used as a substitute for a certified device in real emergencies.
-- The author(s) accept no liability for any use of this firmware in life-safety situations.
+Activated by holding SW_CONFIG for 3 seconds. The device:
 
----
+1. Starts a WiFi Access Point (`AegisBeacon`, open/no password)
+1. Starts a DNS server that redirects all domains to the device IP
+1. Serves the dashboard at `http://192.168.4.1`
+1. On most phones, a “Login to network” notification appears automatically (captive portal)
+1. After saving, the device reboots into the selected mode
+1. If nobody connects within 5 minutes, the device automatically reboots
+
+**Connect from any device:**
+
+- WiFi SSID: `AegisBeacon`
+- No password required
+- URL: `http://192.168.4.1` (or wait for the captive portal popup)
+
+-----
+
+### EMERGENCY Mode
+
+Activated by holding SW_MODE for 2 seconds, or via the dashboard’s Emergency button. In this mode:
+
+- Maximum TX power (+17 dBm)
+- Message repeated 3× per frequency
+- **No deep sleep** — continuous transmission with no pause
+- Persists across power cycles (stored in RTC RAM)
+- Reset by entering CONFIG mode and saving with a normal mode selected
+
+-----
+
+## Physical Button Reference
+
+|Button                      |Action              |Result                                          |
+|----------------------------|--------------------|------------------------------------------------|
+|**SW_MODE** (GPIO9)         |Short press         |Toggle BEACON ↔ SEARCH mode instantly           |
+|**SW_MODE** (GPIO9)         |Hold 2 s            |Activate **EMERGENCY SOS** (max power, no sleep)|
+|**SW_CONFIG** (GPIO1)       |Short press         |Print full device status to Serial              |
+|**SW_CONFIG** (GPIO1)       |Hold 3 s            |Launch WiFi AP + dashboard                      |
+|**Both SW_MODE + SW_CONFIG**|Hold at boot for 5 s|**Factory reset** (clears all NVS settings)     |
+
+
+> 💡 **During TX:** SW_MODE press immediately interrupts the active Morse transmission and switches mode. The interrupt fires at the hardware level — no polling delay.
+
+> 💡 **In CONFIG mode:** SW_CONFIG short press prints status to Serial while the dashboard is active.
+
+-----
+
+## Dashboard Features
+
+|Section              |Feature                                                                              |
+|---------------------|-------------------------------------------------------------------------------------|
+|**Mode toggle**      |Large physical-style switch — select BEACON or SEARCH before saving                  |
+|**Emergency message**|Text area with live Morse preview (dots/dashes update as you type)                   |
+|**Frequency manager**|Add/remove up to 10 frequencies; band labels auto-detected (70cm UHF, 868 MHz ISM…)  |
+|**Morse speed**      |Slider 5–30 WPM with real-time display                                               |
+|**TX power**         |Slider +2 to +17 dBm                                                                 |
+|**Sleep interval**   |Seconds between TX cycles (1–3600 s)                                                 |
+|**Repeat count**     |How many times to repeat message per frequency per cycle (1–5)                       |
+|**Scan dwell**       |Milliseconds to listen per frequency in SEARCH mode (100–5000 ms)                    |
+|**RSSI threshold**   |Detection sensitivity slider (-120 to -40 dBm)                                       |
+|**Auto-switch**      |Toggle: auto-switch to BEACON if battery drops low                                   |
+|**Scan history**     |Live-updating RSSI bar charts for all detections; Refresh + Clear buttons            |
+|**Device status**    |Boot cycles, TX cycles, scan cycles, scan hits, free heap, uptime (auto-refresh 10 s)|
+|**Test TX**          |Sends one SOS burst on first configured frequency                                    |
+|**Test Scan**        |Scans all frequencies, returns RSSI per freq in real time                            |
+|**Emergency button** |Activates EMERGENCY mode immediately from the browser                                |
+|**Save button**      |Saves all settings to NVS and reboots into selected mode                             |
+
+-----
+
+## Serial Debug System
+
+Connect at **115200 baud, 8N1** to receive full real-time diagnostics.
+
+**Terminal commands:**
+
+- Linux/Mac: `picocom -b 115200 /dev/ttyUSB0`
+- Windows: PuTTY → Serial → COM port → 115200
+
+**Log format:** `[timestamp_ms][LEVEL] message`
+
+|Tag      |Color  |Meaning                                         |
+|---------|-------|------------------------------------------------|
+|`[INFO ]`|Cyan   |Normal operation                                |
+|`[OK   ]`|Green  |Successful operation                            |
+|`[WARN ]`|Yellow |Non-fatal anomaly                               |
+|`[ERROR]`|Red    |Hardware/radio failure                          |
+|`[MODE ]`|Magenta|Mode change event                               |
+|`[SCAN ]`|Blue   |RSSI scan result                                |
+|`[BTN  ]`|White  |Physical button event + hold duration           |
+|`[CFG  ]`|White  |Dashboard save/load                             |
+|`[MORSE]`|Gray   |Per-symbol Morse timing *(DEBUG_VERBOSE 1 only)*|
+|`[RF   ]`|Gray   |RadioLib return codes *(DEBUG_VERBOSE 1 only)*  |
+
+**Healthy BEACON boot sequence:**
+
+```
+╔════════════════════════════════════════════════════════╗
+║    ⬡  AEGIS-BEACON v3.0  —  DUAL-MODE RESCUE SYSTEM   ║
+╚════════════════════════════════════════════════════════╝
+    Active mode: BEACON
+
+[       5][INFO ] Boot cycle #1
+[       6][INFO ] Reset reason: 1
+[       7][INFO ] Free heap: 296420 B
+[       8][INFO ] CPU freq: 160 MHz
+────────────── NVS CONFIG LOAD ───────────────
+[      12][INFO ]   freq[0] = 433.500 MHz
+[      13][INFO ] Message  : "SOS"
+[      14][INFO ] WPM      : 13  (dot=92 ms)
+[      15][INFO ] Power    : 17 dBm
+────────────────────────────────────────────
+[      20][MODE ] Starting in mode: BEACON
+[      25][INFO ] Disabling WiFi + BT stacks...
+[      80][OK   ] WiFi + BT disabled
+[      85][INFO ] Radio init OOK: 433.500 MHz @ 17 dBm
+[     120][OK   ] Radio ready — OOK/CW on 433.500 MHz @ 17 dBm
+[     121][INFO ] TX: "SOS" @ 13 WPM  dot=92 ms  dash=277 ms
+[    2851][OK   ] TX done: 3 chars in 2730 ms
+[    2852][OK   ] Full TX cycle done in 2867 ms
+[    2853][INFO ] Deep sleep 10 seconds...
+```
+
+-----
+
+## Morse Engine
+
+The Morse engine uses **PARIS standard timing** — the word “PARIS” takes exactly 50 units, calibrating against the WPM setting.
+
+```
+unit_duration_ms = 1200 / WPM
+
+DOT  = 1 unit
+DASH = 3 units
+intra-character gap (between elements) = 1 unit
+inter-character gap (between letters)  = 3 units  
+word gap (between words)               = 7 units
+```
+
+**Supported characters:** A–Z, 0–9, space (word gap)
+
+**Example — “SOS” at 13 WPM (unit = 92 ms):**
+
+```
+S  =  · · ·     = DOT GAP DOT GAP DOT
+O  =  − − −     = DASH GAP DASH GAP DASH
+S  =  · · ·     = DOT GAP DOT GAP DOT
+
+Full: ···   −−−   ···
+Time: ~2730 ms
+```
+
+**TX can be interrupted mid-character** by pressing SW_MODE. The `transmitMessage()` function checks the interrupt flag between characters.
+
+-----
+
+## Deep Sleep & Battery Life
+
+The device uses ESP32 deep sleep between TX cycles to minimise power consumption.
+
+|State                  |Current draw  |
+|-----------------------|--------------|
+|Deep sleep (ESP32-C3)  |~10 µA        |
+|TX active @ 17 dBm     |~120 mA       |
+|SEARCH scan            |~40 mA (no TX)|
+|Config AP (WiFi active)|~100 mA       |
+
+**Estimated battery life (2000 mAh 18650):**
+
+|Mode     |Sleep interval  |Est. runtime|
+|---------|----------------|------------|
+|BEACON   |10 s            |~72 hours   |
+|BEACON   |30 s            |~150 hours  |
+|BEACON   |60 s            |~200 hours  |
+|SEARCH   |N/A (continuous)|~50 hours   |
+|EMERGENCY|N/A (continuous)|~16 hours   |
+
+
+> 💡 These estimates assume normal temperature (20 °C). At −20 °C with a standard Li-ion cell, expect 40–60% of the above figures. Use a LiFePO4 cell for cold-weather deployments.
+
+-----
+
+## Antenna Guide
+
+The RA-02 module’s ANT pad accepts a direct wire solder for a quarter-wave monopole:
+
+|Frequency|¼-wave length|½-wave length|
+|---------|-------------|-------------|
+|433.5 MHz|**17.3 cm**  |34.6 cm      |
+|868 MHz  |8.6 cm       |17.3 cm      |
+|915 MHz  |8.2 cm       |16.4 cm      |
+
+**Best practices:**
+
+- Use stiff copper wire (AWG 22–26), vertical orientation
+- Keep antenna away from the battery and metal enclosure
+- A ground plane (foil on the back of the PCB) improves gain by ~3 dBi
+- Helical coil antenna: wind 17.3 cm of wire into a helix (~5 mm diameter) to reduce physical length to ~6 cm. Expect ~1–2 dBi gain loss.
+
+-----
+
+## CI/CD Workflow
+
+The repository includes a full GitHub Actions pipeline at `.github/workflows/ci.yml`.
+
+### Pipeline Overview
+
+```
+push / PR / tag
+      │
+      ├── 🔍 validate          ← YAML syntax, required files, platformio.ini
+      │         │
+      ├── 🔨 build-arduino  ◄──┤   (matrix: 160 MHz + 80 MHz)
+      ├── 🔧 build-pio       ◄──┤
+      └── 🛡️ static-analysis ◄──┘
+                │
+                ├── 📊 size-report  (PR only — posts flash/RAM comment)
+                │
+                ├── 🚀 release      (tag v*.*.* only — creates GitHub Release)
+                │
+                └── 📋 notify       (always — writes CI summary)
+```
+
+### Jobs
+
+|Job                |Trigger     |Description                                                      |
+|-------------------|------------|-----------------------------------------------------------------|
+|**validate**       |all         |YAML/JSON/Markdown lint; checks required files                   |
+|**build-arduino**  |all         |Compiles with arduino-cli; ESP32-C3 @ 160 + 80 MHz matrix        |
+|**build-pio**      |all         |Compiles with PlatformIO                                         |
+|**static-analysis**|all         |`cppcheck` scan for errors/warnings; annotates PR lines          |
+|**size-report**    |PR only     |Posts flash & RAM usage table as PR comment (updates on re-push) |
+|**release**        |`v*.*.*` tag|Builds `.bin` assets, generates changelog, creates GitHub Release|
+|**notify**         |always      |Writes final status table to Actions job summary                 |
+
+### Triggering a Release
+
+```bash
+git tag v3.0.1
+git push origin v3.0.1
+```
+
+The pipeline will build both Arduino and PlatformIO `.bin` files, generate a changelog from commits since the last tag, and publish a GitHub Release automatically.
+
+### Required Secrets / Permissions
+
+No secrets required. The workflow uses the built-in `GITHUB_TOKEN` with these permissions:
+
+- `contents: write` — for creating releases
+- `pull-requests: write` — for posting size report comments
+
+### Local Lint Check
+
+```bash
+# Validate workflow YAML locally
+npm install -g js-yaml
+node -e "require('js-yaml').load(require('fs').readFileSync('.github/workflows/ci.yml','utf8'))" && echo "✓ Valid"
+
+# Run cppcheck locally
+cppcheck --enable=warning,performance --suppress=missingIncludeSystem AegisBeacon_v3.ino
+```
+
+-----
+
+## Troubleshooting
+
+|Symptom                      |Likely cause                      |Fix                                                  |
+|-----------------------------|----------------------------------|-----------------------------------------------------|
+|`[ERROR] beginFSK failed: -2`|SPI wiring error                  |Check CS/SCK/MOSI/MISO pin assignments               |
+|`[ERROR] beginFSK failed: -7`|Bad solder joint on RA-02         |Reflow SPI pads on RA-02 module                      |
+|`[WARN] NVS empty`           |First boot / after factory reset  |Normal — configure via dashboard                     |
+|No signal on SDR             |Wrong frequency / wrong modulation|Set SDR to AM mode, center on configured frequency   |
+|Button not responding        |Bad debounce / loose wire         |Check GPIO pull-up resistors; verify `INPUT_PULLUP`  |
+|Dashboard not opening        |Phone captive portal blocked      |Navigate manually to `http://192.168.4.1`            |
+|Upload fails                 |ESP32-C3 USB CDC not recognized   |Hold BOOT (GPIO9) while clicking Upload              |
+|Device stuck in EMERGENCY    |EMERGENCY flag set in RTC RAM     |Enter CONFIG mode and save — this clears the flag    |
+|TX current high              |WiFi/BT not disabled              |Check `WiFi.mode(WIFI_OFF)` + `btStop()` calls in log|
+
+-----
+
+## FAQ
+
+**Q: Can a regular hiker use this without radio knowledge?**  
+A: Yes. In BEACON mode the device transmits automatically. In SEARCH mode it scans and alerts you with LED blinks. No radio knowledge needed.
+
+**Q: What receiver do I need to hear the beacon?**  
+A: Any AM-mode receiver on 433 MHz: a handheld scanner (Uniden, Baofeng with AM mode), a ham radio transceiver, or an RTL-SDR dongle + SDR# software on a laptop.
+
+**Q: Is this legal to operate?**  
+A: 433 MHz ISM band is licence-free in most countries (EU/UK/AU). 915 MHz ISM is licence-free in North America. Always check local regulations before operating. This is an emergency device — in genuine emergencies, normal frequency restrictions are generally suspended.
+
+**Q: Does it work through snow?**  
+A: RF signals at 433 MHz penetrate wet snow with 1–3 dB/m attenuation. At 1 m burial depth expect ~3–9 dB signal loss. The +17 dBm output compensates for this. Reduce sleep interval to increase detection probability.
+
+**Q: Can I add GPS coordinates to the message?**  
+A: The firmware has a reserved `emergencyGPS` flag for this feature. A future update will support appending NMEA coordinates to the Morse message via a connected GPS module.
+
+**Q: How do I update the firmware without reflashing?**  
+A: Enter CONFIG mode (hold SW_CONFIG 3 s) and use the dashboard’s OTA update button *(planned for v3.1)*.
+
+-----
+
+## License
+
+```
+MIT License
+
+Copyright (c) 2025 Aegis-Beacon Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+```
+
+-----
 
 <div align="center">
 
-Made with ❤️ for the mountains · [MIT License](LICENSE) · *Use freely, save lives.*
+**Built with ❤️ for mountain safety.**
+
+[![Stars](https://img.shields.io/github/stars/your-org/aegis-beacon?style=social)](https://github.com/your-org/aegis-beacon)
+[![Forks](https://img.shields.io/github/forks/your-org/aegis-beacon?style=social)](https://github.com/your-org/aegis-beacon/fork)
+[![Issues](https://img.shields.io/github/issues/your-org/aegis-beacon?style=flat-square)](https://github.com/your-org/aegis-beacon/issues)
+[![CI](https://img.shields.io/github/actions/workflow/status/your-org/aegis-beacon/ci.yml?branch=main&label=CI&style=flat-square&logo=githubactions)](https://github.com/your-org/aegis-beacon/actions/workflows/ci.yml)
+
+*If this project saves a life, please open a PR and let us know.*
 
 </div>
