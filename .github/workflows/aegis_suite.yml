@@ -1,4 +1,4 @@
-name: "Aegis-Beacon Ultra Suite"
+name: "🛡️ Aegis-Beacon Suite"
 
 on:
   push:
@@ -12,16 +12,16 @@ permissions:
 
 jobs:
   build_and_test:
-    name: Core Pipeline
+    name: ⚙️ Core Pipeline
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Checkout del codice
+      - name: 📥 1. Checkout Code
         uses: actions/checkout@v4
 
-      - name: 2. Installazione PlatformIO
+      - name: 🛠️ 2. Install PlatformIO
         run: pip install -U platformio
 
-      - name: 3. Preparazione Struttura Progetto
+      - name: 📁 3. Prepare Project Structure
         run: |
           mkdir -p src
           cp AegisBeacon.ino src/main.cpp
@@ -35,32 +35,33 @@ jobs:
             adafruit/Adafruit GFX Library @ ^1.11.9
             adafruit/Adafruit SSD1306 @ ^2.5.9" > platformio.ini
 
-      - name: 4. Analisi Statica (Linting)
+      - name: 🔍 4. Static Analysis (Linting)
         run: |
           sudo apt-get update && sudo apt-get install -y cppcheck
-          # Analisi che ignora i falsi positivi (unusedFunction, ecc)
+          # Analysis ignoring false positives (unusedFunction, etc.)
           cppcheck --enable=warning,style --inline-suppr --suppress=unusedFunction --suppress=missingIncludeSystem src/main.cpp
 
-      - name: 5. Compilazione Firmware
+      - name: 🏗️ 5. Compile Firmware
         run: pio run
 
-      - name: 6. Archiviazione Binari
+      - name: 📦 6. Archive Binaries
         uses: actions/upload-artifact@v4
         with:
           name: AegisBeacon-V4-Firmware
           path: .pio/build/*/firmware.bin
 
   release:
-    name: Production Release
+    name: 🚀 Production Release
     needs: build_and_test
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
-      - name: Download Artifacts
+      - name: 📥 Download Artifacts
         uses: actions/download-artifact@v4
         with:
           name: AegisBeacon-V4-Firmware
-      - name: Create Release
+          
+      - name: 📢 Create Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
