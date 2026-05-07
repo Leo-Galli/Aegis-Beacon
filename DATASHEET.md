@@ -1,470 +1,399 @@
-# AEGIS-BEACON v3.0 — Technical Datasheet
+# DATASHEET — Aegis-Beacon v4.0
+
+**Dual-Mode Avalanche Rescue System**  
+**Revision: 4.0 | Date: 2026 | Author: Leonardo Galli**
 
-**Document type:** Hardware & Firmware Technical Reference  
-**Revision:** 3.0.0 — May 2025  
-**Status:** [![Released](https://img.shields.io/badge/status-released-brightgreen?style=flat-square)](.)
+---
+
+## 1. General Description
+
+Aegis-Beacon v4.0 is an open-source, ultra-low-cost emergency rescue beacon for avalanche survival, backcountry SAR operations, and off-grid emergency communication. The device combines a 433 MHz OOK/CW radio transmitter with a passive RSSI scanner, a 0.96" OLED status display, and a 3.5mm audio alert output into a pocketable, battery-powered unit buildable under $15 USD.
+
+The firmware runs on an ESP32-C3 microcontroller, controlled by the RadioLib driver stack, and exposes a WiFi captive-portal dashboard for field configuration without any additional tools.
 
-![BEACON mode](https://img.shields.io/badge/BEACON-SOS_TX_on_all_freqs-red?style=flat-square)
-![SEARCH mode](https://img.shields.io/badge/SEARCH-RSSI_scan_continuous-blue?style=flat-square)
-![Config mode](https://img.shields.io/badge/CONFIG-WiFi_captive_portal-grey?style=flat-square)
-![Emergency mode](https://img.shields.io/badge/EMERGENCY-max_power_no_sleep-orange?style=flat-square)
-
------
-
-## 1. Product Overview
-
-Aegis-Beacon is a dual-mode avalanche and backcountry rescue beacon based on the ESP32-C3 microcontroller and SX1276 LoRa/FSK transceiver. It operates in two primary modes: **BEACON** (Morse SOS transmitter) and **SEARCH** (RSSI-based frequency scanner), switchable in real time via physical button or WiFi dashboard.
-
-The device is designed for minimal component count, ultra-low cost (~$8 USD), and maximum field reliability. All critical parameters default to safe values if non-volatile storage is empty.
-
------
-
-## 2. Electrical Specifications
-
-### 2.1 Absolute Maximum Ratings
-
-|Parameter            |Min |Max |Unit|Notes                          |
-|---------------------|----|----|----|-------------------------------|
-|Supply voltage (VBUS)|3.0 |5.5 |V   |TP4056 OUT to ESP32-C3 VBUS    |
-|Supply voltage (3V3) |2.3 |3.6 |V   |ESP32-C3 LDO output / RA-02 VCC|
-|GPIO input voltage   |−0.3|3.6 |V   |Absolute max, not continuous   |
-|Operating temperature|−20 |+85 |°C  |Li-ion cell limits lower bound |
-|Storage temperature  |−40 |+125|°C  |Without battery                |
-|RF output power      |—   |+17 |dBm |RA-02 hardware limit (RFO pin) |
-
-
-> ⚠️ **Never apply 5 V to the RA-02 VCC pin.** The SX1276 is a 3.3 V device. Applying 5 V will permanently destroy the RF front-end.
-
------
-
-### 2.2 DC Characteristics
-
-|Parameter           |Condition                      |Typical  |Unit|
-|--------------------|-------------------------------|---------|----|
-|Deep sleep current  |ESP32-C3 + SX1276 sleep        |10–15    |µA  |
-|Idle current        |ESP32-C3 active, SX1276 standby|25–35    |mA  |
-|TX current @ +10 dBm|433 MHz OOK                    |55–65    |mA  |
-|TX current @ +17 dBm|433 MHz OOK                    |110–125  |mA  |
-|RX / scan current   |FSK receive mode               |35–45    |mA  |
-|WiFi AP active      |Config mode, no TX             |90–110   |mA  |
-|WiFi AP + TX        |Config mode test TX            |200–240  |mA  |
-|3V3 LDO output      |AMS1117-3.3 on SuperMini       |3.28–3.32|V   |
-|3V3 LDO max current |—                              |800      |mA  |
-
------
-
-### 2.3 Power Budget (BEACON mode, 10 s sleep cycle)
-
-|Phase                                         |Duration|Current |Energy       |
-|----------------------------------------------|--------|--------|-------------|
-|Boot + init                                   |~120 ms |60 mA   |2.0 mWh      |
-|TX “SOS” @ 17 dBm, 13 WPM                     |~2.7 s  |120 mA  |108 mWh*     |
-|Deep sleep                                    |~10 s   |0.012 mA|0.0013 mWh   |
-|**Cycle total (~12.8 s)**                     |—       |—       |**~110 mWh** |
-|**Cycles per hour**                           |~281    |—       |—            |
-|**Battery life (2000 mAh × 3.7 V = 7400 mWh)**|—       |—       |**~67 hours**|
-
-* Energy in mWh normalised to 3.3 V supply.
-
------
-
-## 3. RF Specifications
-
-### 3.1 Transmitter
-
-|Parameter                  |Value               |Unit|Notes                             |
-|---------------------------|--------------------|----|----------------------------------|
-|Modulation                 |OOK (On-Off Keying) |—   |Via RadioLib `setOOK(true)`       |
-|Frequency range            |137 – 1020          |MHz |SX1276 hardware limit             |
-|Typical operating frequency|433.500             |MHz |ISM-EU default                    |
-|Output power range         |+2 to +17           |dBm |Software configurable             |
-|Frequency resolution       |61                  |Hz  |SX1276 PLL step                   |
-|Frequency accuracy         |±2.5                |kHz |TCXO-less; varies with temperature|
-|Spurious emissions         |< −36               |dBm |SX1276 datasheet §6.3             |
-|Antenna connector          |PCB pad             |—   |Solder wire directly to ANT pad   |
-|Recommended antenna        |¼-wave wire monopole|—   |17.3 cm @ 433 MHz                 |
-
-### 3.2 Receiver (SEARCH mode)
-
-|Parameter                  |Value      |Unit|Notes                                |
-|---------------------------|-----------|----|-------------------------------------|
-|Modulation                 |FSK receive|—   |250 kHz bandwidth for drift tolerance|
-|RSSI range                 |−120 to −10|dBm |SX1276 RSSI register                 |
-|RSSI accuracy              |±1.5       |dB  |Per SX1276 datasheet                 |
-|Noise floor (typical)      |−110       |dBm |At 433 MHz, 250 kHz BW               |
-|Default detection threshold|−90        |dBm |Configurable −120 to −40 dBm         |
-|Scan dwell time            |100 – 5000 |ms  |Per frequency, configurable          |
-|Sensitivity improvement    |+6 dB      |—   |Narrow BW mode (future update)       |
-
-### 3.3 Frequency Plan (Default)
-
-|Frequency      |Band         |Region        |Notes                             |
-|---------------|-------------|--------------|----------------------------------|
-|**433.500 MHz**|70 cm UHF ISM|EU / Worldwide|Default; licence-free EU          |
-|434.500 MHz    |70 cm UHF ISM|EU            |Secondary ISM                     |
-|868.000 MHz    |868 MHz ISM  |EU            |LoRa band EU868                   |
-|915.000 MHz    |915 MHz ISM  |NA / AU       |LoRa band US915                   |
-|121.500 MHz    |VHF          |Worldwide     |Aviation emergency (add manually) |
-|156.800 MHz    |VHF Marine   |Worldwide     |Channel 16 distress (add manually)|
-
------
-
-## 4. Microcontroller Specifications
-
-### 4.1 ESP32-C3 SuperMini
-
-|Parameter         |Value                              |
-|------------------|-----------------------------------|
-|Core              |Single-core RISC-V @ 160 MHz       |
-|Flash             |4 MB (QIO)                         |
-|SRAM              |400 KB                             |
-|RTC memory        |8 KB (survives deep sleep)         |
-|WiFi              |802.11 b/g/n, 2.4 GHz              |
-|Bluetooth         |BLE 5.0                            |
-|Deep sleep current|~5 µA (CPU off, RTC on)            |
-|USB               |USB-C, CDC ACM (no UART chip)      |
-|Operating voltage |3.0 – 3.6 V                        |
-|GPIO count        |22 total, 12 freely usable         |
-|ADC               |12-bit, channels 0–4               |
-|SPI               |Hardware HSPI: SCK, MOSI, MISO + CS|
-|Dimensions        |~22 × 18 mm                        |
-
-### 4.2 RTC Memory Layout (survives deep sleep)
-
-|Variable           |Size               |Purpose                                   |
-|-------------------|-------------------|------------------------------------------|
-|`g_bootCycle`      |uint32             |Total boot/wake cycles since factory reset|
-|`g_txCycles`       |uint32             |Total BEACON TX cycles                    |
-|`g_scanCycles`     |uint32             |Total SEARCH scan passes                  |
-|`g_scanHits[20]`   |20 × ScanHit struct|Rolling log of last 20 detections         |
-|`g_scanHitCount`   |uint8              |Number of valid entries in g_scanHits     |
-|`g_currentMode`    |enum (uint8)       |Active operating mode                     |
-|`g_emergencyActive`|bool               |Emergency SOS flag                        |
-
------
-
-## 5. NVS (Non-Volatile Storage) Map
-
-All settings stored in NVS namespace `"aegis"`.
-
-|Key      |Type  |Default|Range             |Description                         |
-|---------|------|-------|------------------|------------------------------------|
-|`fcount` |uint8 |1      |1–10              |Number of configured frequencies    |
-|`f0`…`f9`|float |433.500|137.0–1020.0      |Frequency N in MHz                  |
-|`msg`    |string|`"SOS"`|1–63 chars        |Morse message                       |
-|`wpm`    |uint8 |13     |5–30              |Words per minute                    |
-|`pwr`    |int8  |17     |2–17              |TX power in dBm                     |
-|`sleep`  |uint32|10     |1–3600            |Deep sleep seconds between cycles   |
-|`dwell`  |uint16|400    |100–5000          |RSSI scan dwell per frequency (ms)  |
-|`rssi`   |int8  |−90    |−120 to −40       |Detection threshold (dBm)           |
-|`mode`   |uint8 |0      |0=BEACON, 1=SEARCH|Last selected mode                  |
-|`aswitch`|bool  |false  |—                 |Auto-switch to BEACON if low battery|
-|`rep`    |uint8 |1      |1–5               |Message repeats per cycle           |
-|`egps`   |bool  |false  |—                 |Reserved: GPS coordinate append     |
-
-**Factory reset:** Hold both SW_MODE + SW_CONFIG at boot for 5 s. Clears all NVS keys and resets RTC variables.
-
------
-
-## 6. SPI Interface
-
-The SX1276 is connected via ESP32-C3 hardware SPI (HSPI peripheral).
-
-|SPI Parameter     |Value                      |
-|------------------|---------------------------|
-|Mode              |SPI Mode 0 (CPOL=0, CPHA=0)|
-|Clock frequency   |8 MHz (RadioLib default)   |
-|Bit order         |MSB first                  |
-|CS polarity       |Active LOW                 |
-|Max clock (SX1276)|10 MHz                     |
-
-**SPI initialisation in firmware:**
-
-```cpp
-SPIClass lora_spi(HSPI);
-lora_spi.begin(PIN_SPI_SCK, PIN_SPI_MISO, PIN_SPI_MOSI, PIN_LORA_CS);
-```
-
------
-
-## 7. Pin Assignment Table
-
-### Complete GPIO Map — ESP32-C3 SuperMini
-
-|GPIO   |Direction|Function         |Pull   |Notes                          |
-|-------|---------|-----------------|-------|-------------------------------|
-|GPIO 1 |Input    |SW_CONFIG button |Pull-up|Active LOW when pressed        |
-|GPIO 2 |Input    |SX1276 DIO0 (IRQ)|—      |TX/RX Done interrupt           |
-|GPIO 3 |Output   |SX1276 RESET     |—      |Active LOW, 100 µs pulse       |
-|GPIO 4 |Output   |SPI SCK          |—      |SX1276 clock                   |
-|GPIO 5 |Input    |SPI MISO         |—      |SX1276 data out                |
-|GPIO 6 |Output   |SPI MOSI         |—      |SX1276 data in                 |
-|GPIO 7 |Output   |SPI CS (NSS)     |—      |Active LOW chip select         |
-|GPIO 8 |Output   |LED_RED          |—      |BEACON mode indicator          |
-|GPIO 9 |Input    |SW_MODE / BOOT   |Pull-up|Active LOW; also ESP32 boot pin|
-|GPIO 10|Input    |SX1276 DIO1      |—      |RX timeout (SEARCH mode)       |
-|GPIO 20|Output   |LED_BLUE         |—      |SEARCH mode indicator          |
-
-**Note:** GPIO9 doubles as the ESP32-C3 BOOT pin. Holding it LOW during power-on forces the device into USB DFU bootloader mode. This is the same pin used as SW_MODE — holding it during normal operation is safe; holding it **at power-on** triggers bootloader entry. The firmware detects this as a long button hold only after setup() starts.
-
------
-
-## 8. Firmware Architecture
-
-### 8.1 Execution Flow
-
-```
-setup()
-  │
-  ├─ Serial.begin(115200)
-  ├─ g_bootCycle++
-  ├─ Print boot banner + diagnostics
-  ├─ pinMode() all GPIOs
-  ├─ attachInterrupt(SW_MODE, SW_CONFIG)
-  ├─ esp_task_wdt_init(30s)
-  ├─ Check both buttons → factoryReset() ?
-  ├─ loadConfig() from NVS
-  ├─ Check SW_CONFIG held → runConfigMode() ?
-  ├─ Restore g_currentMode from RTC RAM
-  │
-  └─ switch(g_currentMode)
-       ├─ MODE_BEACON    → runBeaconMode(false)
-       ├─ MODE_EMERGENCY → runBeaconMode(true)
-       ├─ MODE_SEARCH    → runSearchMode()
-       └─ MODE_CONFIG    → runConfigMode()
-```
-
-### 8.2 BEACON Mode Flow
-
-```
-runBeaconMode()
-  │
-  ├─ WiFi.mode(WIFI_OFF) + btStop()
-  ├─ g_txCycles++
-  │
-  └─ for fi in cfg.freqs[]:
-       ├─ initRadioOOK(freqs[fi], powerDbm)
-       │    └─ lora_spi.begin(...)
-       │    └─ radio.beginFSK(...)
-       │    └─ radio.setOOK(true)
-       │
-       ├─ for rep in repeatCount:
-       │    └─ transmitMessage(cfg.message)
-       │         └─ for each char: transmitMorseChar()
-       │              └─ txOn() / delay() / txOff()
-       │         └─ check g_modeButtonPressed → abort?
-       │
-       └─ radio.standby() + delay(50ms)
-  │
-  ├─ radio.sleep()
-  └─ esp_deep_sleep(sleepSec × 1e6)
-```
-
-### 8.3 SEARCH Mode Flow
-
-```
-runSearchMode()
-  │
-  ├─ WiFi.mode(WIFI_OFF) + btStop()
-  ├─ g_scanCycles++
-  │
-  └─ loop forever:
-       └─ for fi in cfg.freqs[]:
-            ├─ check buttons → mode switch?
-            ├─ initRadioFSK(freqs[fi])
-            ├─ radio.startReceive()
-            ├─ measure peak RSSI over dwellMs
-            ├─ radio.standby()
-            ├─ print ASCII RSSI bar to Serial
-            ├─ if rssi >= threshold:
-            │    └─ recordScanHit(freq, rssi)
-            │    └─ blinkLed(BLUE, 2–5 times)
-            └─ esp_task_wdt_reset()
-```
-
-### 8.4 Watchdog
-
-A 30-second hardware watchdog (`esp_task_wdt`) is enabled in setup(). `esp_task_wdt_reset()` is called:
-
-- Between each frequency in BEACON mode
-- Between each frequency in SEARCH mode
-- During button hold waits
-- In the CONFIG mode server loop (every cycle)
-
-If the device hangs for any reason, the WDT resets it within 30 seconds.
-
------
-
-## 9. Morse Code Reference
-
-### 9.1 Alphabet & Numbers
-
-|Char|Morse |Char|Morse |Char|Morse |
-|----|------|----|------|----|------|
-|A   |`.-`  |J   |`.---`|S   |`...` |
-|B   |`-...`|K   |`-.-` |T   |`-`   |
-|C   |`-.-.`|L   |`.-..`|U   |`..-` |
-|D   |`-..` |M   |`--`  |V   |`...-`|
-|E   |`.`   |N   |`-.`  |W   |`.--` |
-|F   |`..-.`|O   |`---` |X   |`-..-`|
-|G   |`--.` |P   |`.--.`|Y   |`-.--`|
-|H   |`....`|Q   |`--.-`|Z   |`--..`|
-|I   |`..`  |R   |`.-.` |    |      |
-
-|Char|Morse  |Char|Morse  |
-|----|-------|----|-------|
-|0   |`-----`|5   |`.....`|
-|1   |`.----`|6   |`-....`|
-|2   |`..---`|7   |`--...`|
-|3   |`...--`|8   |`---..`|
-|4   |`....-`|9   |`----.`|
-
-### 9.2 Timing at Common WPM Settings
-
-|WPM   |Unit (ms)|Dot (ms)|Dash (ms)|Inter-char (ms)|Word gap (ms)|
-|------|---------|--------|---------|---------------|-------------|
-|5     |240      |240     |720      |720            |1680         |
-|8     |150      |150     |450      |450            |1050         |
-|**13**|**92**   |**92**  |**277**  |**277**        |**646**      |
-|18    |67       |67      |200      |200            |467          |
-|25    |48       |48      |144      |144            |336          |
-|30    |40       |40      |120      |120            |280          |
-
-**“SOS” duration by WPM:**
-
-|WPM   |S (ms) |O (ms) |S (ms) |Total (ms)|
-|------|-------|-------|-------|----------|
-|8     |750    |1350   |750    |~3.6 s    |
-|**13**|**460**|**830**|**460**|**~2.7 s**|
-|18    |334    |600    |334    |~2.0 s    |
-
------
-
-## 10. Web Dashboard API
-
-The CONFIG mode web server exposes the following HTTP endpoints:
-
-|Method|Endpoint    |Description                              |Response          |
-|------|------------|-----------------------------------------|------------------|
-|`GET` |`/`         |Serve full dashboard HTML                |`text/html`       |
-|`GET` |`/config`   |Get current config as JSON               |`application/json`|
-|`GET` |`/status`   |Get runtime status (cycles, heap, uptime)|`application/json`|
-|`GET` |`/hits`     |Get scan hit history                     |`application/json`|
-|`GET` |`/clearhits`|Clear scan hit history                   |`text/plain "OK"` |
-|`GET` |`/test`     |Transmit single SOS test burst           |`text/plain "OK"` |
-|`GET` |`/testscan` |Scan all frequencies, return RSSI        |`application/json`|
-|`GET` |`/emergency`|Activate EMERGENCY mode and reboot       |`text/plain`      |
-|`POST`|`/save`     |Save config JSON body to NVS and reboot  |`text/plain "OK"` |
-|`GET` |`/*`        |Redirect to `/` (captive portal)         |`302 redirect`    |
-
-### POST /save — Request Body
+---
+
+## 2. Absolute Maximum Ratings
+
+| Parameter                     | Min    | Max     | Unit |
+|-------------------------------|--------|---------|------|
+| Supply voltage (VBUS / 5V in) | 4.5    | 5.5     | V    |
+| RA-02 VCC                     | 1.8    | **3.6** | V    |
+| GPIO voltage (ESP32-C3)       | −0.3   | 3.6     | V    |
+| Operating temperature         | −20    | +60     | °C   |
+| Storage temperature           | −40    | +85     | °C   |
+| TX power (SX1276)             | +2     | **+17** | dBm  |
+| OLED VCC (SSD1306)            | 1.65   | **3.5** | V    |
+| Audio output load impedance   | 16     | 600     | Ω    |
+
+> ⚠️ **Never connect RA-02 VCC or OLED VCC to 5 V / VBUS — permanent damage will result.**
+
+---
+
+## 3. Electrical Characteristics
+
+### 3.1 Power Supply
+
+| Parameter                          | Typical | Unit  | Conditions                            |
+|------------------------------------|---------|-------|---------------------------------------|
+| Battery voltage (18650 Li-ion)     | 3.7     | V     | Nominal                               |
+| ESP32-C3 LDO input (VBUS)          | 5.0     | V     | From TP4056 OUT+                      |
+| 3.3 V rail voltage                 | 3.30    | V     | AMS1117-3.3 internal LDO              |
+| 3.3 V rail output current (max)    | 800     | mA    | Limited by AMS1117-3.3                |
+
+### 3.2 Current Consumption
+
+| State                              | Typical | Unit | Notes                                    |
+|------------------------------------|---------|------|------------------------------------------|
+| Deep sleep (ESP32-C3 only)         | 10      | µA   | RTC RAM active, GPIOs held               |
+| BEACON TX active @ +17 dBm         | 120     | mA   | WiFi/BT disabled                         |
+| SEARCH scan (RX, no TX)            | 40      | mA   | WiFi/BT disabled                         |
+| CONFIG mode (WiFi AP active)       | 100     | mA   | No TX                                    |
+| EMERGENCY mode (continuous TX)     | 120     | mA   | No sleep                                 |
+| OLED SSD1306 (active, full white)  | 5       | mA   | At 3.3 V                                 |
+| OLED SSD1306 (disabled)            | 0.5     | mA   | Standby current                          |
+| Audio output (GPIO 18 PWM)         | 2       | mA   | Into 32 Ω load, 180/255 duty             |
+
+### 3.3 Battery Life Estimates (2000 mAh 18650, 20 °C)
+
+| Mode      | Sleep Interval | OLED  | Estimated Runtime |
+|-----------|----------------|-------|-------------------|
+| BEACON    | 10 s           | On    | ~70 hours         |
+| BEACON    | 10 s           | Off   | ~72 hours         |
+| BEACON    | 30 s           | On    | ~140 hours        |
+| BEACON    | 60 s           | On    | ~190 hours        |
+| SEARCH    | Continuous     | On    | ~48 hours         |
+| EMERGENCY | Continuous     | On    | ~15 hours         |
+
+> 💡 At −20 °C, expect 40–60% of nominal capacity from standard Li-ion. Use LiFePO4 for alpine cold-weather deployments.
+
+---
+
+## 4. RF Specifications
+
+### 4.1 Transmitter (SX1276 / RA-02)
+
+| Parameter                    | Value      | Unit    | Notes                              |
+|------------------------------|------------|---------|------------------------------------|
+| RF module                    | AI-Thinker RA-02 |     | SX1276 inside                      |
+| Frequency range              | 410–525    | MHz     | Hardware-limited by RA-02 filter   |
+| Modulation                   | OOK (CW)   | —       | On/Off Keying, AM-detectable       |
+| Output power range           | +2 to +17  | dBm     | SX1276 PA hardware limit           |
+| Default output power         | +17        | dBm     | ~50 mW                             |
+| Frequency accuracy           | ±10        | ppm     | TCXO not populated on RA-02        |
+| Antenna interface            | U.FL/IPEX  | —       | Spring antenna included; wire ANT pad recommended |
+| Harmonics                    | < −40      | dBc     | Manufacturer spec                  |
+| Spurious emissions           | < −50      | dBc     | Manufacturer spec                  |
+
+### 4.2 Receiver (SEARCH mode)
+
+| Parameter                    | Value   | Unit  | Notes                                   |
+|------------------------------|---------|-------|-----------------------------------------|
+| Receive mode                 | FSK RX  | —     | Used only to measure RSSI               |
+| RSSI measurement range       | −120 to −40 | dBm | SX1276 internal RSSI register          |
+| RSSI accuracy                | ±2      | dBm   | Typical at room temperature             |
+| Dwell time per frequency     | 100–5000 | ms   | Configurable                            |
+| Detection threshold (default)| −90     | dBm   | Configurable via dashboard              |
+| Signal classification WEAK   | −90 to −80 | dBm | Audio: 440 Hz slow beep                |
+| Signal classification MEDIUM | −80 to −60 | dBm | Audio: 880 Hz fast beep                |
+| Signal classification STRONG | ≥ −60   | dBm   | Audio: 1760 Hz continuous              |
+| Max simultaneous frequencies | 10      | —     | Scanned sequentially                    |
+
+### 4.3 Antenna
+
+| Configuration                      | Gain      | Notes                            |
+|------------------------------------|-----------|----------------------------------|
+| ¼-wave monopole, 17.3 cm wire      | ~0 dBi    | Recommended                      |
+| Helical coil, ~6 cm                | ~−2 dBi   | Compact option                   |
+| Ground plane added                 | +3 dBi    | PCB foil or copper tape          |
+| RA-02 spring antenna (stock)       | ~−3 dBi   | Functional, lower efficiency     |
+
+**Frequency / Antenna length reference:**
+
+| Frequency  | ¼-wave  | ½-wave  |
+|------------|---------|---------|
+| 433.5 MHz  | 17.3 cm | 34.6 cm |
+| 434.0 MHz  | 17.3 cm | 34.5 cm |
+| 868.0 MHz  | 8.6 cm  | 17.3 cm |
+| 915.0 MHz  | 8.2 cm  | 16.4 cm |
+
+---
+
+## 5. Morse / Timing Engine
+
+| Parameter             | Value              | Notes                              |
+|-----------------------|--------------------|------------------------------------|
+| Standard              | PARIS              | 50 units = 1 word                  |
+| WPM range             | 5–30               | Configurable                       |
+| Default WPM           | 13                 |                                    |
+| Unit duration         | `1200 / WPM` ms    | At 13 WPM: 92 ms                   |
+| Dot                   | 1 unit             |                                    |
+| Dash                  | 3 units            |                                    |
+| Intra-character gap   | 1 unit             | Between dots/dashes in same char   |
+| Inter-character gap   | 3 units            | Between letters                    |
+| Word gap              | 7 units            | Between words (space character)    |
+| "SOS" duration @ 13 WPM | ~2730 ms        |                                    |
+| Supported charset     | A–Z, 0–9, space    |                                    |
+| Max message length    | 64 chars           |                                    |
+| Mid-TX interrupt      | Yes                | Interrupt-driven, hardware level   |
+
+---
+
+## 6. Display — SSD1306 OLED
+
+| Parameter                | Value       | Notes                           |
+|--------------------------|-------------|---------------------------------|
+| Module                   | SSD1306     | 0.96" 128×64 px monochrome      |
+| Interface                | I2C         | 4-pin: VCC GND SCL SDA          |
+| I2C address              | 0x3C        | Some modules use 0x3D           |
+| I2C clock (SCL)          | GPIO 0      |                                 |
+| I2C data (SDA)           | GPIO 1      | **Moved from SW_CONFIG in v3.0**|
+| Refresh rate             | 250 ms      | Configurable via `OLED_REFRESH_MS` |
+| Supply voltage           | 3.3 V       | Internal boost converter to OLED panel VCC |
+| Current @ full brightness| ~5 mA       |                                 |
+| Current @ standby        | ~0.5 mA     |                                 |
+| Enable/disable           | NVS toggle  | `oledEnabled`                   |
+| Invert mode              | NVS toggle  | `oledInvert` — white on black   |
+
+**Screen layouts:**
+
+| Mode       | Layout                                                                  |
+|------------|-------------------------------------------------------------------------|
+| BOOT       | Logo + "AEGIS-BEACON v4.0", 2 s splash                                  |
+| BEACON     | Header `⬡ BEACON`, freq MHz, TX progress bar, message+WPM, cycle#, sleep timer |
+| SEARCH     | Header `◈ SEARCH`, freq, RSSI bar, last hit freq+dBm, total hits, time  |
+| EMERGENCY  | Full-screen inverted, large blinking `⚡SOS⚡`                           |
+| CONFIG     | SSID `AegisBeacon`, IP `192.168.4.1`, `SCAN TO CONFIG` hint             |
+
+---
+
+## 7. Audio Output
+
+| Parameter                 | Value          | Notes                                  |
+|---------------------------|----------------|----------------------------------------|
+| Output pin                | GPIO 18        | LEDC PWM channel 0                     |
+| PWM carrier frequency     | 40,000 Hz      | Above hearing range                    |
+| PWM resolution            | 8-bit          | 0–255 duty cycle                       |
+| Default volume            | 180            | ~70% PWM duty                          |
+| Series resistor           | 100 Ω          | Current limiting                       |
+| AC-coupling capacitor     | 10 µF          | Blocks DC bias from headphones         |
+| Compatible headphone Ω    | 16–600 Ω       | Standard 3.5mm wired                   |
+| Connector                 | 3.5mm TRRS     | Tip=audio, Ring1=GND, Sleeve=GND       |
+
+**Tone frequencies:**
+
+| Condition              | Frequency | Pattern                    |
+|------------------------|-----------|----------------------------|
+| Weak signal (SEARCH)   | 440 Hz    | 1 beep/s                   |
+| Medium signal (SEARCH) | 880 Hz    | 4 beeps/s                  |
+| Strong signal (SEARCH) | 1760 Hz   | Continuous                 |
+| Morse TX (BEACON)      | 600 Hz    | Click stream, sync with TX |
+| No signal              | —         | Silence                    |
+
+---
+
+## 8. GPIO Pin Map
+
+| GPIO | Direction | Function                                         | Notes                              |
+|------|-----------|--------------------------------------------------|------------------------------------|
+| 0    | Output    | I2C SCL → OLED SCL                               |                                    |
+| 1    | Bidir     | I2C SDA → OLED SDA                               | **Was SW_CONFIG in v3.0**          |
+| 2    | Input     | SX1276 DIO0 (TX/RX done IRQ)                     | Interrupt-driven                   |
+| 3    | Output    | SX1276 RESET (active LOW)                        |                                    |
+| 4    | Output    | SPI SCK                                          |                                    |
+| 5    | Input     | SPI MISO                                         |                                    |
+| 6    | Output    | SPI MOSI                                         |                                    |
+| 7    | Output    | SPI CS (NSS, active LOW)                         |                                    |
+| 8    | Output    | LED_RED (BEACON indicator)                       | Via 330 Ω to GND                   |
+| 9    | Input     | SW_MODE / BOOT                                   | 10 kΩ pull-up, active LOW          |
+| 10   | Input     | SX1276 DIO1 (RX timeout)                         |                                    |
+| 18   | Output    | PWM audio → 100 Ω → 10 µF → 3.5mm jack          | LEDC ch0, 40 kHz carrier           |
+| 20   | Output    | LED_BLUE (SEARCH indicator)                      | Via 330 Ω to GND                   |
+| 21   | Input     | SW_CONFIG                                        | **Moved from GPIO 1 in v4.0**      |
+
+---
+
+## 9. SPI Bus (RA-02)
+
+| Signal  | GPIO | Speed      | Mode   |
+|---------|------|------------|--------|
+| SCK     | 4    | ≤ 10 MHz   | SPI 0  |
+| MOSI    | 6    |            |        |
+| MISO    | 5    |            |        |
+| CS/NSS  | 7    | Active LOW |        |
+
+---
+
+## 10. NVS Configuration Schema
+
+All user settings are stored in ESP32 Non-Volatile Storage under the namespace `aegis`.
+
+| Key               | Type    | Default      | Range / Notes                          |
+|-------------------|---------|--------------|----------------------------------------|
+| `freqCount`       | uint8   | 1            | 1–10                                   |
+| `freq0`…`freq9`   | float   | 433.500      | MHz, one key per frequency slot        |
+| `message`         | string  | "SOS"        | Max 64 chars, A–Z 0–9 space            |
+| `wpm`             | uint8   | 13           | 5–30                                   |
+| `powerDbm`        | int8    | 17           | +2 to +17 dBm                          |
+| `sleepSec`        | uint32  | 10           | 1–3600 s                               |
+| `scanDwellMs`     | uint16  | 400          | 100–5000 ms                            |
+| `rssiThreshold`   | int8    | −90          | −120 to −40 dBm                        |
+| `lastMode`        | uint8   | 0 (BEACON)   | 0=BEACON 1=SEARCH 2=CONFIG 3=EMERGENCY |
+| `autoSwitch`      | bool    | false        | Auto-switch to BEACON on low battery   |
+| `repeatCount`     | uint8   | 1            | 1–5                                    |
+| `audioVolume`     | uint8   | 180          | 0–255 PWM duty *(new in v4.0)*         |
+| `audioEnabled`    | bool    | true         | Master audio toggle *(new in v4.0)*    |
+| `oledEnabled`     | bool    | true         | OLED on/off *(new in v4.0)*            |
+| `oledInvert`      | bool    | false        | Invert display *(new in v4.0)*         |
+| `emergencyGPS`    | bool    | false        | Reserved for GPS coordinate append     |
+
+**Fail-safe:** If NVS is empty, corrupt, or missing any key, the firmware falls back to hardcoded defaults (listed above). This ensures the device is always functional even after a factory reset or first flash.
+
+---
+
+## 11. RTC RAM State (Deep Sleep Persistent)
+
+| Variable             | Type         | Notes                                         |
+|----------------------|--------------|-----------------------------------------------|
+| `g_bootCycle`        | uint32       | Increments every boot, survives deep sleep    |
+| `g_txCycles`         | uint32       | Total TX cycles since manufacture             |
+| `g_scanCycles`       | uint32       | Total scan cycles                             |
+| `g_scanHits[20]`     | ScanHit[]    | Rolling log of last 20 signal detections      |
+| `g_scanHitCount`     | uint8        | Current number of entries in g_scanHits       |
+| `g_currentMode`      | DeviceMode   | Active mode, restored after deep sleep        |
+| `g_emergencyActive`  | bool         | Emergency flag — persists across reboots      |
+
+**ScanHit structure:**
+
+| Field       | Type    | Description                       |
+|-------------|---------|-----------------------------------|
+| `freq`      | float   | Frequency in MHz                  |
+| `rssi`      | int16   | RSSI in dBm                       |
+| `timestamp` | uint32  | `millis()` at time of detection   |
+| `label`     | char[12]| Signal class: WEAK/MEDIUM/STRONG  |
+
+---
+
+## 12. WiFi Dashboard API
+
+The device serves a REST-style HTTP API on `192.168.4.1` when in CONFIG mode.
+
+| Endpoint           | Method | Description                                    |
+|--------------------|--------|------------------------------------------------|
+| `/`                | GET    | Dashboard HTML (single-page app)               |
+| `/api/config`      | GET    | Returns full config as JSON                    |
+| `/api/config`      | POST   | Saves JSON config to NVS and reboots           |
+| `/api/status`      | GET    | Returns device status (heap, cycles, uptime)   |
+| `/api/scan`        | GET    | Performs one scan pass, returns RSSI per freq  |
+| `/api/tx`          | GET    | Sends one SOS burst on first configured freq   |
+| `/api/emergency`   | POST   | Sets EMERGENCY mode flag and reboots           |
+| `/api/hits`        | GET    | Returns the last 20 scan hits as JSON          |
+| `/api/hits/clear`  | POST   | Clears RTC RAM scan hit log                    |
+
+**Example `/api/config` GET response:**
 
 ```json
 {
-  "message":    "SOS",
-  "wpm":        13,
-  "power":      17,
-  "sleep":      10,
-  "dwell":      400,
-  "rssiThresh": -90,
-  "repeat":     1,
-  "autoSwitch": false,
-  "mode":       "BEACON",
-  "freqs":      [433.500, 434.500, 868.000]
+  "freqs": [433.5, 434.5],
+  "message": "SOS",
+  "wpm": 13,
+  "powerDbm": 17,
+  "sleepSec": 10,
+  "scanDwellMs": 400,
+  "rssiThreshold": -90,
+  "repeatCount": 1,
+  "audioVolume": 180,
+  "audioEnabled": true,
+  "oledEnabled": true,
+  "oledInvert": false,
+  "autoSwitch": false
 }
 ```
 
-### GET /status — Response
+---
 
-```json
-{
-  "bootCycle":  42,
-  "txCycles":   37,
-  "scanCycles": 5,
-  "scanHits":   3,
-  "freeHeap":   296420,
-  "uptime":     185432,
-  "mode":       "BEACON",
-  "emergency":  false
-}
-```
+## 13. Operating Modes Summary
 
-### GET /hits — Response
+| Mode       | TX | RX | WiFi | OLED layout         | Audio                | Deep sleep     |
+|------------|----|----|------|---------------------|----------------------|----------------|
+| BEACON     | ✅  | ❌  | Off  | Freq + TX progress  | Morse click stream   | Yes (configurable) |
+| SEARCH     | ❌  | ✅  | Off  | RSSI bar + hits     | Variable pitch tone  | No (continuous) |
+| CONFIG     | ❌  | ❌  | AP   | SSID + IP           | Silent               | No             |
+| EMERGENCY  | ✅  | ❌  | Off  | Full-screen SOS     | Continuous 1760 Hz   | No             |
 
-```json
-{
-  "hits": [
-    { "freq": 433.5, "rssi": -87, "label": "MEDIUM", "ts": 42381 },
-    { "freq": 434.5, "rssi": -62, "label": "STRONG", "ts": 85210 }
-  ]
-}
-```
+---
 
------
+## 14. Button Logic
 
-## 11. Error Codes
+| Button      | GPIO | Press type    | Duration   | Action                                  |
+|-------------|------|---------------|------------|-----------------------------------------|
+| SW_MODE     | 9    | Short press   | < 2000 ms  | Toggle BEACON ↔ SEARCH                  |
+| SW_MODE     | 9    | Long press    | ≥ 2000 ms  | Activate EMERGENCY mode                 |
+| SW_CONFIG   | 21   | Short press   | < 3000 ms  | Print full status to Serial             |
+| SW_CONFIG   | 21   | Long press    | ≥ 3000 ms  | Launch WiFi AP + dashboard              |
+| Both        | 9+21 | Both at boot  | ≥ 5000 ms  | Factory reset (NVS wipe + reboot)       |
 
-### RadioLib State Codes
+Debounce: 50 ms hardware debounce. Interrupts: GPIO change interrupt, fires immediately.
 
-|Code|Constant                  |Meaning               |Fix                         |
-|----|--------------------------|----------------------|----------------------------|
-|0   |`RADIOLIB_ERR_NONE`       |Success               |—                           |
-|−1  |`ERR_UNKNOWN`             |Unknown error         |Check hardware              |
-|−2  |`ERR_CHIP_NOT_FOUND`      |SX1276 not responding |Check SPI wiring; verify VCC|
-|−7  |`ERR_SPI_CMD_TIMEOUT`     |SPI timeout           |Check solder joints on RA-02|
-|−100|`ERR_INVALID_FREQUENCY`   |Frequency out of range|Use 137–1020 MHz            |
-|−102|`ERR_INVALID_OUTPUT_POWER`|Power out of range    |Use 2–17 dBm for RA-02      |
+---
 
-### Firmware Debug Codes (Serial Log)
+## 15. Firmware Build Parameters
 
-|Message                        |Severity|Cause                        |Action                      |
-|-------------------------------|--------|-----------------------------|----------------------------|
-|`NVS empty or corrupt`         |WARN    |First boot / factory reset   |Normal — configure via AP   |
-|`Radio init FAILED`            |ERROR   |SPI failure                  |Check wiring table §7       |
-|`TX interrupted by MODE button`|WARN    |Button pressed mid-TX        |Intentional                 |
-|`EMERGENCY SOS activated`      |WARN    |Long button press / dashboard|Intentional                 |
-|`Config AP timeout`            |WARN    |No connection in 5 min       |Normal — rebooting to beacon|
-|`loop() called unexpectedly`   |ERROR   |Firmware logic error         |Check for infinite loop     |
+| Parameter              | Value                   | Notes                            |
+|------------------------|-------------------------|----------------------------------|
+| Target MCU             | ESP32-C3                |                                  |
+| Framework              | Arduino / PlatformIO    |                                  |
+| CPU frequency          | 160 MHz (default)       | 80 MHz tested in CI matrix       |
+| Flash size             | 4 MB                    |                                  |
+| Serial baud rate       | 115200                  | 8N1                              |
+| Watchdog timeout       | 30 s                    | Hardware WDT via esp_task_wdt    |
+| USB CDC on boot        | Enabled                 | Required for serial over USB-C   |
 
------
+**Library dependencies:**
 
-## 12. Mechanical Specification
+| Library                  | Min version | Source                    |
+|--------------------------|-------------|---------------------------|
+| RadioLib                 | 6.0.0       | jgromes/RadioLib          |
+| ArduinoJson              | 7.0.0       | bblanchon/ArduinoJson     |
+| Adafruit SSD1306         | 2.5.0       | adafruit/Adafruit SSD1306 |
+| Adafruit GFX Library     | 1.11.0      | adafruit/Adafruit GFX     |
 
-|Parameter                        |Value                             |
-|---------------------------------|----------------------------------|
-|Recommended enclosure            |Hammond 1551 (60 × 35 × 20 mm)    |
-|PCB area (estimated)             |55 × 30 mm                        |
-|Total weight (incl. 18650)       |~50 g                             |
-|IP rating (with sealed enclosure)|IP54 (splash-proof minimum)       |
-|Operating temperature            |−20 °C to +60 °C (Li-ion limited) |
-|Cold-weather recommendation      |LiFePO4 18650 for −30 °C operation|
+---
 
------
+## 16. Regulatory Notes
 
-## 13. Revision History
+| Region        | Frequency band | Status            | Notes                                        |
+|---------------|----------------|-------------------|----------------------------------------------|
+| EU / UK       | 433.050–434.790 MHz | License-free | EN 300 220 / SRD band, ≤ 10 mW ERP recommended |
+| Australia/NZ  | 433 MHz ISM    | License-free      | ACMA Class licence                           |
+| North America | 433 MHz ISM    | Amateur or Part 15| Check FCC Part 15 or amateur licence         |
+| North America | 915 MHz ISM    | License-free      | Part 15 ISM band                             |
 
-|Version  |Date    |Changes                                                                                                                                                   |
-|---------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-|**3.0.0**|May 2025|Dual-mode BEACON/SEARCH; interrupt-driven buttons; emergency mode; full dashboard with scan history; watchdog; RTC state persistence; verbose debug system|
-|2.0.0    |Apr 2025|Full serial debug system; minimal BOM (ESP32-C3 SuperMini); updated to RA-02 module                                                                       |
-|1.0.0    |Mar 2025|Initial release; BEACON-only; ESP32-WROOM-32E; basic dashboard                                                                                            |
+> This device is an experimental emergency tool, not a certified distress beacon. In genuine life-threatening emergencies, use certified PLB/EPIRB equipment alongside this device. Always verify local regulations before operation.
 
------
+---
 
-## 14. References
+## 17. Enclosure
 
-|Resource                    |URL                                                                                                   |
-|----------------------------|------------------------------------------------------------------------------------------------------|
-|SX1276 Datasheet            |https://www.semtech.com/uploads/documents/DS_SX1276-7-8-9_W_APP_V7.pdf                                |
-|ESP32-C3 Technical Reference|https://www.espressif.com/sites/default/files/documentation/esp32-c3_technical_reference_manual_en.pdf|
-|RadioLib Library            |https://github.com/jgromes/RadioLib                                                                   |
-|ArduinoJson Library         |https://arduinojson.org                                                                               |
-|AI-Thinker RA-02 Datasheet  |http://wiki.ai-thinker.com/lora/ra-02                                                                 |
-|TP4056 Datasheet            |https://dlnmh9ip6v2uc.cloudfront.net/datasheets/Prototyping/TP4056.pdf                                |
-|PARIS Morse Timing Standard |https://en.wikipedia.org/wiki/Morse_code#Timing                                                       |
-|ISM Band Regulations EU     |https://www.etsi.org/deliver/etsi_en/300200_300299/30022002/03.02.01_60/en_30022002v030201p.pdf       |
+| Parameter           | Value                               |
+|---------------------|-------------------------------------|
+| Recommended enclosure | Hammond 1593K (80×40×20 mm)       |
+| Alternative         | 3D-printed PLA, design TBD          |
+| Required cutouts    | OLED window (28×13 mm), USB-C port, 3.5mm jack, 2× 6mm buttons, LED holes |
+| Antenna exit        | Top or side, vertical orientation   |
+| Estimated volume    | ~64 cm³                             |
+| Fits 18650 cell     | Yes (requires spring/clip holder)   |
 
------
+---
 
-*Aegis-Beacon v3.0 — Technical Datasheet — Revision 3.0.0 — May 2025*  
-*MIT License — See LICENSE file for full terms*
+## 18. Changelog
+
+| Version | Date    | Changes                                                                               |
+|---------|---------|---------------------------------------------------------------------------------------|
+| v4.0    | 2026    | Added SSD1306 OLED display (GPIO 0/1); added 3.5mm audio jack (GPIO 18); SW_CONFIG moved from GPIO 1 to GPIO 21; new audio/OLED NVS keys; new `[OLED]` and `[AUDIO]` serial log tags; BOM updated ~$12–14 |
+| v3.0    | 2025    | Initial public release: ESP32-C3 + SX1276, WiFi dashboard, deep sleep, frequency hopping, NVS config, RTC RAM state, CI/CD pipeline |
+
+---
+
+*MIT License — Copyright © 2026 Leonardo Galli*  
+*https://github.com/Leo-Galli/Aegis-Beacon*
