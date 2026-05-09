@@ -8,11 +8,11 @@
 // ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝╚══════╝    ╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝╚═╝  ╚═══╝
 //
 // =============================================================================
-//  PROJECT   : Aegis-Beacon v5.1 — Dual-Mode Avalanche Rescue System
+//  PROJECT   : Aegis-Beacon v5.2 — Dual-Mode Avalanche Rescue System
 //              SSD1309 2.42" OLED (SPI/U8g2) | GPS payload | Pot controls
 //  MODES     : BEACON (TX SOS + name + GPS coords) ←→ SEARCH (scan + audio)
 //  TARGET HW : ESP32 DevKit V1 (30-pin)
-//              + RA-02 SX1276 (433MHz)
+//              + Ebyte E22-400M30S / LLCC68 SX1262 (433MHz)
 //              + SSD1309 2.42" 128×64 OLED (7-pin SPI)
 //              + NEO-6M GPS module (UART)
 //              + 2× 10kΩ potentiometer (volume, WPM)
@@ -29,7 +29,8 @@
 // │Ref │ Part                         │ Cost USD │ Notes                      │
 // ├────┼──────────────────────────────┼──────────┼──────────────────────────  │
 // │ U1 │ ESP32 DevKit V1 (30-pin)     │  $3.00   │ Built-in USB+LDO           │
-// │ U2 │ AI-Thinker RA-02 (SX1276)    │  $2.50   │ 433MHz, spring antenna     │
+// │ U2 │ Ebyte E22-400M30S (SX1262)   │  $5.50   │ 433MHz, 30dBm, SMA ant     │
+// │    │ (or any SX1262/LLCC68 module)│          │ BUSY pin required          │
 // │ U3 │ SSD1309 2.42" OLED 128×64    │  $3.50   │ SPI 7-pin                  │
 // │ U4 │ NEO-6M GPS module            │  $4.50   │ UART 9600 baud, ceramic ant│
 // │ RV1│ 10kΩ potentiometer (×2)      │  $0.40   │ Volume + WPM knobs         │
@@ -47,11 +48,41 @@
 // │ANT │ 17.3cm wire                  │  $0.00   │ ¼-wave 433MHz              │
 // │BOX │ Hammond 1593L / 3D PLA       │  $3.00   │ 100×60×25mm (GPS fits too) │
 // ├────┴──────────────────────────────┼──────────┼──────────────────────────  │
-// │                            TOTAL  │ ~$20-24  │                            │
+// │                            TOTAL  │ ~$23-28  │                            │
 // └───────────────────────────────────┴──────────┴─────────────────────────── ┘
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
-// │  OLED WIRING — SSD1309 2.42" SPI 7-pin ↔ ESP32 DevKit V1                 │
+// │  RADIO WIRING — SX1262 (Ebyte E22-400M30S) ↔ ESP32 DevKit V1 (VSPI)      │
+// ├────────────────┬─────────────────┬─────────────────────────────────────  │
+// │  SX1262 Pin    │  ESP32 GPIO     │  Notes                                │
+// ├────────────────┼─────────────────┼─────────────────────────────────────  │
+// │  VCC           │  3V3            │  3.3V only                            │
+// │  GND           │  GND            │                                       │
+// │  SCK           │  GPIO 18        │  VSPI SCK                             │
+// │  MISO          │  GPIO 19        │  VSPI MISO                            │
+// │  MOSI          │  GPIO 23        │  VSPI MOSI                            │
+// │  NSS / CS      │  GPIO 5         │  Chip Select (active LOW)             │
+// │  RESET         │  GPIO 14        │  Hardware reset (active LOW)          │
+// │  BUSY          │  GPIO 21        │  BUSY output — MUST be connected      │
+// │  DIO1          │  GPIO 2         │  IRQ — TX/RX done, timeout            │
+// │  TXEN          │  -1 (N/C)       │  TX enable — pulled HI internally     │
+// │                │                 │  on E22; pass -1 to RadioLib          │
+// │  RXEN          │  -1 (N/C)       │  RX enable — same as above            │
+// └────────────────┴─────────────────┴─────────────────────────────────────  ┘
+//
+//  CRITICAL — SX1262 vs SX1276 differences:
+//  1. BUSY pin is MANDATORY. The SX1262 holds BUSY HIGH while processing any
+//     command. RadioLib polls BUSY before every SPI transaction. If BUSY is
+//     not wired, all radio operations will hang or fail silently.
+//  2. DIO1 is the main IRQ line (was DIO0 on SX1276). Wire DIO1, not DIO0.
+//  3. SX1262 does NOT support OOK modulation. Morse keying is implemented via
+//     manual FSK carrier on/off: txOn() calls transmitDirect() (continuous
+//     unmodulated carrier), txOff() calls standby(). This produces a clean
+//     CW-style signal identical to OOK from the receiver's perspective.
+//  4. Maximum output power: SX1262 supports up to +22 dBm (E22-400M30S: 30
+//     dBm with onboard PA). RadioLib caps at 22 dBm; module PA adds the rest.
+//  5. Frequency accuracy is better than SX1276: TCXO on E22 modules.
+//  6. Current draw in RX: ~5 mA (vs ~12 mA for SX1276) — better for battery.
 // ├────────────────┬─────────────────┬─────────────────────────────────────  │
 // │  OLED Pin      │  ESP32 GPIO     │  Notes                                │
 // ├────────────────┼─────────────────┼─────────────────────────────────────  │
@@ -112,20 +143,21 @@
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
-// │  COMPLETE PIN MAP — ESP32 DevKit V1 (30-pin) v5.1                        │
+// │  COMPLETE PIN MAP — ESP32 DevKit V1 (30-pin) v5.2                        │
 // ├────────────┬───────────────────────────────────────────────────────────  │
-// │  GPIO  2   │  SX1276 DIO0 (TX/RX Done IRQ)                               │
+// │  GPIO  2   │  SX1262 DIO1 (TX/RX Done / Timeout IRQ)                     │
 // │  GPIO  4   │  OLED RESET                                                 │
-// │  GPIO  5   │  SPI CS → RA-02 NSS (VSPI)                                  │
+// │  GPIO  5   │  SX1262 NSS/CS (VSPI, active LOW)                           │
 // │  GPIO 12   │  GPS TX ← ESP32 Serial2 TX                                  │
 // │  GPIO 13   │  OLED SDA (D1/MOSI) — software SPI                          │
-// │  GPIO 14   │  SX1276 RESET                                               │
+// │  GPIO 14   │  SX1262 RESET (active LOW)                                  │
 // │  GPIO 15   │  OLED SCK (D0) — software SPI                               │
 // │  GPIO 16   │  OLED DC (Data/Command)                                     │
 // │  GPIO 17   │  OLED CS (Chip Select)                                      │
-// │  GPIO 18   │  SPI SCK → RA-02 SCK (VSPI)                                 │
-// │  GPIO 19   │  SPI MISO ← RA-02 MISO (VSPI)                               │
-// │  GPIO 23   │  SPI MOSI → RA-02 MOSI (VSPI)                               │
+// │  GPIO 18   │  SPI SCK → SX1262 SCK (VSPI)                                │
+// │  GPIO 19   │  SPI MISO ← SX1262 MISO (VSPI)                              │
+// │  GPIO 21   │  SX1262 BUSY ← (input, must be wired!)                      │
+// │  GPIO 23   │  SPI MOSI → SX1262 MOSI (VSPI)                              │
 // │  GPIO 25   │  DAC1 audio output → 100Ω → 10µF → 3.5mm jack TIP           │
 // │  GPIO 26   │  LED_BLUE (SEARCH mode indicator, 330Ω)                     │
 // │  GPIO 27   │  LED_RED  (BEACON mode indicator, 330Ω)                     │
@@ -233,7 +265,7 @@ void dbSep(const char* lbl = nullptr) {
 void dbBanner(const char* mode) {
   Serial.println(C_BOLD C_CYAN
     "\n╔══════════════════════════════════════════════════════════╗\n"
-    "║  ⬡  AEGIS-BEACON v5.1 — GPS + POT CONTROLS + SSD1309    ║\n"
+    "║  ⬡  AEGIS-BEACON v5.2 — SX1262 + GPS + POT + SSD1309    ║\n"
     "║      https://github.com/Leo-Galli/Aegis-Beacon           ║\n"
     "╚══════════════════════════════════════════════════════════╝" C_RESET);
   Serial.printf(C_YELLOW "    Active mode: %s\n\n" C_RESET, mode);
@@ -243,14 +275,19 @@ void dbBanner(const char* mode) {
 // HARDWARE PINS  (Standard ESP32 DevKit V1 — 30-pin)
 // =============================================================================
 
-// ── SPI Radio (RA-02 SX1276) — VSPI ─────────────────────────────────────────
+// ── SPI Radio (SX1262 / Ebyte E22-400M30S) — VSPI ───────────────────────────
+// SX1262 requires a BUSY pin — RadioLib polls it before every SPI transfer.
+// DIO1 is the primary IRQ line on SX1262 (was DIO0 on SX1276).
+// TXEN and RXEN are pulled internally on E22 modules — pass -1 (not wired).
 #define PIN_SPI_SCK    18
 #define PIN_SPI_MISO   19
 #define PIN_SPI_MOSI   23
 #define PIN_LORA_CS    5
 #define PIN_LORA_RST   14
-#define PIN_LORA_DIO0  2
-#define PIN_LORA_DIO1  -1
+#define PIN_LORA_BUSY  21   // MANDATORY on SX1262 — do not leave unconnected
+#define PIN_LORA_DIO1  2    // Main IRQ (TX done, RX done, timeout)
+#define PIN_LORA_TXEN  -1   // TX enable — N/C on E22 (internal pull)
+#define PIN_LORA_RXEN  -1   // RX enable — N/C on E22 (internal pull)
 
 // ── OLED SSD1309 2.42" — software SPI (U8g2) ────────────────────────────────
 #define PIN_OLED_SCK   15
@@ -438,8 +475,12 @@ RTC_DATA_ATTR bool       g_rtcFixValid    = false;
 // =============================================================================
 SPIClass lora_spi(VSPI);
 
-SX1276 radio = new Module(PIN_LORA_CS, PIN_LORA_DIO0, PIN_LORA_RST,
-                           PIN_LORA_DIO1, lora_spi);
+// SX1262 RadioLib constructor:
+// SX1262(Module* mod) where Module takes:
+//   (cs, irq/DIO1, reset, busy, spi)
+// TXEN and RXEN are set via setRfSwitchPins() if needed; -1 = not used.
+SX1262 radio = new Module(PIN_LORA_CS, PIN_LORA_DIO1, PIN_LORA_RST,
+                           PIN_LORA_BUSY, lora_spi);
 
 // U8g2: SSD1309 2.42" 128×64 — full-frame buffer, software SPI
 U8G2_SSD1309_128X64_NONAME0_F_4W_SW_SPI u8g2(
@@ -718,7 +759,7 @@ void oledSplash() {
   u8g2.setFont(u8g2_font_logisoso24_tf);
   u8g2.drawStr(4, 2, "AEGIS");
   u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(88, 2, "v5.1");
+  u8g2.drawStr(88, 2, "v5.2");
   u8g2.drawHLine(0, 30, 128);
   u8g2.setFont(u8g2_font_7x13_tf);
   u8g2.drawStr(10, 33, "RESCUE BEACON");
@@ -1211,27 +1252,88 @@ void factoryReset() {
 }
 
 // =============================================================================
-// RADIO INIT
+// RADIO INIT  (SX1262)
 // =============================================================================
+// SX1262 does NOT have hardware OOK. Morse CW keying is achieved by:
+//   txOn()  → radio.transmitDirect()  — continuous unmodulated FSK carrier
+//   txOff() → radio.standby()         — carrier off
+// This is equivalent to OOK from the receiver's perspective.
+// The FSK deviation is set very narrow (0.6 kHz) so the carrier sits tightly
+// on the centre frequency with no modulation; transmitDirect() holds it there.
+//
+// beginFSK() parameters for SX1262:
+//   freq       — centre frequency (MHz)
+//   br         — bit rate (kbps)  → 0.6 (slowest; not used for data TX here)
+//   freqDev    — frequency deviation (kHz) → 0.6 (minimum practical)
+//   rxBw       — RX bandwidth (kHz) → 9.7 (narrowest for scan sensitivity)
+//   pwr        — output power (dBm) → up to 22 (RadioLib limit; E22 PA adds more)
+//   preambleLen→ 16
+//   tcxoVoltage→ 1.6 (V) for E22 TCXO; set 0.0 if your module has no TCXO
+//   useRegulatorLDO → false (use DC-DC — lower current)
+// =============================================================================
+
+static bool radioInitialised = false;  // track if SPI already started
+
+static void ensureSpiStarted() {
+  if (!radioInitialised) {
+    lora_spi.begin(PIN_SPI_SCK, PIN_SPI_MISO, PIN_SPI_MOSI, PIN_LORA_CS);
+    radioInitialised = true;
+  }
+}
+
 bool initRadioOOK(float freqMHz, int8_t powerDbm) {
-  lora_spi.begin(PIN_SPI_SCK, PIN_SPI_MISO, PIN_SPI_MOSI, PIN_LORA_CS);
-  int s = radio.beginFSK(freqMHz, 1.2f, 5.0f, 125.0f, powerDbm, 16, false);
+  LOG_INFO("SX1262 CW TX init: %.3f MHz @ %d dBm", freqMHz, powerDbm);
+  ensureSpiStarted();
+
+  // Clamp power to SX1262 RadioLib maximum
+  int8_t pwr = constrain(powerDbm, -9, 22);
+
+  int s = radio.beginFSK(
+    freqMHz,   // frequency
+    0.6f,      // bit rate kbps (irrelevant for carrier-only keying)
+    0.6f,      // freq deviation kHz (minimal — keeps carrier narrow)
+    9.7f,      // RX bandwidth kHz
+    pwr,       // output power dBm
+    16,        // preamble length
+    1.6f,      // TCXO voltage (V) — use 0.0 if no TCXO on your module
+    false      // use DC-DC regulator
+  );
+  LOG_RF("beginFSK state=%d", s);
+
   if (s != RADIOLIB_ERR_NONE) {
-    LOG_ERR("Radio OOK init FAILED: %d", s);
-    oledMessage("RADIO ERROR", "Check SPI wiring");
+    LOG_ERR("SX1262 TX init FAILED: %d (CS=GPIO%d RST=GPIO%d BUSY=GPIO%d DIO1=GPIO%d)",
+            s, PIN_LORA_CS, PIN_LORA_RST, PIN_LORA_BUSY, PIN_LORA_DIO1);
+    oledMessage("RADIO ERROR", "Check SX1262 wiring", "BUSY=GPIO21 DIO1=GPIO2");
     return false;
   }
-  s = radio.setOOK(true);
-  if (s != RADIOLIB_ERR_NONE) { LOG_ERR("OOK mode failed: %d", s); return false; }
-  radio.setOutputPower(powerDbm);
-  LOG_OK("Radio OOK: %.3f MHz @ %d dBm", freqMHz, powerDbm);
+
+  // Set TXEN/RXEN RF switch if your module needs it (E22 does not)
+  // radio.setRfSwitchPins(PIN_LORA_RXEN, PIN_LORA_TXEN);
+
+  LOG_OK("SX1262 CW TX ready: %.3f MHz @ %d dBm", freqMHz, pwr);
   return true;
 }
 
 bool initRadioFSK(float freqMHz) {
-  lora_spi.begin(PIN_SPI_SCK, PIN_SPI_MISO, PIN_SPI_MOSI, PIN_LORA_CS);
-  int s = radio.beginFSK(freqMHz, 1.2f, 5.0f, 250.0f, 2, 16, false);
-  if (s != RADIOLIB_ERR_NONE) { LOG_ERR("Radio FSK RX failed: %d", s); return false; }
+  LOG_INFO("SX1262 FSK RX init: %.3f MHz", freqMHz);
+  ensureSpiStarted();
+
+  int s = radio.beginFSK(
+    freqMHz,   // frequency
+    0.6f,      // bit rate kbps
+    0.6f,      // freq deviation kHz
+    9.7f,      // RX bandwidth — narrow for best sensitivity in scan mode
+    2,         // output power dBm (low — RX only)
+    16,        // preamble length
+    1.6f,      // TCXO voltage
+    false      // DC-DC regulator
+  );
+
+  if (s != RADIOLIB_ERR_NONE) {
+    LOG_ERR("SX1262 RX init FAILED: %d", s);
+    return false;
+  }
+  LOG_OK("SX1262 FSK RX ready: %.3f MHz", freqMHz);
   return true;
 }
 
@@ -1675,6 +1777,26 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
   </div>
 </div>
 
+<!-- ── RADIO ───────────────────────────────────────────────────────────── -->
+<div class="card alert">
+  <div class="ct"><span class="ct-dot"></span>RADIO (SX1262)</div>
+  <div class="form-row">
+    <label>TX POWER (dBm) — <span id="pwrVal2">17</span></label>
+    <input type="range" id="pwr2" min="-9" max="22" value="17" oninput="document.getElementById('pwrVal2').textContent=this.value;document.getElementById('pwr').value=this.value;document.getElementById('pwrVal').textContent=this.value">
+    <div class="info-box" style="margin-top:6px;">
+      SX1262 RadioLib range: −9 to +22 dBm.<br>
+      E22-400M30S onboard PA: up to +30 dBm.<br>
+      Emergency mode always uses +22 dBm.
+    </div>
+  </div>
+  <div class="info-box">
+    SCK=GPIO18  MISO=GPIO19  MOSI=GPIO23<br>
+    CS=GPIO5   RST=GPIO14   BUSY=GPIO21<br>
+    DIO1=GPIO2  TCXO=1.6V<br>
+    <span style="color:var(--a2)">⚠ BUSY pin must be wired or radio hangs</span>
+  </div>
+</div>
+
 <!-- ── DISPLAY ─────────────────────────────────────────────────────────── -->
 <div class="card">
   <div class="ct"><span class="ct-dot"></span>DISPLAY (SSD1309 2.42")</div>
@@ -1691,13 +1813,11 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
     </label>
   </div>
   <div class="info-box">
-    SCK=GPIO15  SDA=GPIO13<br>
-    RES=GPIO4   DC=GPIO16  CS=GPIO17<br>
-    Driver: U8g2 full-frame buffer, sw SPI
+    OLED: SSD1309 2.42" 128×64 (sw SPI)<br>
+    SCK=GPIO15  SDA=GPIO13  RES=GPIO4<br>
+    DC=GPIO16   CS=GPIO17<br>
+    Driver: U8g2 full-frame buffer
   </div>
-</div>
-
-<!-- ── DEVICE STATUS ───────────────────────────────────────────────────── -->
 <div class="card ok full">
   <div class="ct"><span class="ct-dot"></span>DEVICE STATUS</div>
   <div class="stat-grid" id="statGrid">
@@ -2338,18 +2458,22 @@ void loop() {
 // │  [AUDIO] Audio   [OLED ] Display  [BTN  ] Button  [CFG  ] NVS save       │
 // │  [MORSE] Per-symbol*  [RF   ] RadioLib code*   (* = DEBUG_VERBOSE 1)     │
 // │                                                                          │
-// │  TYPICAL HEALTHY BEACON LOG:                                             │
+// │  TYPICAL HEALTHY BEACON LOG (v5.2 SX1262):                               │
 // │   [GPS  ] Waiting for GPS fix (timeout 30s)...                           │
 // │   [GPS  ] Fix acquired: 45.53124  12.30456  sats=6                       │
 // │   [INFO ] Payload ready: "SOS DE MARIO ROSSI PSN N4553 E01230"           │
 // │   [POT  ] Vol pot → 2048 ADC → audioVolume=137                           │
 // │   [POT  ] WPM pot → 1500 ADC → wpm=18 (dot=66 ms)                        │
-// │   [OK   ] Radio OOK: 433.500 MHz @ 17 dBm                                │
+// │   [OK   ] SX1262 CW TX ready: 433.500 MHz @ 17 dBm                       │
 // │   [OK   ] TX done: 31 chars in 12400 ms                                  │
 // │   [INFO ] Deep sleep 10 s...                                             │
+// │                                                                          │
+// │  SX1262 WIRING QUICK REFERENCE:                                          │
+// │   SCK=18  MISO=19  MOSI=23  CS=5                                         │
+// │   RST=14  BUSY=21  DIO1=2  (TXEN/RXEN=N/C on E22)                        │
+// │   BUSY must be wired — RadioLib polls it before every SPI transfer       │
 // │                                                                          │
 // │  POT WIRING QUICK REFERENCE:                                             │
 // │   Volume: 3V3 → RV1-pin1 | wiper → GPIO35 | GND → RV1-pin3               │
 // │   WPM   : 3V3 → RV2-pin1 | wiper → GPIO36 | GND → RV2-pin3               │
-// │   (If no GPS: WPM pot can use GPIO34 instead of GPIO36)                  │
 // └──────────────────────────────────────────────────────────────────────────┘
