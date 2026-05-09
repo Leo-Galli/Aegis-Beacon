@@ -8,14 +8,14 @@
 // ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝╚══════╝    ╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝╚═╝  ╚═══╝
 //
 // =============================================================================
-//  PROJECT   : Aegis-Beacon v5.2 — Dual-Mode Avalanche Rescue System
-//              SSD1309 2.42" OLED (SPI/U8g2) | GPS payload | Pot controls
+//  PROJECT   : Aegis-Beacon v5.3 — Dual-Mode Avalanche Rescue System
+//              SSD1309 2.42" OLED (SPI/U8g2) | GPS payload | Button controls
 //  MODES     : BEACON (TX SOS + name + GPS coords) ←→ SEARCH (scan + audio)
 //  TARGET HW : ESP32 DevKit V1 (30-pin)
 //              + Ebyte E22-400M30S / LLCC68 SX1262 (433MHz)
 //              + SSD1309 2.42" 128×64 OLED (7-pin SPI)
 //              + NEO-6M GPS module (UART)
-//              + 2× 10kΩ potentiometer (volume, WPM)
+//              + 3× tactile buttons (MODE, ADJ-SELECT, ADJ-UP, ADJ-DN)
 //  REPO      : https://github.com/Leo-Galli/Aegis-Beacon
 //  FRAMEWORK : Arduino / PlatformIO
 //  DEPS      : RadioLib >= 6.x | ArduinoJson >= 7.x | U8g2 >= 2.34
@@ -37,7 +37,7 @@
 // │ B1 │ 18650 Li-ion 3.7V            │  $1.50   │ Any brand                  │
 // │ IC1│ TP4056 USB-C module          │  $0.50   │ Charge + protection        │
 // │ J1 │ 3.5mm TRRS audio jack        │  $0.30   │ Panel-mount, 4-pole        │
-// │ SW1│ Tactile switch 6×6mm (×2)    │  $0.10   │ MODE + CONFIG buttons      │
+// │ SW1│ Tactile switch 6×6mm (×4)    │  $0.20   │ MODE + SEL + UP + DN       │
 // │ C1 │ 100µF 10V electrolytic       │  $0.05   │ Bulk cap 3.3V              │
 // │ C2 │ 100nF ceramic 0805 (×2)      │  $0.04   │ Decoupling                 │
 // │ C3 │ 10µF 10V electrolytic        │  $0.03   │ Audio output filter        │
@@ -111,25 +111,21 @@
 //  up to GPS_FIX_TIMEOUT_S seconds at startup if GPS is enabled.
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
-// │  POTENTIOMETER WIRING — 10kΩ linear ↔ ESP32 DevKit V1 (ADC)              │
+// │  BUTTON CONTROLS — 3-button adjustment system ↔ ESP32 DevKit V1          │
 // ├────────────────┬─────────────────┬─────────────────────────────────────  │
-// │  Pot pin       │  Connection     │  Notes                                │
+// │  Button        │  ESP32 GPIO     │  Notes                                │
 // ├────────────────┼─────────────────┼─────────────────────────────────────  │
-// │  RV1 (Volume)  │                 │                                       │
-// │    Pin 1 (CW)  │  3V3            │  max voltage                          │
-// │    Pin 2 (wiper)│ GPIO 35 (ADC)  │  0–3.3V → 0–4095 (12-bit ADC1)        │
-// │    Pin 3 (CCW) │  GND            │  min voltage                          │
-// │  RV2 (WPM)     │                 │                                       │
-// │    Pin 1 (CW)  │  3V3            │                                       │
-// │    Pin 2 (wiper)│ GPIO 34 (ADC)  │  0–3.3V → WPM 5–40                    │
-// │    Pin 3 (CCW) │  GND            │                                       │
+// │  SW_MODE       │  GPIO 33        │  short=toggle mode, long2s=emergency  │
+// │  SW_SEL        │  GPIO 32        │  short=toggle VOL/WPM, long3s=config  │
+// │  SW_UP         │  GPIO 35        │  increment selected parameter         │
+// │  SW_DN         │  GPIO 34        │  decrement selected parameter         │
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
-//  IMPORTANT: GPIO34 doubles as GPS-RX AND WPM-pot wiper.
-//  If BOTH GPS and WPM-pot are installed, move the WPM pot to GPIO 36 (SVP).
-//  GPIO 35 and 36 are input-only ADC1 channels, ideal for potentiometers.
-//  ADC readings are smoothed with a 16-sample rolling average to avoid jitter.
-//  Pot changes take effect immediately: volume updates mid-tone, WPM updates
-//  between characters. No reboot needed.
+//  SW_UP and SW_DOWN use INPUT_PULLUP. Each press changes value by one step:
+//  Volume step: +/- 10 (range 20-255). WPM step: +/- 1 (range 5-40).
+//  Hold UP or DN for auto-repeat after 500 ms, every 150 ms.
+//  The selected parameter (VOL / WPM) is shown on the OLED status bar.
+//  GPIO 34 and 35 are input-only on ESP32 — suitable for button inputs
+//  with internal pullup and external 10kΩ pullup if needed.
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
 // │  AUDIO JACK WIRING — 3.5mm TRRS ↔ ESP32 DevKit V1                        │
@@ -143,7 +139,7 @@
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
-// │  COMPLETE PIN MAP — ESP32 DevKit V1 (30-pin) v5.2                        │
+// │  COMPLETE PIN MAP — ESP32 DevKit V1 (30-pin) v5.3                        │
 // ├────────────┬───────────────────────────────────────────────────────────  │
 // │  GPIO  2   │  SX1262 DIO1 (TX/RX Done / Timeout IRQ)                     │
 // │  GPIO  4   │  OLED RESET                                                 │
@@ -161,11 +157,11 @@
 // │  GPIO 25   │  DAC1 audio output → 100Ω → 10µF → 3.5mm jack TIP           │
 // │  GPIO 26   │  LED_BLUE (SEARCH mode indicator, 330Ω)                     │
 // │  GPIO 27   │  LED_RED  (BEACON mode indicator, 330Ω)                     │
-// │  GPIO 32   │  SW_CONFIG (short=status, long3s=WiFi AP)                   │
+// │  GPIO 32   │  SW_SEL  (short=toggle VOL/WPM, long3s=WiFi AP)             │
 // │  GPIO 33   │  SW_MODE (short=toggle mode, long2s=emergency)              │
-// │  GPIO 34   │  GPS RX ← NEO-6M TX  [OR WPM pot if no GPS]                 │
-// │  GPIO 35   │  ADC1 — Volume potentiometer wiper                          │
-// │  GPIO 36   │  ADC1 — WPM potentiometer wiper (if GPS also installed)     │
+// │  GPIO 34   │  SW_DN   — decrement selected parameter (input-only)        │
+// │  GPIO 35   │  SW_UP   — increment selected parameter (input-only)        │
+// │  GPIO 22   │  GPS RX ← NEO-6M TX  (input-only, SVP)                      │
 // └────────────┴───────────────────────────────────────────────────────────  ┘
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
@@ -265,7 +261,7 @@ void dbSep(const char* lbl = nullptr) {
 void dbBanner(const char* mode) {
   Serial.println(C_BOLD C_CYAN
     "\n╔══════════════════════════════════════════════════════════╗\n"
-    "║  ⬡  AEGIS-BEACON v5.2 — SX1262 + GPS + POT + SSD1309    ║\n"
+    "║  AEGIS-BEACON v5.3 — SX1262 + GPS + BTN + SSD1309       ║\n"
     "║      https://github.com/Leo-Galli/Aegis-Beacon           ║\n"
     "╚══════════════════════════════════════════════════════════╝" C_RESET);
   Serial.printf(C_YELLOW "    Active mode: %s\n\n" C_RESET, mode);
@@ -297,29 +293,30 @@ void dbBanner(const char* mode) {
 #define PIN_OLED_CS    17
 
 // ── GPS NEO-6M — UART2 ───────────────────────────────────────────────────────
-#define PIN_GPS_RX     34   // input-only GPIO, GPS TX → ESP RX
+#define PIN_GPS_RX     22   // input-only GPIO (SVP), GPS TX → ESP RX
 #define PIN_GPS_TX     12   // ESP TX → GPS RX
 #define GPS_BAUD       9600
 #define GPS_SERIAL     Serial2
 #define GPS_FIX_TIMEOUT_S  60   // max seconds to wait for GPS fix on boot
 #define GPS_MIN_SATS   3        // minimum satellites to consider fix valid
 
-// ── Potentiometers — ADC1 ───────────────────────────────────────────────────
-// ADC1 channels 7 (GPIO35) and 0 (GPIO36). ADC2 is disabled when WiFi is on,
-// so we exclusively use ADC1 channels here.
-#define PIN_POT_VOL    35   // ADC1_CH7 — volume potentiometer wiper
-#define PIN_POT_WPM    36   // ADC1_CH0 — WPM potentiometer wiper (SVP)
-                            // NOTE: if no GPS installed, WPM pot can go GPIO34
-#define POT_ADC_BITS   12   // ESP32 ADC resolution
-#define POT_SMOOTH_N   16   // rolling average samples
-#define POT_DEADBAND   30   // ADC counts — ignore changes smaller than this
-#define POT_READ_MS    80   // how often to sample pots (ms)
+// ── Buttons — adjustment controls ────────────────────────────────────────────
+// GPIO 34 and 35 are input-only; use external 10kΩ pull-up resistors if
+// the internal INPUT_PULLUP is insufficient (some ESP32 modules vary).
+#define PIN_SW_UP      35   // increment selected parameter (VOL or WPM)
+#define PIN_SW_DN      34   // decrement selected parameter (VOL or WPM)
 
-// Ranges mapped from ADC 0-4095
-#define POT_VOL_MIN    20
-#define POT_VOL_MAX    255
-#define POT_WPM_MIN    5
-#define POT_WPM_MAX    40
+// Adjustment button auto-repeat
+#define BTN_REPEAT_DELAY_MS  500   // hold time before auto-repeat starts
+#define BTN_REPEAT_RATE_MS   150   // interval between repeats when held
+
+// Volume / WPM adjustment steps
+#define ADJ_VOL_STEP   10
+#define ADJ_WPM_STEP   1
+#define ADJ_VOL_MIN    20
+#define ADJ_VOL_MAX    255
+#define ADJ_WPM_MIN    5
+#define ADJ_WPM_MAX    40
 
 // ── LEDs ────────────────────────────────────────────────────────────────────
 #define PIN_LED_RED    27
@@ -327,7 +324,7 @@ void dbBanner(const char* mode) {
 
 // ── Buttons ─────────────────────────────────────────────────────────────────
 #define PIN_SW_MODE    33
-#define PIN_SW_CONFIG  32
+#define PIN_SW_SEL     32   // short=toggle VOL/WPM adjust target, long3s=config
 
 // ── Audio ────────────────────────────────────────────────────────────────────
 #define PIN_AUDIO      25
@@ -429,9 +426,10 @@ struct Config {
   bool     nameEnabled;          // include name/surname in Morse
   char     firstName[MAX_NAME_LEN];
   char     lastName[MAX_NAME_LEN];
-  // Potentiometers
-  bool     potVolEnabled;        // use hardware pot for volume
-  bool     potWpmEnabled;        // use hardware pot for WPM
+  // Potentiometers (removed in v5.3 — replaced by buttons)
+  // The following booleans kept for NVS compatibility but unused:
+  bool     potVolEnabled;
+  bool     potWpmEnabled;
 };
 
 Config cfg;
@@ -502,17 +500,21 @@ WebServer   server(80);
 DNSServer   dns;
 
 volatile bool g_modeButtonPressed   = false;
-volatile bool g_configButtonPressed = false;
+volatile bool g_selButtonPressed    = false;  // replaces g_configButtonPressed
 
 uint32_t g_lastOledUpdate = 0;
-uint32_t g_lastPotUpdate  = 0;
 
-// Potentiometer smoothing buffers
-uint16_t g_potVolBuf[POT_SMOOTH_N] = {0};
-uint16_t g_potWpmBuf[POT_SMOOTH_N] = {0};
-uint8_t  g_potBufIdx = 0;
-uint16_t g_potVolLast = 0;
-uint16_t g_potWpmLast = 0;
+// ── Button adjustment state ───────────────────────────────────────────────────
+// adjTarget: 0 = VOL, 1 = WPM  (toggled by SW_SEL short press)
+uint8_t  g_adjTarget     = 0;
+uint32_t g_adjOledShowMs = 0;   // millis until adj overlay hides (0 = hidden)
+#define  ADJ_SHOW_MS     2500   // ms to show adj overlay after button press
+
+// Up/Down auto-repeat state
+uint32_t g_upHeldSince   = 0;
+uint32_t g_dnHeldSince   = 0;
+uint32_t g_upLastRepeat  = 0;
+uint32_t g_dnLastRepeat  = 0;
 
 // =============================================================================
 // MORSE CODE TABLE
@@ -533,54 +535,69 @@ inline uint32_t wordGapMs()  { return dotMs() * 7; }
 
 // =============================================================================
 // ╔══════════════════════════════════════════════════════╗
-// ║         POTENTIOMETER ENGINE                         ║
+// ║         BUTTON ADJUSTMENT ENGINE (v5.3)              ║
 // ╚══════════════════════════════════════════════════════╝
-// Reads two ADC channels with a rolling average smoother and dead-band filter.
-// Results update cfg.audioVolume and cfg.wpm in real time.
-// Call readPots() in any tight loop that runs continuously.
+// Three buttons replace the two potentiometers:
+//   SW_SEL  — toggle adjustment target between VOL and WPM
+//   SW_UP   — increment selected parameter
+//   SW_DN   — decrement selected parameter
+// Auto-repeat fires after BTN_REPEAT_DELAY_MS, then every BTN_REPEAT_RATE_MS.
+// Call pollAdjButtons() inside any tight loop.
 // =============================================================================
 
-uint16_t potSmooth(uint16_t* buf, uint16_t newVal) {
-  buf[g_potBufIdx % POT_SMOOTH_N] = newVal;
-  uint32_t sum = 0;
-  for (uint8_t i = 0; i < POT_SMOOTH_N; i++) sum += buf[i];
-  return (uint16_t)(sum / POT_SMOOTH_N);
+// Apply one step of adjustment to the currently selected parameter
+static void adjStep(int8_t dir) {
+  if (g_adjTarget == 0) {
+    // Volume
+    int v = (int)cfg.audioVolume + dir * ADJ_VOL_STEP;
+    cfg.audioVolume = (uint8_t)constrain(v, ADJ_VOL_MIN, ADJ_VOL_MAX);
+    LOG_POT("BTN VOL %s -> audioVolume=%d", dir>0?"+":"−", cfg.audioVolume);
+  } else {
+    // WPM
+    int w = (int)cfg.wpm + dir * ADJ_WPM_STEP;
+    cfg.wpm = (uint8_t)constrain(w, ADJ_WPM_MIN, ADJ_WPM_MAX);
+    LOG_POT("BTN WPM %s -> wpm=%d (dot=%lu ms)", dir>0?"+":"−", cfg.wpm, dotMs());
+  }
+  g_adjOledShowMs = millis() + ADJ_SHOW_MS;
 }
 
-void readPots() {
-  if (millis() - g_lastPotUpdate < POT_READ_MS) return;
-  g_lastPotUpdate = millis();
+// Poll SW_UP and SW_DN, handle press and auto-repeat
+void pollAdjButtons() {
+  uint32_t now = millis();
 
-  g_potBufIdx++;
-
-  // ── Volume pot ───────────────────────────────────────────────────────────
-  if (cfg.potVolEnabled) {
-    uint16_t raw = (uint16_t)analogRead(PIN_POT_VOL);
-    uint16_t smooth = potSmooth(g_potVolBuf, raw);
-    if (abs((int)smooth - (int)g_potVolLast) > POT_DEADBAND) {
-      g_potVolLast = smooth;
-      uint8_t newVol = (uint8_t)map(smooth, 0, 4095, POT_VOL_MIN, POT_VOL_MAX);
-      if (newVol != cfg.audioVolume) {
-        cfg.audioVolume = newVol;
-        LOG_POT("Vol pot → %d ADC → audioVolume=%d", smooth, newVol);
-      }
+  // ── UP button ──
+  if (digitalRead(PIN_SW_UP) == LOW) {
+    if (g_upHeldSince == 0) {
+      g_upHeldSince  = now;
+      g_upLastRepeat = now;
+      adjStep(+1);
+    } else if (now - g_upHeldSince > BTN_REPEAT_DELAY_MS &&
+               now - g_upLastRepeat > BTN_REPEAT_RATE_MS) {
+      g_upLastRepeat = now;
+      adjStep(+1);
     }
+  } else {
+    g_upHeldSince = 0;
   }
 
-  // ── WPM pot ───────────────────────────────────────────────────────────────
-  if (cfg.potWpmEnabled) {
-    uint16_t raw = (uint16_t)analogRead(PIN_POT_WPM);
-    uint16_t smooth = potSmooth(g_potWpmBuf, raw);
-    if (abs((int)smooth - (int)g_potWpmLast) > POT_DEADBAND) {
-      g_potWpmLast = smooth;
-      uint8_t newWpm = (uint8_t)map(smooth, 0, 4095, POT_WPM_MIN, POT_WPM_MAX);
-      if (newWpm != cfg.wpm) {
-        cfg.wpm = newWpm;
-        LOG_POT("WPM pot → %d ADC → wpm=%d (dot=%lu ms)", smooth, newWpm, dotMs());
-      }
+  // ── DN button ──
+  if (digitalRead(PIN_SW_DN) == LOW) {
+    if (g_dnHeldSince == 0) {
+      g_dnHeldSince  = now;
+      g_dnLastRepeat = now;
+      adjStep(-1);
+    } else if (now - g_dnHeldSince > BTN_REPEAT_DELAY_MS &&
+               now - g_dnLastRepeat > BTN_REPEAT_RATE_MS) {
+      g_dnLastRepeat = now;
+      adjStep(-1);
     }
+  } else {
+    g_dnHeldSince = 0;
   }
 }
+
+// Legacy stub — called where readPots() was; now delegates to pollAdjButtons()
+inline void readPots() { pollAdjButtons(); }
 
 // =============================================================================
 // ╔══════════════════════════════════════════════════════╗
@@ -747,6 +764,46 @@ void oledSegBar(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t pct) {
   }
 }
 
+// ── ADJUSTMENT OVERLAY ───────────────────────────────────────────────────────
+// Draw a small overlay bar at bottom showing current VOL or WPM being edited.
+// Called from beacon/search screens when g_adjOledShowMs is in the future.
+void oledAdjOverlay() {
+  if (millis() >= g_adjOledShowMs) return;
+
+  // Inverted bottom 12 px
+  u8g2.setDrawColor(1);
+  u8g2.drawBox(0, 52, 128, 12);
+  u8g2.setDrawColor(0);
+
+  if (g_adjTarget == 0) {
+    // Volume: show label + bar
+    u8g2.setFont(u8g2_font_5x7_tf);
+    u8g2.drawStr(1, 53, "VOL");
+    // Bar: 86 px wide, starts at x=22
+    uint8_t pct = (uint8_t)map(cfg.audioVolume, ADJ_VOL_MIN, ADJ_VOL_MAX, 0, 100);
+    int16_t fillW = (int16_t)map(pct, 0, 100, 0, 86);
+    u8g2.drawFrame(22, 54, 88, 8);
+    if (fillW > 2) u8g2.drawBox(23, 55, fillW, 6);
+    // Numeric value
+    char vbuf[8];
+    snprintf(vbuf, sizeof(vbuf), "%3d%%", cfg.audioVolume * 100 / 255);
+    u8g2.drawStr(113, 53, vbuf);
+  } else {
+    // WPM: show label + bar
+    u8g2.setFont(u8g2_font_5x7_tf);
+    u8g2.drawStr(1, 53, "WPM");
+    uint8_t pct = (uint8_t)map(cfg.wpm, ADJ_WPM_MIN, ADJ_WPM_MAX, 0, 100);
+    int16_t fillW = (int16_t)map(pct, 0, 100, 0, 86);
+    u8g2.drawFrame(22, 54, 88, 8);
+    if (fillW > 2) u8g2.drawBox(23, 55, fillW, 6);
+    char wbuf[8];
+    snprintf(wbuf, sizeof(wbuf), "%3d", cfg.wpm);
+    u8g2.drawStr(113, 53, wbuf);
+  }
+
+  u8g2.setDrawColor(1);
+}
+
 uint8_t rssiToPct(int16_t rssi) {
   return (uint8_t)constrain(map(rssi, -120, -40, 0, 100), 0, 100);
 }
@@ -756,37 +813,49 @@ void oledSplash() {
   if (!g_oledOk || !cfg.oledEnabled) return;
   u8g2.clearBuffer();
 
-  u8g2.setFont(u8g2_font_logisoso24_tf);
-  u8g2.drawStr(4, 2, "AEGIS");
+  // Top bar
+  u8g2.setDrawColor(1);
+  u8g2.drawBox(0, 0, 128, 13);
+  u8g2.setDrawColor(0);
+  u8g2.setFont(u8g2_font_7x13B_tf);
+  u8g2.drawStr(4, 1, "AEGIS-BEACON");
+  u8g2.setFont(u8g2_font_5x7_tf);
+  u8g2.drawStr(101, 2, "v5.3");
+  u8g2.setDrawColor(1);
+
+  // Separator line
+  u8g2.drawHLine(0, 14, 128);
+
+  // Subtitle
   u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(88, 2, "v5.2");
-  u8g2.drawHLine(0, 30, 128);
-  u8g2.setFont(u8g2_font_7x13_tf);
-  u8g2.drawStr(10, 33, "RESCUE BEACON");
+  u8g2.drawStr(8, 16, "AVALANCHE RESCUE SYSTEM");
+
+  // Feature flags (compact)
+  u8g2.drawHLine(0, 28, 128);
   u8g2.setFont(u8g2_font_5x7_tf);
 
-  // Feature flags line
-  char feats[40];
-  snprintf(feats, sizeof(feats), "%s%s%s",
-    cfg.gpsEnabled    ? "GPS " : "",
-    cfg.nameEnabled   ? "ID "  : "",
-    cfg.potVolEnabled || cfg.potWpmEnabled ? "POT" : ""
-  );
-  u8g2.drawStr(4, 46, feats[0] ? feats : "github.com/Leo-Galli");
+  char feats[48] = "";
+  if (cfg.gpsEnabled)  strlcat(feats, " GPS", sizeof(feats));
+  if (cfg.nameEnabled) strlcat(feats, " ID", sizeof(feats));
+  strlcat(feats, " BTN-CTRL", sizeof(feats));
+  u8g2.drawStr(2, 30, feats);
 
-  u8g2.setDrawColor(1);
+  // Version bar at bottom
+  u8g2.drawBox(0, 41, 128, 1);
   u8g2.drawBox(0, 56, 128, 8);
   u8g2.setDrawColor(0);
   u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(26, 57, "INITIALISING...");
+  u8g2.drawStr(22, 57, "INITIALISING...");
   u8g2.setDrawColor(1);
+
+  // Animated dots placeholder (static here)
+  u8g2.setFont(u8g2_font_4x6_tf);
+  u8g2.drawStr(2, 44, "github.com/Leo-Galli/Aegis-Beacon");
 
   u8g2.sendBuffer();
 }
 
 // ── GPS WAIT SCREEN ───────────────────────────────────────────────────────────
-// Shown at boot when GPS is enabled and no fix yet.
-// Shows satellite count, elapsed time, and coordinates when acquired.
 void oledGpsWait(uint8_t sats, uint32_t elapsedSec, uint32_t timeoutSec) {
   if (!g_oledOk || !cfg.oledEnabled) return;
   if (millis() - g_lastOledUpdate < OLED_REFRESH_MS) return;
@@ -794,58 +863,62 @@ void oledGpsWait(uint8_t sats, uint32_t elapsedSec, uint32_t timeoutSec) {
 
   u8g2.clearBuffer();
 
-  // Header
+  // Header bar
   u8g2.setDrawColor(1);
-  u8g2.drawBox(0, 0, 128, 11);
+  u8g2.drawBox(0, 0, 128, 12);
   u8g2.setDrawColor(0);
   u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(18, 1, "ACQUIRING GPS FIX");
+  u8g2.drawStr(8, 1, "ACQUIRING GPS FIX");
   u8g2.setDrawColor(1);
 
-  // Satellite icon + count
+  // Large satellite count
   u8g2.setFont(u8g2_font_logisoso24_tf);
-  char satbuf[6];
+  char satbuf[4];
   snprintf(satbuf, sizeof(satbuf), "%d", sats);
-  u8g2.drawStr(8, 12, satbuf);
-  u8g2.setFont(u8g2_font_7x13_tf);
-  u8g2.drawStr(52, 20, "SATS");
+  u8g2.drawStr(6, 13, satbuf);
 
-  // Progress bar (time elapsed)
+  // "SATS" label
+  u8g2.setFont(u8g2_font_6x10_tf);
+  u8g2.drawStr(52, 22, "SAT");
+
+  // Timeout progress bar (solid fill)
   uint8_t pct = (uint8_t)constrain(elapsedSec * 100 / timeoutSec, 0, 100);
-  oledSegBar(0, 38, 128, 8, pct);
+  u8g2.drawFrame(0, 38, 128, 7);
+  int16_t fillW = (int16_t)map(pct, 0, 100, 0, 126);
+  if (fillW > 0) u8g2.drawBox(1, 39, fillW, 5);
 
-  // Time remaining
-  char timebuf[28];
+  // Status text
+  u8g2.setFont(u8g2_font_5x7_tf);
   if (sats >= GPS_MIN_SATS) {
-    snprintf(timebuf, sizeof(timebuf), "FIX OK! %d sats", sats);
+    char okbuf[20];
+    snprintf(okbuf, sizeof(okbuf), "FIX OK  %d sats", sats);
+    u8g2.drawStr(0, 47, okbuf);
   } else {
     uint32_t rem = (elapsedSec < timeoutSec) ? timeoutSec - elapsedSec : 0;
-    snprintf(timebuf, sizeof(timebuf), "Timeout in %lus  HDOP?", rem);
+    char waitbuf[24];
+    snprintf(waitbuf, sizeof(waitbuf), "TIMEOUT IN %lus", rem);
+    u8g2.drawStr(0, 47, waitbuf);
   }
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(0, 48, timebuf);
 
-  // Coordinates if fix acquired
+  // Coordinates or hint
   if (g_gpsFix.valid) {
-    char coordbuf[32];
-    snprintf(coordbuf, sizeof(coordbuf), "%.4f  %.4f",
-             g_gpsFix.lat, g_gpsFix.lng);
-    u8g2.drawStr(0, 57, coordbuf);
+    char coordbuf[28];
+    snprintf(coordbuf, sizeof(coordbuf), "%.4f  %.4f", g_gpsFix.lat, g_gpsFix.lng);
+    u8g2.drawStr(0, 56, coordbuf);
   } else {
-    u8g2.drawStr(0, 57, "Press MODE to skip GPS wait");
+    u8g2.drawStr(0, 56, "MODE: skip wait");
   }
 
   u8g2.sendBuffer();
 }
 
 // ── BEACON MODE SCREEN ────────────────────────────────────────────────────────
-// Row layout (128×64):
-//  [0-10]  Inverted header: ▶ BEACON  |  BOOT #N
-//  [12-35] Frequency in large font + "MHz" label
-//  [36-42] Freq index + power
-//  [43-51] TX progress bar (segmented)
-//  [52-58] Payload preview (scrolling if long) + WPM
-//  [59-63] Status: GPS icon | pot knob icons | SLEEP countdown / TRANSMITTING
+// 128×64 layout:
+//  [ 0-11] Inverted header: BEACON | cycle counter
+//  [12-35] Large frequency + MHz
+//  [22-43] Channel / power / WPM info line
+//  [44-51] TX progress bar (segmented), always visible
+//  [52-63] Status row OR adj overlay OR TRANSMITTING flash
 void oledBeacon(int freqIdx, float freqMHz, int charIdx, int totalChars,
                 uint32_t cycleNum, uint32_t sleepRemainSec, bool transmitting,
                 const char* payload) {
@@ -855,80 +928,102 @@ void oledBeacon(int freqIdx, float freqMHz, int charIdx, int totalChars,
 
   u8g2.clearBuffer();
 
-  // ── Header ──
+  // ── Header bar ──────────────────────────────────────────────────────────
   u8g2.setDrawColor(1);
-  u8g2.drawBox(0, 0, 128, 11);
+  u8g2.drawBox(0, 0, 128, 12);
   u8g2.setDrawColor(0);
   u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(3, 1, "\x10 BEACON");
-  char bootbuf[14];
-  snprintf(bootbuf, sizeof(bootbuf), "BOOT #%lu", cycleNum);
-  u8g2.drawStr(128 - (int16_t)strlen(bootbuf) * 6 - 2, 1, bootbuf);
+  u8g2.drawStr(2, 1, "TX BEACON");
+  char cyclbuf[14];
+  snprintf(cyclbuf, sizeof(cyclbuf), "#%lu", cycleNum);
+  u8g2.drawStr(128 - (int16_t)strlen(cyclbuf) * 6 - 2, 1, cyclbuf);
   u8g2.setDrawColor(1);
 
-  // ── Frequency (large) ──
-  char fbuf[14];
+  // ── Large frequency ──────────────────────────────────────────────────────
+  char fbuf[12];
   snprintf(fbuf, sizeof(fbuf), "%.3f", freqMHz);
   u8g2.setFont(u8g2_font_logisoso24_tf);
-  u8g2.drawStr(0, 12, fbuf);
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(100, 22, "MHz");
+  u8g2.drawStr(0, 13, fbuf);
+  u8g2.setFont(u8g2_font_5x7_tf);
+  u8g2.drawStr(102, 26, "MHz");
 
-  // ── Freq index + power ──
-  char infobuf[24];
-  snprintf(infobuf, sizeof(infobuf), "CH%d/%d  +%ddBm  %dWPM",
+  // GPS fix dot (top-right corner, 3px filled/outline)
+  if (cfg.gpsEnabled) {
+    if (g_gpsFix.valid) {
+      u8g2.drawBox(120, 14, 5, 5);      // solid = fix OK
+    } else {
+      u8g2.drawFrame(120, 14, 5, 5);    // outline = no fix
+    }
+  }
+
+  // ── Info line: channel / power / wpm ────────────────────────────────────
+  char infobuf[28];
+  snprintf(infobuf, sizeof(infobuf), "CH%d/%d +%ddBm %dWPM",
            freqIdx + 1, cfg.freqCount, cfg.powerDbm, cfg.wpm);
   u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(0, 36, infobuf);
+  u8g2.drawStr(0, 37, infobuf);
 
-  // ── TX progress bar ──
+  // ── TX progress bar ──────────────────────────────────────────────────────
   uint8_t pct = (totalChars > 0) ? (uint8_t)((uint32_t)charIdx * 100 / totalChars) : 0;
-  oledSegBar(0, 44, 128, 7, pct);
-
-  // ── Payload preview (truncated to 21 chars) ──
-  char plbuf[22];
-  uint8_t plLen = (uint8_t)strlen(payload);
-  // Scroll: show window of 21 chars centred on current char position
-  int16_t startChar = (int16_t)charIdx - 10;
-  if (startChar < 0) startChar = 0;
-  if (startChar + 21 > plLen) startChar = (plLen > 21) ? plLen - 21 : 0;
-  snprintf(plbuf, sizeof(plbuf), "%-21.21s", payload + startChar);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(0, 52, plbuf);
-
-  // ── Status row: GPS indicator | pot icons | transmitting / sleep ──
-  char statusbuf[24] = "";
-  // GPS indicator (dot = fix, dash = no fix)
-  if (cfg.gpsEnabled) {
-    strlcat(statusbuf, g_gpsFix.valid ? "\x07" : "\x2e", sizeof(statusbuf)); // bullet / dot
-    strlcat(statusbuf, "GPS ", sizeof(statusbuf));
-  }
-  // Pot indicators
-  if (cfg.potVolEnabled) {
-    char vbuf[6]; snprintf(vbuf, sizeof(vbuf), "V%d ", cfg.audioVolume * 100 / 255);
-    strlcat(statusbuf, vbuf, sizeof(statusbuf));
+  // Outer frame
+  u8g2.drawFrame(0, 44, 128, 7);
+  // Filled portion (solid bar, no gaps — cleaner look)
+  if (pct > 0) {
+    int16_t fillW = (int16_t)map(pct, 0, 100, 0, 126);
+    if (fillW > 0) u8g2.drawBox(1, 45, fillW, 5);
   }
 
-  if (transmitting) {
-    if ((millis() / 350) % 2 == 0) {
-      u8g2.setDrawColor(1);
-      u8g2.drawBox(0, 56, 128, 8);
-      u8g2.setDrawColor(0);
-      u8g2.setFont(u8g2_font_5x7_tf);
-      u8g2.drawStr(10, 57, ">>> TRANSMITTING >>>");
-      u8g2.setDrawColor(1);
-    }
+  // ── Bottom area ──────────────────────────────────────────────────────────
+  bool showOverlay = (millis() < g_adjOledShowMs);
+
+  if (showOverlay) {
+    oledAdjOverlay();
+  } else if (transmitting && (millis() / 300) % 2 == 0) {
+    // Flashing TRANSMITTING bar
+    u8g2.drawBox(0, 52, 128, 12);
+    u8g2.setDrawColor(0);
+    u8g2.setFont(u8g2_font_6x10_tf);
+    // Payload preview centred in bar
+    char plbuf[22];
+    uint8_t plLen = (uint8_t)strlen(payload);
+    int16_t startChar = (int16_t)charIdx - 10;
+    if (startChar < 0) startChar = 0;
+    if (startChar + 21 > plLen) startChar = (plLen > 21) ? plLen - 21 : 0;
+    snprintf(plbuf, sizeof(plbuf), "%-21.21s", payload + startChar);
+    u8g2.drawStr(1, 53, plbuf);
+    u8g2.setDrawColor(1);
   } else {
-    char slpbuf[28];
-    snprintf(slpbuf, sizeof(slpbuf), "%s SLEEP %lus", statusbuf, sleepRemainSec);
+    // Status row: GPS state + sleep countdown
     u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.drawStr(0, 57, slpbuf);
+    char statusbuf[32] = "";
+    if (cfg.gpsEnabled) {
+      strlcat(statusbuf, g_gpsFix.valid ? "GPS:OK" : "GPS:--", sizeof(statusbuf));
+      strlcat(statusbuf, "  ", sizeof(statusbuf));
+    }
+    char slpbuf[16];
+    if (sleepRemainSec > 0)
+      snprintf(slpbuf, sizeof(slpbuf), "SLP %lus", sleepRemainSec);
+    else
+      strlcpy(slpbuf, "STANDBY", sizeof(slpbuf));
+    strlcat(statusbuf, slpbuf, sizeof(statusbuf));
+    u8g2.drawStr(0, 53, statusbuf);
+
+    // Adj target indicator (right side)
+    const char* adjLbl = (g_adjTarget == 0) ? "VOL" : "WPM";
+    u8g2.drawStr(103, 53, adjLbl);
+    u8g2.drawFrame(101, 52, 27, 10);
   }
 
   u8g2.sendBuffer();
 }
 
 // ── SEARCH MODE SCREEN ────────────────────────────────────────────────────────
+// 128×64 layout:
+//  [ 0-11] Inverted header: RX SEARCH | hits count
+//  [12-35] Large frequency
+//  [22-43] RSSI value + numeric dBm
+//  [44-51] RSSI bar with threshold marker
+//  [52-63] Signal label / last hit / adj overlay
 void oledSearch(int freqIdx, float freqMHz, int16_t rssi,
                 uint32_t passNum, bool detected) {
   if (!g_oledOk || !cfg.oledEnabled) return;
@@ -937,77 +1032,83 @@ void oledSearch(int freqIdx, float freqMHz, int16_t rssi,
 
   u8g2.clearBuffer();
 
-  // ── Header ──
+  // ── Header bar ──────────────────────────────────────────────────────────
   u8g2.setDrawColor(1);
-  u8g2.drawBox(0, 0, 128, 11);
+  u8g2.drawBox(0, 0, 128, 12);
   u8g2.setDrawColor(0);
   u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(3, 1, "\x04 SEARCH");
+  u8g2.drawStr(2, 1, "RX SEARCH");
   char hitsbuf[12];
-  snprintf(hitsbuf, sizeof(hitsbuf), "HITS: %d", g_scanHitCount);
+  snprintf(hitsbuf, sizeof(hitsbuf), "HIT:%d", g_scanHitCount);
   u8g2.drawStr(128 - (int16_t)strlen(hitsbuf) * 6 - 2, 1, hitsbuf);
   u8g2.setDrawColor(1);
 
-  // ── Frequency ──
-  char fbuf[14];
+  // ── Large frequency ──────────────────────────────────────────────────────
+  char fbuf[12];
   snprintf(fbuf, sizeof(fbuf), "%.3f", freqMHz);
   u8g2.setFont(u8g2_font_logisoso24_tf);
-  u8g2.drawStr(0, 12, fbuf);
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(100, 22, "MHz");
+  u8g2.drawStr(0, 13, fbuf);
+  u8g2.setFont(u8g2_font_5x7_tf);
+  u8g2.drawStr(102, 26, "MHz");
 
-  // ── RSSI ──
-  char rssibuf[16];
-  snprintf(rssibuf, sizeof(rssibuf), "RSSI %ddBm", rssi);
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(0, 34, rssibuf);
+  // Channel indicator (small, top-right)
+  char chbuf[8];
+  snprintf(chbuf, sizeof(chbuf), "%d/%d", freqIdx+1, cfg.freqCount);
+  u8g2.drawStr(112, 14, chbuf);
 
-  // ── RSSI segmented bar with threshold tick ──
+  // ── RSSI value line ──────────────────────────────────────────────────────
+  char rssibuf[18];
+  snprintf(rssibuf, sizeof(rssibuf), "RSSI  %4d dBm", rssi);
+  u8g2.setFont(u8g2_font_5x7_tf);
+  u8g2.drawStr(0, 37, rssibuf);
+
+  // ── RSSI bar (solid fill) + threshold tick ───────────────────────────────
   uint8_t rssiPct = rssiToPct(rssi);
-  oledSegBar(0, 35, 120, 8, rssiPct);
+  u8g2.drawFrame(0, 43, 128, 8);
+  int16_t barFill = (int16_t)map(rssiPct, 0, 100, 0, 126);
+  if (barFill > 0) u8g2.drawBox(1, 44, barFill, 6);
+  // Threshold tick (vertical line)
   uint8_t thrPct = rssiToPct(cfg.rssiThreshold);
-  u8g2.drawVLine((int16_t)(120 * thrPct / 100), 34, 10);
+  int16_t thrX = (int16_t)map(thrPct, 0, 100, 0, 127);
+  u8g2.drawVLine(thrX, 42, 10);
 
-  // ── Signal detection row ──
-  if (detected && (millis() / 280) % 2 == 0) {
-    u8g2.setDrawColor(1);
-    u8g2.drawBox(0, 44, 128, 9);
+  // ── Bottom area ──────────────────────────────────────────────────────────
+  bool showOverlay = (millis() < g_adjOledShowMs);
+
+  if (showOverlay) {
+    oledAdjOverlay();
+  } else if (detected && (millis() / 280) % 2 == 0) {
+    // Detected: inverted signal strength label
+    u8g2.drawBox(0, 52, 128, 12);
     u8g2.setDrawColor(0);
     u8g2.setFont(u8g2_font_6x10_tf);
-    const char* lbl = (rssi >= -60) ? "!! STRONG SIGNAL !!" :
-                      (rssi >= -80) ? "!  MEDIUM SIGNAL  !" : "   WEAK SIGNAL   ";
+    const char* lbl = (rssi >= -60) ? "  ** STRONG SIGNAL **  " :
+                      (rssi >= -80) ? "   *  MEDIUM SIGNAL  *  " :
+                                      "     WEAK SIGNAL      ";
     int16_t ax = (128 - (int16_t)strlen(lbl) * 6) / 2;
-    u8g2.drawStr(ax, 45, lbl);
+    if (ax < 0) ax = 0;
+    u8g2.drawStr(ax, 53, lbl);
     u8g2.setDrawColor(1);
   } else if (g_scanHitCount > 0) {
+    // Show last hit
     ScanHit& h = g_scanHits[g_scanHitCount - 1];
     char lastbuf[28];
-    snprintf(lastbuf, sizeof(lastbuf), "LAST %.3fMHz %ddBm", h.freq, h.rssi);
+    snprintf(lastbuf, sizeof(lastbuf), "LAST %.3fMHz %ddBm %s",
+             h.freq, h.rssi, h.label);
     u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.drawStr(0, 44, lastbuf);
+    u8g2.drawStr(0, 53, lastbuf);
   } else {
-    u8g2.setFont(u8g2_font_6x10_tf);
-    u8g2.drawStr(0, 44, "SCANNING...");
-  }
+    // Scanning status
+    u8g2.setFont(u8g2_font_5x7_tf);
+    char scanbuf[28];
+    snprintf(scanbuf, sizeof(scanbuf), "SCAN #%lu  THR:%ddBm", passNum, cfg.rssiThreshold);
+    u8g2.drawStr(0, 53, scanbuf);
 
-  // ── Pass + channel ──
-  char passbuf[22];
-  snprintf(passbuf, sizeof(passbuf), "PASS #%lu  CH %d/%d", passNum, freqIdx+1, cfg.freqCount);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(0, 53, passbuf);
-
-  // ── Audio + pot status ──
-  char audiobuf[26];
-  if (cfg.audioEnabled) {
-    uint32_t tf = audioSearchTone(rssi);
-    char volStr[8] = "";
-    if (cfg.potVolEnabled) snprintf(volStr, sizeof(volStr), "V%d%%", cfg.audioVolume*100/255);
-    if (tf > 0) snprintf(audiobuf, sizeof(audiobuf), "\x0e%luHz %s THR:%d", tf, volStr, cfg.rssiThreshold);
-    else        snprintf(audiobuf, sizeof(audiobuf), "\x0e SILENT %s THR:%d", volStr, cfg.rssiThreshold);
-  } else {
-    snprintf(audiobuf, sizeof(audiobuf), "AUDIO OFF  THR:%d", cfg.rssiThreshold);
+    // Adj target indicator
+    const char* adjLbl = (g_adjTarget == 0) ? "VOL" : "WPM";
+    u8g2.drawStr(103, 53, adjLbl);
+    u8g2.drawFrame(101, 52, 27, 10);
   }
-  u8g2.drawStr(0, 60, audiobuf);
 
   u8g2.sendBuffer();
 }
@@ -1020,32 +1121,43 @@ void oledEmergency(float freqMHz, uint32_t cycleNum) {
 
   u8g2.clearBuffer();
   bool inv = (millis() / 500) % 2;
-  if (inv) { u8g2.drawBox(0, 0, 128, 64); u8g2.setDrawColor(0); }
-  else      { u8g2.setDrawColor(1); }
 
+  if (inv) {
+    u8g2.drawBox(0, 0, 128, 64);
+    u8g2.setDrawColor(0);
+  } else {
+    u8g2.setDrawColor(1);
+    // Border double-frame when not inverted
+    u8g2.drawFrame(0, 0, 128, 64);
+    u8g2.drawFrame(2, 2, 124, 60);
+  }
+
+  // Giant SOS centred
   u8g2.setFont(u8g2_font_logisoso32_tf);
-  u8g2.drawStr(16, 0, "SOS");
+  u8g2.drawStr(14, 1, "SOS");
+
+  // Separator
+  if (!inv) u8g2.drawHLine(4, 35, 120);
+  else      { u8g2.drawHLine(4, 35, 120); }  // visible in both modes
 
   u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(4, 36, "!! EMERGENCY MODE !!");
+  u8g2.drawStr(4, 37, "EMERGENCY BEACON TX");
 
   char fbuf[22];
-  snprintf(fbuf, sizeof(fbuf), "TX %.3f MHz", freqMHz);
-  u8g2.drawStr(8, 47, fbuf);
+  snprintf(fbuf, sizeof(fbuf), "%.3f MHz  +22dBm", freqMHz);
+  u8g2.setFont(u8g2_font_5x7_tf);
+  u8g2.drawStr(4, 48, fbuf);
 
-  // Show GPS coords if available
   if (g_gpsFix.valid || g_rtcFixValid) {
-    char coordbuf[22];
     double lat = g_gpsFix.valid ? g_gpsFix.lat : g_rtcLat;
     double lng = g_gpsFix.valid ? g_gpsFix.lng : g_rtcLng;
-    snprintf(coordbuf, sizeof(coordbuf), "%.3f %.3f", lat, lng);
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.drawStr(0, 57, coordbuf);
+    char coordbuf[24];
+    snprintf(coordbuf, sizeof(coordbuf), "%.3f  %.3f", lat, lng);
+    u8g2.drawStr(4, 57, coordbuf);
   } else {
-    char cbuf[18];
-    snprintf(cbuf, sizeof(cbuf), "CYCLE #%lu", cycleNum);
-    u8g2.setFont(u8g2_font_6x10_tf);
-    u8g2.drawStr(28, 57, cbuf);
+    char cbuf[20];
+    snprintf(cbuf, sizeof(cbuf), "CYCLE #%lu  NO GPS", cycleNum);
+    u8g2.drawStr(4, 57, cbuf);
   }
 
   u8g2.setDrawColor(1);
@@ -1122,8 +1234,8 @@ void ledModeIndicate(DeviceMode m) {
 // =============================================================================
 // BUTTON ISRs
 // =============================================================================
-void IRAM_ATTR isrModeButton()   { g_modeButtonPressed   = true; }
-void IRAM_ATTR isrConfigButton() { g_configButtonPressed = true; }
+void IRAM_ATTR isrModeButton() { g_modeButtonPressed = true; }
+void IRAM_ATTR isrSelButton()  { g_selButtonPressed  = true; }
 
 uint32_t waitButtonRelease(uint8_t pin) {
   uint32_t t = millis();
@@ -1203,8 +1315,8 @@ void loadConfig() {
            cfg.gpsIncludeInBeacon?"YES":"NO", cfg.gpsFix1Timeout);
   LOG_INFO("Name      : %s  \"%s %s\"",
            cfg.nameEnabled?"ON":"OFF", cfg.firstName, cfg.lastName);
-  LOG_INFO("Pots      : vol=%s wpm=%s",
-           cfg.potVolEnabled?"ON":"OFF", cfg.potWpmEnabled?"ON":"OFF");
+  LOG_INFO("Buttons   : UP=GPIO%d DN=GPIO%d SEL=GPIO%d",
+           PIN_SW_UP, PIN_SW_DN, PIN_SW_SEL);
   dbSep();
 }
 
@@ -1686,50 +1798,32 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
   </div>
 </div>
 
-<!-- ── POTENTIOMETERS ──────────────────────────────────────────────────── -->
+<!-- ── BUTTON CONTROLS ─────────────────────────────────────────────────── -->
 <div class="card pot full">
-  <div class="ct"><span class="ct-dot"></span>HARDWARE POTENTIOMETERS</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+  <div class="ct"><span class="ct-dot"></span>BUTTON CONTROLS (v5.3)</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;align-items:start;">
     <div>
-      <div class="form-row">
-        <label class="tog-wrap">
-          <span class="tog-cb"><input type="checkbox" id="potVolEn"><span class="tog-slider"></span></span>
-          <span class="tog-lbl">VOLUME KNOB (GPIO35)</span>
-        </label>
-      </div>
-      <div class="knob-wrap">
-        <div class="knob">
-          <div class="knob-ring"><div class="knob-marker" id="volKnobMarker"></div></div>
-          <div class="knob-label">VOLUME</div>
-          <div class="knob-val" id="volKnobVal">70%</div>
-        </div>
-      </div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_SEL — GPIO32</div>
       <div class="info-box">
-        10kΩ pot: CW→3V3, wiper→GPIO35, CCW→GND.<br>
-        Range: 8% – 100% output level.<br>
-        Updates live mid-tone. No reboot needed.
+        Short press: toggle VOL / WPM adjust target.<br>
+        Long 3s: enter Config (WiFi AP mode).<br>
+        OLED overlay shows active target.
       </div>
     </div>
     <div>
-      <div class="form-row">
-        <label class="tog-wrap">
-          <span class="tog-cb"><input type="checkbox" id="potWpmEn"><span class="tog-slider"></span></span>
-          <span class="tog-lbl">SPEED KNOB (GPIO36)</span>
-        </label>
-      </div>
-      <div class="knob-wrap">
-        <div class="knob">
-          <div class="knob-ring" style="border-color:var(--a2);box-shadow:0 0 12px rgba(255,59,59,.2);">
-            <div class="knob-marker" id="wpmKnobMarker" style="background:var(--a2);"></div>
-          </div>
-          <div class="knob-label" style="color:var(--a2)">WPM</div>
-          <div class="knob-val" id="wpmKnobVal" style="color:var(--a2)">13</div>
-        </div>
-      </div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_UP — GPIO35</div>
       <div class="info-box">
-        10kΩ pot: CW→3V3, wiper→GPIO36, CCW→GND.<br>
-        Range: 5 – 40 WPM.<br>
-        If using GPS, use GPIO36 (not GPIO34).
+        Increment: Volume +10 or WPM +1.<br>
+        Auto-repeat after 500ms hold.<br>
+        Updates live, no reboot needed.
+      </div>
+    </div>
+    <div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_DN — GPIO34</div>
+      <div class="info-box">
+        Decrement: Volume -10 or WPM -1.<br>
+        Auto-repeat after 500ms hold.<br>
+        Vol range: 20-255. WPM range: 5-40.
       </div>
     </div>
   </div>
@@ -1974,8 +2068,8 @@ function saveConfig(){
     namen:document.getElementById('nameEn').checked?1:0,
     fname:document.getElementById('fname').value.toUpperCase(),
     lname:document.getElementById('lname').value.toUpperCase(),
-    poten:document.getElementById('potVolEn').checked?1:0,
-    potwpm:document.getElementById('potWpmEn').checked?1:0,
+    poten:0,
+    potwpm:0,
     freqs:freqs
   };
   fetch('/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
@@ -2205,10 +2299,14 @@ void runBeaconMode(bool emergency) {
       if (press == 2) { g_emergencyActive = true; g_currentMode = MODE_EMERGENCY; goto mode_switch; }
       if (press == 1) { g_currentMode = MODE_SEARCH; cfg.lastMode = MODE_SEARCH; saveConfig(); goto mode_switch; }
     }
-    if (!emergency && g_configButtonPressed) {
-      uint8_t press = checkButton(PIN_SW_CONFIG, BTN_LONG_CFG_MS, g_configButtonPressed);
+    if (!emergency && g_selButtonPressed) {
+      uint8_t press = checkButton(PIN_SW_SEL, BTN_LONG_CFG_MS, g_selButtonPressed);
       if (press == 2) goto enter_config;
-      if (press == 1) printStatus();
+      if (press == 1) {
+        g_adjTarget = (g_adjTarget == 0) ? 1 : 0;
+        g_adjOledShowMs = millis() + ADJ_SHOW_MS;
+        LOG_BTN("ADJ target -> %s", g_adjTarget==0?"VOL":"WPM");
+      }
     }
   }
 
@@ -2225,7 +2323,7 @@ void runBeaconMode(bool emergency) {
       readGPS();
       uint32_t remain = (sleepMs - (millis() - sleepStart)) / 1000;
       oledBeacon(0, cfg.freqs[0], 0, 1, g_txCycles, remain, false, g_currentPayload);
-      if (g_modeButtonPressed || g_configButtonPressed) break;
+      if (g_modeButtonPressed || g_selButtonPressed) break;
       delay(100);
       esp_task_wdt_reset();
     }
@@ -2235,8 +2333,13 @@ void runBeaconMode(bool emergency) {
       if (press == 2) { g_emergencyActive = true; g_currentMode = MODE_EMERGENCY; goto mode_switch; }
       if (press == 1) { g_currentMode = MODE_SEARCH; cfg.lastMode = MODE_SEARCH; saveConfig(); goto mode_switch; }
     }
-    if (g_configButtonPressed) {
-      if (checkButton(PIN_SW_CONFIG, BTN_LONG_CFG_MS, g_configButtonPressed) == 2) goto enter_config;
+    if (g_selButtonPressed) {
+      uint8_t press = checkButton(PIN_SW_SEL, BTN_LONG_CFG_MS, g_selButtonPressed);
+      if (press == 2) goto enter_config;
+      if (press == 1) {
+        g_adjTarget = (g_adjTarget == 0) ? 1 : 0;
+        g_adjOledShowMs = millis() + ADJ_SHOW_MS;
+      }
     }
 
     // Rebuild payload before sleeping (GPS fix might have improved)
@@ -2287,10 +2390,13 @@ void runSearchMode() {
         if (p == 2) { g_emergencyActive = true; g_currentMode = MODE_EMERGENCY; goto search_exit; }
         if (p == 1) { g_currentMode = MODE_BEACON; cfg.lastMode = MODE_BEACON; saveConfig(); goto search_exit; }
       }
-      if (g_configButtonPressed) {
-        uint8_t p = checkButton(PIN_SW_CONFIG, BTN_LONG_CFG_MS, g_configButtonPressed);
+      if (g_selButtonPressed) {
+        uint8_t p = checkButton(PIN_SW_SEL, BTN_LONG_CFG_MS, g_selButtonPressed);
         if (p == 2) { g_currentMode = MODE_CONFIG; goto search_exit; }
-        if (p == 1) printStatus();
+        if (p == 1) {
+          g_adjTarget = (g_adjTarget == 0) ? 1 : 0;
+          g_adjOledShowMs = millis() + ADJ_SHOW_MS;
+        }
       }
 
       ScanResult result = scanFrequency(cfg.freqs[fi], fi, passNum);
@@ -2325,16 +2431,18 @@ void setup() {
   pinMode(PIN_LED_RED,   OUTPUT);
   pinMode(PIN_LED_BLUE,  OUTPUT);
   pinMode(PIN_SW_MODE,   INPUT_PULLUP);
-  pinMode(PIN_SW_CONFIG, INPUT_PULLUP);
+  pinMode(PIN_SW_SEL,    INPUT_PULLUP);
+  pinMode(PIN_SW_UP,     INPUT_PULLUP);
+  pinMode(PIN_SW_DN,     INPUT_PULLUP);
   ledsOff();
 
-  // ── ADC setup ─────────────────────────────────────────────────────────────
-  analogReadResolution(POT_ADC_BITS);
-  analogSetAttenuation(ADC_11db);   // 0–3.3V range on all channels
+  // ── ADC setup (not used for pots anymore, kept for compatibility) ─────────
+  analogReadResolution(12);
+  analogSetAttenuation(ADC_11db);
 
   // ── Interrupts ─────────────────────────────────────────────────────────────
-  attachInterrupt(digitalPinToInterrupt(PIN_SW_MODE),   isrModeButton,   FALLING);
-  attachInterrupt(digitalPinToInterrupt(PIN_SW_CONFIG), isrConfigButton, FALLING);
+  attachInterrupt(digitalPinToInterrupt(PIN_SW_MODE), isrModeButton, FALLING);
+  attachInterrupt(digitalPinToInterrupt(PIN_SW_SEL),  isrSelButton,  FALLING);
 
   // ── Watchdog ─────────────────────────────────────────────────────────────
   esp_task_wdt_init(WDT_TIMEOUT_SEC, true);
@@ -2356,15 +2464,10 @@ void setup() {
     LOG_GPS("GPS serial started on RX=GPIO%d TX=GPIO%d @ %d baud", PIN_GPS_RX, PIN_GPS_TX, GPS_BAUD);
   }
 
-  // ── Pot init: pre-fill smooth buffers ─────────────────────────────────────
-  if (cfg.potVolEnabled || cfg.potWpmEnabled) {
-    for (uint8_t i = 0; i < POT_SMOOTH_N; i++) {
-      if (cfg.potVolEnabled) g_potVolBuf[i] = (uint16_t)analogRead(PIN_POT_VOL);
-      if (cfg.potWpmEnabled) g_potWpmBuf[i] = (uint16_t)analogRead(PIN_POT_WPM);
-    }
-    readPots();   // apply first real reading immediately
-    LOG_POT("Pots init: vol=%d wpm=%d", cfg.audioVolume, cfg.wpm);
-  }
+  // ── Button adjustment init ────────────────────────────────────────────────
+  g_adjTarget = 0;   // start with VOL selected
+  g_adjOledShowMs = 0;
+  LOG_POT("Adj buttons: UP=GPIO%d DN=GPIO%d SEL=GPIO%d", PIN_SW_UP, PIN_SW_DN, PIN_SW_SEL);
 
   // ── OLED ──────────────────────────────────────────────────────────────────
   if (cfg.oledEnabled) {
@@ -2376,27 +2479,27 @@ void setup() {
   blinkLed(PIN_LED_RED, 1, 80);
   blinkLed(PIN_LED_BLUE, 1, 80);
 
-  // ── Factory reset check (hold both buttons for 5s) ────────────────────────
-  if (digitalRead(PIN_SW_MODE) == LOW && digitalRead(PIN_SW_CONFIG) == LOW) {
+  // ── Factory reset check (hold both MODE + SEL for 5s) ───────────────────
+  if (digitalRead(PIN_SW_MODE) == LOW && digitalRead(PIN_SW_SEL) == LOW) {
     delay(BTN_DEBOUNCE_MS);
     uint32_t t = millis();
-    while (digitalRead(PIN_SW_MODE) == LOW && digitalRead(PIN_SW_CONFIG) == LOW) {
+    while (digitalRead(PIN_SW_MODE) == LOW && digitalRead(PIN_SW_SEL) == LOW) {
       delay(100); esp_task_wdt_reset();
       uint32_t held = millis() - t;
       if (g_oledOk) {
         char buf[28];
         snprintf(buf, sizeof(buf), "Hold %lus more...", (BTN_FACTORY_MS - held) / 1000 + 1);
-        oledMessage("FACTORY RESET", "Hold both buttons", buf, true);
+        oledMessage("FACTORY RESET", "Hold MODE + SEL", buf, true);
       }
       if (held > BTN_FACTORY_MS) factoryReset();
     }
   }
 
-  // ── Boot config enter (hold CONFIG during power-on) ───────────────────────
-  if (digitalRead(PIN_SW_CONFIG) == LOW) {
+  // ── Boot config enter (hold SEL during power-on) ─────────────────────────
+  if (digitalRead(PIN_SW_SEL) == LOW) {
     delay(BTN_DEBOUNCE_MS);
-    if (digitalRead(PIN_SW_CONFIG) == LOW) {
-      uint32_t held = waitButtonRelease(PIN_SW_CONFIG);
+    if (digitalRead(PIN_SW_SEL) == LOW) {
+      uint32_t held = waitButtonRelease(PIN_SW_SEL);
       if (held >= BTN_LONG_CFG_MS) { g_currentMode = MODE_CONFIG; runConfigMode(); }
     }
   }
@@ -2447,33 +2550,22 @@ void loop() {
 }
 
 // =============================================================================
-// END — AEGIS-BEACON v5.1
+// END — AEGIS-BEACON v5.3
 // https://github.com/Leo-Galli/Aegis-Beacon
 // =============================================================================
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
 // │  SERIAL DEBUG LOG KEY                                                    │
 // │  [INFO ] Normal  [OK   ] Success  [WARN ] Anomaly  [ERROR] HW failure    │
-// │  [MODE ] Mode event  [SCAN ] RSSI  [GPS  ] GPS engine  [POT  ] Pot read  │
+// │  [MODE ] Mode event  [SCAN ] RSSI  [GPS  ] GPS engine  [POT  ] Btn adj   │
 // │  [AUDIO] Audio   [OLED ] Display  [BTN  ] Button  [CFG  ] NVS save       │
 // │  [MORSE] Per-symbol*  [RF   ] RadioLib code*   (* = DEBUG_VERBOSE 1)     │
 // │                                                                          │
-// │  TYPICAL HEALTHY BEACON LOG (v5.2 SX1262):                               │
-// │   [GPS  ] Waiting for GPS fix (timeout 30s)...                           │
-// │   [GPS  ] Fix acquired: 45.53124  12.30456  sats=6                       │
-// │   [INFO ] Payload ready: "SOS DE MARIO ROSSI PSN N4553 E01230"           │
-// │   [POT  ] Vol pot → 2048 ADC → audioVolume=137                           │
-// │   [POT  ] WPM pot → 1500 ADC → wpm=18 (dot=66 ms)                        │
-// │   [OK   ] SX1262 CW TX ready: 433.500 MHz @ 17 dBm                       │
-// │   [OK   ] TX done: 31 chars in 12400 ms                                  │
-// │   [INFO ] Deep sleep 10 s...                                             │
-// │                                                                          │
-// │  SX1262 WIRING QUICK REFERENCE:                                          │
-// │   SCK=18  MISO=19  MOSI=23  CS=5                                         │
-// │   RST=14  BUSY=21  DIO1=2  (TXEN/RXEN=N/C on E22)                        │
-// │   BUSY must be wired — RadioLib polls it before every SPI transfer       │
-// │                                                                          │
-// │  POT WIRING QUICK REFERENCE:                                             │
-// │   Volume: 3V3 → RV1-pin1 | wiper → GPIO35 | GND → RV1-pin3               │
-// │   WPM   : 3V3 → RV2-pin1 | wiper → GPIO36 | GND → RV2-pin3               │
+// │  BUTTON WIRING QUICK REFERENCE (v5.3):                                   │
+// │   SW_MODE : GPIO33 → GND  (short=mode toggle, long2s=emergency)          │
+// │   SW_SEL  : GPIO32 → GND  (short=VOL/WPM select, long3s=config)          │
+// │   SW_UP   : GPIO35 → GND  (increment selected parameter)                 │
+// │   SW_DN   : GPIO34 → GND  (decrement selected parameter)                 │
+// │   All buttons: INPUT_PULLUP, connect one terminal to GPIO, other to GND  │
+// │   Optional: 10kΩ external pull-up on GPIO34/35 (input-only pins)         │
 // └──────────────────────────────────────────────────────────────────────────┘
