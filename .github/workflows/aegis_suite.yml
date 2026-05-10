@@ -48,8 +48,7 @@ jobs:
 
       - name: 🛠️ Install arduino-cli
         run: |
-          # Download the official binary release — avoids PATH issues with the
-          # install.sh script which does not update the current shell's PATH.
+          # Download the official binary — avoids PATH issues with install.sh
           ARDUINO_CLI_VERSION="1.0.4"
           curl -fsSL \
             "https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz" \
@@ -76,10 +75,15 @@ jobs:
 
       - name: 🏗️ Compile (ESP32 Dev Module, 240 MHz)
         run: |
+          # arduino-cli requires the .ino inside a folder matching the sketch
+          # name exactly. The repo keeps AegisBeacon.ino at the root, so we
+          # create the expected structure in /tmp before compiling.
+          mkdir -p /tmp/sketch/AegisBeacon
+          cp AegisBeacon.ino /tmp/sketch/AegisBeacon/AegisBeacon.ino
           arduino-cli compile \
             --fqbn esp32:esp32:esp32:CPUFreq=240 \
-            --output-dir build-arduino \
-            AegisBeacon.ino
+            --output-dir "$GITHUB_WORKSPACE/build-arduino" \
+            /tmp/sketch/AegisBeacon
           echo "✅ Arduino build succeeded"
 
       - name: 📦 Archive Arduino binary
@@ -158,18 +162,8 @@ jobs:
         run: |
           pio run -e esp32devkitv1 2>&1 | tee pio_output.txt
 
-          # Extract RAM and Flash summary lines produced by PlatformIO
           RAM_LINE=$(grep   -i "ram:"   pio_output.txt | tail -1 || echo "RAM:   n/a")
           FLASH_LINE=$(grep -i "flash:" pio_output.txt | tail -1 || echo "Flash: n/a")
-
-          # Persist to step outputs (sanitise special characters for GHA)
-          echo "ram<<EOF"   >> $GITHUB_OUTPUT
-          echo "$RAM_LINE"  >> $GITHUB_OUTPUT
-          echo "EOF"        >> $GITHUB_OUTPUT
-
-          echo "flash<<EOF"   >> $GITHUB_OUTPUT
-          echo "$FLASH_LINE"  >> $GITHUB_OUTPUT
-          echo "EOF"          >> $GITHUB_OUTPUT
 
           # Write to job summary
           {
@@ -179,6 +173,18 @@ jobs:
             echo "$FLASH_LINE"
             echo '```'
           } >> $GITHUB_STEP_SUMMARY
+
+          # Persist to step outputs using heredoc syntax (safe for special chars)
+          {
+            echo "ram<<EOF"
+            echo "$RAM_LINE"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          {
+            echo "flash<<EOF"
+            echo "$FLASH_LINE"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: 💬 Post size comment on PR
         if: github.event_name == 'pull_request'
@@ -252,6 +258,7 @@ jobs:
             | Radio     | Ebyte E22-400M30S (SX1262, +30 dBm) |
             | Display   | SSD1309 2.42″ OLED (U8g2, software SPI) |
             | GPS       | NEO-6M (UART2) |
+            | Battery   | TP4056 + 100kΩ divider on GPIO36 |
 
             ### Firmware variants included
             | Artifact | Build tool | CPU |
