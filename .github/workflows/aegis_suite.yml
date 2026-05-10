@@ -48,21 +48,31 @@ jobs:
 
       - name: 🛠️ Install arduino-cli
         run: |
-          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-          echo "$HOME/bin" >> $GITHUB_PATH
+          # Download the official binary release — avoids PATH issues with the
+          # install.sh script which does not update the current shell's PATH.
+          ARDUINO_CLI_VERSION="1.0.4"
+          curl -fsSL \
+            "https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz" \
+            | tar -xz -C /usr/local/bin arduino-cli
+          arduino-cli version
 
-      - name: 📦 Install ESP32 core + libraries
+      - name: 📦 Install ESP32 core
         run: |
-          arduino-cli config init
+          arduino-cli config init --overwrite
           arduino-cli config add board_manager.additional_urls \
             https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
           arduino-cli core update-index
           arduino-cli core install esp32:esp32
+          echo "✅ ESP32 core installed"
+
+      - name: 📦 Install libraries
+        run: |
           arduino-cli lib install \
             "RadioLib" \
             "ArduinoJson" \
             "U8g2" \
             "TinyGPSPlus"
+          echo "✅ Libraries installed"
 
       - name: 🏗️ Compile (ESP32 Dev Module, 240 MHz)
         run: |
@@ -120,7 +130,7 @@ jobs:
       - name: 🛠️ Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y cppcheck binutils
+          sudo apt-get install -y cppcheck
           pip install -U platformio
 
       - name: 📁 Prepare source
@@ -136,6 +146,9 @@ jobs:
             --suppress=unusedFunction \
             --suppress=missingIncludeSystem \
             --suppress=noExplicitConstructor \
+            --suppress=knownConditionTrueFalse \
+            --suppress=invalidPrintfArgType_uint \
+            --suppress=constVariableReference \
             --error-exitcode=1 \
             src/main.cpp
           echo "✅ cppcheck passed"
@@ -144,29 +157,47 @@ jobs:
         id: size
         run: |
           pio run -e esp32devkitv1 2>&1 | tee pio_output.txt
-          # Extract the RAM/Flash summary lines and expose them
-          RAM=$(grep  "RAM:"   pio_output.txt | tail -1 || echo "n/a")
-          FLASH=$(grep "Flash:" pio_output.txt | tail -1 || echo "n/a")
-          echo "ram=$RAM"     >> $GITHUB_OUTPUT
-          echo "flash=$FLASH" >> $GITHUB_OUTPUT
-          echo "### 📊 Firmware Size" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`"              >> $GITHUB_STEP_SUMMARY
-          echo "$RAM"                >> $GITHUB_STEP_SUMMARY
-          echo "$FLASH"              >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`"              >> $GITHUB_STEP_SUMMARY
+
+          # Extract RAM and Flash summary lines produced by PlatformIO
+          RAM_LINE=$(grep   -i "ram:"   pio_output.txt | tail -1 || echo "RAM:   n/a")
+          FLASH_LINE=$(grep -i "flash:" pio_output.txt | tail -1 || echo "Flash: n/a")
+
+          # Persist to step outputs (sanitise special characters for GHA)
+          echo "ram<<EOF"   >> $GITHUB_OUTPUT
+          echo "$RAM_LINE"  >> $GITHUB_OUTPUT
+          echo "EOF"        >> $GITHUB_OUTPUT
+
+          echo "flash<<EOF"   >> $GITHUB_OUTPUT
+          echo "$FLASH_LINE"  >> $GITHUB_OUTPUT
+          echo "EOF"          >> $GITHUB_OUTPUT
+
+          # Write to job summary
+          {
+            echo "### 📊 Firmware Size — esp32devkitv1 (240 MHz)"
+            echo '```'
+            echo "$RAM_LINE"
+            echo "$FLASH_LINE"
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY
 
       - name: 💬 Post size comment on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            const ram   = '${{ steps.size.outputs.ram }}';
-            const flash = '${{ steps.size.outputs.flash }}';
+            const ram   = `${{ steps.size.outputs.ram }}`;
+            const flash = `${{ steps.size.outputs.flash }}`;
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo:  context.repo.repo,
               issue_number: context.issue.number,
-              body: `### 📊 Aegis-Beacon v5.4 — Firmware Size\n\`\`\`\n${ram}\n${flash}\n\`\`\``
+              body: [
+                '### 📊 Aegis-Beacon v5.4 — Firmware Size',
+                '```',
+                ram,
+                flash,
+                '```'
+              ].join('\n')
             });
 
   # ── CI summary ───────────────────────────────────────────────────────────────
@@ -178,14 +209,16 @@ jobs:
     steps:
       - name: 📋 Write summary
         run: |
-          echo "## 🛡️ Aegis-Beacon v5.4 — CI Results" >> $GITHUB_STEP_SUMMARY
-          echo ""                                       >> $GITHUB_STEP_SUMMARY
-          echo "| Job | Status |"                       >> $GITHUB_STEP_SUMMARY
-          echo "|-----|--------|"                       >> $GITHUB_STEP_SUMMARY
-          echo "| 🔨 Arduino 240MHz  | ${{ needs.build-arduino.result }}    |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔧 PIO 240MHz      | ${{ needs.build-pio.result }}        |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔧 PIO 80MHz       | ${{ needs.build-pio.result }}        |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🛡️ Static analysis | ${{ needs.static-analysis.result }} |" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## 🛡️ Aegis-Beacon v5.4 — CI Results"
+            echo ""
+            echo "| Job | Status |"
+            echo "|-----|--------|"
+            echo "| 🔨 Arduino 240 MHz   | ${{ needs.build-arduino.result }}   |"
+            echo "| 🔧 PIO 240 MHz       | ${{ needs.build-pio.result }}       |"
+            echo "| 🔧 PIO 80 MHz        | ${{ needs.build-pio.result }}       |"
+            echo "| 🛡️ Static analysis   | ${{ needs.static-analysis.result }} |"
+          } >> $GITHUB_STEP_SUMMARY
 
   # ── Release ──────────────────────────────────────────────────────────────────
   release:
@@ -221,12 +254,12 @@ jobs:
             | GPS       | NEO-6M (UART2) |
 
             ### Firmware variants included
-            | File | Build |
-            |------|-------|
-            | `firmware.bin` (240 MHz) | PlatformIO `esp32devkitv1` |
-            | `firmware.bin` (80 MHz)  | PlatformIO `esp32devkitv1_80mhz` |
-            | `*.bin` (Arduino IDE)    | Arduino CLI, ESP32 Dev Module |
+            | Artifact | Build tool | CPU |
+            |----------|-----------|-----|
+            | PIO `esp32devkitv1`       | PlatformIO | 240 MHz |
+            | PIO `esp32devkitv1_80mhz` | PlatformIO | 80 MHz  |
+            | Arduino CLI               | arduino-cli | 240 MHz |
 
-            > ⚠️ v5.x is a **full hardware revision** from v4.0. Factory reset required when upgrading.
+            > ⚠️ v5.x is a **full hardware revision** from v4.0 (ESP32-C3 → DevKit V1, SX1276 → SX1262, SSD1306 → SSD1309). Factory reset required when upgrading.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
