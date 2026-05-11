@@ -48,41 +48,28 @@ jobs:
 
       - name: 🛠️ Install arduino-cli
         run: |
-          ARDUINO_CLI_VERSION="1.0.4"
-          curl -fsSL \
-            "https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz" \
-            | tar -xz -C /usr/local/bin arduino-cli
-          arduino-cli version
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          echo "$HOME/bin" >> $GITHUB_PATH
 
-      - name: 📦 Install ESP32 core 2.0.17
-        # Pin to 2.x: the 3.x core changed esp_task_wdt_init() signature,
-        # renamed ledcSetup/ledcAttachPin, and redeclares DeviceMode/ScanResult
-        # in a way that conflicts with the sketch's own type definitions.
+      - name: 📦 Install ESP32 core + libraries
         run: |
-          arduino-cli config init --overwrite
+          arduino-cli config init
           arduino-cli config add board_manager.additional_urls \
             https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
           arduino-cli core update-index
-          arduino-cli core install esp32:esp32@2.0.17
-          echo "✅ ESP32 core 2.0.17 installed"
-
-      - name: 📦 Install libraries
-        run: |
+          arduino-cli core install esp32:esp32
           arduino-cli lib install \
             "RadioLib" \
             "ArduinoJson" \
             "U8g2" \
             "TinyGPSPlus"
-          echo "✅ Libraries installed"
 
       - name: 🏗️ Compile (ESP32 Dev Module, 240 MHz)
         run: |
-          mkdir -p /tmp/sketch/AegisBeacon
-          cp AegisBeacon.ino /tmp/sketch/AegisBeacon/AegisBeacon.ino
           arduino-cli compile \
             --fqbn esp32:esp32:esp32:CPUFreq=240 \
-            --output-dir "$GITHUB_WORKSPACE/build-arduino" \
-            /tmp/sketch/AegisBeacon
+            --output-dir build-arduino \
+            AegisBeacon.ino
           echo "✅ Arduino build succeeded"
 
       - name: 📦 Archive Arduino binary
@@ -112,22 +99,6 @@ jobs:
           mkdir -p src
           cp AegisBeacon.ino src/main.cpp
 
-      - name: 🔧 Ensure 80 MHz env exists in platformio.ini
-        # If the repo's platformio.ini doesn't yet declare esp32devkitv1_80mhz,
-        # append a minimal definition that inherits from the 240 MHz base env
-        # and overrides only the CPU frequency.
-        if: matrix.env == 'esp32devkitv1_80mhz'
-        run: |
-          if ! grep -q "\[env:esp32devkitv1_80mhz\]" platformio.ini; then
-            echo "" >> platformio.ini
-            echo "[env:esp32devkitv1_80mhz]" >> platformio.ini
-            echo "extends = env:esp32devkitv1" >> platformio.ini
-            echo "board_build.f_cpu = 80000000L" >> platformio.ini
-            echo "⚠️  esp32devkitv1_80mhz env not found — auto-generated from base env"
-          else
-            echo "✅ esp32devkitv1_80mhz env already present"
-          fi
-
       - name: 🏗️ Compile (${{ matrix.env }})
         run: pio run -e ${{ matrix.env }}
 
@@ -149,7 +120,7 @@ jobs:
       - name: 🛠️ Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y cppcheck
+          sudo apt-get install -y cppcheck binutils
           pip install -U platformio
 
       - name: 📁 Prepare source
@@ -165,9 +136,6 @@ jobs:
             --suppress=unusedFunction \
             --suppress=missingIncludeSystem \
             --suppress=noExplicitConstructor \
-            --suppress=knownConditionTrueFalse \
-            --suppress=invalidPrintfArgType_uint \
-            --suppress=constVariableReference \
             --error-exitcode=1 \
             src/main.cpp
           echo "✅ cppcheck passed"
@@ -176,47 +144,29 @@ jobs:
         id: size
         run: |
           pio run -e esp32devkitv1 2>&1 | tee pio_output.txt
-
-          RAM_LINE=$(grep   -i "ram:"   pio_output.txt | tail -1 || echo "RAM:   n/a")
-          FLASH_LINE=$(grep -i "flash:" pio_output.txt | tail -1 || echo "Flash: n/a")
-
-          {
-            echo "### 📊 Firmware Size — esp32devkitv1 (240 MHz)"
-            echo '```'
-            echo "$RAM_LINE"
-            echo "$FLASH_LINE"
-            echo '```'
-          } >> $GITHUB_STEP_SUMMARY
-
-          {
-            echo "ram<<EOF"
-            echo "$RAM_LINE"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
-          {
-            echo "flash<<EOF"
-            echo "$FLASH_LINE"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
+          # Extract the RAM/Flash summary lines and expose them
+          RAM=$(grep  "RAM:"   pio_output.txt | tail -1 || echo "n/a")
+          FLASH=$(grep "Flash:" pio_output.txt | tail -1 || echo "n/a")
+          echo "ram=$RAM"     >> $GITHUB_OUTPUT
+          echo "flash=$FLASH" >> $GITHUB_OUTPUT
+          echo "### 📊 Firmware Size" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`"              >> $GITHUB_STEP_SUMMARY
+          echo "$RAM"                >> $GITHUB_STEP_SUMMARY
+          echo "$FLASH"              >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`"              >> $GITHUB_STEP_SUMMARY
 
       - name: 💬 Post size comment on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            const ram   = `${{ steps.size.outputs.ram }}`;
-            const flash = `${{ steps.size.outputs.flash }}`;
+            const ram   = '${{ steps.size.outputs.ram }}';
+            const flash = '${{ steps.size.outputs.flash }}';
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo:  context.repo.repo,
               issue_number: context.issue.number,
-              body: [
-                '### 📊 Aegis-Beacon v5.4 — Firmware Size',
-                '```',
-                ram,
-                flash,
-                '```'
-              ].join('\n')
+              body: `### 📊 Aegis-Beacon v5.4 — Firmware Size\n\`\`\`\n${ram}\n${flash}\n\`\`\``
             });
 
   # ── CI summary ───────────────────────────────────────────────────────────────
@@ -228,16 +178,14 @@ jobs:
     steps:
       - name: 📋 Write summary
         run: |
-          {
-            echo "## 🛡️ Aegis-Beacon v5.4 — CI Results"
-            echo ""
-            echo "| Job | Status |"
-            echo "|-----|--------|"
-            echo "| 🔨 Arduino 240 MHz   | ${{ needs.build-arduino.result }}   |"
-            echo "| 🔧 PIO 240 MHz       | ${{ needs.build-pio.result }}       |"
-            echo "| 🔧 PIO 80 MHz        | ${{ needs.build-pio.result }}       |"
-            echo "| 🛡️ Static analysis   | ${{ needs.static-analysis.result }} |"
-          } >> $GITHUB_STEP_SUMMARY
+          echo "## 🛡️ Aegis-Beacon v5.4 — CI Results" >> $GITHUB_STEP_SUMMARY
+          echo ""                                       >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |"                       >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|"                       >> $GITHUB_STEP_SUMMARY
+          echo "| 🔨 Arduino 240MHz  | ${{ needs.build-arduino.result }}    |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔧 PIO 240MHz      | ${{ needs.build-pio.result }}        |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔧 PIO 80MHz       | ${{ needs.build-pio.result }}        |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🛡️ Static analysis | ${{ needs.static-analysis.result }} |" >> $GITHUB_STEP_SUMMARY
 
   # ── Release ──────────────────────────────────────────────────────────────────
   release:
@@ -271,15 +219,14 @@ jobs:
             | Radio     | Ebyte E22-400M30S (SX1262, +30 dBm) |
             | Display   | SSD1309 2.42″ OLED (U8g2, software SPI) |
             | GPS       | NEO-6M (UART2) |
-            | Battery   | TP4056 + 100kΩ divider on GPIO36 |
 
             ### Firmware variants included
-            | Artifact | Build tool | CPU |
-            |----------|-----------|-----|
-            | PIO `esp32devkitv1`       | PlatformIO | 240 MHz |
-            | PIO `esp32devkitv1_80mhz` | PlatformIO | 80 MHz  |
-            | Arduino CLI               | arduino-cli | 240 MHz |
+            | File | Build |
+            |------|-------|
+            | `firmware.bin` (240 MHz) | PlatformIO `esp32devkitv1` |
+            | `firmware.bin` (80 MHz)  | PlatformIO `esp32devkitv1_80mhz` |
+            | `*.bin` (Arduino IDE)    | Arduino CLI, ESP32 Dev Module |
 
-            > ⚠️ v5.x is a **full hardware revision** from v4.0 (ESP32-C3 → DevKit V1, SX1276 → SX1262, SSD1306 → SSD1309). Factory reset required when upgrading.
+            > ⚠️ v5.x is a **full hardware revision** from v4.0. Factory reset required when upgrading.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
