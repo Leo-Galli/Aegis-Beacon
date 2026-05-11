@@ -380,9 +380,9 @@ typedef enum {
   MODE_SEARCH    = 1,
   MODE_CONFIG    = 2,
   MODE_EMERGENCY = 3
-} DeviceMode;
+} AegisMode;
 
-const char* modeName(DeviceMode m) {
+const char* aegisModeName(AegisMode m) {
   switch(m) {
     case MODE_BEACON:    return "BEACON";
     case MODE_SEARCH:    return "SEARCH";
@@ -392,7 +392,7 @@ const char* modeName(DeviceMode m) {
   }
 }
 
-struct ScanHit {
+struct AegisScanHit {
   float    freq;
   int16_t  rssi;
   uint32_t timestamp;
@@ -409,7 +409,7 @@ struct Config {
   uint32_t sleepSec;
   uint16_t scanDwellMs;
   int8_t   rssiThreshold;
-  DeviceMode lastMode;
+  AegisMode lastMode;
   bool     autoSwitch;
   uint8_t  repeatCount;
   // Audio
@@ -434,7 +434,7 @@ struct Config {
 
 Config cfg;
 
-struct ScanResult {
+struct AegisScanResult {
   float   freq;
   int16_t rssi;
   bool    detected;
@@ -459,9 +459,9 @@ GpsFix g_gpsFix = {0, 0, 0, 0, false, 999999, 0};
 RTC_DATA_ATTR uint32_t   g_bootCycle      = 0;
 RTC_DATA_ATTR uint32_t   g_txCycles       = 0;
 RTC_DATA_ATTR uint32_t   g_scanCycles     = 0;
-RTC_DATA_ATTR ScanHit    g_scanHits[MAX_SCAN_HITS];
+RTC_DATA_ATTR AegisScanHit    g_scanHits[MAX_SCAN_HITS];
 RTC_DATA_ATTR uint8_t    g_scanHitCount   = 0;
-RTC_DATA_ATTR DeviceMode g_currentMode    = MODE_BEACON;
+RTC_DATA_ATTR AegisMode g_currentMode    = MODE_BEACON;
 RTC_DATA_ATTR bool       g_emergencyActive = false;
 // Persist last known GPS fix across deep-sleep cycles
 RTC_DATA_ATTR double     g_rtcLat         = 0;
@@ -1091,7 +1091,7 @@ void oledSearch(int freqIdx, float freqMHz, int16_t rssi,
     u8g2.setDrawColor(1);
   } else if (g_scanHitCount > 0) {
     // Show last hit
-    ScanHit& h = g_scanHits[g_scanHitCount - 1];
+    AegisScanHit& h = g_scanHits[g_scanHitCount - 1];
     char lastbuf[28];
     snprintf(lastbuf, sizeof(lastbuf), "LAST %.3fMHz %ddBm %s",
              h.freq, h.rssi, h.label);
@@ -1224,7 +1224,7 @@ void blinkLed(uint8_t pin, int times, int ms = 100) {
   }
 }
 
-void ledModeIndicate(DeviceMode m) {
+void ledModeIndicate(AegisMode m) {
   ledsOff();
   if (m == MODE_BEACON || m == MODE_EMERGENCY) blinkLed(PIN_LED_RED, 3, 80);
   else if (m == MODE_SEARCH)                   blinkLed(PIN_LED_BLUE, 3, 80);
@@ -1280,7 +1280,7 @@ void loadConfig() {
   cfg.sleepSec      = prefs.getULong("sleep",  DEFAULT_SLEEP_SEC);
   cfg.scanDwellMs   = prefs.getUShort("dwell", DEFAULT_SCAN_DWELL_MS);
   cfg.rssiThreshold = (int8_t)prefs.getChar("rssi",  DEFAULT_RSSI_THRESH);
-  cfg.lastMode      = (DeviceMode)prefs.getUChar("mode", MODE_BEACON);
+  cfg.lastMode      = (AegisMode)prefs.getUChar("mode", MODE_BEACON);
   cfg.autoSwitch    = prefs.getBool("aswitch", false);
   cfg.repeatCount   = prefs.getUChar("rep",    1);
   cfg.audioVolume   = prefs.getUChar("avol",   DEFAULT_AUDIO_VOL);
@@ -1514,8 +1514,8 @@ bool transmitMessage(const char* msg, int freqIdx, float freqMHz,
 // =============================================================================
 // SCAN ENGINE
 // =============================================================================
-ScanResult scanFrequency(float freqMHz, int freqIdx, uint32_t passNum) {
-  ScanResult r = {freqMHz, -120, false};
+AegisScanResult scanFrequency(float freqMHz, int freqIdx, uint32_t passNum) {
+  AegisScanResult r = {freqMHz, -120, false};
   if (!initRadioFSK(freqMHz)) return r;
   radio.startReceive();
 
@@ -1548,7 +1548,7 @@ ScanResult scanFrequency(float freqMHz, int freqIdx, uint32_t passNum) {
 }
 
 void recordScanHit(float freq, int16_t rssi) {
-  ScanHit hit;
+  AegisScanHit hit;
   hit.freq = freq; hit.rssi = rssi; hit.timestamp = millis();
   if      (rssi >= -60) strlcpy(hit.label, "STRONG", sizeof(hit.label));
   else if (rssi >= -80) strlcpy(hit.label, "MEDIUM", sizeof(hit.label));
@@ -1557,7 +1557,7 @@ void recordScanHit(float freq, int16_t rssi) {
   if (g_scanHitCount < MAX_SCAN_HITS) {
     g_scanHits[g_scanHitCount++] = hit;
   } else {
-    memmove(g_scanHits, g_scanHits + 1, (MAX_SCAN_HITS - 1) * sizeof(ScanHit));
+    memmove(g_scanHits, g_scanHits + 1, (MAX_SCAN_HITS - 1) * sizeof(AegisScanHit));
     g_scanHits[MAX_SCAN_HITS - 1] = hit;
   }
   LOG_SCAN("HIT: %.3f MHz  %d dBm  [%s]  total=%d", freq, rssi, hit.label, g_scanHitCount);
@@ -1569,7 +1569,7 @@ void recordScanHit(float freq, int16_t rssi) {
 
 void printStatus() {
   dbSep("DEVICE STATUS");
-  LOG_INFO("Boot      : #%lu  Mode: %s", g_bootCycle, modeName(g_currentMode));
+  LOG_INFO("Boot      : #%lu  Mode: %s", g_bootCycle, aegisModeName(g_currentMode));
   LOG_INFO("TX cycles : %lu   Scan: %lu", g_txCycles, g_scanCycles);
   LOG_INFO("Heap      : %lu B   Up: %lu s", ESP.getFreeHeap(), millis() / 1000);
   LOG_INFO("OLED      : %s", g_oledOk ? "OK" : "FAIL");
@@ -2399,7 +2399,7 @@ void runSearchMode() {
         }
       }
 
-      ScanResult result = scanFrequency(cfg.freqs[fi], fi, passNum);
+      AegisScanResult result = scanFrequency(cfg.freqs[fi], fi, passNum);
       if (result.detected) { anyDetected = true; totalDet++; recordScanHit(result.freq, result.rssi); }
       esp_task_wdt_reset();
     }
@@ -2423,7 +2423,7 @@ void setup() {
   Serial.begin(115200);
   delay(200);
   g_bootCycle++;
-  dbBanner(modeName(g_currentMode));
+  dbBanner(aegisModeName(g_currentMode));
   LOG_INFO("Boot #%lu  reset_reason=%d  heap=%lu B  cpu=%dMHz",
            g_bootCycle, (int)esp_reset_reason(), ESP.getFreeHeap(), getCpuFrequencyMhz());
 
@@ -2508,7 +2508,7 @@ void setup() {
   if (g_emergencyActive)    g_currentMode = MODE_EMERGENCY;
   else if (g_bootCycle == 1) g_currentMode = cfg.lastMode;
 
-  LOG_MODE("Starting: %s", modeName(g_currentMode));
+  LOG_MODE("Starting: %s", aegisModeName(g_currentMode));
   ledModeIndicate(g_currentMode);
 
   // ── GPS fix wait (BEACON mode only, non-emergency) ────────────────────────
