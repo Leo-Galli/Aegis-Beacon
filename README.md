@@ -17,8 +17,19 @@
 [![Version](https://img.shields.io/badge/version-5.4.0-blue?style=for-the-badge&logo=github)](https://github.com/leo-galli/aegis-beacon/releases)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 
-[![CI Build](https://img.shields.io/github/actions/workflow/status/Leo-Galli/Aegis-Beacon/aegis_suite.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20Build)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/aegis_suite.yml)
-[![Code Quality](https://img.shields.io/github/actions/workflow/status/Leo-Galli/Aegis-Beacon/aegis_suite.yml?style=for-the-badge&logo=cppcheck&logoColor=white&label=Code%20Quality)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/aegis_suite.yml)
+[![Quality Gate](https://img.shields.io/sonar/quality_gate/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Quality%20Gate)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
+
+[![Bugs](https://img.shields.io/sonar/bugs/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Bugs)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
+[![Code Smells](https://img.shields.io/sonar/code_smells/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Code%20Smells)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
+[![Duplicated Lines](https://img.shields.io/sonar/duplicated_lines_density/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Duplicated%20Lines)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
+
+[![Reliability Rating](https://img.shields.io/sonar/reliability_rating/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Reliability)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
+[![Security Rating](https://img.shields.io/sonar/security_rating/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Security)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
+[![Technical Debt](https://img.shields.io/sonar/sqale_index/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Technical%20Debt)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
+[![Maintainability Rating](https://img.shields.io/sonar/sqale_rating/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Maintainability)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
+[![Vulnerabilities](https://img.shields.io/sonar/vulnerabilities/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
+
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
 [![Release](https://img.shields.io/github/v/release/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&color=blue&label=Firmware)](https://github.com/Leo-Galli/Aegis-Beacon/releases)
 
 [![Platform](https://img.shields.io/badge/platform-ESP32_DevKit_V1-red?style=for-the-badge&logo=espressif)](https://www.espressif.com/en/products/socs/esp32)
@@ -42,10 +53,10 @@
 
 <br/>
 
-![BEACON mode](https://img.shields.io/badge/BEACON-SOS_+_NAME_+_GPS_TX-red?style=flat-square)
-![SEARCH mode](https://img.shields.io/badge/SEARCH-RSSI_scan_+_audio_alert-blue?style=flat-square)
-![Config mode](https://img.shields.io/badge/CONFIG-WiFi_captive_portal-grey?style=flat-square)
-![Emergency mode](https://img.shields.io/badge/EMERGENCY-max_power_no_sleep-orange?style=flat-square)
+![BEACON Mode](https://img.shields.io/badge/BEACON-SOS_+_NAME_+_GPS_TX-red?style=for-the-badge&logo=target&logoColor=white)
+![SEARCH Mode](https://img.shields.io/badge/SEARCH-RSSI_scan_+_audio_alert-blue?style=for-the-badge&logo=radar&logoColor=white)
+![CONFIG Mode](https://img.shields.io/badge/CONFIG-WiFi_captive_portal-grey?style=for-the-badge&logo=wifi&logoColor=white)
+![EMERGENCY Mode](https://img.shields.io/badge/EMERGENCY-max_power_no_sleep-orange?style=for-the-badge&logo=warning&logoColor=white)
 
 </div>
 
@@ -990,9 +1001,9 @@ THE SOFTWARE.
 
 **Built with ❤️ by [@Leo-Galli](https://github.com/Leo-Galli) for mountain safety.**
 
-[![Stars](https://img.shields.io/github/stars/leo-galli/aegis-beacon?style=social)](https://github.com/leo-galli/aegis-beacon)
-[![Forks](https://img.shields.io/github/forks/leo-galli/aegis-beacon?style=social)](https://github.com/leo-galli/aegis-beacon/fork)
-[![Issues](https://img.shields.io/github/issues/leo-galli/aegis-beacon?style=flat-square)](https://github.com/leo-galli/aegis-beacon/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&label=Stars)](https://github.com/Leo-Galli/Aegis-Beacon)
+[![GitHub Forks](https://img.shields.io/github/forks/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&label=Forks)](https://github.com/Leo-Galli/Aegis-Beacon/fork)
+[![GitHub Issues](https://img.shields.io/github/issues/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&label=Issues)](https://github.com/Leo-Galli/Aegis-Beacon/issues)
 
 *If this project saves a life, please open a PR and let us know.*
 
