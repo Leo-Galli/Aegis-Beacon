@@ -11,6 +11,7 @@
 
 # Aegis-Beacon v5.4
 
+![Banner](https://github.com/Leo-Galli/Aegis-Beacon/blob/main/banner.png?raw=true)
 ### Professional Dual-Mode Avalanche Rescue System
 ### SSD1309 2.42" OLED · SX1262 Radio · GPS Payload · Battery Monitor
 
@@ -30,6 +31,7 @@
 [![Vulnerabilities](https://img.shields.io/sonar/vulnerabilities/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
 
 [![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
+
 [![Release](https://img.shields.io/github/v/release/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&color=blue&label=Firmware)](https://github.com/Leo-Galli/Aegis-Beacon/releases)
 
 [![Platform](https://img.shields.io/badge/platform-ESP32_DevKit_V1-red?style=for-the-badge&logo=espressif)](https://www.espressif.com/en/products/socs/esp32)
