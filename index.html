@@ -143,6 +143,12 @@
       linear-gradient(90deg, rgba(255,106,19,0.05) 1px, transparent 1px);
     background-size: 32px 32px;
   }
+
+  .goog-te-banner-frame { display: none !important; }
+  body { top: 0 !important; }
+  #google_translate_element { display: none !important; }
+  .skiptranslate { display: none !important; }
+  body .skiptranslate { display: none !important; }
 </style>
 </head>
 <body class="topo-bg antialiased selection:bg-orange-500 selection:text-black">
@@ -150,10 +156,10 @@
 <div id="google_translate_element"></div>
 
 <header class="sticky top-0 z-50 backdrop-blur-md bg-[#07080a]/80 border-b border-[#1e232b]">
-  <nav class="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between" aria-label="Navigazione principale">
-    <a href="#top" class="flex items-center gap-3 group">
-      <span class="font-display font-700 text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-[#7e8691] group-hover:from-white group-hover:to-orange transition-all duration-300">AEGIS-BEACON</span>
-      <span class="font-mono text-xs bg-orange/10 text-orange border border-orange/20 rounded px-2 py-0.5">v5.4.0</span>
+  <nav class="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 h-20 flex items-center justify-between" aria-label="Navigazione principale">
+    <a href="#top" class="flex items-center gap-2 sm:gap-3 group">
+      <span class="font-display font-700 text-base sm:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-[#7e8691] group-hover:from-white group-hover:to-orange transition-all duration-300">AEGIS-BEACON</span>
+      <span class="font-mono text-[10px] sm:text-xs bg-orange/10 text-orange border border-orange/20 rounded px-1.5 sm:px-2 py-0.5">v5.4.0</span>
     </a>
 
     <ul class="hidden lg:flex items-center gap-10 font-mono text-xs uppercase tracking-widest text-[#7e8691]">
@@ -163,20 +169,22 @@
       <li><a href="#faq" class="hover:text-white transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:h-[1px] after:w-0 after:bg-orange hover:after:w-full after:transition-all">FAQ</a></li>
     </ul>
 
-    <div class="flex items-center gap-4">
-      <div class="relative">
-        <label for="lang-select" class="sr-only">Lingua</label>
-        <select id="lang-select" class="font-mono text-xs bg-[#0d0f12] border border-[#1e232b] text-[#f1f2f4] rounded-lg px-3 py-2 cursor-pointer focus:outline-none focus:border-orange transition-colors">
+    <div class="flex items-center gap-2 sm:gap-4">
+      <div class="relative flex items-center">
+        <select id="lang-select" class="appearance-none pr-8 font-mono text-[11px] sm:text-xs bg-[#0d0f12] border border-[#1e232b] text-[#f1f2f4] rounded-lg pl-3 py-2 cursor-pointer focus:outline-none focus:border-orange transition-colors hover:bg-[#121519]">
           <option value="it">IT</option>
           <option value="en">EN</option>
           <option value="fr">FR</option>
           <option value="de">DE</option>
           <option value="sl">SL</option>
         </select>
+        <div class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7e8691]">
+          <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+        </div>
       </div>
       <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener"
-        class="hidden sm:inline-flex items-center gap-2 font-mono text-xs border border-[#1e232b] bg-[#0d0f12] text-[#f1f2f4] rounded-lg px-4 py-2.5 hover:border-orange hover:text-orange transition-all duration-200 shadow-sm">
-        GitHub Repository ↗
+        class="inline-flex items-center gap-1 sm:gap-2 font-mono text-[11px] sm:text-xs border border-[#1e232b] bg-[#0d0f12] text-[#f1f2f4] rounded-lg px-3 sm:px-4 py-2.5 hover:border-orange hover:text-orange transition-all duration-200 shadow-sm">
+        <span class="sm:inline">GitHub</span> Repository ↗
       </a>
     </div>
   </nav>
@@ -184,108 +192,108 @@
 
 <main id="top">
 
-  <section class="relative overflow-hidden border-b border-[#1e232b] py-20 md:py-32">
-    <div class="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-[1.2fr_0.8fr] gap-16 items-center">
+  <section class="relative overflow-hidden border-b border-[#1e232b] py-12 sm:py-20 md:py-32">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 grid lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-16 items-center">
       <div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
           <span class="grid-ref">GRID N4553 E01230</span>
-          <span class="font-mono text-xs text-[#7e8691]">● OPERATIONAL FREQUENCY: 433 MHz</span>
+          <span class="font-mono text-[11px] sm:text-xs text-[#7e8691]">● OPERATIONAL FREQUENCY: 433 MHz</span>
         </div>
-        <h1 class="font-display font-700 text-5xl md:text-7xl tracking-tight mt-6 leading-[1.05]">
+        <h1 class="font-display font-700 text-3xl sm:text-5xl md:text-7xl tracking-tight mt-6 leading-[1.1] md:leading-[1.05]">
           Open-Source <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-orange to-amber-500">Avalanche Rescue</span><br>Transceiver
         </h1>
-        <p class="mt-8 text-[#7e8691] text-lg max-w-xl leading-relaxed">
+        <p class="mt-6 sm:mt-8 text-[#7e8691] text-sm sm:text-base md:text-lg max-w-xl leading-relaxed">
           Dispositivo di sicurezza dual-mode basato su microcontrollore <span class="text-[#f1f2f4] font-medium">ESP32</span>, modulo radio <span class="text-[#f1f2f4] font-medium">SX1262 LoRa</span> e antenna <span class="text-[#f1f2f4] font-medium">GPS NEO-6M</span>. Architettura ad alta efficienza energetica con distinta base ottimizzata.
         </p>
 
-        <div class="mt-8 flex flex-wrap gap-2.5 font-mono text-[11px]">
-          <span class="bg-[#0d0f12] border border-emerald/20 rounded px-3 py-1.5 text-emerald flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-emerald"></span>BOM: ~23–28 USD</span>
-          <span class="bg-[#0d0f12] border border-radar/20 rounded px-3 py-1.5 text-radar flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-radar"></span>RSSI LIMIT: −120 dBm</span>
-          <span class="bg-[#0d0f12] border border-emergency/20 rounded px-3 py-1.5 text-emergency flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-emergency"></span>CW MODE: 13 WPM</span>
-          <span class="bg-[#0d0f12] border border-[#1e232b] rounded px-3 py-1.5 text-[#7e8691]">MIT LICENSE</span>
+        <div class="mt-6 sm:mt-8 flex flex-wrap gap-2 sm:gap-2.5 font-mono text-[10px] sm:text-[11px]">
+          <span class="bg-[#0d0f12] border border-emerald/20 rounded px-2.5 py-1.5 text-emerald flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-emerald"></span>BOM: ~23–28 USD</span>
+          <span class="bg-[#0d0f12] border border-radar/20 rounded px-2.5 py-1.5 text-radar flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-radar"></span>RSSI LIMIT: −120 dBm</span>
+          <span class="bg-[#0d0f12] border border-emergency/20 rounded px-2.5 py-1.5 text-emergency flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-emergency"></span>CW MODE: 13 WPM</span>
+          <span class="bg-[#0d0f12] border border-[#1e232b] rounded px-2.5 py-1.5 text-[#7e8691]">MIT LICENSE</span>
         </div>
 
-        <div class="mt-12 flex flex-col sm:flex-row gap-4">
+        <div class="mt-8 sm:mt-12 flex flex-col sm:flex-row gap-4">
           <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener"
-            class="font-mono text-sm text-center bg-gradient-to-r from-orange to-amber-600 text-black font-semibold px-8 py-4 rounded-xl hover:brightness-110 transition shadow-lg shadow-orange/10">
+            class="font-mono text-xs sm:text-sm text-center bg-gradient-to-r from-orange to-amber-600 text-black font-semibold px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl hover:brightness-110 transition shadow-lg shadow-orange/10">
             Sorgenti Firmware & Hardware
           </a>
           <a href="#simulatore"
-            class="font-mono text-sm text-center border border-[#1e232b] bg-[#0d0f12] text-[#f1f2f4] px-8 py-4 rounded-xl hover:border-orange hover:text-orange transition">
+            class="font-mono text-xs sm:text-sm text-center border border-[#1e232b] bg-[#0d0f12] text-[#f1f2f4] px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl hover:border-orange hover:text-orange transition">
             Terminale UI Simulator
           </a>
         </div>
       </div>
 
-      <div class="bg-[#0d0f12] border border-[#1e232b] rounded-2xl p-6 relative overflow-hidden glow-orange">
+      <div class="bg-[#0d0f12] border border-[#1e232b] rounded-2xl p-4 sm:p-6 relative overflow-hidden glow-orange w-full max-w-md mx-auto lg:max-w-none">
         <div class="search-grid absolute inset-0 opacity-40"></div>
-        <div class="relative flex items-center justify-between mb-6 font-mono text-[11px] text-[#7e8691]">
+        <div class="relative flex items-center justify-between mb-4 sm:mb-6 font-mono text-[10px] sm:text-[11px] text-[#7e8691]">
           <span class="tracking-widest">GRID SYSTEM // MATRIX-01</span>
           <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>ONLINE</span>
         </div>
 
-        <div class="relative h-56 flex items-center justify-center bg-[#07080a]/60 rounded-xl border border-[#1e232b]/50 backdrop-blur-sm">
+        <div class="relative h-44 sm:h-56 flex items-center justify-center bg-[#07080a]/60 rounded-xl border border-[#1e232b]/50 backdrop-blur-sm">
           <span class="absolute w-8 h-8 rounded-full bg-emergency/30 beacon-pulse"></span>
           <span class="w-3.5 h-3.5 rounded-full bg-emergency relative z-10 shadow-[0_0_12px_rgba(255,59,59,0.8)]"></span>
-          <span class="absolute bottom-4 font-mono text-[10px] bg-[#0d0f12]/90 border border-emergency/20 rounded px-3 py-1 text-emergency tracking-wider">BEACON ACTIVE // TARGET IN SCOPE</span>
+          <span class="absolute bottom-4 font-mono text-[9px] sm:text-[10px] bg-[#0d0f12]/90 border border-emergency/20 rounded px-2.5 py-1 text-emergency tracking-wider">BEACON ACTIVE // TARGET IN SCOPE</span>
         </div>
 
-        <div class="relative grid grid-cols-2 gap-4 font-mono text-xs mt-6">
-          <div class="border border-[#1e232b] rounded-xl p-4 bg-[#07080a]">
-            <p class="text-[#7e8691] text-[10px] tracking-wider uppercase">Rx/Tx Status</p>
-            <p class="text-emergency font-bold text-xl mt-1">EMISSION</p>
+        <div class="relative grid grid-cols-2 gap-3 sm:gap-4 font-mono text-xs mt-4 sm:mt-6">
+          <div class="border border-[#1e232b] rounded-xl p-3 sm:p-4 bg-[#07080a]">
+            <p class="text-[#7e8691] text-[9px] sm:text-[10px] tracking-wider uppercase">Rx/Tx Status</p>
+            <p class="text-emergency font-bold text-base sm:text-xl mt-1">EMISSION</p>
           </div>
-          <div class="border border-[#1e232b] rounded-xl p-4 bg-[#07080a]">
-            <p class="text-[#7e8691] text-[10px] tracking-wider uppercase">Battery Cell</p>
-            <p class="text-emerald font-bold text-xl mt-1">4.12 V</p>
+          <div class="border border-[#1e232b] rounded-xl p-3 sm:p-4 bg-[#07080a]">
+            <p class="text-[#7e8691] text-[9px] sm:text-[10px] tracking-wider uppercase">Battery Cell</p>
+            <p class="text-emerald font-bold text-base sm:text-xl mt-1">4.12 V</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="architettura" class="max-w-7xl mx-auto px-6 md:px-12 py-24 border-b border-[#1e232b]">
+  <section id="architettura" class="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-16 sm:py-24 border-b border-[#1e232b]">
     <span class="grid-ref">01 · PROTOCOLLI</span>
-    <h2 class="font-display font-700 text-3xl md:text-5xl mt-6 mb-16 tracking-tight">Ingegneria dei Sistemi Dual-Mode</h2>
+    <h2 class="font-display font-700 text-2xl sm:text-3xl md:text-5xl mt-6 mb-10 sm:mb-16 tracking-tight">Ingegneria dei Sistemi Dual-Mode</h2>
 
-    <div class="grid md:grid-cols-2 gap-8">
-      <article class="bg-[#0d0f12] border border-[#1e232b] rounded-2xl p-8 hover:border-emergency/30 transition-all duration-300">
+    <div class="grid md:grid-cols-2 gap-6 sm:gap-8">
+      <article class="bg-[#0d0f12] border border-[#1e232b] rounded-2xl p-6 sm:p-8 hover:border-emergency/30 transition-all duration-300">
         <div class="flex items-center gap-4 mb-6">
           <span class="w-3 h-3 rounded-full bg-emergency shadow-[0_0_8px_rgba(255,59,59,0.5)]"></span>
-          <h3 class="font-display font-700 text-2xl tracking-tight">BEACON Mode — Trasmissione</h3>
+          <h3 class="font-display font-700 text-xl sm:text-2xl tracking-tight">BEACON Mode — Trasmissione</h3>
         </div>
-        <ul class="space-y-5 text-sm text-[#7e8691] leading-relaxed">
-          <li class="flex gap-3"><span class="text-orange font-mono">■</span><div><strong class="text-[#f1f2f4] block mb-1">Portante CW ad Impulsi</strong> Generazione del segnale RF tramite oscillatore interno del chip SX1262. Modulazione ON-OFF guidata dall'algoritmo di codifica basato sul timing standard PARIS.</div></li>
-          <li class="flex gap-3"><span class="text-orange font-mono">■</span><div><strong class="text-[#f1f2f4] block mb-1">Iniezione Telemetria GPS</strong> Compressione sequenziale delle coordinate geografiche estratte dalla stringa NMEA. Il payload memorizza latitudine e longitudine ottimizzando i bit per minimizzare il tempo di trasmissione aerea.</div></li>
-          <li class="flex gap-3"><span class="text-orange font-mono">■</span><div><strong class="text-[#f1f2f4] block mb-1">Gestione Low-Power Deep Sleep</strong> Sincronizzazione dei cicli di riposo della CPU principale. Disattivazione controllata delle periferiche e mantenimento dei vettori di stato all'interno della memoria RTC RAM statica.</div></li>
+        <ul class="space-y-5 text-xs sm:text-sm text-[#7e8691] leading-relaxed">
+          <li class="flex gap-3"><span class="text-orange font-mono">■</span><div><strong class="text-[#f1f2f4] block mb-1">Portante CW ad Impulsi</strong> Modulazione ON-OFF guidata dall'algoritmo di codifica basato sul timing standard PARIS.</div></li>
+          <li class="flex gap-3"><span class="text-orange font-mono">■</span><div><strong class="text-[#f1f2f4] block mb-1">Iniezione Telemetria GPS</strong> Compressione sequenziale delle coordinate geografiche estratte dalla stringa NMEA.</div></li>
+          <li class="flex gap-3"><span class="text-orange font-mono">■</span><div><strong class="text-[#f1f2f4] block mb-1">Gestione Low-Power Deep Sleep</strong> Sincronizzazione dei cicli di riposo della CPU con persistenza dello stato in RTC RAM.</div></li>
         </ul>
       </article>
 
-      <article class="bg-[#0d0f12] border border-[#1e232b] rounded-2xl p-8 hover:border-radar/30 transition-all duration-300">
+      <article class="bg-[#0d0f12] border border-[#1e232b] rounded-2xl p-6 sm:p-8 hover:border-radar/30 transition-all duration-300">
         <div class="flex items-center gap-4 mb-6">
           <span class="w-3 h-3 rounded-full bg-radar shadow-[0_0_8px_rgba(59,158,255,0.5)]"></span>
-          <h3 class="font-display font-700 text-2xl tracking-tight">SEARCH Mode — Ricezione</h3>
+          <h3 class="font-display font-700 text-xl sm:text-2xl tracking-tight">SEARCH Mode — Ricezione</h3>
         </div>
-        <ul class="space-y-5 text-sm text-[#7e8691] leading-relaxed">
-          <li class="flex gap-3"><span class="text-radar font-mono">■</span><div><strong class="text-[#f1f2f4] block mb-1">Scansione Dinamica dei Canali</strong> Algoritmo ciclico per l'allineamento dei sintetizzatori di frequenza. Monitoraggio automatico del rumore ambientale per rilevare segnali anche in condizioni di forte distorsione elettromagnetica.</div></li>
-          <li class="flex gap-3"><span class="text-radar font-mono"></div><strong class="text-[#f1f2f4] block mb-1">Analisi Demodulazione RSSI</strong> Estrazione in tempo reale dell'indice di potenza del segnale ricevuto. Filtraggio dei picchi spuri e linearizzazione logaritmica del livello d'intensità per determinare la distanza approssimativa.</div></li>
-          <li class="flex gap-3"><span class="text-radar font-mono">■</span><div><strong class="text-[#f1f2f4] block mb-1">Sintesi Audio Variazione Pitch</strong> Generatore acustico pilotato tramite convertitore digitale-analogico integrato. Mappatura della frequenza d'uscita per fornire un feedback sonoro proporzionale alla vicinanza del bersaglio.</div></li>
+        <ul class="space-y-5 text-xs sm:text-sm text-[#7e8691] leading-relaxed">
+          <li class="flex gap-3"><span class="text-radar font-mono">■</span><div><strong class="text-[#f1f2f4] block mb-1">Scansione Dinamica dei Canali</strong> Algoritmo ciclico per l'allineamento e il monitoraggio automatico del rumore RF.</div></li>
+          <li class="flex gap-3"><span class="text-radar font-mono">■</span><div><strong class="text-[#f1f2f4] block mb-1">Analisi Demodulazione RSSI</strong> Estrazione in tempo reale dell'indice di potenza logaritmica del segnale utile ricevuto.</div></li>
+          <li class="flex gap-3"><span class="text-radar font-mono">■</span><div><strong class="text-[#f1f2f4] block mb-1">Sintesi Audio Variazione Pitch</strong> Generatore acustico via DAC proporzionale all'intensità del segnale e alla vicinanza.</div></li>
         </ul>
       </article>
     </div>
   </section>
 
-  <section id="hardware" class="max-w-7xl mx-auto px-6 md:px-12 py-24 border-b border-[#1e232b]">
+  <section id="hardware" class="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-16 sm:py-24 border-b border-[#1e232b]">
     <span class="grid-ref">02 · DISTINTA COMPONENTI</span>
-    <h2 class="font-display font-700 text-3xl md:text-5xl mt-6 mb-16 tracking-tight">Specifiche Hardware e Cablaggi</h2>
+    <h2 class="font-display font-700 text-2xl sm:text-3xl md:text-5xl mt-6 mb-12 sm:mb-16 tracking-tight">Specifiche Hardware e Cablaggi</h2>
 
-    <div class="grid lg:grid-cols-2 gap-12">
-      <div>
+    <div class="grid lg:grid-cols-2 gap-8 lg:gap-12">
+      <div class="w-full overflow-hidden">
         <h3 class="font-mono text-xs text-[#7e8691] uppercase tracking-widest mb-6 flex items-center gap-2">
           <span class="w-1.5 h-1.5 bg-orange rounded-full"></span> Bill of Materials (BOM)
         </h3>
-        <div class="overflow-hidden bg-[#0d0f12] border border-[#1e232b] rounded-2xl">
-          <table class="w-full text-left border-collapse text-xs">
+        <div class="overflow-x-auto bg-[#0d0f12] border border-[#1e232b] rounded-2xl">
+          <table class="w-full text-left border-collapse text-[11px] sm:text-xs min-w-[400px]">
             <thead>
               <tr class="bg-[#121519] border-b border-[#1e232b] text-[#7e8691]">
                 <th class="p-4 font-mono font-medium">Hardware Unit</th>
@@ -304,12 +312,12 @@
         </div>
       </div>
 
-      <div>
+      <div class="w-full overflow-hidden">
         <h3 class="font-mono text-xs text-[#7e8691] uppercase tracking-widest mb-6 flex items-center gap-2">
           <span class="w-1.5 h-1.5 bg-radar rounded-full"></span> Pinout & Allocazione Registri GPIO
         </h3>
-        <div class="overflow-hidden bg-[#0d0f12] border border-[#1e232b] rounded-2xl">
-          <table class="w-full text-left border-collapse text-xs">
+        <div class="overflow-x-auto bg-[#0d0f12] border border-[#1e232b] rounded-2xl">
+          <table class="w-full text-left border-collapse text-[11px] sm:text-xs min-w-[400px]">
             <thead>
               <tr class="bg-[#121519] border-b border-[#1e232b] text-[#7e8691]">
                 <th class="p-4 font-mono font-medium">Sottosistema</th>
@@ -333,28 +341,28 @@
     </div>
   </section>
 
-  <section id="simulatore" class="max-w-7xl mx-auto px-6 md:px-12 py-24 border-b border-[#1e232b]">
-    <div class="text-center max-w-3xl mx-auto mb-16">
+  <section id="simulatore" class="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-16 sm:py-24 border-b border-[#1e232b]">
+    <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
       <span class="grid-ref">03 · EMULAZIONE FIRMWARE</span>
-      <h2 class="font-display font-700 text-3xl md:text-5xl mt-6 mb-4 tracking-tight">Interfaccia Grafica SSD1309</h2>
-      <p class="text-[#7e8691] text-sm">Simulazione interattiva del firmware di bordo eseguito su display monocromatico 128x64 pixel ad alto contrasto. Utilizza la pulsantiera logica per commutare gli stati di funzionamento.</p>
+      <h2 class="font-display font-700 text-2xl sm:text-3xl md:text-5xl mt-6 mb-4 tracking-tight">Interfaccia Grafica SSD1309</h2>
+      <p class="text-[#7e8691] text-xs sm:text-sm">Simulazione interattiva del firmware di bordo eseguito su display monocromatico 128x64 pixel ad alto contrasto. Utilizza la pulsantiera logica per commutare gli stati di funzionamento.</p>
     </div>
 
-    <div class="flex justify-center">
-      <div class="device-shell rounded-2xl p-6 md:p-8 w-full max-w-md glow-radar">
-        <div class="oled-screen relative rounded-lg overflow-hidden border border-black" id="oled-screen" role="img" aria-live="polite">
+    <div class="flex justify-center w-full">
+      <div class="device-shell rounded-2xl p-4 sm:p-8 w-full max-w-md glow-radar">
+        <div class="oled-screen relative rounded-lg overflow-hidden border border-black w-full" id="oled-screen" role="img" aria-live="polite">
           <div class="scanline absolute inset-0 pointer-events-none z-20"></div>
-          <div id="oled-content" class="absolute inset-0 p-3.5 text-radar text-[11px] font-mono leading-tight"></div>
+          <div id="oled-content" class="absolute inset-0 p-2.5 sm:p-3.5 text-radar text-[10px] sm:text-[11px] font-mono leading-tight"></div>
         </div>
 
-        <div class="grid grid-cols-4 gap-3 mt-6">
-          <button id="btn-mode" class="dev-btn rounded-xl py-3 font-mono text-[10px] font-bold tracking-widest text-[#f1f2f4]">MODE</button>
-          <button id="btn-sel" class="dev-btn rounded-xl py-3 font-mono text-[10px] font-bold tracking-widest text-[#f1f2f4]">SEL</button>
-          <button id="btn-up" class="dev-btn rounded-xl py-3 font-mono text-[10px] font-bold tracking-widest text-[#f1f2f4]">UP</button>
-          <button id="btn-down" class="dev-btn rounded-xl py-3 font-mono text-[10px] font-bold tracking-widest text-[#f1f2f4]">DOWN</button>
+        <div class="grid grid-cols-4 gap-2 sm:gap-3 mt-6">
+          <button id="btn-mode" class="dev-btn rounded-xl py-2.5 sm:py-3 font-mono text-[9px] sm:text-[10px] font-bold tracking-wider sm:tracking-widest text-[#f1f2f4]">MODE</button>
+          <button id="btn-sel" class="dev-btn rounded-xl py-2.5 sm:py-3 font-mono text-[9px] sm:text-[10px] font-bold tracking-wider sm:tracking-widest text-[#f1f2f4]">SEL</button>
+          <button id="btn-up" class="dev-btn rounded-xl py-2.5 sm:py-3 font-mono text-[9px] sm:text-[10px] font-bold tracking-wider sm:tracking-widest text-[#f1f2f4]">UP</button>
+          <button id="btn-down" class="dev-btn rounded-xl py-2.5 sm:py-3 font-mono text-[9px] sm:text-[10px] font-bold tracking-wider sm:tracking-widest text-[#f1f2f4]">DOWN</button>
         </div>
 
-        <div class="mt-6 pt-4 border-t border-[#242933] flex items-center justify-between font-mono text-[10px] text-[#7e8691]">
+        <div class="mt-6 pt-4 border-t border-[#242933] flex items-center justify-between font-mono text-[9px] sm:text-[10px] text-[#7e8691]">
           <span>HARDWARE REGISTER</span>
           <span class="text-[#f1f2f4] uppercase tracking-wider">STATUS: <span id="mode-label" class="text-orange font-bold">BEACON</span></span>
         </div>
@@ -362,45 +370,45 @@
     </div>
   </section>
 
-  <section id="faq" class="max-w-7xl mx-auto px-6 md:px-12 py-24">
-    <div class="mb-16">
+  <section id="faq" class="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-16 sm:py-24">
+    <div class="mb-12">
       <span class="grid-ref">04 · DOCUMENTAZIONE</span>
-      <h2 class="font-display font-700 text-3xl md:text-5xl mt-6 tracking-tight">Analisi Critiche & FAQ</h2>
+      <h2 class="font-display font-700 text-2xl sm:text-3xl md:text-5xl mt-6 tracking-tight">Analisi Critiche & FAQ</h2>
     </div>
 
     <div class="max-w-4xl space-y-4" id="faq-list">
       <div class="faq-item bg-[#0d0f12] border border-[#1e232b] rounded-2xl transition-colors duration-300">
-        <button class="faq-question w-full flex items-center justify-between p-6 text-left group focus:outline-none">
-          <span class="font-semibold text-base text-[#f1f2f4] group-hover:text-orange transition-colors">Qual è l'indice reale di attenuazione delle onde a 433 MHz attraverso la neve?</span>
+        <button class="faq-question w-full flex items-center justify-between p-5 sm:p-6 text-left group focus:outline-none">
+          <span class="font-semibold text-sm sm:text-base text-[#f1f2f4] group-hover:text-orange transition-colors">Qual è l'indice reale di attenuazione delle onde a 433 MHz attraverso la neve?</span>
           <span class="faq-chevron font-mono text-[#7e8691] text-xl leading-none transition-transform">+</span>
         </button>
         <div class="faq-answer">
-          <div class="px-6 pb-6 text-sm text-[#7e8691] leading-relaxed border-t border-[#1e232b]/50 pt-4">
-            La perdita di segnale varia sensibilmente in relazione alle proprietà dielettriche della neve. Manti nevosi polverosi e asciutti introducono un'attenuazione minima pari a circa <span class="text-[#f1f2f4] font-medium">1.5 - 2.5 dB per metro</span>. Condizioni di neve bagnata, con alta concentrazione di acqua liquida libera, aumentano drasticamente la costante dielettrica complessa del mezzo, innalzando l'attenuazione fino a valori superiori a <span class="text-emergency font-medium">5 dB per metro</span>, riducendo di conseguenza il raggio utile di rilevamento.
+          <div class="px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-[#7e8691] leading-relaxed border-t border-[#1e232b]/50 pt-4">
+            La perdita di segnale varia sensibilmente in relazione alle proprietà dielettriche della neve. Manti nevosi polverosi e asciutti introducono un'attenuazione minima pari a circa <span class="text-[#f1f2f4] font-medium">1.5 - 2.5 dB per metro</span>. Condizioni di neve bagnata innalzano l'attenuazione fino a valori superiori a <span class="text-emergency font-medium">5 dB per metro</span>, riducendo di conseguenza il raggio utile di rilevamento.
           </div>
         </div>
       </div>
 
       <div class="faq-item bg-[#0d0f12] border border-[#1e232b] rounded-2xl transition-colors duration-300">
-        <button class="faq-question w-full flex items-center justify-between p-6 text-left group focus:outline-none">
-          <span class="font-semibold text-base text-[#f1f2f4] group-hover:text-orange transition-colors">Come impostare correttamente il fattore di calibrazione firmware per l'ADC?</span>
+        <button class="faq-question w-full flex items-center justify-between p-5 sm:p-6 text-left group focus:outline-none">
+          <span class="font-semibold text-sm sm:text-base text-[#f1f2f4] group-hover:text-orange transition-colors">Come impostare correttamente il fattore di calibrazione firmware per l'ADC?</span>
           <span class="faq-chevron font-mono text-[#7e8691] text-xl leading-none transition-transform">+</span>
         </button>
         <div class="faq-answer">
-          <div class="px-6 pb-6 text-sm text-[#7e8691] leading-relaxed border-t border-[#1e232b]/50 pt-4">
-            A causa della non-linearità intrinseca dei convertitori ADC presenti sul chip ESP32, è necessario impostare sperimentalmente la macro <span class="font-mono text-orange">BAT_VREF_MV</span>. La procedura prevede la misura della tensione reale ai capi della cella tramite voltmetro digitale e la successiva correzione del coefficiente fisso presente nel file di configurazione, compensando la tolleranza delle resistenze del partitore hardware.
+          <div class="px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-[#7e8691] leading-relaxed border-t border-[#1e232b]/50 pt-4">
+            A causa della non-linearità intrinseca dei convertitori ADC presenti sul chip ESP32, è necessario impostare sperimentalmente la macro <span class="font-mono text-orange">BAT_VREF_MV</span>. La procedura prevede la misura della tensione reale ai capi della cella tramite voltmetro digitale e la successiva correzione del coefficiente fisso.
           </div>
         </div>
       </div>
 
       <div class="faq-item bg-[#0d0f12] border border-[#1e232b] rounded-2xl transition-colors duration-300">
-        <button class="faq-question w-full flex items-center justify-between p-6 text-left group focus:outline-none">
-          <span class="font-semibold text-base text-[#f1f2f4] group-hover:text-orange transition-colors">Compatibilità RF con apparecchiature radio commerciali o SDR standard?</span>
+        <button class="faq-question w-full flex items-center justify-between p-5 sm:p-6 text-left group focus:outline-none">
+          <span class="font-semibold text-sm sm:text-base text-[#f1f2f4] group-hover:text-orange transition-colors">Compatibilità RF con apparecchiature radio commerciali o SDR standard?</span>
           <span class="faq-chevron font-mono text-[#7e8691] text-xl leading-none transition-transform">+</span>
         </button>
         <div class="faq-answer">
-          <div class="px-6 pb-6 text-sm text-[#7e8691] leading-relaxed border-t border-[#1e232b]/50 pt-4">
-            Il segnale radio emesso è un'onda continua ad impulsi non codificata complessa, conforme alle trasmissioni telegrafiche CW tradizionali. Di conseguenza, qualunque ricevitore operante nella banda UHF dei 433 MHz provvisto di demodulatore SSB/CW o chiavette RTL-SDR accoppiate a software di visualizzazione dello spettro (SDR#, GQRX) può intercettare e visualizzare graficamente l'impulso.
+          <div class="px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-[#7e8691] leading-relaxed border-t border-[#1e232b]/50 pt-4">
+            Il segnale radio emesso è un'onda continua ad impulsi non codificata complessa, conforme alle trasmissioni telegrafiche CW tradizionali. Di conseguenza, qualunque ricevitore operante nella banda UHF dei 433 MHz provvisto di demodulatore SSB/CW o chiavette RTL-SDR può intercettare l'impulso.
           </div>
         </div>
       </div>
@@ -410,10 +418,10 @@
 </main>
 
 <footer class="border-t border-[#1e232b] bg-[#0d0f12]/60 backdrop-blur-sm">
-  <div class="max-w-7xl mx-auto px-6 md:px-12 py-12 flex flex-col sm:flex-row items-center justify-between gap-6">
-    <div class="flex items-center gap-2 font-mono text-xs text-[#7e8691]">
+  <div class="max-w-7xl mx-auto px-6 md:px-12 py-10 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+    <div class="flex flex-col sm:flex-row items-center gap-2 font-mono text-xs text-[#7e8691]">
       <span>Aegis-Beacon Open Project</span>
-      <span>—</span>
+      <span class="hidden sm:inline">—</span>
       <span class="text-[#f1f2f4]">MIT Licensed Architecture</span>
     </div>
     <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="font-mono text-xs text-orange hover:text-amber-500 transition-colors">
