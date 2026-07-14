@@ -4,325 +4,321 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- ==========================================
-     SEO AVANZATA, META-TAG E PAROLE CHIAVE CODA LUNGA
-     ========================================== -->
-<title>Aegis-Beacon v5.4 — Localizzatore ARTVA Open-Source ESP32 LoRa GPS</title>
-<meta name="description" content="Progetto hardware e firmware open-source Aegis-Beacon v5.4. Sistema di soccorso e tracciamento emergenza valanghe basato su microcontrollore ESP32, ricetrasmettitore radio Semtech SX1262 LoRa (433 MHz) e localizzazione satellitare GPS NEO-6M. Ideale per alpinismo, escursionismo e sicurezza in montagna. Licenza MIT.">
-<meta name="keywords" content="ARTVA open source, avalanche transceiver hardware, localizzatore valanghe fai da te, ESP32 LoRa 433MHz, Semtech SX1262 rescue, modulo GPS NEO-6M, radiofrequenza soccorso alpino, radiofari emergenza montagna, firmware C++ embedded, circuiti stampati PCB ARTVA, telegrafia CW impulsi, sicurezza manti nevosi, tracciamento escursionismo, open hardware beacon">
+<!-- ==========================================================================
+     SEO CORE & ADVANCED META TARGETING (Ottimizzazione Coda Lunga 2026)
+     ========================================================================== -->
+<title>Aegis-Beacon v5.4 // Progetto ARTVA Open-Source ESP32, LoRa & GPS</title>
+<meta name="description" content="Sorgenti hardware e firmware bare-metal per Aegis-Beacon v5.4. Un'architettura radio open-source per il soccorso valanghe basata su SoC ESP32, ricetrasmettitore RF Semtech SX1262 (433MHz) e geolocalizzazione GPS sincrona NEO-6M. Progetto sperimentale a basso costo sotto licenza MIT.">
+<meta name="keywords" content="ARTVA open source, avalanche transceiver DIY, localizzatore valanghe ESP32, Semtech SX1262 LoRa, GPS NEO-6M montagna, radiolocalizzazione emergenza, modulazione OOK CW, onde radio manti nevosi, schemi PCB KiCad ARTVA, radiofari UHF alpinismo, firmware C++ RTOS, ingegneria biomedica soccorso, beacon 433 MHz, localizzatore radio hacker">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://github.com/Leo-Galli/Aegis-Beacon">
 
-<!-- Open Graph (Facebook, WhatsApp, Telegram, LinkedIn) -->
-<meta property="og:type" content="website">
-<meta property="og:title" content="Aegis-Beacon v5.4 — Sistema di Soccorso Valanghe Open-Source">
-<meta property="og:description" content="Dispositivo di localizzazione d'emergenza in montagna. Architettura hardware aperta con ESP32, LoRa SX1262 e GPS. Distinta componenti (BOM) ottimizzata sotto i 30 USD.">
+<!-- Open Graph Protocol (Social & Search Engine Snippets) -->
+<meta property="og:type" content="software">
+<meta property="og:title" content="Aegis-Beacon v5.4 — Open-Source Avalanche Transceiver Terminal">
+<meta property="og:description" content="Ingegneria hardware aperta per la localizzazione d'emergenza in montagna. ESP32 + LoRa + GPS con distinta componenti (BOM) < 30 USD.">
 <meta property="og:url" content="https://github.com/Leo-Galli/Aegis-Beacon">
-<!-- Configurazione Esclusiva del Banner per Anteprima Social/SEO -->
+<!-- CONFIGURAZIONE BANNER: Iniettato esclusivamente nel blocco SEO -->
 <meta property="og:image" content="https://raw.githubusercontent.com/Leo-Galli/Aegis-Beacon/main/banner.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Aegis-Beacon Open Source Avalanche Transceiver Project Banner Logo">
+<meta property="og:image:alt" content="Aegis-Beacon Open Source Avalanche System Schematic Banner Logo">
 
-<!-- Twitter Card -->
+<!-- Twitter Cards -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Aegis-Beacon v5.4 — Open-Source ARTVA Alternative">
-<meta name="twitter:description" content="Specifiche firmware e hardware per un beacon di emergenza alpino low-cost basato su protocolli radio LoRa e modulazione CW.">
+<meta name="twitter:title" content="Aegis-Beacon v5.4 // Experimental Avalanche Safety Hardware">
+<meta name="twitter:description" content="Framework firmware open-source per la trasmissione di segnali di soccorso ad impulsi CW su frequenze UHF 433MHz.">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/Leo-Galli/Aegis-Beacon/main/banner.png">
 
-<!-- JSON-LD Dati Strutturati Semantici Schema.org (Rich Snippets) -->
+<!-- JSON-LD Dati Strutturati Grafico Semantico (Schema.org) -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareSourceCode",
   "name": "Aegis-Beacon",
-  "description": "Sistema hardware e firmware open-source per il monitoraggio e soccorso di travolti da valanga (ARTVA) basato su ESP32, LoRa SX1262 e GPS.",
+  "description": "Sistema open hardware e firmware embedded per radiofari di emergenza e soccorso valanghe (ARTVA alternativo) basato su architettura a microcontrollore ESP32.",
   "version": "5.4.0",
   "codeRepository": "https://github.com/Leo-Galli/Aegis-Beacon",
   "license": "https://opensource.org/licenses/MIT",
   "programmingLanguage": ["C", "C++"],
-  "runtimePlatform": "ESP32",
-  "keywords": "ARTVA, Avalanche Beacon, LoRa SX1262, Open Hardware, Emergency Telemetry",
-  "image": "https://raw.githubusercontent.com/Leo-Galli/Aegis-Beacon/main/banner.png"
+  "runtimePlatform": "FreeRTOS / ESP32",
+  "image": "https://raw.githubusercontent.com/Leo-Galli/Aegis-Beacon/main/banner.png",
+  "keywords": "ARTVA, Avalanche Beacon, LoRa SX1262, ESP32 DevKit, Emergency RF Telemetry"
 }
 </script>
 
-<!-- Risorse di Stile -->
+<!-- CSS & Fonts Layout -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
 <style>
   :root {
-    --bg-main: #0a0c10;
-    --bg-card: #11141a;
-    --border-color: #1e2430;
-    --text-main: #f3f4f6;
-    --text-muted: #8892b0;
-    --accent-orange: #ff5a1f;
-    --accent-blue: #2563eb;
+    --amber-glow: #ffb000;
+    --amber-dim: #8a6000;
+    --bg-terminal: #0c0e12;
+    --border-terminal: #222a36;
   }
   body {
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-terminal);
+    color: #cbd5e1;
+    font-family: 'Fira Code', monospace;
   }
-  .font-mono { font-family: 'JetBrains Mono', monospace; }
-  .custom-grid {
-    background-image: linear-gradient(to right, rgba(255, 90, 31, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 90, 31, 0.03) 1px, transparent 1px);
-    background-size: 24px 24px;
+  .font-tech { font-family: 'Share Tech Mono', monospace; }
+  
+  /* Effetto Matrix / Scansione Reticolo CRT */
+  .crt-lines {
+    background: linear-gradient(rgba(18, 24, 38, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    background-size: 100% 4px, 6px 100%;
   }
-  .faq-answer { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-  .faq-item.open .faq-answer { max-height: 300px; opacity: 1; padding-top: 1rem; }
-  .faq-item.open .faq-icon { transform: rotate(180deg); color: var(--accent-orange); }
+
+  /* Animazioni Interfaccia Tattica */
+  @keyframes pulse-amber {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+  .radar-pulse { animation: pulse-amber 2s infinite ease-in-out; }
+
+  /* Gestione Accordion FAQ custom senza JS eccessivo */
+  .faq-trigger:checked ~ .faq-content { max-height: 240px; opacity: 1; padding: 12px 0; }
+  .faq-trigger:checked ~ .faq-title .faq-arrow { transform: rotate(90deg); color: var(--amber-glow); }
 </style>
 </head>
-<body class="antialiased custom-grid">
+<body class="antialiased crt-lines min-h-screen flex flex-col justify-between">
 
-  <!-- Intestazione Navigazione -->
-  <header class="border-b border-[#1e2430] bg-[#0a0c10]/90 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <span class="font-bold tracking-wider text-sm sm:text-base text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">AEGIS-BEACON</span>
-        <span class="font-mono text-[10px] bg-[#ff5a1f]/10 text-[#ff5a1f] border border-[#ff5a1f]/20 px-2 py-0.5 rounded">v5.4.0</span>
+  <!-- TOP CONSOLE STATUS BAR -->
+  <header class="border-b border-[#222a36] bg-[#090b0e] px-4 py-3 flex flex-wrap items-center justify-between gap-4 text-xs">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+        <span class="font-bold font-tech text-base tracking-widest text-amber-500">AEGIS-BEACON // CORE_SYS v5.4</span>
       </div>
-      <div class="flex items-center gap-6">
-        <nav class="hidden md:flex items-center gap-6 font-mono text-xs uppercase tracking-widest text-gray-400">
-          <a href="#overview" class="hover:text-[#ff5a1f] transition-colors">Panoramica</a>
-          <a href="#hardware" class="hover:text-[#ff5a1f] transition-colors">Hardware</a>
-          <a href="#firmware" class="hover:text-[#ff5a1f] transition-colors">Firmware</a>
-          <a href="#faq" class="hover:text-[#ff5a1f] transition-colors">FAQ</a>
-        </nav>
-        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="font-mono text-xs border border-[#1e2430] bg-[#11141a] px-3 py-1.5 rounded-lg text-white hover:border-[#ff5a1f] transition-all">
-          GitHub ↗
-        </a>
-      </div>
+      <span class="text-gray-600 hidden sm:inline">|</span>
+      <span class="text-gray-500 hidden sm:inline font-mono">TARGET: UPLINK_STABLE</span>
+    </div>
+    
+    <div class="flex items-center gap-6">
+      <span class="text-gray-500 font-mono text-[11px] hidden md:inline">FREQ: 433.500MHz [OOK_MODULATION]</span>
+      <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="border border-amber-500/30 bg-amber-500/5 px-3 py-1 rounded text-amber-500 hover:bg-amber-500 hover:text-black transition-all font-tech tracking-wider uppercase text-sm">
+        Clone Repository ↗
+      </a>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <section id="overview" class="max-w-6xl mx-auto px-4 pt-16 pb-24 grid lg:grid-cols-12 gap-12 items-center">
-    <div class="lg:col-span-7">
-      <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md border border-[#ff5a1f]/20 bg-[#ff5a1f]/5 font-mono text-xs text-[#ff5a1f] mb-6">
-        <span class="w-2 h-2 rounded-full bg-[#ff5a1f] animate-pulse"></span>
-        SISTEMA SPERIMENTALE OPEN-SOURCE (ARTVA)
+  <!-- MAIN OPERATIVE INTERFACE -->
+  <main class="max-w-7xl w-full mx-auto p-4 md:p-8 grid lg:grid-cols-12 gap-8 my-auto">
+    
+    <!-- TERMINALE DI SINISTRA: DOCUMENTAZIONE E FILOSOFIA DI PROGETTO -->
+    <section class="lg:col-span-7 flex flex-col justify-center space-y-6">
+      <div>
+        <span class="text-amber-600 text-xs font-mono block tracking-widest">// INITIALIZATION SUCCESSFUL //</span>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mt-2 font-tech">
+          UN'ALTERNATIVA <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-amber-200">ARTVA OPEN SOURCE</span> SULL'ARCHITETTURA ESP32.
+        </h1>
       </div>
-      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-none">
-        Sicurezza in Montagna. <br>
-        <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#ff5a1f] to-amber-500">Ingegneria Libera.</span>
-      </h1>
-      <p class="mt-6 text-gray-400 text-base sm:text-lg max-w-xl leading-relaxed">
-        Un'alternativa aperta e programmabile ai dispositivi di localizzazione d'emergenza in ambiente alpino. Sviluppato per offrire un framework flessibile su frequenze UHF, combinando la potenza di calcolo di un modulo **ESP32** con l'efficienza radio dei chip **LoRa Semtech** e il tracciamento coordinate **GPS**.
+
+      <p class="text-gray-400 text-sm leading-relaxed max-w-2xl border-l-2 border-[#222a36] pl-4">
+        Aegis-Beacon non è un prodotto di massa, ma un ecosistema aperto di sperimentazione hardware e firmware rivolto alla radiolocalizzazione d'emergenza. Unisce la flessibilità del calcolo parallelo su chip <span class="text-white font-medium">ESP32</span>, la sensibilità estrema in radiofrequenza del ricetrasmettitore <span class="text-white font-medium">LoRa SX1262</span> e il tracciamento coordinate cartesiane <span class="text-white font-medium">GPS NEO-6M</span>.
       </p>
-      <div class="mt-8 flex flex-wrap gap-4">
-        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="bg-gradient-to-r from-[#ff5a1f] to-amber-600 text-black font-bold font-mono text-xs px-6 py-3.5 rounded-lg hover:opacity-90 transition">
-          Repository Codice Sorgente
+
+      <!-- TAG DI METRICA SEO STRUTTURATI AD ALTO CONTRASTO -->
+      <div class="flex flex-wrap gap-2 text-[11px]">
+        <span class="bg-[#12161f] border border-[#222a36] px-2.5 py-1 text-gray-400"><b class="text-amber-500">BOM Cost:</b> ~23-28 USD</span>
+        <span class="bg-[#12161f] border border-[#222a36] px-2.5 py-1 text-gray-400"><b class="text-amber-500">RF Chip:</b> Semtech SX1262</span>
+        <span class="bg-[#12161f] border border-[#222a36] px-2.5 py-1 text-gray-400"><b class="text-amber-500">MCU:</b> Tensilica Dual-Core</span>
+        <span class="bg-[#12161f] border border-[#222a36] px-2.5 py-1 text-gray-400"><b class="text-amber-500">License:</b> MIT Open-Source</span>
+      </div>
+
+      <div class="pt-2 flex flex-wrap gap-4">
+        <a href="#hardware" class="font-tech tracking-wide text-xs text-black font-bold bg-amber-500 px-5 py-3 rounded hover:bg-amber-400 transition">
+          Sfoglia Registro Hardware (BOM)
         </a>
-        <a href="#hardware" class="border border-[#1e2430] bg-[#11141a] text-white font-mono text-xs px-6 py-3.5 rounded-lg hover:border-gray-500 transition">
-          Specifiche Tecniche Hardware
+        <a href="#faq" class="font-tech tracking-wide text-xs text-amber-500 border border-amber-500/30 bg-amber-500/5 px-5 py-3 rounded hover:border-amber-500 transition">
+          Leggi l'Analisi Dielettrica Manti Nevosi
         </a>
       </div>
-    </div>
+    </section>
 
-    <!-- Monitor Simulatore Integrato -->
-    <div class="lg:col-span-5 bg-[#11141a] border border-[#1e2430] rounded-xl p-6 shadow-2xl relative">
-      <div class="flex justify-between items-center text-xs font-mono text-gray-500 mb-4 border-b border-[#1e2430] pb-3">
-        <span>OLED EMULATOR // SSD1309</span>
-        <span id="status-tag" class="text-[#ff5a1f] font-bold">BEACON MODE</span>
-      </div>
-      
-      <div id="screen-box" class="bg-black rounded-lg p-4 h-40 flex flex-col justify-between font-mono text-xs border border-gray-950 text-blue-400">
-        <div class="flex justify-between border-b border-blue-950 pb-1 font-bold">
-          <span>TX: ACTIVE</span>
-          <span>433.500 MHz</span>
+    <!-- TERMINALE DI DESTRA: EMULATORE HARDWARE DINAMICO INTERATTIVO -->
+    <section class="lg:col-span-5 flex items-center justify-center">
+      <div class="w-full bg-[#10141b] border border-[#222a36] rounded-xl p-5 shadow-2xl relative overflow-hidden">
+        
+        <!-- HEADER EMULATORE DISPLAY -->
+        <div class="flex justify-between items-center text-[11px] text-gray-500 mb-4 border-b border-[#222a36] pb-3">
+          <span class="font-tech tracking-wider">HARDWARE LOG // SERIAL_MONITOR</span>
+          <span id="current-state-tag" class="text-amber-500 font-bold border border-amber-500/20 px-2 py-0.5 rounded bg-amber-500/5">TX: BEACON ACTIVE</span>
         </div>
-        <div class="my-auto space-y-1">
-          <p class="text-white font-bold tracking-wide">PULSE: ON-OFF (CW)</p>
-          <p class="text-[11px] text-gray-500">PAYLOAD: SOS AEGIS01</p>
-          <p class="text-[11px] text-gray-500">LAT/LON: SYNCHRONIZING...</p>
-        </div>
-        <div class="flex justify-between text-[10px] text-blue-500/70 border-t border-blue-950 pt-1">
-          <span>POWER: +30 dBm</span>
-          <span>BATT: 4.15V</span>
-        </div>
-      </div>
 
-      <div class="grid grid-cols-2 gap-2 mt-4">
-        <button id="toggle-mode" class="bg-[#1a1f29] border border-[#2e374a] text-white font-mono text-[11px] py-2 rounded-md hover:border-[#ff5a1f] transition">
-          CAMBIA MODALITÀ (RX/TX)
-        </button>
-        <button id="simulate-trigger" class="bg-[#1a1f29] border border-[#2e374a] text-white font-mono text-[11px] py-2 rounded-md hover:border-blue-500 transition">
-          INVIA IMPULSO GPS
-        </button>
-      </div>
-    </div>
-  </section>
+        <!-- SCHERMO OLED SIMULATO STILE MONOCROMATICO VINTAGE/FUTURISTICO -->
+        <div id="virtual-screen" class="bg-black rounded-lg p-4 h-44 border border-zinc-900 flex flex-col justify-between text-amber-500/90 font-mono text-xs shadow-inner relative">
+          <div class="flex justify-between text-[10px] border-b border-amber-500/20 pb-1 opacity-70">
+            <span>SYS_OK // 433 MHz</span>
+            <span id="live-timer">00:00:00</span>
+          </div>
+          
+          <div class="my-auto space-y-1.5" id="screen-body">
+            <p class="font-bold text-white tracking-widest text-center animate-pulse">● PULSING MORSE CW</p>
+            <p class="text-[11px] text-amber-600/80 text-center">PAYLOAD: "SOS AEGIS01 BEACON"</p>
+            <p class="text-[10px] text-center text-gray-500" id="gps-status-string">[GPS] WAITING FOR NMEA FIX...</p>
+          </div>
 
-  <!-- Specifiche Hardware (BOM) -->
-  <section id="hardware" class="bg-[#11141a] border-y border-[#1e2430] py-20">
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="max-w-2xl mb-12">
-        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Architettura Hardware & Distinta Componenti</h2>
-        <p class="text-gray-400 mt-2 text-sm">Il prototipo è stato ingegnerizzato selezionando componenti a basso costo reperibili facilmente sul mercato globale dell'elettronica.</p>
+          <div class="flex justify-between text-[10px] border-t border-amber-500/20 pt-1 opacity-70">
+            <span>TX_POWER: +30dBm</span>
+            <span>V_BAT: 4.18V</span>
+          </div>
+        </div>
+
+        <!-- PULSANTIERA OPERATIVA LOGICA INTERATTIVA -->
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <button id="switch-mode-btn" class="bg-[#161c26] border border-[#2a3547] text-white hover:text-amber-500 hover:border-amber-500 text-xs font-tech tracking-wider py-2.5 rounded transition">
+            INVERTI MODALITÀ (RX / TX)
+          </button>
+          <button id="inject-gps-btn" class="bg-[#161c26] border border-[#2a3547] text-white hover:text-amber-500 hover:border-amber-500 text-xs font-tech tracking-wider py-2.5 rounded transition">
+            FORZA AGGANCIO GPS
+          </button>
+        </div>
+        
+        <p class="text-[10px] text-gray-500 text-center mt-3 font-mono">Usa la pulsantiera logica per testare gli interrupt software.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SEZIONE REGISTRO REGISTRI E HARDWARE (BOM) -->
+  <section id="hardware" class="border-t border-[#222a36] bg-[#090b0e] py-16">
+    <div class="max-w-7xl mx-auto px-4 md:px-8">
+      <div class="max-w-3xl mb-12">
+        <div class="text-amber-500 text-xs font-mono tracking-widest">// HARDWARE FACTORY SCHEMATICS //</div>
+        <h2 class="text-2xl sm:text-3xl font-bold text-white font-tech tracking-tight mt-2">Mappatura Periferiche Bus & Bill of Materials</h2>
+        <p class="text-gray-400 text-xs mt-1">Configurazione pin-out ottimizzata a livello firmware per evitare sovrapposizioni sul canale hardware SPI.</p>
       </div>
 
       <div class="grid md:grid-cols-2 gap-8">
-        <div class="border border-[#1e2430] rounded-xl overflow-hidden bg-[#0a0c10]">
-          <table class="w-full text-left font-mono text-xs">
-            <thead>
-              <tr class="bg-[#11141a] text-gray-400 border-b border-[#1e2430]">
-                <th class="p-4">Componente Nucleo</th>
-                <th class="p-4 text-right">Costo Indicativo</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-[#1e2430] text-gray-400">
-              <tr><td class="p-4 text-white font-medium">ESP32 NodeMCU DevKit v1</td><td class="p-4 text-right text-[#ff5a1f]">~5.50 USD</td></tr>
-              <tr><td class="p-4 text-white font-medium">Modulo Ebyte SX1262 LoRa (+30dBm)</td><td class="p-4 text-right text-[#ff5a1f]">~11.00 USD</td></tr>
-              <tr><td class="p-4 text-white font-medium">Ricevitore Satellitare GPS NEO-6M</td><td class="p-4 text-right text-[#ff5a1f]">~4.50 USD</td></tr>
-              <tr><td class="p-4 text-white font-medium">Display Grafico Monocromatico SPI SSD1309</td><td class="p-4 text-right text-[#ff5a1f]">~7.00 USD</td></tr>
-              <tr class="font-bold bg-[#11141a]/50 text-white"><td class="p-4">Stima Totale della BOM complessiva</td><td class="p-4 text-right text-emerald-400">~28.00 USD</td></tr>
+        <!-- DISTINTA COMPONENTI TABELLARE -->
+        <div class="border border-[#222a36] rounded-xl overflow-hidden bg-[#0c0e12]">
+          <div class="bg-[#12161f] px-4 py-3 border-b border-[#222a36] text-xs font-bold font-tech text-gray-300 tracking-wider">UNITÀ ARCHITETTURALI DISPOSITIVO (BOM)</div>
+          <table class="w-full text-left text-xs font-mono">
+            <tbody class="divide-y divide-[#222a36] text-gray-400">
+              <tr class="hover:bg-[#12161f]/30"><td class="p-4 text-white font-medium">SoC ESP32 DevKit V1 (30 Pin)</td><td class="p-4 text-right text-amber-500 font-bold">~5.50 USD</td></tr>
+              <tr class="hover:bg-[#12161f]/30"><td class="p-4 text-white font-medium">Modulo RF Ebyte SX1262 LoRa (433MHz)</td><td class="p-4 text-right text-amber-500 font-bold">~11.00 USD</td></tr>
+              <tr class="hover:bg-[#12161f]/30"><td class="p-4 text-white font-medium">Ricevitore Satellitare GPS NEO-6M</td><td class="p-4 text-right text-amber-500 font-bold">~4.50 USD</td></tr>
+              <tr class="hover:bg-[#12161f]/30"><td class="p-4 text-white font-medium">Display Grafico Monocromatico SPI SSD1309</td><td class="p-4 text-right text-amber-500 font-bold">~7.00 USD</td></tr>
+              <tr class="bg-[#12161f]/60 font-bold text-white"><td class="p-4">COSTO COMPONENTISTICA GENERALE STIMATO</td><td class="p-4 text-right text-emerald-500 font-tech text-sm">~28.00 USD</td></tr>
             </tbody>
           </table>
         </div>
 
-        <div class="flex flex-col justify-between border border-[#1e2430] rounded-xl p-6 bg-[#0a0c10]">
-          <h3 class="text-white font-bold font-mono text-sm uppercase tracking-wider mb-4 text-[#ff5a1f]">Mappatura Registri GPIO / Bus SPI</h3>
-          <p class="text-gray-400 text-xs leading-relaxed mb-4">
-            Per consentire la coesistenza sul bus SPI del modulo radio LoRa Semtech e dello schermo OLED SSD1309, le linee di selezione hardware chip (CS/NSS) sono allocate rigidamente a livello firmware per evitare collisioni di registro.
-          </p>
-          <div class="bg-[#11141a] rounded-lg p-4 font-mono text-xs text-gray-400 space-y-1.5">
-            <p><span class="text-white">MOSI / MISO / SCK:</span> GPIO 23 / 19 / 18</p>
-            <p><span class="text-white">LoRa NSS / DIO1 / BUSY:</span> GPIO 15 / 22 / 21</p>
-            <p><span class="text-white">OLED CS / DC / RESET:</span> GPIO 5 / 4 / 2</p>
-            <p><span class="text-white">GPS UART2 RX / TX:</span> GPIO 16 / 17</p>
+        <!-- MAPPATURA PINOUT HARDWARE -->
+        <div class="border border-[#222a36] rounded-xl p-5 bg-[#0c0e12] flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-bold font-tech text-gray-300 tracking-wider mb-2 uppercase">// Allocazione GPIO Core MCU //</div>
+            <p class="text-gray-400 text-xs leading-relaxed mb-4">
+              Il firmware bare-metal implementa un bus SPI multiplexato. Le linee CS vengono attivate selettivamente tramite registri di stato ad alta priorità per azzerare la latenza del display.
+            </p>
+          </div>
+          <div class="bg-black/40 border border-[#222a36] rounded p-4 font-mono text-xs text-gray-400 space-y-1">
+            <p><span class="text-amber-500 font-bold">#define</span> SPI_MOSI_PIN   <span class="text-white">23</span></p>
+            <p><span class="text-amber-500 font-bold">#define</span> SPI_MISO_PIN   <span class="text-white">19</span></p>
+            <p><span class="text-amber-500 font-bold">#define</span> LORA_NSS_PIN   <span class="text-white">15</span></p>
+            <p><span class="text-amber-500 font-bold">#define</span> OLED_CS_PIN    <span class="text-white">5</span></p>
+            <p><span class="text-amber-500 font-bold">#define</span> GPS_UART_RX    <span class="text-white">16</span></p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Caratteristiche del Firmware -->
-  <section id="firmware" class="max-w-6xl mx-auto px-4 py-20">
-    <div class="grid md:grid-cols-3 gap-8">
-      <div class="border border-[#1e2430] p-6 rounded-xl bg-[#11141a]">
-        <div class="text-[#ff5a1f] font-mono font-bold text-sm mb-3">01 / MODULAZIONE CW</div>
-        <h3 class="text-white font-bold text-lg mb-2">Telegrafia a Impulsi</h3>
-        <p class="text-gray-400 text-xs leading-relaxed">Configurazione a onda continua (Continuous Wave) guidata da interrupt hardware interni che garantisce la ricezione dell'impulso anche in condizioni di rumore di fondo critico.</p>
-      </div>
-      <div class="border border-[#1e2430] p-6 rounded-xl bg-[#11141a]">
-        <div class="text-[#ff5a1f] font-mono font-bold text-sm mb-3">02 / GESTIONE ENERGETICA</div>
-        <h3 class="text-white font-bold text-lg mb-2">Ottimizzazione Deep Sleep</h3>
-        <p class="text-gray-400 text-xs leading-relaxed">Implementazione dei cicli di sonno profondo controllati del microcontrollore ESP32, riducendo l'assorbimento di corrente a pochi microampere fra un ciclo di trasmissione e l'altro.</p>
-      </div>
-      <div class="border border-[#1e2430] p-6 rounded-xl bg-[#11141a]">
-        <div class="text-[#ff5a1f] font-mono font-bold text-sm mb-3">03 / PARSING DATI GPS</div>
-        <h3 class="text-white font-bold text-lg mb-2">Estrattore di Stringhe NMEA</h3>
-        <p class="text-gray-400 text-xs leading-relaxed">Algoritmo di filtraggio asincrono leggero per estrarre la telemetria di latitudine e longitudine corretta dalle frasi GPRMC fornite dall'antenna satellitare.</p>
-      </div>
+  <!-- SEZIONE FAQ TECNICHE CON ACCORDION SEMANTICO IN CSS PURO -->
+  <section id="faq" class="max-w-4xl w-full mx-auto px-4 py-16 border-t border-[#222a36]">
+    <div class="text-center mb-10">
+      <div class="text-amber-500 text-xs font-mono tracking-widest">// KNOWLEDGE BASE & DEBUG LOGS //</div>
+      <h2 class="text-2xl font-bold text-white font-tech tracking-tight mt-1">Domande Frequenti & Analisi di Propagazione RF</h2>
     </div>
-  </section>
 
-  <!-- Sezione FAQ Espandibile -->
-  <section id="faq" class="max-w-4xl mx-auto px-4 py-16 border-t border-[#1e2430]">
-    <h2 class="text-2xl font-bold text-white tracking-tight mb-8 text-center font-mono">Domande Frequenti & Analisi Tecnica</h2>
-    
-    <div class="space-y-4">
-      <div class="faq-item bg-[#11141a] border border-[#1e2430] rounded-lg p-5 cursor-pointer">
-        <div class="flex justify-between items-center">
-          <h3 class="text-white font-semibold text-sm sm:text-base">Questo dispositivo sostituisce un comune ARTVA commerciale certificato EN 300718?</h3>
-          <span class="faq-icon text-gray-500 font-bold transition-transform duration-200">▼</span>
-        </div>
-        <div class="faq-answer text-gray-400 text-xs sm:text-sm leading-relaxed">
-          <p>**Assolutamente no.** Aegis-Beacon è un progetto puramente sperimentale, didattico e open-source. Non possiede le certificazioni internazionali obbligatorie per i dispositivi di protezione individuale (DPI) salvavita da valanga. Non deve essere usato in sostituzione della strumentazione ufficiale durante escursioni in aree a rischio.</p>
+    <div class="space-y-3">
+      <!-- FAQ ITEM 1 -->
+      <div class="border border-[#222a36] rounded-lg p-4 bg-[#10141b]">
+        <input type="checkbox" id="faq-1" class="faq-trigger hidden">
+        <label for="faq-1" class="faq-title flex justify-between items-center cursor-pointer select-none">
+          <span class="text-white font-medium text-xs sm:text-sm font-tech tracking-wide">Questo dispositivo sostituisce i localizzatori ARTVA certificati EN 300718?</span>
+          <span class="faq-arrow text-gray-500 text-xs font-mono transition-transform duration-200">▶</span>
+        </label>
+        <div class="faq-content faq-answer text-gray-400 text-xs leading-relaxed border-t border-[#222a36]/50 mt-2">
+          <p class="pt-2"><b class="text-amber-500">NEGATIVO.</b> Aegis-Beacon è un framework hardware/firmware ad uso esclusivamente didattico, radioamatoriale e sperimentale. Non possiede né sostituisce le omologazioni di sicurezza internazionali salvavita imposte dai dispositivi di protezione individuale commerciali. Non usarlo in ambienti alpini reali senza opportuna strumentazione ufficiale.</p>
         </div>
       </div>
 
-      <div class="faq-item bg-[#11141a] border border-[#1e2430] rounded-lg p-5 cursor-pointer">
-        <div class="flex justify-between items-center">
-          <h3 class="text-white font-semibold text-sm sm:text-base">Perché è stata preferita la banda UHF 433 MHz rispetto ai classici 457 kHz?</h3>
-          <span class="faq-icon text-gray-500 font-bold transition-transform duration-200">▼</span>
-        </div>
-        <div class="faq-answer text-gray-400 text-xs sm:text-sm leading-relaxed">
-          <p>La frequenza standard a 457 kHz richiede la sintonizzazione fine di grosse antenne a ferrite e stadi di amplificazione analogica complessi. La scelta della frequenza a 433 MHz permette l'integrazione di transceiver digitali compatti già pronti all'uso (come i chip LoRa) adatti allo sviluppo rapido di prototipi digitali e trasmissione dati complessi.</p>
+      <!-- FAQ ITEM 2 -->
+      <div class="border border-[#222a36] rounded-lg p-4 bg-[#10141b]">
+        <input type="checkbox" id="faq-2" class="faq-trigger hidden">
+        <label for="faq-2" class="faq-title flex justify-between items-center cursor-pointer select-none">
+          <span class="text-white font-medium text-xs sm:text-sm font-tech tracking-wide">Qual è l'impatto della costante dielettrica del manto nevoso sulle onde a 433 MHz?</span>
+          <span class="faq-arrow text-gray-500 text-xs font-mono transition-transform duration-200">▶</span>
+        </label>
+        <div class="faq-content faq-answer text-gray-400 text-xs leading-relaxed border-t border-[#222a36]/50 mt-2">
+          <p class="pt-2">L'attenuazione del segnale radio a 433 MHz dipende fortemente dalla presenza di acqua liquida nel manto nevoso. La neve perfettamente asciutta e fredda introduce perdite trascurabili (pari a circa 1-2 dB per metro). Neve bagnata, densa o primaverile aumenta drasticamente la costante dielettrica complessa, innalzando l'attenuazione sopra i 6 dB per metro e accorciando il raggio massimo di localizzazione.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Piè di pagina -->
-  <footer class="border-t border-[#1e2430] bg-[#0a0c10] py-8 text-center text-xs font-mono text-gray-500">
-    <p>Aegis-Beacon Project — Codice distribuito liberamente secondo i termini della Licenza MIT.</p>
+  <!-- FOOTER -->
+  <footer class="border-t border-[#222a36] bg-[#090b0e] py-6 text-center text-[10px] font-mono text-gray-600">
+    <p>Aegis-Beacon Experimental System — MIT Free Source Code & Open Hardware Framework.</p>
   </footer>
 
-  <!-- Script Funzionalità Interattive -->
+  <!-- LINGUAGGIO DI SIMULAZIONE HARDWARE TERMINE INTERATTIVO -->
   <script>
-    // Logica Gestione Menu FAQ
-    document.querySelectorAll('.faq-item').forEach(item => {
-      item.addEventListener('click', () => {
-        item.classList.toggle('open');
-      });
-    });
+    // Aggiornamento Orologio di Sistema Simulato
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('live-timer').textContent = now.toTimeString().split(' ')[0];
+    }, 1000);
 
-    // Logica di Simulazione dello Schermo OLED
-    const toggleBtn = document.getElementById('toggle-mode');
-    const triggerBtn = document.getElementById('simulate-trigger');
-    const screenBox = document.getElementById('screen-box');
-    const statusTag = document.getElementById('status-tag');
+    // Controllo Logico della Macchina a Stati Finita (FSM) dello Schermo OLED
+    const switchBtn = document.getElementById('switch-mode-btn');
+    const gpsBtn = document.getElementById('inject-gps-btn');
+    const screenBody = document.getElementById('screen-body');
+    const stateTag = document.getElementById('current-state-tag');
+    const virtualScreen = document.getElementById('virtual-screen');
 
-    let currentMode = 'BEACON'; // Stati: BEACON / SEARCH
+    let currentSystemMode = 'TX'; // TX = Beacon / RX = Cerca
 
-    toggleBtn.addEventListener('click', () => {
-      if (currentMode === 'BEACON') {
-        currentMode = 'SEARCH';
-        statusTag.textContent = 'SEARCH MODE';
-        statusTag.className = 'text-emerald-400 font-bold';
-        screenBox.className = 'bg-black rounded-lg p-4 h-40 flex flex-col justify-between font-mono text-xs border border-gray-950 text-emerald-400';
-        screenBox.innerHTML = `
-          <div class="flex justify-between border-b border-emerald-950 pb-1 font-bold">
-            <span>RX: SCANNING</span>
-            <span>RSSI MONITOR</span>
-          </div>
-          <div class="my-auto space-y-1">
-            <p class="text-white font-bold text-sm">-98 dBm</p>
-            <p class="text-[11px] text-gray-500">NO CLOSE TARGETS DETECTED</p>
-          </div>
-          <div class="flex justify-between text-[10px] text-emerald-500/70 border-t border-emerald-950 pt-1">
-            <span>GAIN: AUTOMATIC</span>
-            <span>BATT: 4.14V</span>
-          </div>
+    switchBtn.addEventListener('click', () => {
+      if (currentSystemMode === 'TX') {
+        currentSystemMode = 'RX';
+        stateTag.textContent = 'RX: SEARCH SCANNER';
+        stateTag.className = 'text-emerald-400 font-bold border border-emerald-500/20 px-2 py-0.5 rounded bg-emerald-500/5';
+        virtualScreen.className = 'bg-black rounded-lg p-4 h-44 border border-zinc-900 flex flex-col justify-between text-emerald-400 font-mono text-xs shadow-inner relative';
+        
+        screenBody.innerHTML = `
+          <p class="font-bold text-white tracking-widest text-center animate-pulse">📡 SCANNING FREQ...</p>
+          <p class="text-xl font-tech text-center tracking-tight text-emerald-300 my-1">-104 dBm</p>
+          <p class="text-[10px] text-center text-gray-500">[RSSI] NO NOISE OR TARGET IN RANGE</p>
         `;
       } else {
-        currentMode = 'BEACON';
-        statusTag.textContent = 'BEACON MODE';
-        statusTag.className = 'text-[#ff5a1f] font-bold';
-        screenBox.className = 'bg-black rounded-lg p-4 h-40 flex flex-col justify-between font-mono text-xs border border-gray-950 text-blue-400';
-        screenBox.innerHTML = `
-          <div class="flex justify-between border-b border-blue-950 pb-1 font-bold">
-            <span>TX: ACTIVE</span>
-            <span>433.500 MHz</span>
-          </div>
-          <div class="my-auto space-y-1">
-            <p class="text-white font-bold tracking-wide">PULSE: ON-OFF (CW)</p>
-            <p class="text-[11px] text-gray-500">PAYLOAD: SOS AEGIS01</p>
-            <p class="text-[11px] text-gray-500">LAT/LON: SYNCHRONIZING...</p>
-          </div>
-          <div class="flex justify-between text-[10px] text-blue-500/70 border-t border-blue-950 pt-1">
-            <span>POWER: +30 dBm</span>
-            <span>BATT: 4.15V</span>
-          </div>
+        currentSystemMode = 'TX';
+        stateTag.textContent = 'TX: BEACON ACTIVE';
+        stateTag.className = 'text-amber-500 font-bold border border-amber-500/20 px-2 py-0.5 rounded bg-amber-500/5';
+        virtualScreen.className = 'bg-black rounded-lg p-4 h-44 border border-zinc-900 flex flex-col justify-between text-amber-500/90 font-mono text-xs shadow-inner relative';
+        
+        screenBody.innerHTML = `
+          <p class="font-bold text-white tracking-widest text-center animate-pulse">● PULSING MORSE CW</p>
+          <p class="text-[11px] text-amber-600/80 text-center">PAYLOAD: "SOS AEGIS01 BEACON"</p>
+          <p class="text-[10px] text-center text-gray-500" id="gps-status-string">[GPS] WAITING FOR NMEA FIX...</p>
         `;
       }
     });
 
-    triggerBtn.addEventListener('click', () => {
-      if (currentMode === 'BEACON') {
-        const coords = screenBox.querySelector('p:nth-child(3)');
-        if (coords) {
-          coords.textContent = 'LAT:45.8921 N // LON:12.1044 E';
-          coords.className = 'text-emerald-400 text-[11px] font-bold animate-pulse';
+    gpsBtn.addEventListener('click', () => {
+      if (currentSystemMode === 'TX') {
+        const gpsStr = document.getElementById('gps-status-string');
+        if (gpsStr) {
+          gpsStr.textContent = 'FIX_OK // LAT:45.891 N - LON:12.104 E';
+          gpsStr.className = 'text-white text-[10px] text-center font-bold bg-amber-500/20 py-0.5 rounded border border-amber-500/30';
         }
       } else {
-        alert('Passa alla modalità BEACON (TX) per agganciare e forzare la trasmissione delle coordinate GPS.');
+        alert('ERRORE: Commutare il terminale in modalità di trasmissione (TX: BEACON) per forzare l\'iniezione dei dati GPS.');
       }
     });
   </script>
