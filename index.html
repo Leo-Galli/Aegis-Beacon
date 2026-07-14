@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" class="scroll-smooth">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,55 +7,49 @@
 <!-- ==========================================
      SEO STRATEGICA AVANZATA - METADATI CORE
      ========================================== -->
-<title>Aegis-Beacon v5.4 — Manuale Tecnico delle Frequenze d'Emergenza e Ricerca (SAR)</title>
-<meta name="description" content="Manuale di riferimento ufficiale per Aegis-Beacon v5.4. Specifiche radio per moduli LoRa Semtech SX1262. Mappatura delle frequenze di soccorso: CNSAS, REGA, PGHM, protocolli PMR446 e GMRS Wilderness.">
-<meta name="keywords" content="Aegis-Beacon, frequenze soccorso alpino, frequenze emergenza montagna, radio montana 7-7, canale E REGA, CNSAS radio, PMR446 emergenza, GMRS wilderness protocol, Semtech SX1262 firmware, localizzatore open source">
+<title>Aegis-Beacon v5.4 — Localizzatore Radio Open-Source d'Emergenza & SAR</title>
+<meta name="description" content="Sito ufficiale e documentazione tecnica di Aegis-Beacon v5.4. Progetto hardware e firmware open-source per il tracciamento radio d'emergenza in ambiente impervio tramite Semtech SX1262.">
+<meta name="keywords" content="Aegis-Beacon, localizzatore radio, soccorso alpino, frequenze emergenza montagna, radio montana 7-7, canale E REGA, Semtech SX1262 firmware, open source hardware, localizzatore lo ra, telecomunicazioni emergenza">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://github.com/Leo-Galli/Aegis-Beacon">
 
 <!-- Open Graph / Facebook / App di Messaggistica (Anteprima Grafica SEO) -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Aegis-Beacon v5.4 — Technical SAR Manual">
-<meta property="og:description" content="Specifiche di allocazione delle frequenze radio UHF/VHF per il soccorso alpino e monitoraggio d'emergenza. Ottimizzato per moduli ESP32 e LoRa.">
+<meta property="og:title" content="Aegis-Beacon v5.4 — Open-Source Emergency Radio Beacon & SAR Manual">
+<meta property="og:description" content="Specifiche hardware, firmware e database globale delle frequenze radio per il soccorso alpino e monitoraggio d'emergenza.">
 <meta property="og:url" content="https://github.com/Leo-Galli/Aegis-Beacon">
 <!-- BANNER CONFIGURATO ESCLUSIVAMENTE PER LA SEO -->
 <meta property="og:image" content="https://raw.githubusercontent.com/Leo-Galli/Aegis-Beacon/main/banner.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Aegis-Beacon Technical Reference Document Banner">
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Aegis-Beacon v5.4 — Technical SAR Manual">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/Leo-Galli/Aegis-Beacon/main/banner.png">
+<meta property="og:image:alt" content="Aegis-Beacon Complete Project Ecosystem Banner">
 
 <!-- Schema.org Dati Strutturati JSON-LD -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "TechArticle",
-  "headline": "Aegis-Beacon v5.4 — Global Emergency Frequencies Reference Manual",
+  "@type": "SoftwareApplication",
+  "name": "Aegis-Beacon Firmware & Hardware Ecosystem",
+  "operatingSystem": "Embedded / ESP32 / STM32",
+  "applicationCategory": "UtilitiesApplication",
   "image": "https://raw.githubusercontent.com/Leo-Galli/Aegis-Beacon/main/banner.png",
+  "downloadUrl": "https://github.com/Leo-Galli/Aegis-Beacon",
   "author": {
     "@type": "Person",
     "name": "Leo Galli"
   },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Aegis Open Source Hardware Project"
-  },
-  "inLanguage": "it",
-  "description": "Manuale tecnico di riferimento per le frequenze radio di emergenza e configurazione del firmware Aegis-Beacon."
+  "description": "Ecosistema di localizzazione radio open-source per ambienti estremi montani e terrestri."
 }
 </script>
 
-<!-- Tailwind CSS -->
+<!-- Tailwind CSS & Google Fonts -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
 <script>
   tailwind.config = {
+    darkMode: 'class',
     theme: {
       extend: {
         fontFamily: {
@@ -68,255 +62,427 @@
 </script>
 
 <style>
-  body {
-    background-color: #f8fafc;
-    color: #1e293b;
+  /* Transizioni fluide per lo switch del tema chiaro/scuro */
+  *, ::before, ::after {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
   }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #f1f5f9; }
-  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  .dark ::webkit-scrollbar-track { background: #0f172a; }
+  ::webkit-scrollbar-track { background: #f1f5f9; }
+  .dark ::webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  ::webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 </style>
 </head>
-<body class="font-sans antialiased selection:bg-orange-500 selection:text-white">
+<body class="bg-slate-50 text-slate-800 dark:bg-[#0b0f19] dark:text-slate-200 font-sans antialiased selection:bg-orange-500 selection:text-white">
 
-  <!-- TOP HUB NAVIGATION (STILE STRUMENTAZIONE INTERNA) -->
-  <header class="border-b border-slate-200 bg-white sticky top-0 z-50 px-4 xl:px-8 shadow-sm">
+  <!-- INTERFACE HEADER / CONTROL HUB -->
+  <header class="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-[#0d1322]/90 backdrop-blur sticky top-0 z-50 px-4 xl:px-8 shadow-sm">
     <div class="max-w-7xl mx-auto h-16 flex items-center justify-between">
+      
+      <!-- LOGO / IDENTITY -->
       <div class="flex items-center gap-3">
-        <div class="w-2.5 h-2.5 bg-orange-600 rounded-full"></div>
-        <span class="font-mono font-bold text-xs tracking-wider text-slate-900">AEGIS BEACON // SPECIFICHE TECNICHE</span>
+        <div class="w-3 h-3 bg-orange-600 rounded-full animate-pulse"></div>
+        <span class="font-mono font-bold text-xs tracking-wider text-slate-900 dark:text-white">AEGIS // BEACON_ECHO</span>
       </div>
-      <div class="flex items-center gap-4">
-        <span class="font-mono text-[11px] bg-slate-100 border border-slate-200 text-slate-600 px-2.5 py-1 rounded">DOC: v5.4_REV2</span>
-        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition px-3 py-1.5 rounded">Repository GitHub</a>
+
+      <!-- CONTROLLI UTENTE (LINGUA & TEMA) -->
+      <div class="flex items-center gap-2 sm:gap-4">
+        <!-- SELETTORE LINGUA -->
+        <select id="lang-selector" class="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium rounded px-2.5 py-1 outline-none cursor-pointer">
+          <option value="it">🇮🇹 Italiano</option>
+          <option value="en">🇺🇸 English</option>
+        </select>
+
+        <!-- SWITCH TEMA -->
+        <button id="theme-toggle" class="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1.5 rounded text-slate-600 dark:text-slate-400 hover:text-orange-500 dark:hover:text-orange-400" title="Inverti schema colori">
+          <!-- Icona Sole -->
+          <svg id="theme-sun" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 2a1 1 0 01.664.253l.707.707a1 1 0 01-1.414 1.414l-.707-.707A1 1 0 0114 4zM4 11a1 1 0 100-2H3a1 1 0 100 2h1zm11.364-1.364a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707zM16 11a1 1 0 100-2h-1a1 1 0 100 2h1zM4.636 15.364a1 1 0 011.414-1.414l.707.707a1 1 0 01-1.414 1.414l-.707-.707zM10 14a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM6.253 14.243a1 1 0 01.253.664v.707a1 1 0 11-2 0v-.707a1 1 0 011.747-.664z" /></svg>
+          <!-- Icona Luna -->
+          <svg id="theme-moon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+        </button>
+
+        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="hidden sm:inline-block text-xs font-semibold text-white bg-slate-900 dark:bg-orange-600 dark:hover:bg-orange-500 hover:bg-slate-800 transition px-3 py-1.5 rounded">Source Code ↗</a>
       </div>
     </div>
   </header>
 
-  <!-- CONTENT WRAPPER -->
-  <main class="max-w-7xl mx-auto px-4 py-8 md:py-12 space-y-10">
+  <!-- MAIN STRUCTURE -->
+  <main class="max-w-7xl mx-auto px-4 py-8 md:py-12 space-y-12">
     
-    <!-- DOCUMENT TITLE BLOCK -->
-    <section class="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
-      <div class="max-w-3xl">
-        <span class="text-xs font-mono font-bold text-orange-600 uppercase tracking-widest">Documentazione di Riferimento</span>
-        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 mt-1">Piano delle Frequenze d'Emergenza e Limitazioni Hardware</h1>
-        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
-          Questo manuale definisce l'allocazione delle frequenze radio per il monitoraggio e il soccorso in ambiente impervio. Le specifiche sono ottimizzate per i parametri operativi del ricetrasmettitore a stato solido.
-        </p>
-        
-        <!-- STATUS BADGES -->
-        <div class="flex flex-wrap gap-2 mt-4">
-          <span class="font-mono text-[11px] bg-slate-100 border border-slate-200 text-slate-700 px-2.5 py-0.5 rounded">Database: Revisione 2026</span>
-          <span class="font-mono text-[11px] bg-slate-100 border border-slate-200 text-slate-700 px-2.5 py-0.5 rounded">RF Engine: Semtech SX1262</span>
-          <span class="font-mono text-[11px] bg-emerald-50 border border-emerald-200 text-emerald-700 px-2.5 py-0.5 rounded">Standard: EN 300 220</span>
+    <!-- SYSTEM OVERVIEW HERO -->
+    <section class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-xl p-6 md:p-8 shadow-sm">
+      <div class="grid md:grid-cols-12 gap-6 items-center">
+        <div class="md:col-span-8 space-y-3">
+          <span class="text-xs font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest" data-key="hero-tag">PROGETTO APERTO SULLA SICUREZZA</span>
+          <h1 class="text-2xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white" data-key="hero-title">Localizzatore Radio Emergenza d'Alta Montagna</h1>
+          <p class="text-slate-500 dark:text-slate-400 text-sm md:text-base leading-relaxed" data-key="hero-desc">
+            Aegis-Beacon è un ecosistema firmware e hardware open-source progettato per garantire un'ancora di salvezza radio ridondante. Genera segnali ad impulsi agganciabili dai soccorritori a terra, garantendo visibilità radio dove le reti cellulari falliscono.
+          </p>
+          <div class="flex flex-wrap gap-4 pt-2">
+            <a href="#hardware" class="text-xs font-medium border border-slate-300 dark:border-slate-700 hover:border-orange-500 dark:hover:border-orange-500 px-3 py-2 rounded bg-slate-50 dark:bg-slate-800/50" data-key="btn-hw">Specifiche Hardware</a>
+            <a href="#frequenze" class="text-xs font-medium text-white bg-slate-900 dark:bg-slate-800 hover:bg-orange-600 dark:hover:bg-orange-600 px-3 py-2 rounded shadow-sm" data-key="btn-freq">Piano delle Frequenze</a>
+          </div>
+        </div>
+        <div class="md:col-span-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 font-mono text-[11px] text-slate-600 dark:text-slate-400 space-y-2">
+          <div class="text-xs font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-1" data-key="stat-title">SPECIFICHE DI SISTEMA</div>
+          <div><strong>Core Micro:</strong> ESP32-WROOM-32E / STM32</div>
+          <div><strong>RF Transceiver:</strong> Semtech SX1262 LoRa</div>
+          <div><strong>Output Power:</strong> Programmable up to +30dBm</div>
+          <div><strong>Modulation:</strong> Direct CW Pulse (Morse / Ranging)</div>
+          <div><strong>Battery Life:</strong> >72 Ore in trasmissione SOS</div>
         </div>
       </div>
     </section>
 
-    <!-- CRITICAL HARDWARE CONSTRAINTS -->
-    <section class="border border-slate-200 bg-white rounded-xl p-6 shadow-sm space-y-6">
-      <div class="border-l-4 border-slate-900 pl-4">
-        <h2 class="text-base font-bold text-slate-950 uppercase tracking-wide">1. Vincoli Architetturali del Modulo RF (Ebyte E22-400M30S)</h2>
-        <p class="text-slate-500 text-xs mt-0.5">Verifica della compatibilità fisica tra l'hardware e le frequenze di soccorso.</p>
-      </div>
+    <!-- CORE HARDWARE & FIRMWARE BLOCKS -->
+    <section id="hardware" class="grid md:grid-cols-2 gap-8">
       
-      <p class="text-sm text-slate-600 leading-relaxed">
-        Il modulo RF integrato nel dispositivo opera esclusivamente all'interno dello spettro UHF compreso tra <strong class="text-slate-900">410 MHz e 525 MHz</strong>. Questa limitazione fisica comporta l'impossibilità di sintonizzare o trasmettere direttamente sulle frequenze di soccorso storiche in banda VHF (come il Canale Emergenza Alpino o le frequenze aeronautiche).
-      </p>
+      <!-- ARCHITETTURA HARDWARE -->
+      <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="w-8 h-8 rounded bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold text-sm">HW</div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white" data-key="hw-title">Architettura Hardware Robusta</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed" data-key="hw-desc">
+            Nessun componente proprietario o debolezza strutturale. Il layout del circuito stampato è pensato per resistere a shock termici severi (-20°C a +40°C), umidità elevata e immunità ai disturbi elettromagnetici d'alta quota.
+          </p>
+          <ul class="space-y-1.5 text-xs text-slate-600 dark:text-slate-400 font-mono pt-2">
+            <li>• <strong class="text-slate-900 dark:text-white">Ebyte E22-400M30S:</strong> Amplificatore di potenza integrato per massimizzare la portata visiva (Line-of-Sight).</li>
+            <li>• <strong class="text-slate-900 dark:text-white">Antenna Accordata:</strong> Connettore SMA ad alto isolamento per stilo a 1/4 d'onda o dipoli filari di fortuna.</li>
+            <li>• <strong class="text-slate-900 dark:text-white">Alimentazione Protetta:</strong> Circuito di ricarica con diodi antiritorno e schermatura della cella LiPo.</li>
+          </ul>
+        </div>
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500 font-mono">
+          PCB Layout v5.4: Gerber file pronti per la fabbricazione industriale.
+        </div>
+      </div>
 
-      <div class="overflow-x-auto border border-slate-100 rounded-lg">
+      <!-- LOGICA DEL FIRMWARE -->
+      <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold text-sm">FW</div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white" data-key="fw-title">Logica del Firmware e Ottimizzazione</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed" data-key="fw-desc">
+            Scritto in C++ ottimizzato per consumi micro-ampere. Il loop principale implementa un watchdog hardware di sicurezza per prevenire blocchi del codice causati da picchi di tensione o sbalzi di temperatura esterni.
+          </p>
+          <ul class="space-y-1.5 text-xs text-slate-600 dark:text-slate-400 font-mono pt-2">
+            <li>• <strong class="text-slate-900 dark:text-white">CW Beacon Mode:</strong> Modulazione ad impulsi per massimizzare la ricezione da ricevitori SDR terrestri ed elicotteri.</li>
+            <li>• <strong class="text-slate-900 dark:text-white">Iniezione Telemetria:</strong> Trasmissione automatica delle coordinate GPS catturate dall'ultimo fix valido prima del congelamento.</li>
+            <li>• <strong class="text-slate-900 dark:text-white">Sleep Intelligente:</strong> Alternanza temporizzata trasmissione/riposo per raddoppiare l'autonomia energetica.</li>
+          </ul>
+        </div>
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500 font-mono">
+          Core Engine compiled with RadioLib v6.1.0 or newer.
+        </div>
+      </div>
+    </section>
+
+    <!-- FREQUENCY DATABASE SECTION (LA PARTE SULLE FREQUENZE) -->
+    <section id="frequenze" class="border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1626] rounded-xl overflow-hidden shadow-sm">
+      <div class="p-5 bg-slate-50 dark:bg-[#131b2e] border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white uppercase tracking-wide" data-key="freq-title">2. Piano Nazionale e Internazionale delle Frequenze SAR</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" data-key="freq-subtitle">Mappatura dei canali d'emergenza monitorabili per il soccorso alpino e protezione civile.</p>
+        </div>
+        <span class="font-mono text-[10px] bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900 px-2.5 py-1 rounded font-bold h-fit w-fit" data-key="freq-warn-tag">LIMITAZIONE HARDWARE COMPRESA: 410–525 MHz</span>
+      </div>
+
+      <div class="overflow-x-auto">
         <table class="w-full text-left font-mono text-xs border-collapse">
           <thead>
-            <tr class="bg-slate-50 text-slate-500 border-b border-slate-200">
-              <th class="p-3 font-semibold">Banda Operativa</th>
-              <th class="p-3 font-semibold text-center">Stato Hardware</th>
-              <th class="p-3 font-semibold">Note Tecniche di Implementazione</th>
+            <tr class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+              <th class="p-3 font-semibold">Frequenza</th>
+              <th class="p-3 font-semibold" data-key="tab-ch">Identificativo Canale</th>
+              <th class="p-3 font-semibold" data-key="tab-area">Area / Ambito Operativo</th>
+              <th class="p-3 font-semibold text-center" data-key="tab-status">Supporto SX1262</th>
+              <th class="p-3 font-semibold" data-key="tab-note">Destinazione d'Uso ed Efficacia Tecnica</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 text-slate-600">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-600 dark:text-slate-300">
             <tr>
-              <td class="p-3 font-medium text-slate-900">410–525 MHz (UHF)</td>
-              <td class="p-3 text-center text-emerald-600 font-bold">Pienamente Supportato</td>
-              <td class="p-3">Finestra nativa del chip SX1262. Include canali PMR446, LPD e allocazioni ISM regionali.</td>
+              <td class="p-3 font-bold text-slate-900 dark:text-white">446.08125 MHz</td>
+              <td class="p-3">PMR CH 7 (Sub-Tono 7)</td>
+              <td class="p-3">Italia / Arco Alpino</td>
+              <td class="p-3 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="tab-yes">SUPPORTATO</td>
+              <td class="p-3" data-key="tab-n1">Frequenza di sicurezza e mutuo soccorso del protocollo Radio Montana. Altissima densità di monitoraggio.</td>
             </tr>
-            <tr class="bg-slate-50/50">
-              <td class="p-3 font-medium text-slate-400">118–174 MHz (VHF)</td>
-              <td class="p-3 text-center text-rose-600 font-bold">Incompatibile</td>
-              <td class="p-3 text-slate-400">Frequenze marittime, aeronautiche e Canale E (161.300 MHz) richiedono un front-end hardware separato.</td>
+            <tr class="bg-slate-50/40 dark:bg-slate-900/20">
+              <td class="p-3 font-bold text-slate-900 dark:text-white">446.09375 MHz</td>
+              <td class="p-3">PMR CH 8</td>
+              <td class="p-3">Europa Standard</td>
+              <td class="p-3 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="tab-yes">SUPPORTATO</td>
+              <td class="p-3" data-key="tab-n2">Canale di coordinamento e soccorso impiegato da escursionisti e squadre logistiche di terra.</td>
             </tr>
             <tr>
-              <td class="p-3 font-medium text-slate-900">406.100 MHz (UHF Sat)</td>
-              <td class="p-3 text-center text-amber-600 font-bold">Isolato via Software</td>
-              <td class="p-3">Frequenza dei localizzatori satellitari PLB/EPIRB. La trasmissione è bloccata a livello firmware per evitare falsi allarmi internazionali.</td>
+              <td class="p-3 font-bold text-slate-400 dark:text-slate-600">161.300 MHz</td>
+              <td class="p-3">Canal E (Emergenza)</td>
+              <td class="p-3">Svizzera (REGA) / Alpi</td>
+              <td class="p-3 text-center text-rose-600 dark:text-rose-400 font-bold" data-key="tab-no">INCOMPATIBILE</td>
+              <td class="p-3 text-slate-400 dark:text-slate-500" data-key="tab-n3">Frequenza radio VHF montana di soccorso svizzera e transfrontaliera. Richiede un modulo RF hardware dedicato.</td>
+            </tr>
+            <tr class="bg-slate-50/40 dark:bg-slate-900/20">
+              <td class="p-3 font-bold text-slate-400 dark:text-slate-600">156.800 MHz</td>
+              <td class="p-3">VHF Marittimo CH 16</td>
+              <td class="p-3">Internazionale Marittimo</td>
+              <td class="p-3 text-center text-rose-600 dark:text-rose-400 font-bold" data-key="tab-no">INCOMPATIBILE</td>
+              <td class="p-3 text-slate-400 dark:text-slate-500" data-key="tab-n4">Frequenza di ascolto universale per il soccorso in mare. Esclusa dall'hardware UHF dell'Aegis.</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-bold text-slate-900 dark:text-white">462.675 MHz</td>
+              <td class="p-3">GMRS CH 20 Emergency</td>
+              <td class="p-3">Stati Uniti / Canada</td>
+              <td class="p-3 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="tab-yes">SUPPORTATO</td>
+              <td class="p-3" data-key="tab-n5">Frequenza UHF impiegata oltreoceano per il Wilderness Protocol in aree isolate sprovviste di ponti radio.</td>
+            </tr>
+            <tr class="bg-slate-50/40 dark:bg-slate-900/20">
+              <td class="p-3 font-bold text-slate-900 dark:text-white">433.500 MHz</td>
+              <td class="p-3">Canale Chiamata LPD</td>
+              <td class="p-3">Europa (Banda ISM)</td>
+              <td class="p-3 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="tab-yes">SUPPORTATO</td>
+              <td class="p-3" data-key="tab-n6">Impostata nel firmware come frequenza di test e beacon generico per non occupare i canali ufficiali.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- AVVISO TECNICO FORMALE -->
-      <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg text-xs text-amber-800 space-y-2">
-        <div class="font-semibold flex items-center gap-1.5">
-          <span>ℹ️</span> NOTA SULLA TIPOLOGIA DI SEGNALE GENERATO
+      <!-- INFORMAZIONE AD ALTO CONTRASTO TECNICO -->
+      <div class="p-5 bg-blue-50 dark:bg-blue-950/20 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 space-y-2">
+        <div class="font-bold text-slate-950 dark:text-white flex items-center gap-1.5">
+          <span>ℹ️</span> <span data-key="notice-title">COMPORTAMENTO DELLA PORTANTE ANALOGICA SUL REALE CAMPO APPLICATIVO</span>
         </div>
-        <p class="leading-relaxed">
-          Il firmware genera impulsi in onda continua (CW) non modulata commutando lo stato di alimentazione dello stadio di amplificazione. Questo metodo consente di massimizzare l'efficienza energetica della batteria in caso di emergenza, rendendo il segnale chiaramente visibile sui display waterfall dei ricevitori SDR (Software Defined Radio) o udibile come intermittenza acustica sui ricevitori analogici tradizionali in modalità AM/CW. Il dispositivo non supporta la modulazione vocale FM né i toni sub-audio analogici (CTCSS).
+        <p class="leading-relaxed font-mono text-[11px]" data-key="notice-body">
+          Il chip radio Semtech SX1262 genera impulsi di radiofrequenza puri in onda continua (CW). I ricevitori commerciali e professionali dotati di display waterfall (SDR) vedranno apparire delle righe verticali nette e costanti in corrispondenza della frequenza di trasmissione. Questo garantisce l'individuazione della sorgente anche se sepolta sotto neve o barriere rocciose profonde, sfruttando la stabilità intrinseca del generatore di clock TCXO montato sul circuito di Aegis-Beacon.
         </p>
       </div>
     </section>
 
-    <!-- ALLOCAZIONE DETTAGLIATA DELLE FREQUENZE -->
-    <section class="space-y-6">
-      <div class="border-l-4 border-slate-900 pl-4">
-        <h2 class="text-base font-bold text-slate-950 uppercase tracking-wide">2. Database Internazionale delle Frequenze di Soccorso e Monitoraggio</h2>
-        <p class="text-slate-500 text-xs mt-0.5">Riferimenti ufficiali per la programmazione dei canali di scansione terrestri e montani.</p>
+    <!-- LIVE HARDWARE SIMULATOR TERMINAL -->
+    <section class="grid lg:grid-cols-12 gap-8 items-center bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
+      <div class="lg:col-span-5 space-y-3">
+        <div class="text-xs font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest" data-key="sim-tag">// STRUMENTAZIONE DI TEST DI LABORATORIO //</div>
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white" data-key="sim-title">Emulatore dell'Interfaccia Firmware</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed" data-key="sim-desc">
+          Interagisci con il terminale per comprendere l'esatto funzionamento dell'hardware reale durante le fasi operative di monitoraggio e d'emergenza.
+        </p>
       </div>
-
-      <!-- TABELLA INTERNAZIONALE PRINCIPALE -->
-      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-        <div class="p-4 bg-slate-50 border-b border-slate-200">
-          <h3 class="text-xs font-mono font-bold text-slate-700 uppercase">// Tabelle Canali d'Emergenza - Standard Europa e Americhe</h3>
-        </div>
-        
-        <div class="overflow-x-auto">
-          <table class="w-full text-left font-mono text-xs border-collapse">
-            <thead>
-              <tr class="bg-slate-50 text-slate-500 border-b border-slate-200">
-                <th class="p-3 font-semibold">Frequenza</th>
-                <th class="p-3 font-semibold">Identificativo Canale</th>
-                <th class="p-3 font-semibold">Area / Servizio</th>
-                <th class="p-3 font-semibold text-center">Stato SX1262</th>
-                <th class="p-3 font-semibold">Destinazione d'Uso Operativa</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 text-slate-600">
-              <!-- EUROPA -->
-              <tr>
-                <td class="p-3 font-bold text-slate-900">446.08125 MHz</td>
-                <td class="p-3">PMR CH 7 (Tono 7)</td>
-                <td class="p-3">Italia (Radio Montana)</td>
-                <td class="p-3 text-center text-emerald-600 font-bold">Incluso</td>
-                <td class="p-3">Frequenza nazionale per la sicurezza e il coordinamento escursionistico in ambiente alpino.</td>
-              </tr>
-              <tr class="bg-slate-50/30">
-                <td class="p-3 font-bold text-slate-900">446.09375 MHz</td>
-                <td class="p-3">PMR CH 8</td>
-                <td class="p-3">Europa / Standard Alpino</td>
-                <td class="p-3 text-center text-emerald-600 font-bold">Incluso</td>
-                <td class="p-3">Canale radio generale impiegato per comunicazioni di terra e chiamate di soccorso locali.</td>
-              </tr>
-              <tr>
-                <td class="p-3 font-bold text-slate-400">161.300 MHz</td>
-                <td class="p-3">Canal E (Emergenza)</td>
-                <td class="p-3">Svizzera (REGA) / Alpi</td>
-                <td class="p-3 text-center text-rose-600 font-bold">Escluso</td>
-                <td class="p-3 text-slate-400">Rete radio VHF di soccorso svizzera e transfrontaliera. Monitorata da centrali operative.</td>
-              </tr>
-              <tr class="bg-slate-50/30">
-                <td class="p-3 font-bold text-slate-900">433.500 MHz</td>
-                <td class="p-3">Canale Chiamata LPD</td>
-                <td class="p-3">Europa (Banda ISM)</td>
-                <td class="p-3 text-center text-emerald-600 font-bold">Incluso</td>
-                <td class="p-3">Frequenza predefinita del firmware Aegis per test di propagazione a bassa potenza.</td>
-              </tr>
-              
-              <!-- AMERICHE / OCEANIA -->
-              <tr>
-                <td class="p-3 font-bold text-slate-900">462.675 MHz</td>
-                <td class="p-3">GMRS CH 20 (Emergency)</td>
-                <td class="p-3">Stati Uniti / Canada</td>
-                <td class="p-3 text-center text-emerald-600 font-bold">Incluso</td>
-                <td class="p-3">Canale stabilito dal Wilderness Protocol per la richiesta di aiuto in aree non coperte da rete cellulare.</td>
-              </tr>
-              <tr class="bg-slate-50/30">
-                <td class="p-3 font-bold text-slate-900">476.525 MHz</td>
-                <td class="p-3">UHF CB CH 5</td>
-                <td class="p-3">Australia / Nuova Zelanda</td>
-                <td class="p-3 text-center text-emerald-600 font-bold">Incluso</td>
-                <td class="p-3">Canale ufficiale presidiato dai ripetitori d'emergenza terrestri australiani.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- OPERATIONAL LOGIC & COMPATIBILITY -->
-    <section class="grid md:grid-cols-2 gap-6">
       
-      <!-- LOGICA DI TRASMISSIONE AD ALBERO -->
-      <div class="border border-slate-200 bg-white rounded-xl p-5 space-y-4 shadow-sm">
-        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wide">3. Matrice d'Intercettazione dei Ricevitori Terrestri</h3>
-        <p class="text-xs text-slate-500">Analisi del comportamento dei vari apparati radio quando ricevono il segnale generato dall'Aegis-Beacon:</p>
-        
-        <ul class="space-y-2 text-xs text-slate-600 font-mono">
-          <li class="flex items-start gap-2">
-            <span class="text-emerald-600 font-bold">✔</span>
-            <div><strong class="text-slate-900">Ricevitori SDR / Scanner:</strong> Massima efficacia. La portante a impulsi genera una traccia netta sulla visualizzazione a cascata (waterfall).</div>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="text-emerald-600 font-bold">✔</span>
-            <div><strong class="text-slate-900">Apparati Radio AM/CW:</strong> Ottima udibilità. L'impulso viene decodificato acusticamente come un tono intermittente chiaro (Codice Morse).</div>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="text-amber-600 font-bold">⚠</span>
-            <div><strong class="text-slate-900">Radio PMR446 Portatili (FM):</strong> Efficacia parziale. Nei ricevitori solo FM, l'impulso non genera una nota acustica pulita, ma viene percepito dall'operatore come un repentino abbattimento del rumore di fondo (Squelch aperto) ad intervalli regolari.</div>
-          </li>
-        </ul>
-      </div>
-
-      <!-- STRUMENTO DI VERIFICA (SIMULATORE DI STRUMENTAZIONE REALE) -->
-      <div class="border border-slate-200 bg-white rounded-xl p-5 flex flex-col justify-between space-y-4 shadow-sm">
-        <div class="flex justify-between items-center text-xs font-mono text-slate-500">
-          <span>SIMULAZIONE STATO APPARATO</span>
-          <span id="state-indicator" class="text-slate-700 font-bold px-2 py-0.5 border border-slate-300 bg-slate-50 rounded">MODO: ASCOLTO (RX)</span>
+      <!-- INTERFACCIA APPARATO EMULATO -->
+      <div class="lg:col-span-7 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-4">
+        <div class="flex justify-between items-center text-[11px] font-mono text-slate-500 dark:text-slate-400">
+          <span data-key="sim-status-title">STATO APPARATO REALE</span>
+          <span id="state-indicator" class="text-slate-700 dark:text-slate-300 font-bold px-2 py-0.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded shadow-sm">MODE: STANDBY_RX</span>
         </div>
 
-        <div id="terminal-screen" class="bg-slate-950 rounded-lg p-4 h-36 border border-slate-800 flex flex-col justify-between font-mono text-xs text-slate-300 shadow-inner">
-          <div class="flex justify-between text-[10px] text-slate-500 border-b border-slate-900 pb-1">
-            <span>UNIT_ID: AEGIS-01</span>
+        <div id="terminal-screen" class="bg-slate-950 rounded-lg p-4 h-40 border border-slate-800 flex flex-col justify-between font-mono text-xs text-slate-300 shadow-inner">
+          <div class="flex justify-between text-[10px] text-slate-600 border-b border-slate-900 pb-1">
+            <span>SYS_VERSION: v5.4_RELEASE</span>
             <span id="clock-display">00:00:00</span>
           </div>
           <div class="my-auto space-y-1" id="terminal-body">
-            <p class="text-emerald-400 font-medium">● ATTIVITÀ: SCANSIONE CANALI ATTIVA</p>
-            <p class="text-[11px] text-slate-400">Canale Monitor: 446.08125 MHz (Radio Montana)</p>
-            <p class="text-[11px] text-slate-500">Livello di rumore RF di fondo: -112 dBm (Soglia nominale)</p>
+            <p class="text-emerald-400 font-medium" data-key="sim-body-1">● RADIO INTERFACE STABLE - WAITING FOR INPUT</p>
+            <p class="text-[11px] text-slate-400" data-key="sim-body-2">Sintonizzato su canale di guardia LPD: 433.500 MHz</p>
+            <p class="text-[11px] text-slate-500" data-key="sim-body-3">RF Core Temperature: +24.2°C | Battery V: 4.18V</p>
           </div>
           <div class="text-[9px] text-slate-600 text-right">
-            Ref. Clock: TCXO Internal Stable
+            TCXO Internal Oscillator Locked
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
-          <button id="btn-toggle-sys" class="bg-slate-900 border border-slate-800 text-white hover:bg-slate-800 text-xs font-semibold py-2 rounded transition shadow-sm">
-            Commuta in Trasmissione (TX)
+          <button id="btn-toggle-sys" class="bg-slate-900 dark:bg-orange-600 hover:bg-slate-800 dark:hover:bg-orange-500 text-white text-xs font-semibold py-2.5 rounded transition shadow-sm" data-key="sim-btn-tx">
+            Attiva Trasmissione SOS (TX)
           </button>
-          <button id="btn-trigger-gps" class="bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 text-xs font-semibold py-2 rounded transition">
-            Simula Coordinate GPS
+          <button id="btn-trigger-gps" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-semibold py-2.5 rounded transition" data-key="sim-btn-gps">
+            Forza Aggancio GPS
           </button>
         </div>
       </div>
     </section>
 
-    <!-- QUADRO NORMATIVO -->
-    <section class="border border-slate-200 bg-slate-50 rounded-xl p-6 shadow-sm">
-      <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wide">4. Conformità d'Uso e Disposizioni Legali</h3>
-      <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-        L'esercizio delle frequenze radio è strettamente regolamentato dai piani nazionali di ripartizione dello spettro radioelettrico. Nei paesi dell'Unione Europea, l'utilizzo delle frequenze sulla banda LPD/SRD (433 MHz) è consentito senza licenza a patto che l'apparato rispetti i limiti di potenza radiata stabiliti in <strong class="text-slate-900">10 mW ERP</strong>. L'attivazione di segnali di soccorso al di fuori delle bande destinate al pubblico esercizio o senza una reale e immediata situazione di emergenza che minacci la vita umana costituisce un illecito civile e penale (procurato allarme e interferenza su frequenze protette dallo Stato).
-      </p>
+    <!-- SELF BUILDING & COMPLIANCE GUIDE -->
+    <section class="grid md:grid-cols-3 gap-6 text-xs text-slate-600 dark:text-slate-400">
+      <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-2">
+        <h4 class="font-bold text-slate-900 dark:text-white uppercase font-mono" data-key="g1-title">1. Autocostruzione</h4>
+        <p class="leading-relaxed" data-key="g1-desc">Il progetto incoraggia lo sviluppo indipendente. Puoi ordinare i PCB tramite i file Gerber inclusi nel repository ed effettuare il flash del firmware tramite VS Code / PlatformIO.</p>
+      </div>
+      <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-2">
+        <h4 class="font-bold text-slate-900 dark:text-white uppercase font-mono" data-key="g2-title">2. Limitazioni Legali</h4>
+        <p class="leading-relaxed" data-key="g2-desc">La trasmissione è vincolata alle normative locali sulla potenza ERP. Assicurati di operare sui canali adibiti all'uso LPD/PMR senza violare le frequenze riservate allo Stato.</p>
+      </div>
+      <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-2">
+        <h4 class="font-bold text-slate-900 dark:text-white uppercase font-mono" data-key="g3-title">3. Licenza Open Source</h4>
+        <p class="leading-relaxed" data-key="g3-desc">Il software e i diagrammi strutturali hardware sono rilasciati sotto licenza libera MIT. Chiunque può modificare, distribuire e riutilizzare il codice sorgente del tracker radio.</p>
+      </div>
     </section>
 
-    <!-- REVISION FOOTER -->
-    <footer class="border-t border-slate-200 pt-6 text-center text-xs font-mono text-slate-400">
-      <p>Aegis Open Source Hardware & Software Project — Specifiche distribuite sotto licenza MIT.</p>
+    <!-- FOOTER REVISION SYSTEM -->
+    <footer class="border-t border-slate-200 dark:border-slate-800 pt-6 text-center text-xs font-mono text-slate-400 dark:text-slate-600">
+      <p>Aegis Open Source Hardware Project — 2026. Documentazione ad alto contrasto per uso sul campo.</p>
     </footer>
 
   </main>
 
-  <!-- TERMINAL INTERACTIVE SCRIPT LOGIC -->
+  <!-- ==========================================
+       LOGICA JS: SWITCH TEMA, LINGUA & INTERAZIONE
+       ========================================== -->
   <script>
-    // Orologio di sistema sincronizzato
+    // --- DIZIONARIO TRADUZIONI (ITALIANO / INGLESE) ---
+    const translations = {
+      it: {
+        "hero-tag": "PROGETTO APERTO SULLA SICUREZZA",
+        "hero-title": "Localizzatore Radio Emergenza d'Alta Montagna",
+        "hero-desc": "Aegis-Beacon è un ecosistema firmware e hardware open-source progettato per garantire un'ancora di salvezza radio ridondante. Genera segnali ad impulsi agganciabili dai soccorritori a terra, garantendo visibilità radio dove le reti cellulari falliscono.",
+        "btn-hw": "Specifiche Hardware",
+        "btn-freq": "Piano delle Frequenze",
+        "stat-title": "SPECIFICHE DI SISTEMA",
+        "hw-title": "Architettura Hardware Robusta",
+        "hw-desc": "Nessun componente proprietario o debolezza strutturale. Il layout del circuito stampato è pensato per resistere a shock termici severi (-20°C a +40°C), umidità elevata e immunità ai disturbi elettromagnetici d'alta quota.",
+        "fw-title": "Logica del Firmware e Ottimizzazione",
+        "fw-desc": "Scritto in C++ ottimizzato per consumi micro-ampere. Il loop principale implementa un watchdog hardware di sicurezza per prevenire blocchi del codice causati da picchi di tensione o sbalzi di temperatura esterni.",
+        "freq-title": "2. Piano Nazionale e Internazionale delle Frequenze SAR",
+        "freq-subtitle": "Mappatura dei canali d'emergenza monitorabili per il soccorso alpino e protezione civile.",
+        "freq-warn-tag": "LIMITAZIONE HARDWARE COMPRESA: 410–525 MHz",
+        "tab-ch": "Identificativo Canale",
+        "tab-area": "Area / Ambito Operativo",
+        "tab-status": "Supporto SX1262",
+        "tab-note": "Destinazione d'Uso ed Efficacia Tecnica",
+        "tab-yes": "SUPPORTATO",
+        "tab-no": "INCOMPATIBILE",
+        "tab-n1": "Frequenza di sicurezza e mutuo soccorso del protocollo Radio Montana. Altissima densità di monitoraggio.",
+        "tab-n2": "Canale di coordinamento e soccorso impiegato da escursionisti e squadre logistiche di terra.",
+        "tab-n3": "Frequenza radio VHF montana di soccorso svizzera e transfrontaliera. Richiede un modulo RF hardware dedicato.",
+        "tab-n4": "Frequenza di ascolto universale per il soccorso in mare. Esclusa dall'hardware UHF dell'Aegis.",
+        "tab-n5": "Frequenza UHF impiegata oltreoceano per il Wilderness Protocol in aree isolate sprovviste di ponti radio.",
+        "tab-n6": "Impostata nel firmware come frequenza di test e beacon generico per non occupare i canali ufficiali.",
+        "notice-title": "COMPORTAMENTO DELLA PORTANTE ANALOGICA SUL REALE CAMPO APPLICATIVO",
+        "notice-body": "Il chip radio Semtech SX1262 genera impulsi di radiofrequenza puri in onda continua (CW). I ricevitori commerciali e professionali dotati di display waterfall (SDR) vedranno apparire delle righe verticali nette e costanti in corrispondenza della frequenza di trasmissione. Questo garantisce l'individuazione della sorgente anche se sepolta sotto neve o barriere rocciose profonde, sfruttando la stabilità intrinseca del generatore di clock TCXO montato sul circuito di Aegis-Beacon.",
+        "sim-tag": "// STRUMENTAZIONE DI TEST DI LABORATORIO //",
+        "sim-title": "Emulatore dell'Interfaccia Firmware",
+        "sim-desc": "Interagisci con il terminale per comprendere l'esatto funzionamento dell'hardware reale durante le fasi operative di monitoraggio e d'emergenza.",
+        "sim-status-title": "STATO APPARATO REALE",
+        "sim-status-rx": "MODE: STANDBY_RX",
+        "sim-status-tx": "MODE: EMISSIONE_SOS (TX)",
+        "sim-body-1": "● RADIO INTERFACE STABLE - WAITING FOR INPUT",
+        "sim-body-2": "Sintonizzato su canale di guardia LPD: 433.500 MHz",
+        "sim-body-3": "RF Core Temperature: +24.2°C | Battery V: 4.18V",
+        "sim-btn-tx": "Attiva Trasmissione SOS (TX)",
+        "sim-btn-tx-active": "Disattiva Trasmissione (RX)",
+        "sim-btn-gps": "Forza Aggancio GPS",
+        "g1-title": "1. Autocostruzione",
+        "g2-title": "2. Limitazioni Legali",
+        "g3-title": "3. Licenza Open Source",
+        "g1-desc": "Il progetto incoraggia lo sviluppo indipendente. Puoi ordinare i PCB tramite i file Gerber inclusi nel repository ed effettuare il flash del firmware tramite VS Code / PlatformIO.",
+        "g2-desc": "La trasmissione è vincolata alle normative locali sulla potenza ERP. Assicurati di operare sui canali adibiti all'uso LPD/PMR senza violare le frequenze riservate allo Stato.",
+        "g3-desc": "Il software e i diagrammi strutturali hardware sono rilasciati sotto licenza libera MIT. Chiunque può modificare, distribuire e riutilizzare il codice sorgente del tracker radio."
+      },
+      en: {
+        "hero-tag": "OPEN SAFETY HARDWARE PROJECT",
+        "hero-title": "High Mountain Emergency Radio Beacon",
+        "hero-desc": "Aegis-Beacon is an open-source firmware and hardware ecosystem designed to provide a redundant radio lifeline. It generates pulse signals easily detectable by search and rescue operators, ensuring visibility where cell networks fail.",
+        "btn-hw": "Hardware Specs",
+        "btn-freq": "Frequency Plan",
+        "stat-title": "SYSTEM SPECIFICATIONS",
+        "hw-title": "Rugged Hardware Architecture",
+        "hw-desc": "No proprietary components or structural weaknesses. The PCB layout is designed to survive severe thermal shock (-20°C to +40°C), high humidity, and high-altitude electromagnetic interference.",
+        "fw-title": "Firmware Logic & Optimization",
+        "fw-desc": "Written in optimized C++ for micro-ampere consumption. The main loop implements a hardware watchdog timer to prevent crashes caused by extreme voltage drops or sudden cold spikes.",
+        "freq-title": "2. National and International SAR Frequency Plan",
+        "freq-subtitle": "Mapping of emergency channels monitored by mountain rescue teams and civil protection.",
+        "freq-warn-tag": "HARDWARE SPECTRUM CONSTRAINT: 410–525 MHz",
+        "tab-ch": "Channel Identifier",
+        "tab-area": "Operational Area / Scope",
+        "tab-status": "SX1262 Support",
+        "tab-note": "Intended Use & Technical Efficacy",
+        "tab-yes": "SUPPORTED",
+        "tab-no": "INCOMPATIBLE",
+        "tab-n1": "Safety and mutual emergency channel of the Radio Montana protocol. Extremely high monitoring density.",
+        "tab-n2": "General coordination and rescue channel utilized by hikers and ground logistics squads.",
+        "tab-n3": "VHF mountain radio frequency for Swiss and cross-border rescue. Requires a dedicated VHF hardware RF module.",
+        "tab-n4": "Universal maritime distress frequency. Excluded from Aegis's native UHF hardware loop.",
+        "tab-n5": "UHF frequency used abroad for the Wilderness Protocol in remote regions without repeater coverage.",
+        "tab-n6": "Set in firmware as a test channel and generic beacon to avoid flooding official emergency bands.",
+        "notice-title": "ANALOG CARRIER BEHAVIOR IN FIELD APPLICATION",
+        "notice-body": "The Semtech SX1262 RF chip generates pure Continuous Wave (CW) pulses. Professional receivers equipped with waterfall screens (SDR) will see clear, sharp vertical lines at the transmission frequency. This guarantees source acquisition even if buried under snow or deep rocky barriers, utilizing the internal stability of the TCXO clock crystal oscillator.",
+        "sim-tag": "// BENCH TEST INSTRUMENTATION //",
+        "sim-title": "Firmware Interface Emulator",
+        "sim-desc": "Interact with the terminal shell to understand the exact behavior of the real device during monitoring and emergency operations.",
+        "sim-status-title": "HARDWARE DEVICE LIVE STATUS",
+        "sim-status-rx": "MODE: STANDBY_RX",
+        "sim-status-tx": "MODE: BEACON_SOS (TX)",
+        "sim-body-1": "● RADIO INTERFACE STABLE - WAITING FOR INPUT",
+        "sim-body-2": "Tuned to guard LPD channel: 433.500 MHz",
+        "sim-body-3": "RF Core Temperature: +24.2°C | Battery V: 4.18V",
+        "sim-btn-tx": "Activate Emergency Beacon (TX)",
+        "sim-btn-tx-active": "Deactivate Beacon (RX)",
+        "sim-btn-gps": "Force GPS Lock",
+        "g1-title": "1. Self-Building",
+        "g2-title": "2. Legal Framework",
+        "g3-title": "3. Open Source License",
+        "g1-desc": "The project encourages independent development. You can order PCBs using the Gerber files included in the repository and flash the firmware using VS Code / PlatformIO.",
+        "g2-desc": "Transmission is strictly bound to local ERP power rules. Always ensure you operate on authorized public LPD/PMR frequencies.",
+        "g3-desc": "The software and hardware schematics are released under the permissive MIT license. Anyone can modify, distribute, and reuse the source code."
+      }
+    };
+
+    let currentLang = 'it';
+
+    document.getElementById('lang-selector').addEventListener('change', (e) => {
+      currentLang = e.target.value;
+      updateLanguage();
+    });
+
+    function updateLanguage() {
+      document.querySelectorAll('[data-key]').forEach(el => {
+        const key = el.getAttribute('data-key');
+        if (translations[currentLang][key]) {
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = translations[currentLang][key];
+          } else {
+            el.textContent = translations[currentLang][key];
+          }
+        }
+      });
+      
+      // Aggiorna lo stato del simulatore se è attivo
+      const stateInd = document.getElementById('state-indicator');
+      if (modeState === 'RX') {
+        stateInd.textContent = translations[currentLang]['sim-status-rx'];
+        document.getElementById('btn-toggle-sys').textContent = translations[currentLang]['sim-btn-tx'];
+      } else {
+        stateInd.textContent = translations[currentLang]['sim-status-tx'];
+        document.getElementById('btn-toggle-sys').textContent = translations[currentLang]['sim-btn-tx-active'];
+      }
+    }
+
+    // --- LOGICA DELLO SWITCH DEL TEMA (CHIARO / SCURO) ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const sunIcon = document.getElementById('theme-sun');
+    const moonIcon = document.getElementById('theme-moon');
+
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+      sunIcon.classList.remove('hidden');
+      moonIcon.classList.add('hidden');
+    } else {
+      document.documentElement.classList.remove('dark');
+      sunIcon.classList.add('hidden');
+      moonIcon.classList.remove('hidden');
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        sunIcon.classList.add('hidden');
+        moonIcon.classList.remove('hidden');
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        sunIcon.classList.remove('hidden');
+        moonIcon.classList.add('hidden');
+      }
+    });
+
+    // --- TIMING INTERFACCIA SIMULATA ---
     setInterval(() => {
       const d = new Date();
       document.getElementById('clock-display').textContent = d.toTimeString().split(' ')[0];
@@ -333,23 +499,25 @@
     btnToggle.addEventListener('click', () => {
       if (modeState === 'RX') {
         modeState = 'TX';
-        stateInd.textContent = 'MODO: EMISSIONE BEACON (TX)';
-        stateInd.className = 'text-orange-700 font-bold px-2 py-0.5 border border-orange-300 bg-orange-50 rounded';
-        btnToggle.textContent = 'Commuta in Ascolto (RX)';
+        stateInd.textContent = translations[currentLang]['sim-status-tx'];
+        stateInd.className = 'text-orange-700 dark:text-orange-400 font-bold px-2 py-0.5 border border-orange-300 dark:border-orange-900 bg-orange-50 dark:bg-orange-950/20 rounded shadow-sm';
+        btnToggle.textContent = translations[currentLang]['sim-btn-tx-active'];
+        
         termBody.innerHTML = `
-          <p class="text-orange-400 font-medium">● EMISSIONE: SEGNALE SOS IN CORSO</p>
-          <p class="text-[11px] text-slate-400">Frequenza: 433.500 MHz (Banda ISM Standard)</p>
-          <p class="text-[10px] text-slate-500" id="gps-term-line">GPS: Acquisizione dei dati di telemetria satellitare in corso...</p>
+          <p class="text-orange-500 font-bold animate-pulse">${currentLang === 'it' ? '● RADIO EMISSION: SOS PULSE ACTIVE' : '● RADIO EMISSION: SOS PULSE ACTIVE'}</p>
+          <p class="text-[11px] text-slate-400">${currentLang === 'it' ? 'Portante CW RF generata a 433.500 MHz (+30dBm)' : 'CW RF Carrier generated at 433.500 MHz (+30dBm)'}</p>
+          <p class="text-[10px] text-slate-500" id="gps-term-line">${currentLang === 'it' ? 'GPS: Lettura dell\'ultimo fix valido...' : 'GPS: Reading last valid coordinate fix...'}</p>
         `;
       } else {
         modeState = 'RX';
-        stateInd.textContent = 'MODO: ASCOLTO (RX)';
-        stateInd.className = 'text-slate-700 font-bold px-2 py-0.5 border border-slate-300 bg-slate-50 rounded';
-        btnToggle.textContent = 'Commuta in Trasmissione (TX)';
+        stateInd.textContent = translations[currentLang]['sim-status-rx'];
+        stateInd.className = 'text-slate-700 dark:text-slate-300 font-bold px-2 py-0.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded shadow-sm';
+        btnToggle.textContent = translations[currentLang]['sim-btn-tx'];
+        
         termBody.innerHTML = `
-          <p class="text-emerald-400 font-medium">● ATTIVITÀ: SCANSIONE CANALI ATTIVA</p>
-          <p class="text-[11px] text-slate-400">Canale Monitor: 446.08125 MHz (Radio Montana)</p>
-          <p class="text-[11px] text-slate-500">Livello di rumore RF di fondo: -112 dBm (Soglia nominale)</p>
+          <p class="text-emerald-400 font-medium">● ${translations[currentLang]['sim-body-1']}</p>
+          <p class="text-[11px] text-slate-400">${translations[currentLang]['sim-body-2']}</p>
+          <p class="text-[11px] text-slate-500">${translations[currentLang]['sim-body-3']}</p>
         `;
       }
     });
@@ -358,11 +526,13 @@
       if (modeState === 'TX') {
         const line = document.getElementById('gps-term-line');
         if (line) {
-          line.textContent = 'TELEMETRIA INTEGRATA // LAT: 45.8921 N - LON: 12.1044 E';
-          line.className = 'text-white font-medium text-[10px] bg-slate-900 border border-slate-800 p-1 text-center rounded mt-1';
+          line.textContent = 'TELEMETRY BURST // LAT: 45.8921 N - LON: 12.1044 E [INJECTED]';
+          line.className = 'text-white font-bold text-[10px] bg-slate-900 dark:bg-slate-800 border border-slate-800 dark:border-slate-700 p-1 text-center rounded mt-1';
         }
       } else {
-        alert('NOTIFICA: Impostare lo strumento in modalità EMISSIONE BEACON (TX) per verificare l\'iniezione delle coordinate GPS all\'interno della stringa trasmessa.');
+        alert(currentLang === 'it' 
+          ? 'NOTIFICA: Attivare prima la modalità di trasmissione SOS (TX) per forzare l\'invio della telemetria delle coordinate.' 
+          : 'NOTICE: Turn on the Emergency Transmission mode (TX) first to simulate the telemetry injection.');
       }
     });
   </script>
