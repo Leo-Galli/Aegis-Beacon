@@ -369,7 +369,7 @@
               <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">macOS integra i driver CP210x/FTDI dalla 10.9+. La porta apparirà come <span class="font-mono">/dev/tty.usbserial-XXXX</span> o <span class="font-mono">/dev/cu.SLAB_USBtoUART</span>.</p>
             </div>
             <div class="os-content" id="os-linux-s2">
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Driver già presenti nel kernel. La porta compare come <span class="font-mono">/dev/ttyUSB0</span>. Aggiungere l'utente al gruppo dialout: <span class="font-mono">sudo usermod -aG dialout $USER</span> (richiede logout).</p>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Driver già presenti nel kernel. La porta compare come <span class="font-mono">/dev/ttyUSB0</span>. Aggiungere l'utente al gruppo dialout: <span class="font-mono">sudo usermod -aG dialout $USER</span> (richiega logout).</p>
             </div>
           </div>
 
@@ -969,7 +969,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AEGIS-BEACON v5.3 // CONFIG</title>
+<title>AEGIS-BEACON v5.4 // CONFIG</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;900&display=swap');
 :root{
@@ -1062,363 +1062,171 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
 .rssi-val{color:var(--txt);font-size:.72rem;min-width:55px;text-align:right;}
 .hit-lbl{font-size:.62rem;padding:1px 6px;border-radius:2px;font-family:'Orbitron',sans-serif;letter-spacing:1px;}
 .hit-lbl.STRONG{background:rgba(57,255,20,.12);color:var(--a3);border:1px solid var(--a3);}
-.hit-lbl.MEDIUM{background:rgba(255,153,0,.1);color:var(--a4);border:1px solid var(--a4);}
-.hit-lbl.WEAK{background:rgba(0,229,255,.07);color:var(--a1);border:1px solid var(--a1);}
-.emg-btn{width:100%;padding:14px;font-size:.72rem;letter-spacing:3px;background:rgba(255,59,59,.12);border:2px solid var(--a2);color:var(--a2);animation:emgPulse 2s infinite;font-family:'Orbitron',sans-serif;cursor:pointer;}
-@keyframes emgPulse{0%,100%{box-shadow:var(--glow2)}50%{box-shadow:none}}
-.emg-btn:hover{background:rgba(255,59,59,.25);}
+.hit-lbl.MEDIUM{background:rgba(255,153,0,.12);color:var(--a4);border:1px solid var(--a4);}
+.hit-lbl.WEAK{background:rgba(255,59,59,.12);color:var(--a2);border:1px solid var(--a2);}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--a3);color:var(--a3);padding:12px 24px;border-radius:var(--r);font-family:'Orbitron',sans-serif;font-size:.72rem;letter-spacing:1px;box-shadow:var(--glow3);transform:translateY(100px);opacity:0;transition:all .3s ease-in-out;z-index:100;}
+#toast.show{transform:translateY(0);opacity:1;}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo">AEGIS<em>-</em>BEACON <span style="font-size:.65rem;color:var(--dim);margin-left:8px;">v5.3</span></div>
-  <div class="badge demo">DEMO — DATI SIMULATI</div>
+  <div class="logo">AEGIS<em>_</em>BEACON</div>
+  <div class="badge demo">MOCK_PORTAL_v5.4</div>
 </header>
 <main>
+  <!-- STATS -->
+  <div class="card full ok">
+    <div class="ct"><div class="ct-dot"></div>Telemetria di Sistema</div>
+    <div class="stat-grid">
+      <div class="stat-item"><div class="stat-lbl">Tensione Batteria</div><div class="stat-val" id="statBat">4.18V</div></div>
+      <div class="stat-item"><div class="stat-lbl">Stato GPS</div><div class="stat-val ok" id="statGps">FIX_3D (5 Sat)</div></div>
+      <div class="stat-item"><div class="stat-lbl">Temperatura MCU</div><div class="stat-val" id="statTemp">32.4 °C</div></div>
+      <div class="stat-item"><div class="stat-lbl">Tempo di Attività</div><div class="stat-val" id="statUptime">00h 14m 52s</div></div>
+    </div>
+  </div>
 
-<div class="card full">
-  <div class="ct"><span class="ct-dot"></span>OPERATING MODE</div>
-  <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <div style="font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:3px;color:var(--dim);">ACTIVE MODE</div>
-      <div style="position:relative;width:176px;height:46px;background:var(--s1);border-radius:23px;cursor:pointer;border:2px solid var(--border);transition:border-color .3s;" id="modeSwitch" onclick="toggleMode()">
-        <div id="modeKnob" style="position:absolute;top:4px;width:80px;height:34px;border-radius:19px;transition:left .3s;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:.58rem;letter-spacing:2px;font-weight:600;left:4px;background:var(--a2);color:#fff;box-shadow:var(--glow2);">BEACON</div>
+  <!-- RADIO PARAMETERS -->
+  <div class="card pot">
+    <div class="ct"><div class="ct-dot"></div>Configurazione RF & Transceiver</div>
+    <div class="form-row">
+      <label>Frequenza Portante (MHz)</label>
+      <input type="number" id="rfFreq" value="446.08125" step="0.00001" min="410" max="525">
+    </div>
+    <div class="form-row">
+      <label>Potenza d'Uscita RF (dBm)</label>
+      <select id="rfPower">
+        <option value="10">10 dBm (10mW) - Basso Consumo</option>
+        <option value="14">14 dBm (25mW)</option>
+        <option value="20">20 dBm (100mW) - Medio Raggio</option>
+        <option value="30" selected>30 dBm (1W000mW) - MASSIMA POTENZA</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Intervallo Emissione CW (Secondi)</label>
+      <input type="number" id="txInterval" value="10" min="2" max="300">
+    </div>
+  </div>
+
+  <!-- BEACON PAYLOAD (ID & MORSE) -->
+  <div class="card id">
+    <div class="ct"><div class="ct-dot"></div>Identificativo & Codifica Morse</div>
+    <div class="form-row">
+      <label>ID Operatore / Nominativo Radio</label>
+      <input type="text" id="opCallsign" value="IU3XYZ" maxlength="15" placeholder="E.g. IU3XYZ">
+    </div>
+    <div class="form-row">
+      <label>Velocità Morse (WPM)</label>
+      <input type="range" class="wpm-range" id="morseWpm" min="5" max="35" value="15" oninput="document.getElementById('wpmVal').innerText=this.value">
+      <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--dim);margin-top:2px;">
+        <span>Lento (5 WPM)</span>
+        <span style="color:var(--a1)">Attuale: <strong id="wpmVal">15</strong> WPM</span>
+        <span>Rapido (35 WPM)</span>
       </div>
-      <div style="display:flex;width:176px;justify-content:space-between;font-size:.62rem;"><span style="color:var(--a2)">BEACON</span><span style="color:var(--a1)">SEARCH</span></div>
     </div>
-    <div style="flex:1;min-width:220px;">
-      <div style="font-size:.62rem;color:var(--dim);margin-bottom:4px;letter-spacing:1px;">MORSE PAYLOAD PREVIEW</div>
-      <div class="payload-preview" id="payloadPreview">SOS</div>
+    <div class="form-row">
+      <label>Anteprima stringa trasmessa (Morse Payload)</label>
+      <div class="payload-preview" id="payloadPreview">SOS DE IU3XYZ PSN 45.8921N 12.1044E</div>
     </div>
   </div>
-</div>
 
-<div class="card alert">
-  <div class="ct"><span class="ct-dot"></span>BEACON SETTINGS</div>
-  <div class="form-row">
-    <label>SOS MESSAGE BASE</label>
-    <input type="text" id="msg" maxlength="30" oninput="updatePayloadPreview()" value="SOS">
-    <div id="morsePreview"></div>
-  </div>
-  <div class="form-row">
-    <label>TX POWER (dBm) — <span id="pwrVal">17</span></label>
-    <input type="range" id="pwr" min="2" max="20" value="17" oninput="document.getElementById('pwrVal').textContent=this.value">
-  </div>
-  <div class="form-row">
-    <label>SLEEP INTERVAL (s) — <span id="sleepVal">10</span></label>
-    <input type="range" id="sleep" min="1" max="300" value="10" oninput="document.getElementById('sleepVal').textContent=this.value">
-  </div>
-  <div class="form-row">
-    <label>REPEAT COUNT — <span id="repVal">1</span></label>
-    <input type="range" id="rep" min="1" max="10" value="1" oninput="document.getElementById('repVal').textContent=this.value">
-  </div>
-</div>
-
-<div class="card id">
-  <div class="ct"><span class="ct-dot"></span>IDENTITY (NAME IN MORSE)</div>
-  <div class="form-row">
-    <label class="tog-wrap">
-      <span class="tog-cb"><input type="checkbox" id="nameEn" onchange="updatePayloadPreview()"><span class="tog-slider"></span></span>
-      <span class="tog-lbl">INCLUDE NAME IN BEACON</span>
-    </label>
-  </div>
-  <div class="form-row">
-    <label>FIRST NAME</label>
-    <input type="text" id="fname" maxlength="20" placeholder="MARIO" oninput="updatePayloadPreview()" style="text-transform:uppercase">
-  </div>
-  <div class="form-row">
-    <label>LAST NAME</label>
-    <input type="text" id="lname" maxlength="20" placeholder="ROSSI" oninput="updatePayloadPreview()" style="text-transform:uppercase">
-  </div>
-  <div class="info-box">
-    When enabled, the beacon transmits:<br>
-    <span style="color:var(--a5)">SOS DE [FIRSTNAME] [LASTNAME]</span><br>
-    Only capital letters A-Z are transmitted.<br>
-    Keep names short to minimise TX time.
-  </div>
-</div>
-
-<div class="card gps">
-  <div class="ct"><span class="ct-dot"></span>GPS (NEO-6M MODULE)</div>
-  <div class="form-row">
-    <label class="tog-wrap">
-      <span class="tog-cb"><input type="checkbox" id="gpsEn" onchange="updatePayloadPreview()"><span class="tog-slider"></span></span>
-      <span class="tog-lbl">ENABLE GPS MODULE</span>
-    </label>
-  </div>
-  <div class="form-row">
-    <label class="tog-wrap">
-      <span class="tog-cb"><input type="checkbox" id="gpsBeacon" onchange="updatePayloadPreview()"><span class="tog-slider"></span></span>
-      <span class="tog-lbl">TRANSMIT COORDINATES IN BEACON</span>
-    </label>
-  </div>
-  <div class="form-row">
-    <label>FIX WAIT TIMEOUT (s) — <span id="gpsTmoVal">30</span></label>
-    <input type="range" id="gpsTmo" min="10" max="120" value="30" oninput="document.getElementById('gpsTmoVal').textContent=this.value">
-  </div>
-  <div class="coord-display" id="gpsCoordDisplay">NO FIX</div>
-  <div class="info-box">
-    GPS: RX=GPIO22  TX=GPIO12  9600 baud<br>
-    Format: <span style="color:var(--a3)">SOS PSN N4553 E01230</span><br>
-    N4553 = 45deg53' N - concise for Morse.<br>
-    Stale fix (post deep-sleep) still transmitted.
-  </div>
-</div>
-
-<div class="card pot full">
-  <div class="ct"><span class="ct-dot"></span>BUTTON CONTROLS (v5.3)</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;align-items:start;">
-    <div>
-      <div style="font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_SEL - GPIO32</div>
+  <!-- GPS COORDINATES -->
+  <div class="card gps">
+    <div class="ct"><div class="ct-dot"></div>Coordinate Geografiche (GPS)</div>
+    <div class="tog-wrap" style="margin-bottom:14px;">
+      <label class="tog-cb">
+        <input type="checkbox" id="gpsToggle" checked onchange="toggleGpsField(this)">
+        <span class="tog-slider"></span>
+      </label>
+      <span class="tog-lbl">Inietta coordinate reali nel payload Morse</span>
+    </div>
+    <div id="gpsDataBlock">
+      <label>Ultimo Fix Conosciuto</label>
+      <div class="coord-display" id="coordDisplay">45.892100 N , 12.104400 E</div>
       <div class="info-box">
-        Short press: toggle VOL / WPM adjust target.<br>
-        Long 3s: enter Config (WiFi AP mode).<br>
-        OLED overlay shows active target.
-      </div>
-    </div>
-    <div>
-      <div style="font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_UP - GPIO35</div>
-      <div class="info-box">
-        Increment: Volume +10 or WPM +1.<br>
-        Auto-repeat after 500ms hold.<br>
-        Updates live, no reboot needed.
-      </div>
-    </div>
-    <div>
-      <div style="font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_DN - GPIO34</div>
-      <div class="info-box">
-        Decrement: Volume -10 or WPM -1.<br>
-        Auto-repeat after 500ms hold.<br>
-        Vol range: 20-255. WPM range: 5-40.
+        Modulo GPS Neo-6M integrato. Le coordinate vengono auto-aggiornate tramite frame NMEA del bus seriale dell'ESP32.
       </div>
     </div>
   </div>
-</div>
 
-<div class="card">
-  <div class="ct"><span class="ct-dot"></span>SEARCH SETTINGS</div>
-  <div class="form-row">
-    <label>SCAN FREQUENCIES (MHz)</label>
-    <ul id="freqList"></ul>
-    <div class="add-row">
-      <input type="number" id="newFreq" step="0.001" min="410" max="525" placeholder="433.500">
-      <button class="btn btn-c" onclick="addFreq()">+ ADD</button>
+  <!-- WI-FI PORTAL SETTINGS -->
+  <div class="card">
+    <div class="ct"><div class="ct-dot"></div>Impostazioni Rete Wi-Fi AP</div>
+    <div class="form-row">
+      <label>SSID Rete Captive Portal</label>
+      <input type="text" id="wifiSsid" value="AegisBeacon">
+    </div>
+    <div class="form-row">
+      <label>Password d'Accesso (WPA2)</label>
+      <input type="text" id="wifiPass" value="AegisRescueSystem" placeholder="Lascia vuoto per rete libera">
+    </div>
+    <div class="info-box">
+      La rete WiFi viene disattivata automaticamente dopo 5 minuti dall'avvio se il dispositivo non rileva client agganciati, salvaguardando l'autonomia della batteria.
     </div>
   </div>
-  <div class="form-row">
-    <label>DWELL TIME (ms) — <span id="dwellVal">400</span></label>
-    <input type="range" id="dwell" min="50" max="2000" value="400" oninput="document.getElementById('dwellVal').textContent=this.value">
-  </div>
-  <div class="form-row">
-    <label>RSSI THRESHOLD (dBm) — <span id="rssiVal">-90</span></label>
-    <input type="range" id="rssiThr" min="-120" max="-40" value="-90" oninput="document.getElementById('rssiVal').textContent=this.value">
-  </div>
-</div>
 
-<div class="card audio">
-  <div class="ct"><span class="ct-dot"></span>AUDIO</div>
-  <div class="form-row">
-    <label class="tog-wrap">
-      <span class="tog-cb"><input type="checkbox" id="audioEn" checked><span class="tog-slider"></span></span>
-      <span class="tog-lbl">AUDIO ENABLED</span>
-    </label>
+  <!-- ACTION BUTTONS -->
+  <div class="card full text-center">
+    <button class="btn btn-save btn-c" id="saveBtn" onclick="saveConfiguration()">Salva Configurazione in EEPROM</button>
   </div>
-  <div class="form-row">
-    <label>DEFAULT VOLUME — <span id="volVal">70</span>%</label>
-    <input type="range" class="audio-range" id="vol" min="0" max="255" value="180"
-      oninput="document.getElementById('volVal').textContent=Math.round(this.value/255*100)">
-  </div>
-  <div class="form-row">
-    <label>DEFAULT WPM — <span id="wpmVal">13</span></label>
-    <input type="range" class="wpm-range" id="wpm" min="5" max="40" value="13"
-      oninput="document.getElementById('wpmVal').textContent=this.value;updatePayloadPreview()">
-  </div>
-</div>
-
-<div class="card alert">
-  <div class="ct"><span class="ct-dot"></span>RADIO (SX1262)</div>
-  <div class="form-row">
-    <label>TX POWER (dBm) — <span id="pwrVal2">17</span></label>
-    <input type="range" id="pwr2" min="-9" max="22" value="17" oninput="document.getElementById('pwrVal2').textContent=this.value;document.getElementById('pwr').value=this.value;document.getElementById('pwrVal').textContent=this.value">
-    <div class="info-box" style="margin-top:6px;">
-      SX1262 RadioLib range: -9 to +22 dBm.<br>
-      E22-400M30S onboard PA: up to +30 dBm.<br>
-      Emergency mode always uses +22 dBm.
-    </div>
-  </div>
-  <div class="info-box">
-    SCK=GPIO18  MISO=GPIO19  MOSI=GPIO23<br>
-    CS=GPIO5   RST=GPIO14   BUSY=GPIO21<br>
-    DIO1=GPIO2  TCXO=1.6V<br>
-    <span style="color:var(--a2)">BUSY pin must be wired or radio hangs</span>
-  </div>
-</div>
-
-<div class="card">
-  <div class="ct"><span class="ct-dot"></span>DISPLAY (SSD1309 2.42")</div>
-  <div class="form-row">
-    <label class="tog-wrap">
-      <span class="tog-cb"><input type="checkbox" id="oledEn" checked><span class="tog-slider"></span></span>
-      <span class="tog-lbl">OLED ENABLED</span>
-    </label>
-  </div>
-  <div class="form-row">
-    <label class="tog-wrap">
-      <span class="tog-cb"><input type="checkbox" id="oledInv"><span class="tog-slider"></span></span>
-      <span class="tog-lbl">INVERT DISPLAY</span>
-    </label>
-  </div>
-  <div class="info-box">
-    OLED: SSD1309 2.42" 128x64 (sw SPI)<br>
-    SCK=GPIO15  SDA=GPIO13  RES=GPIO4<br>
-    DC=GPIO16   CS=GPIO17<br>
-    Driver: U8g2 full-frame buffer
-  </div>
-</div>
-
-<div class="card ok full">
-  <div class="ct"><span class="ct-dot"></span>DEVICE STATUS</div>
-  <div class="stat-grid" id="statGrid">
-    <div class="stat-item"><div class="stat-lbl">BOOT CYCLES</div><div class="stat-val" id="sBoot">—</div></div>
-    <div class="stat-item"><div class="stat-lbl">FREE HEAP</div><div class="stat-val" id="sHeap">—</div></div>
-    <div class="stat-item"><div class="stat-lbl">GPS FIX</div><div class="stat-val" id="sGps">—</div></div>
-    <div class="stat-item"><div class="stat-lbl">SATELLITES</div><div class="stat-val" id="sSats">—</div></div>
-    <div class="stat-item"><div class="stat-lbl">LIVE WPM</div><div class="stat-val" id="sWpm">—</div></div>
-    <div class="stat-item"><div class="stat-lbl">LIVE VOLUME</div><div class="stat-val" id="sVol">—</div></div>
-    <div class="stat-item"><div class="stat-lbl">TX CYCLES</div><div class="stat-val" id="sTx">—</div></div>
-    <div class="stat-item"><div class="stat-lbl">SCAN HITS</div><div class="stat-val" id="sHits">—</div></div>
-  </div>
-</div>
-
-<div class="card full">
-  <div class="ct"><span class="ct-dot"></span>SCAN HIT HISTORY</div>
-  <div id="scanList"><div style="color:var(--dim);font-size:.73rem;padding:14px 0;text-align:center;">No signals detected yet.</div></div>
-</div>
-
-<div class="card alert full">
-  <div class="ct"><span class="ct-dot"></span>EMERGENCY</div>
-  <p style="font-size:.72rem;color:var(--dim);margin-bottom:14px;">
-    Emergency mode transmits high-power SOS continuously, including your name and GPS position if enabled.
-    Cannot be cancelled remotely - use MODE button (hold 2s) on the device.
-  </p>
-  <button class="emg-btn" onclick="confirmEmergency()">ACTIVATE EMERGENCY SOS</button>
-</div>
-
-<div class="card full">
-  <div class="ct"><span class="ct-dot"></span>SAVE & CONTROL</div>
-  <div class="btn-row" style="margin-bottom:12px;">
-    <button class="btn btn-g btn-save" onclick="saveConfig()">SAVE &amp; REBOOT</button>
-  </div>
-  <div class="btn-row">
-    <button class="btn btn-c" onclick="fetchStatus()">REFRESH STATUS</button>
-    <button class="btn btn-d" onclick="confirmFactory()">FACTORY RESET</button>
-  </div>
-</div>
-
 </main>
+
+<div id="toast">SALVATAGGIO AVVENUTO — MEMORIA FLASH SCRITTA</div>
+
 <script>
-const MORSE={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',0:'-----',1:'.----',2:'..---',3:'...--',4:'....-',5:'.....',6:'-....',7:'--...',8:'---..',9:'----.'};
-function toMorse(s){return s.toUpperCase().split('').map(c=>MORSE[c]||' ').join('  ');}
+  // Aggiorna l'anteprima del payload morse al variare dell'ID
+  const callsignInput = document.getElementById('opCallsign');
+  const payloadPreview = document.getElementById('payloadPreview');
+  const gpsToggle = document.getElementById('gpsToggle');
 
-let modeBeacon=true;
-function toggleMode(){
-  modeBeacon=!modeBeacon;
-  const sw=document.getElementById('modeSwitch');
-  const kn=document.getElementById('modeKnob');
-  if(modeBeacon){sw.style.borderColor='var(--a2)';kn.style.left='4px';kn.style.background='var(--a2)';kn.style.boxShadow='var(--glow2)';kn.textContent='BEACON';}
-  else{sw.style.borderColor='var(--a1)';kn.style.left='88px';kn.style.background='var(--a1)';kn.style.color='#000';kn.style.boxShadow='var(--glow1)';kn.textContent='SEARCH';}
-}
-
-function buildPayload(){
-  let s=document.getElementById('msg').value.toUpperCase()||'SOS';
-  const nameEn=document.getElementById('nameEn').checked;
-  const fname=(document.getElementById('fname').value||'').toUpperCase().trim();
-  const lname=(document.getElementById('lname').value||'').toUpperCase().trim();
-  if(nameEn&&(fname||lname)){
-    s+=' DE';
-    if(fname) s+=' '+fname;
-    if(lname) s+=' '+lname;
+  function updatePayloadPreview() {
+    let base = "SOS DE " + (callsignInput.value.trim().toUpperCase() || "ANONIMO");
+    if(gpsToggle.checked) {
+      base += " PSN 45.8921N 12.1044E";
+    }
+    payloadPreview.textContent = base;
   }
-  const gpsEn=document.getElementById('gpsEn').checked;
-  const gpsBeacon=document.getElementById('gpsBeacon').checked;
-  if(gpsEn&&gpsBeacon) s+=' PSN N4553 E01230';
-  return s;
-}
-function updatePayloadPreview(){
-  const pl=buildPayload();
-  document.getElementById('payloadPreview').textContent=pl;
-  document.getElementById('morsePreview').textContent=toMorse(pl);
-}
-updatePayloadPreview();
 
-let freqs=[433.500];
-function renderFreqs(){
-  const ul=document.getElementById('freqList');ul.innerHTML='';
-  freqs.forEach((f,i)=>{
-    const li=document.createElement('li');
-    li.innerHTML='<span class="fv">'+f.toFixed(3)+' MHz</span><span style="color:var(--dim);font-size:.61rem;">CH '+(i+1)+'</span><button class="del" onclick="delFreq('+i+')">X</button>';
-    ul.appendChild(li);
-  });
-}
-function addFreq(){const v=parseFloat(document.getElementById('newFreq').value);if(isNaN(v)||v<410||v>525||freqs.length>=10)return;freqs.push(v);document.getElementById('newFreq').value='';renderFreqs();}
-function delFreq(i){if(freqs.length<=1)return;freqs.splice(i,1);renderFreqs();}
-renderFreqs();
-
-const demoState = {
-  boot: 7, heap: 214000, tx: 132, hits: 4,
-  gpsFix: true, gpsSats: 6, gpsLat: 45.7897, gpsLng: 8.6987,
-  wpm: 13, vol: 180,
-  scanHits: [
-    {freq:433.500, rssi:-58, label:'STRONG'},
-    {freq:433.750, rssi:-77, label:'MEDIUM'},
-    {freq:434.000, rssi:-94, label:'WEAK'},
-    {freq:433.500, rssi:-63, label:'STRONG'}
-  ]
-};
-
-function fetchStatus(){
-  demoState.heap += Math.round((Math.random()-0.5)*400);
-  demoState.gpsLat += (Math.random()-0.5)*0.0004;
-  demoState.gpsLng += (Math.random()-0.5)*0.0004;
-  const d = demoState;
-
-  document.getElementById('sBoot').textContent='#'+d.boot;
-  document.getElementById('sHeap').textContent=Math.round(d.heap/1024)+'KB';
-  document.getElementById('sTx').textContent=d.tx;
-  document.getElementById('sHits').textContent=d.hits;
-  document.getElementById('sGps').textContent=d.gpsFix?'VALID':'NO FIX';
-  document.getElementById('sGps').className='stat-val '+(d.gpsFix?'ok':'warn');
-  document.getElementById('sSats').textContent=d.gpsSats;
-  document.getElementById('sWpm').textContent=d.wpm+' WPM';
-  document.getElementById('sVol').textContent=Math.round(d.vol*100/255)+'%';
-  if(d.gpsFix) document.getElementById('gpsCoordDisplay').textContent=d.gpsLat.toFixed(4)+'  '+d.gpsLng.toFixed(4);
-
-  if(d.scanHits&&d.scanHits.length>0){
-    const sl=document.getElementById('scanList');sl.innerHTML='';
-    d.scanHits.forEach(h=>{
-      const pct=Math.max(0,Math.min(100,(h.rssi+120)*100/80));
-      const row=document.createElement('div');row.className='hit-row';
-      row.innerHTML='<span class="hit-freq">'+h.freq.toFixed(3)+' MHz</span><div class="rssi-bar-bg"><div class="rssi-bar" style="width:'+pct+'%"></div></div><span class="rssi-val">'+h.rssi+' dBm</span><span class="hit-lbl '+h.label+'">'+h.label+'</span>';
-      sl.appendChild(row);
-    });
+  callsignInput.addEventListener('input', updatePayloadPreview);
+  
+  function toggleGpsField(checkbox) {
+    const dataBlock = document.getElementById('gpsDataBlock');
+    if(checkbox.checked) {
+      dataBlock.style.opacity = "1";
+    } else {
+      dataBlock.style.opacity = "0.4";
+    }
+    updatePayloadPreview();
   }
-}
-fetchStatus();
-setInterval(fetchStatus,4000);
 
-function saveConfig(){
-  demoState.wpm = parseInt(document.getElementById('wpm').value);
-  demoState.vol = parseInt(document.getElementById('vol').value);
-  fetchStatus();
-  alert('DEMO: configurazione salvata localmente. Su un dispositivo reale il beacon si riavvierebbe ora.');
-}
+  function saveConfiguration() {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = "SCRITTURA IN CORSO...";
+    
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = "Salva Configurazione in EEPROM";
+      
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }, 1200);
+  }
 
-function confirmEmergency(){if(confirm('ACTIVATE EMERGENCY SOS?\n\n(DEMO) Nessun dispositivo reale e collegato - questa e solo una simulazione dell interfaccia.')){alert('DEMO: EMERGENCY SOS attivato (simulato).');}}
-function confirmFactory(){if(confirm('FACTORY RESET?\n\n(DEMO) Nessun dispositivo reale e collegato - questa e solo una simulazione dell interfaccia.')){alert('DEMO: reset simulato completato.');}}
+  // Simulazione Uptime e Batteria calante millesimalmente
+  let uptimeSec = 892;
+  setInterval(() => {
+    uptimeSec++;
+    let h = Math.floor(uptimeSec / 3600).toString().padStart(2, '0');
+    let m = Math.floor((uptimeSec % 3600) / 60).toString().padStart(2, '0');
+    let s = (uptimeSec % 60).toString().padStart(2, '0');
+    document.getElementById('statUptime').textContent = h + "h " + m + "m " + s + "s";
+  }, 1000);
 </script>
 </body>
-</html>
-`;
-  </script>
+</html>`;
+</script>
 </body>
 </html>
