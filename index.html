@@ -4,17 +4,84 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- METADATI STRUTTURATI E SEO -->
-<title>Aegis-Beacon v5.4 — Manuale Tecnico di Riferimento</title>
-<meta name="description" content="Specifiche hardware, firmware e piano frequenze globale per il localizzatore radio di emergenza open-source Aegis-Beacon.">
+<!-- METADATI STRUTTURATI E ARCHITETTURA SEO -->
+<title>Aegis-Beacon v5.4 — Manuale Tecnico di Riferimento e Wiki di Costruzione</title>
+<meta name="description" content="Guida ufficiale di Aegis-Beacon v5.4: istruzioni passo-passo per l'assemblaggio hardware, codice sorgente firmware, protocolli di aggiornamento e piano frequenze radio.">
+<meta name="keywords" content="Aegis-Beacon, localizzatore radio, LoRa SAR, firmware ESP32, SX1262, costruzione beacon emergenza, aggiornamento software beacon">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://aegis-beacon.vercel.app/">
 
-<!-- Open Graph -->
-<meta property="og:type" content="website">
-<meta property="og:title" content="Aegis-Beacon v5.4 — Technical Reference Manual">
-<meta property="og:description" content="Manuale ingegneristico standardizzato per lo sviluppo e la calibrazione di dispositivi SAR operanti su vettori UHF.">
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="Aegis-Beacon v5.4 — Manuale Tecnico di Riferimento e Wiki di Costruzione">
+<meta property="og:description" content="Manuale ingegneristico standardizzato open-source per lo sviluppo, l'aggiornamento e l'assemblaggio di dispositivi di radiolocalizzazione d'emergenza.">
 <meta property="og:url" content="https://aegis-beacon.vercel.app/">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Aegis-Beacon v5.4 — Technical Manual">
+<meta name="twitter:description" content="Specifiche hardware, firmware e guida all'assemblaggio per il beacon SAR operante su frequenze UHF.">
+
+<!-- JSON-LD SCHEMA PER RICH SNIPPETS NEI MOTORI DI RICERCA -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://aegis-beacon.vercel.app/#software",
+      "name": "Aegis-Beacon Firmware",
+      "operatingSystem": "Embedded (ESP32)",
+      "applicationCategory": "UtilitiesApplication",
+      "releaseNotes": "https://github.com/Leo-Galli/Aegis-Beacon/releases",
+      "downloadUrl": "https://github.com/Leo-Galli/Aegis-Beacon",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "EUR"
+      }
+    },
+    {
+      "@type": "TechArticle",
+      "@id": "https://aegis-beacon.vercel.app/#article",
+      "headline": "Aegis-Beacon v5.4 — Manuale Tecnico di Riferimento e Wiki di Costruzione",
+      "description": "Specifiche tecniche di sviluppo hardware, architettura firmware e canali di ricezione radio per sistemi SAR.",
+      "inLanguage": "it-IT",
+      "url": "https://aegis-beacon.vercel.app/",
+      "author": {
+        "@type": "Organization",
+        "name": "Aegis Open Source Project"
+      }
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://aegis-beacon.vercel.app/#howto-update",
+      "name": "Come aggiornare il software di Aegis-Beacon",
+      "description": "Procedura guidata per la compilazione e l'upload del firmware su microcontrollore ESP32.",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Installazione Strumenti",
+          "text": "Installare Visual Studio Code e l'estensione PlatformIO IDE.",
+          "url": "https://aegis-beacon.vercel.app/#tab-compilazione"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Connessione Hardware",
+          "text": "Connettere l'unità al PC tramite interfaccia USB-to-UART.",
+          "url": "https://aegis-beacon.vercel.app/#tab-compilazione"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Flashing Firmware",
+          "text": "Eseguire il comando di compilazione e upload tramite PlatformIO.",
+          "url": "https://aegis-beacon.vercel.app/#tab-compilazione"
+        }
+      ]
+    }
+  ]
+}
+</script>
 
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -45,7 +112,6 @@
   .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
   
-  /* Classi per la transizione fluida delle schede */
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 </style>
@@ -61,7 +127,7 @@
         <div class="w-3 h-3 bg-orange-600 rounded-full shrink-0"></div>
         <div class="flex flex-col">
           <span class="font-mono font-bold text-xs tracking-wider text-slate-900 dark:text-white uppercase">Aegis-Beacon</span>
-          <span class="font-mono text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-widest -mt-0.5">UHF SAR Locator v5.4</span>
+          <span class="font-mono text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-widest -mt-0.5">Technical & Build Wiki v5.4</span>
         </div>
       </div>
 
@@ -82,10 +148,10 @@
     </div>
   </header>
 
-  <!-- TAB NAVIGATION SYSTEM -->
+  <!-- NAVIGATION TABS -->
   <div class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b101c] sticky top-16 z-40">
     <div class="max-w-7xl mx-auto px-4 overflow-x-auto">
-      <nav class="flex gap-2 py-3 min-w-[480px]" aria-label="Sezioni della documentazione">
+      <nav class="flex gap-2 py-3 min-w-[650px]" aria-label="Menu di navigazione tecnica">
         <button onclick="switchTab('panoramica')" id="btn-panoramica" class="tab-btn px-4 py-1.5 text-xs font-mono font-bold rounded border border-orange-600 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400">
           [ 01 // PANORAMICA ]
         </button>
@@ -95,8 +161,11 @@
         <button onclick="switchTab('firmware')" id="btn-firmware" class="tab-btn px-4 py-1.5 text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400">
           [ 03 // FIRMWARE ]
         </button>
-        <button onclick="switchTab('frequenze')" id="btn-frequenze" class="tab-btn px-4 py-1.5 text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400">
-          [ 04 // FREQUENZE ]
+        <button onclick="switchTab('compilazione')" id="btn-compilazione" class="tab-btn px-4 py-1.5 text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400">
+          [ 04 // WIKI: AGGIORNAMENTO ]
+        </button>
+        <button onclick="switchTab('costruzione')" id="btn-costruzione" class="tab-btn px-4 py-1.5 text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400">
+          [ 05 // WIKI: COSTRUZIONE ]
         </button>
       </nav>
     </div>
@@ -106,7 +175,7 @@
   <main class="max-w-7xl mx-auto px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
     
     <!-- --------------------------------------- -->
-    <!-- TAB 1: PANORAMICA DEL PROGETTO           -->
+    <!-- TAB 1: PANORAMICA                       -->
     <!-- --------------------------------------- -->
     <section id="tab-panoramica" class="tab-content active space-y-6">
       <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 shadow-sm space-y-4">
@@ -148,7 +217,6 @@
     <section id="tab-hardware" class="tab-content space-y-6">
       <div class="grid lg:grid-cols-12 gap-6">
         
-        <!-- SPECIFICHE COMPONENTISTICA -->
         <div class="lg:col-span-8 space-y-6">
           <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-4">
             <h2 class="text-sm font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2" data-key="hw-spec-t">Architettura Hardware dell'Unità RF</h2>
@@ -173,7 +241,6 @@
           </div>
         </div>
 
-        <!-- SCHEDA RIASSUNTIVA DETTAGLI HARDWARE -->
         <div class="lg:col-span-4 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-4">
           <h2 class="text-xs font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2" data-key="hw-aside-t">Caratteristiche Fisiche</h2>
           <table class="w-full text-left font-mono text-[11px] text-slate-600 dark:text-slate-400 divide-y divide-slate-100 dark:divide-slate-800">
@@ -201,12 +268,11 @@
     </section>
 
     <!-- --------------------------------------- -->
-    <!-- TAB 3: FIRMWARE CORE & CONFIGURATION     -->
+    <!-- TAB 3: FIRMWARE                         -->
     <!-- --------------------------------------- -->
     <section id="tab-firmware" class="tab-content space-y-6">
       <div class="grid lg:grid-cols-12 gap-6">
         
-        <!-- DETTAGLI COMPILAZIONE -->
         <div class="lg:col-span-6 space-y-6">
           <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-4">
             <h2 class="text-sm font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2" data-key="fw-title">Infrastruttura del Firmware</h2>
@@ -223,7 +289,6 @@
           </div>
         </div>
 
-        <!-- RECOVERY CONFIG CODEBLOCK -->
         <div class="lg:col-span-6 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 flex flex-col justify-between space-y-3">
           <div>
             <h2 class="text-xs font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2">// config.h</h2>
@@ -241,13 +306,106 @@
     </section>
 
     <!-- --------------------------------------- -->
-    <!-- TAB 4: FREQUENCY SCHEDULING DATABASE     -->
+    <!-- TAB 4: WIKI AGGIORNAMENTO SOFTWARE      -->
     <!-- --------------------------------------- -->
-    <section id="tab-frequenze" class="tab-content space-y-6">
+    <section id="tab-compilazione" class="tab-content space-y-6">
+      <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-6">
+        <div class="border-b border-slate-100 dark:border-slate-800 pb-3">
+          <span class="font-mono text-[10px] text-orange-600 dark:text-orange-400 font-bold uppercase">[ PROCEDURA SOFTWARE DI COMPILAZIONE ]</span>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white" data-key="wiki-up-title">Aggiornamento Firmware e Flash tramite PlatformIO</h2>
+        </div>
+        
+        <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="wiki-up-desc">
+          Il firmware di Aegis-Beacon viene compilato in codice macchina ed eseguito direttamente sul chip ESP32. Seguire rigorosamente la sequenza strumentale per caricare le patch software correttive o calibrare le frequenze operative.
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-6 pt-2">
+          <!-- STEP 1 -->
+          <div class="border border-slate-100 dark:border-slate-800 p-4 rounded bg-slate-50/50 dark:bg-slate-900/40 space-y-2">
+            <span class="text-xs font-mono font-bold text-orange-600 dark:text-orange-400">FASE 01 // PREPARAZIONE</span>
+            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="wiki-up-s1">
+              Scaricare e installare Visual Studio Code integrando il pacchetto PlatformIO IDE. Clonare il repository Git di sviluppo sul terminale locale.
+            </p>
+            <pre class="bg-slate-950 text-slate-400 font-mono text-[10px] p-2 rounded border border-slate-900">
+git clone https://github.com/Leo-Galli/Aegis-Beacon.git
+            </pre>
+          </div>
+
+          <!-- STEP 2 -->
+          <div class="border border-slate-100 dark:border-slate-800 p-4 rounded bg-slate-50/50 dark:bg-slate-900/40 space-y-2">
+            <span class="text-xs font-mono font-bold text-orange-600 dark:text-orange-400">FASE 02 // COLLEGAMENTO UART</span>
+            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="wiki-up-s2">
+              Collegare il beacon al computer tramite convertitore USB-TTL (CP2102 o FTDI). Collegare RX a TX, TX a RX e GND in comune. Portare il pin GPIO0 a massa all'avvio per abilitare la modalità flash bootloader.
+            </p>
+          </div>
+
+          <!-- STEP 3 -->
+          <div class="border border-slate-100 dark:border-slate-800 p-4 rounded bg-slate-50/50 dark:bg-slate-900/40 space-y-2">
+            <span class="text-xs font-mono font-bold text-orange-600 dark:text-orange-400">FASE 03 // COMPILAZIONE E FLASH</span>
+            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="wiki-up-s3">
+              Aprire la cartella di progetto in VS Code, verificare i parametri nel file platformio.ini ed eseguire il comando combinato di build ed upload hardware.
+            </p>
+            <pre class="bg-slate-950 text-slate-400 font-mono text-[10px] p-2 rounded border border-slate-900">
+pio run --target upload
+            </pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------- -->
+    <!-- TAB 5: WIKI MANUALE DI COSTRUZIONE     -->
+    <!-- --------------------------------------- -->
+    <section id="tab-costruzione" class="tab-content space-y-6">
+      <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-6">
+        <div class="border-b border-slate-100 dark:border-slate-800 pb-3">
+          <span class="font-mono text-[10px] text-orange-600 dark:text-orange-400 font-bold uppercase">[ PROCEDURA STRUTTURALE DI ASSEMBLAGGIO ]</span>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white" data-key="wiki-const-title">Manuale di Saldatura e Costruzione Fisica della PCB</h2>
+        </div>
+        
+        <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="wiki-const-desc">
+          L'assemblaggio dell'unità Aegis-Beacon richiede precisione e competenze basilari nell'ambito della saldatura SMD (Surface Mount Device). Seguire rigorosamente lo schema di montaggio dei componenti per evitare cortocircuiti o danni termici alle sezioni RF sensibili.
+        </p>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase font-mono" data-key="wiki-const-h1">Specifiche della Distinta Componenti (BOM)</h3>
+            <ul class="space-y-2 font-mono text-xs text-slate-600 dark:text-slate-400 list-disc list-inside">
+              <li>MCU: ESP32-WROOM-32E (Espressif Systems)</li>
+              <li>RF Subsystem: Modulo Ebyte E22-400M30S (SX1262)</li>
+              <li>Antenna Port: Connettore SMA femmina a 90 gradi saldabile a bordo</li>
+              <li>Power PMIC: Integrato TP4056 con diodi di protezione Schottky</li>
+              <li>Oscillatore: TCXO integrato a 32 MHz ad alta stabilità</li>
+            </ul>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase font-mono" data-key="wiki-const-h2">Guida Operativa Passo-Passo</h3>
+            <div class="border-l-2 border-orange-600 dark:border-orange-500 pl-4 space-y-3">
+              <div>
+                <span class="block text-[11px] font-bold text-slate-900 dark:text-white">1. Saldatura dei Componenti Passivi</span>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed" data-key="wiki-const-p1">Saldare prima i resistori e i condensatori SMD con package 0805 o 0603, preferendo l'uso di pasta saldante ad alta conducibilità e stazione ad aria calda.</p>
+              </div>
+              <div>
+                <span class="block text-[11px] font-bold text-slate-900 dark:text-white">2. Allineamento dei Moduli Integrati</span>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed" data-key="wiki-const-p2">Posizionare accuratamente l'ESP32 e il chip SX1262 sulle rispettive piazzole (footprint). Fissare gli angoli prima di rifluire i contatti.</p>
+              </div>
+              <div>
+                <span class="block text-[11px] font-bold text-slate-900 dark:text-white">3. Connessione dell'Antenna e Test RF</span>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed" data-key="wiki-const-p3">Saldare il connettore SMA. Attenzione: Non accendere mai l'unità senza aver prima connesso un'antenna idonea o un carico fittizio da 50 Ohm, al fine di evitare la rottura immediata dello stadio finale di potenza.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FREQUENZE & COMPATIBILITÀ -->
+    <section class="space-y-6">
       <div class="border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1626] rounded-lg overflow-hidden shadow-sm">
         <div class="p-4 bg-slate-50 dark:bg-[#131b2e] border-b border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div>
-            <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider" data-key="t-title">4. Piano Frequenze e Compatibilità Spettrale d'Emergenza</h2>
+            <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider" data-key="t-title">Piano Frequenze e Compatibilità Spettrale d'Emergenza</h2>
             <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5" data-key="t-subtitle">Database delle allocazioni radio per il monitoraggio e il soccorso terrestre internazionale.</p>
           </div>
           <span class="self-start lg:self-center font-mono text-[10px] bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60 px-2 py-0.5 rounded font-bold whitespace-nowrap" data-key="t-warn">LIMITI HARDWARE COMPRESI: 410–525 MHz</span>
@@ -287,27 +445,13 @@
                 <td class="p-3 text-center text-rose-600 dark:text-rose-400 font-bold" data-key="v-no">INCOMPATIBILE</td>
                 <td class="p-3 text-slate-400 dark:text-slate-500" data-key="n-3">Banda VHF non supportata dall'architettura d'antenna e dal front-end del chip SX1262.</td>
               </tr>
-              <tr class="bg-slate-50/40 dark:bg-slate-900/10">
-                <td class="p-3 font-bold text-slate-400 dark:text-slate-600">156.800 MHz</td>
-                <td class="p-3">VHF Marittimo CH 16</td>
-                <td class="p-3">Maritime SAR</td>
-                <td class="p-3 text-center text-rose-600 dark:text-rose-400 font-bold" data-key="v-no">INCOMPATIBILE</td>
-                <td class="p-3 text-slate-400 dark:text-slate-500" data-key="n-4">Frequenza marina internazionale di soccorso. Esclusa dai vincoli fisici di sintesi RF.</td>
-              </tr>
-              <tr>
-                <td class="p-3 font-bold text-slate-900 dark:text-white">462.675 MHz</td>
-                <td class="p-3">GMRS CH 20 Emergency</td>
-                <td class="p-3">USA / Canada</td>
-                <td class="p-3 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBILE</td>
-                <td class="p-3" data-key="n-5">Frequenza allocata per il Wilderness Protocol in territori isolati privi di copertura cellulare.</td>
-              </tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- CALIBRATION & FIRMWARE INTERACTIVE DIAGNOSTIC BENCH -->
+    <!-- CALIBRATION & FIRMWARE DIAGNOSTIC BENCH -->
     <section class="grid lg:grid-cols-12 gap-6 items-center bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-4 sm:p-5 shadow-sm">
       <div class="lg:col-span-5 space-y-2">
         <span class="text-[10px] sm:text-xs font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider" data-key="sim-tag">// DIAGNOSTICA STRUMENTALE DI RIFERIMENTO //</span>
@@ -317,7 +461,7 @@
         </p>
       </div>
       
-      <!-- REAL HARDWARE SERIAL EMULATOR -->
+      <!-- SERIAL EMULATOR -->
       <div class="lg:col-span-7 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 space-y-3 w-full">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between text-[10px] font-mono text-slate-500 gap-1.5">
           <span data-key="sim-status">STATO LOGICO CORE</span>
@@ -330,7 +474,7 @@
             <span id="clock-display">00:00:00</span>
           </div>
           <div class="my-auto space-y-1 py-1.5" id="terminal-body">
-            <p id="init-line" class="text-emerald-400 font-medium leading-tight">● INITIALIZATION SUCCESSFUL — RF BAUD RATE LOCKED</p>
+            <p id="init-line" class="text-emerald-400 font-medium leading-tight">INITIALIZATION SUCCESSFUL — RF BAUD RATE LOCKED</p>
             <p id="freq-line" class="text-slate-400 leading-tight">Frequency Monitor Active: 446.08125 MHz</p>
             <p id="volt-line" class="text-slate-500 leading-tight">System Voltage: 4.18V | Reference Stable Clock: TCXO</p>
           </div>
@@ -350,7 +494,7 @@
       </div>
     </section>
 
-    <!-- LEGAL COMPLIANCE AND OPEN SOURCE CORE FOOTNOTES -->
+    <!-- FOOTER LEGAL FOOTNOTES -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
       <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded p-4 space-y-1">
         <span class="font-bold text-slate-900 dark:text-white block uppercase text-xs" data-key="f1-t">01 / DISPIEGAMENTO</span>
@@ -366,16 +510,13 @@
       </div>
     </section>
 
-    <!-- INDUSTRIAL REVISION BAR -->
     <footer class="border-t border-slate-200 dark:border-slate-800 pt-4 text-center text-[10px] font-mono text-slate-400 dark:text-slate-600 px-2">
       <p>Aegis Open Source Engineering Network — Technical File Reference v5.4 Revision 2026.</p>
     </footer>
 
   </main>
 
-  <!-- ==========================================
-       CENTRALIZED JAVASCRIPT TRANSLATION LOGIC
-       ========================================== -->
+  <!-- TRANSLATION LOGIC -->
   <script>
     const dictionary = {
       it: {
@@ -405,7 +546,21 @@
         "fw-desc-2": "La logica di trasmissione automatica interseca la telemetria analogica e i dati geografici estratti in formato NMEA da un eventuale modulo GPS seriale opzionale di tipo Neo-6M.",
         "fw-warn": "Nota: Modificare la potenza di trasmissione in base alle normative nazionali vigenti.",
 
-        "t-title": "4. Piano Frequenze e Compatibilità Spettrale d'Emergenza",
+        "wiki-up-title": "Aggiornamento Firmware e Flash tramite PlatformIO",
+        "wiki-up-desc": "Il firmware di Aegis-Beacon viene compilato in codice macchina ed eseguito direttamente sul chip ESP32. Seguire rigorosamente la sequenza strumentale per caricare le patch software correttive o calibrare le frequenze operative.",
+        "wiki-up-s1": "Scaricare e installare Visual Studio Code integrando il pacchetto PlatformIO IDE. Clonare il repository Git di sviluppo sul terminale locale.",
+        "wiki-up-s2": "Collegare il beacon al computer tramite convertitore USB-TTL (CP2102 o FTDI). Collegare RX a TX, TX a RX e GND in comune. Portare il pin GPIO0 a massa all'avvio per abilitare la modalità flash bootloader.",
+        "wiki-up-s3": "Aprire la cartella di progetto in VS Code, verificare i parametri nel file platformio.ini ed eseguire il comando combinato di build ed upload hardware.",
+
+        "wiki-const-title": "Manuale di Saldatura e Costruzione Fisica della PCB",
+        "wiki-const-desc": "L'assemblaggio dell'unità Aegis-Beacon richiede precisione e competenze basilari nell'ambito della saldatura SMD (Surface Mount Device). Seguire rigorosamente lo schema di montaggio dei componenti per evitare cortocircuiti o danni termici alle sezioni RF sensibili.",
+        "wiki-const-h1": "Specifiche della Distinta Componenti (BOM)",
+        "wiki-const-h2": "Guida Operativa Passo-Passo",
+        "wiki-const-p1": "Saldare prima i resistori e i condensatori SMD con package 0805 o 0603, preferendo l'uso di pasta saldante ad alta conducibilità e stazione ad aria calda.",
+        "wiki-const-p2": "Posizionare accuratamente l'ESP32 e il chip SX1262 sulle rispettive piazzole (footprint). Fissare gli angoli prima di rifluire i contatti.",
+        "wiki-const-p3": "Saldare il connettore SMA. Attenzione: Non accendere mai l'unità senza aver prima connesso un'antenna idonea o un carico fittizio da 50 Ohm, al fine di evitare la rottura immediata dello stadio finale di potenza.",
+
+        "t-title": "Piano Frequenze e Compatibilità Spettrale d'Emergenza",
         "t-subtitle": "Database delle allocazioni radio per il monitoraggio e il soccorso terrestre internazionale.",
         "t-warn": "LIMITI HARDWARE COMPRESI: 410–525 MHz",
         "th-ch": "Canale",
@@ -417,8 +572,6 @@
         "n-1": "Frequenza di sicurezza escursionistica nazionale. Canale primario di ascolto e test.",
         "n-2": "Canale coordinamento radio generico montano in ambito continentale.",
         "n-3": "Banda VHF non supportata dall'architettura d'antenna e dal front-end del chip SX1262.",
-        "n-4": "Frequenza marina internazionale di soccorso. Esclusa dai vincoli fisici di sintesi RF.",
-        "n-5": "Frequenza allocata per il Wilderness Protocol in territori isolati privi di copertura cellulare.",
         
         "sim-tag": "// DIAGNOSTICA STRUMENTALE DI RIFERIMENTO //",
         "sim-title": "Verifica del Loop Operativo",
@@ -426,9 +579,9 @@
         "sim-status": "STATO LOGICO CORE",
         "sim-st-rx": "SYS_STATUS: STANDBY_RX",
         "sim-st-tx": "SYS_STATUS: TRANSMITTING_TX",
-        "sb-1": "● INIZIALIZZAZIONE COMPLETATA — LINK SERIALE STABILE",
-        "sb-2": "Frequenza di Ascolto Attiva: 446.08125 MHz",
-        "sb-3": "Tensione di Sistema: 4.18V | Riferimento Oscillatore: TCXO OK",
+        "sb-1": "INITIALIZATION SUCCESSFUL — RF BAUD RATE LOCKED",
+        "sb-2": "Frequency Monitor Active: 446.08125 MHz",
+        "sb-3": "System Voltage: 4.18V | Reference Stable Clock: TCXO OK",
         "sb-btn-tx": "Commuta in Emissione (TX)",
         "sb-btn-rx": "Commuta in Ascolto (RX)",
         "sb-btn-gps": "Inietta Stringa GPS",
@@ -467,20 +620,32 @@
         "fw-desc-2": "The software sequence parses raw serial NMEA stream statements provided by external low-power Neo-6M GPS modules to inject geocoordinates inside telemetry packets.",
         "fw-warn": "Important Notice: Adhere strictly to local regulations on maximum transmit duty cycle limits.",
 
-        "t-title": "4. Frequency Plan & Emergency Spectral Matching",
+        "wiki-up-title": "Firmware Compile and Flash via PlatformIO",
+        "wiki-up-desc": "The Aegis-Beacon firmware is compiled into machine code and executed directly on the ESP32. Follow this sequence to load software patches or calibrate operational frequencies.",
+        "wiki-up-s1": "Download and install VS Code with PlatformIO IDE. Clone the project Git repository to your local terminal path.",
+        "wiki-up-s2": "Connect the beacon via an external USB-TTL converter (CP2102 or FTDI). Bind RX to TX, TX to RX, and shared GND. Short GPIO0 to GND during boot to enter flashing mode.",
+        "wiki-up-s3": "Open the workspace folder in VS Code, check parameters in platformio.ini, and build the environment.",
+
+        "wiki-const-title": "Soldering Guide and PCB Assembly Wiki",
+        "wiki-const-desc": "Assembling the Aegis-Beacon requires precision and basic SMD soldering skills. Adhere to the PCB layout sequence to avoid short circuits or thermal damage to the RF stages.",
+        "wiki-const-h1": "Bill of Materials (BOM) Specs",
+        "wiki-const-h2": "Step-by-Step Construction Guide",
+        "wiki-const-p1": "Solder passive components like resistors and capacitors (SMD 0805 or 0603 packaging) first, using solder paste and a hot-air rework station.",
+        "wiki-const-p2": "Precisely align ESP32-WROOM and SX1262 modules on their pads before applying heat to finalize the solder joints.",
+        "wiki-const-p3": "Solder the RF SMA connector. Attention: Never power up the device without a connected antenna or 50 Ohm dummy load, to prevent damage to the RF amplifier.",
+
+        "t-title": "Frequency Plan & Emergency Spectral Matching",
         "t-subtitle": "Radio allocation database for international ground tracking and Search and Rescue operations.",
         "t-warn": "HARDWARE BOUNDS INCLUDED: 410–525 MHz",
         "th-ch": "Channel",
         "th-area": "Operational Area",
         "th-state": "Hardware State",
         "th-note": "Receiver Engineering Notes",
-        "v-ok": "COMPATIBLE",
-        "v-no": "INCOMPATIBLE",
+        "v-ok": "COMPATIBILE",
+        "v-no": "INCOMPATIBILE",
         "n-1": "National hiking emergency protocol frequency. Main listener and testing link channel.",
         "n-2": "General continental tactical coordination frequency for ground rescue groups.",
         "n-3": "VHF link band completely unsupported by the antenna layout and the native SX1262 front-end.",
-        "n-4": "International maritime distress frequency. Completely omitted due to structural RF tuning layout.",
-        "n-5": "UHF frequency allocated for Wilderness Protocol use in remote areas missing terrestrial repeaters.",
         
         "sim-tag": "// MEASUREMENT INSTRUMENTATION DIAGNOSTICS //",
         "sim-title": "Operational Loop Validation",
@@ -488,7 +653,7 @@
         "sim-status": "CORE SYSTEM LOGIC STATE",
         "sim-st-rx": "SYS_STATUS: STANDBY_RX",
         "sim-st-tx": "SYS_STATUS: TRANSMITTING_TX",
-        "sb-1": "● INITIALIZATION SUCCESSFUL — RF BAUD RATE LOCKED",
+        "sb-1": "INITIALIZATION SUCCESSFUL — RF BAUD RATE LOCKED",
         "sb-2": "Frequency Monitor Active: 446.08125 MHz",
         "sb-3": "System Voltage: 4.18V | Reference Stable Clock: TCXO",
         "sb-btn-tx": "Switch to Transmit (TX)",
@@ -507,26 +672,21 @@
     let selectedLang = 'it';
     let currentEngineMode = 'RX';
 
-    // --- SWITCH SCHEDE (TAB MANAGER) ---
+    // TAB MANAGER
     function switchTab(tabId) {
-      // Nascondi tutti i contenuti delle schede
       document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
       });
-      // Rendi inattivi tutti i bottoni
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.className = "tab-btn px-4 py-1.5 text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400";
       });
 
-      // Attiva scheda selezionata
       document.getElementById('tab-' + tabId).classList.add('active');
-      
-      // Imposta stile bottone selezionato
       const activeBtn = document.getElementById('btn-' + tabId);
       activeBtn.className = "tab-btn px-4 py-1.5 text-xs font-mono font-bold rounded border border-orange-600 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400";
     }
 
-    // --- TRADUTTORE CENTRALIZZATO ---
+    // TRANSLATOR
     document.getElementById('lang-selector').addEventListener('change', (e) => {
       selectedLang = e.target.value;
       translateDOM();
@@ -540,7 +700,6 @@
         }
       });
       
-      // Sincronizza lo stato corrente della console simulata
       const indicator = document.getElementById('state-indicator');
       const toggleBtn = document.getElementById('btn-toggle-sys');
       const initLine = document.getElementById('init-line');
@@ -559,7 +718,7 @@
       }
     }
 
-    // --- DARK SCHEMA ---
+    // DARK MODE
     const modeBtn = document.getElementById('theme-toggle');
     const sunNode = document.getElementById('theme-sun');
     const moonNode = document.getElementById('theme-moon');
@@ -584,7 +743,7 @@
       }
     });
 
-    // --- EVENT LOOP OROLOGIO E TERMINALE ---
+    // TIME & SIMULATOR
     setInterval(() => {
       const time = new Date();
       document.getElementById('clock-display').textContent = time.toTimeString().split(' ')[0];
@@ -603,7 +762,7 @@
         toggleBtn.textContent = dictionary[selectedLang]['sb-btn-rx'];
         
         panelBody.innerHTML = `
-          <p class="text-orange-500 font-bold animate-pulse leading-tight">● EMISSION TRIGGERED — TRANSMITTING CONTINUOUS WAVE INTERRUPTS</p>
+          <p class="text-orange-500 font-bold animate-pulse leading-tight">EMISSION TRIGGERED — TRANSMITTING CONTINUOUS WAVE INTERRUPTS</p>
           <p class="text-slate-400 leading-tight">Carrier Target Frequency: 446.08125 MHz [UHF Standard Block]</p>
           <p class="text-slate-500 leading-tight" id="gps-stream-row">GPS Data State: Poll Request sent to internal UART module...</p>
         `;
@@ -614,7 +773,7 @@
         toggleBtn.textContent = dictionary[selectedLang]['sb-btn-tx'];
         
         panelBody.innerHTML = `
-          <p id="init-line" class="text-emerald-400 font-medium leading-tight">● ${dictionary[selectedLang]['sb-1']}</p>
+          <p id="init-line" class="text-emerald-400 font-medium leading-tight">${dictionary[selectedLang]['sb-1']}</p>
           <p id="freq-line" class="text-slate-400 leading-tight">${dictionary[selectedLang]['sb-2']}</p>
           <p id="volt-line" class="text-slate-500 leading-tight">${dictionary[selectedLang]['sb-3']}</p>
         `;
