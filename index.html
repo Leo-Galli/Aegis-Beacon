@@ -109,19 +109,10 @@
   
   .tab-content { display: none; }
   .tab-content.active { display: block; }
-
-  .os-content { display: none; }
-  .os-content.active { display: block; }
   
   /* Nasconde la scrollbar di navigazione ma preserva lo scorrimento */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-  .code-copy-btn {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-  }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-[#090d16] dark:text-slate-200 font-sans antialiased">
@@ -174,9 +165,6 @@
         </button>
         <button onclick="switchTab('costruzione')" id="btn-costruzione" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
           [ 05 // WIKI: COSTRUZIONE ]
-        </button>
-        <button onclick="switchTab('demo')" id="btn-demo" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
-          [ 06 // DEMO CONFIG ]
         </button>
       </nav>
     </div>
@@ -290,20 +278,34 @@
     <section id="tab-firmware" class="tab-content space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <div class="lg:col-span-12 space-y-6">
+        <div class="lg:col-span-6 space-y-6">
           <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-4">
             <h2 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2" data-key="fw-title">Infrastruttura del Firmware</h2>
             <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="fw-desc-1">
-              Scritto interamente in ambiente C++ su piattaforma PlatformIO/Arduino per garantire prestazioni real-time ottimali e tempi di avvio del transceiver inferiori a 50 millisecondi.
+              Scritto interamente in ambiente C++ su piattaforma PlatformIO per garantire prestazioni real-time ottimali e tempi di avvio del transceiver inferiori a 50 millisecondi.
             </p>
             <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="fw-desc-2">
-              La logica di trasmissione automatica interseca la telemetria dei pulsanti di regolazione e i dati geografici estratti in formato NMEA da un eventuale modulo GPS seriale opzionale di tipo Neo-6M.
+              La logica di trasmissione automatica interseca la telemetria analogica e i dati geografici estratti in formato NMEA da un eventuale modulo GPS seriale opzionale di tipo Neo-6M.
             </p>
             <div class="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-[10px] sm:text-xs font-mono text-slate-600 dark:text-slate-400 space-y-1">
-              <div class="text-slate-900 dark:text-white font-bold">// STRUTTURA DEL PAYLOAD MORSE</div>
-              <div class="break-all">[ SOS ] [ DE &lt;NOME&gt; &lt;COGNOME&gt; (opzionale) ] [ PSN &lt;LAT&gt; &lt;LNG&gt; (opzionale, da fix GPS) ]</div>
+              <div class="text-slate-900 dark:text-white font-bold">// STRUTTURA DEL PACCHETTO DI TELEMETRIA</div>
+              <div class="break-all">[ PREAMBOLO: 8 byte ] [ ID UNITÀ: 2 byte ] [ STATO LIPO: 1 byte ] [ NMEA PAYLOAD ]</div>
             </div>
           </div>
+        </div>
+
+        <div class="lg:col-span-6 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 flex flex-col justify-between gap-4">
+          <div>
+            <h2 class="text-xs font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2">// config.h</h2>
+            <pre class="bg-slate-950 text-slate-300 font-mono text-[10px] sm:text-xs p-3 rounded border border-slate-900 overflow-x-auto mt-2">
+#define RF_FREQUENCY     446081250 // PMR CH 7
+#define TX_OUTPUT_POWER  30        // +30 dBm (1 Watt)
+#define LORA_BANDWIDTH   125.0     // kHz
+#define LORA_SP_FACTOR   9         // SF9 per bilanciamento
+#define DEEP_SLEEP_SEC   120       // Ciclo risparmio energetico
+            </pre>
+          </div>
+          <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono italic" data-key="fw-warn">Nota: Modificare la potenza di trasmissione in base alle normative nazionali vigenti.</span>
         </div>
       </div>
     </section>
@@ -322,14 +324,6 @@
           Il firmware di Aegis-Beacon viene compilato in codice macchina ed eseguito direttamente sul chip ESP32. Seguire rigorosamente la sequenza strumentale per caricare le patch software correttive o calibrare le frequenze operative.
         </p>
 
-        <!-- SELETTORE SISTEMA OPERATIVO -->
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1" data-key="os-select-label">Istruzioni per:</span>
-          <button onclick="switchOS('windows')" id="os-btn-windows" class="os-btn px-3 py-1 text-[10px] font-mono font-bold rounded border border-orange-600 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400">Windows</button>
-          <button onclick="switchOS('macos')" id="os-btn-macos" class="os-btn px-3 py-1 text-[10px] font-mono font-medium rounded border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600">macOS</button>
-          <button onclick="switchOS('linux')" id="os-btn-linux" class="os-btn px-3 py-1 text-[10px] font-mono font-medium rounded border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600">Linux</button>
-        </div>
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
           <!-- STEP 1 -->
           <div class="border border-slate-100 dark:border-slate-800 p-4 rounded bg-slate-50/50 dark:bg-slate-900/40 space-y-2 flex flex-col justify-between">
@@ -338,21 +332,10 @@
               <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1" data-key="wiki-up-s1">
                 Scaricare e installare Visual Studio Code integrando il pacchetto PlatformIO IDE. Clonare il repository Git di sviluppo sul terminale locale.
               </p>
-
-              <div class="os-content active" id="os-windows-s1">
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Installare VS Code dal sito ufficiale (.exe) e Git for Windows. Aprire "Git Bash" o PowerShell per i comandi seguenti.</p>
-              </div>
-              <div class="os-content" id="os-macos-s1">
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Installare VS Code (.dmg) e Git tramite Homebrew: <span class="font-mono">brew install git</span>. Usare il Terminale integrato.</p>
-              </div>
-              <div class="os-content" id="os-linux-s1">
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Installare VS Code via pacchetto .deb/.rpm o Snap, e Git tramite il gestore pacchetti (es. <span class="font-mono">apt install git</span>).</p>
-              </div>
             </div>
-            <div class="relative group mt-2">
-              <pre class="bg-slate-950 text-slate-400 font-mono text-[10px] p-2 pr-8 rounded border border-slate-900 overflow-x-auto"><code>git clone https://github.com/Leo-Galli/Aegis-Beacon.git</code></pre>
-              <button class="code-copy-btn bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] font-mono px-1.5 py-1 rounded border border-slate-700" onclick="copyCode(this)" data-key="copy-btn" title="Copia comando">Copia</button>
-            </div>
+            <pre class="bg-slate-950 text-slate-400 font-mono text-[10px] p-2 rounded border border-slate-900 overflow-x-auto mt-2">
+git clone https://github.com/Leo-Galli/Aegis-Beacon.git
+            </pre>
           </div>
 
           <!-- STEP 2 -->
@@ -361,16 +344,6 @@
             <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1" data-key="wiki-up-s2">
               Collegare il beacon al computer tramite convertitore USB-TTL (CP2102 o FTDI). Collegare RX a TX, TX a RX e GND in comune. Portare il pin GPIO0 a massa all'avvio per abilitare la modalità flash bootloader.
             </p>
-
-            <div class="os-content active" id="os-windows-s2">
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Installare il driver CP210x o CP2102 dal sito Silicon Labs. La porta comparirà in Gestione Dispositivi come <span class="font-mono">COMx</span> (es. COM5).</p>
-            </div>
-            <div class="os-content" id="os-macos-s2">
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">macOS integra i driver CP210x/FTDI dalla 10.9+. La porta apparirà come <span class="font-mono">/dev/tty.usbserial-XXXX</span> o <span class="font-mono">/dev/cu.SLAB_USBtoUART</span>.</p>
-            </div>
-            <div class="os-content" id="os-linux-s2">
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Driver già presenti nel kernel. La porta compare come <span class="font-mono">/dev/ttyUSB0</span>. Aggiungere l'utente al gruppo dialout: <span class="font-mono">sudo usermod -aG dialout $USER</span> (richiega logout).</p>
-            </div>
           </div>
 
           <!-- STEP 3 -->
@@ -380,21 +353,10 @@
               <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1" data-key="wiki-up-s3">
                 Aprire la cartella di progetto in VS Code, verificare i parametri nel file platformio.ini ed eseguire il comando combinato di build ed upload hardware.
               </p>
-
-              <div class="os-content active" id="os-windows-s3">
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Se l'upload fallisce, specificare la porta manualmente: <span class="font-mono">upload_port = COM5</span> in platformio.ini.</p>
-              </div>
-              <div class="os-content" id="os-macos-s3">
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Se l'upload fallisce: <span class="font-mono">upload_port = /dev/cu.usbserial-XXXX</span> in platformio.ini.</p>
-              </div>
-              <div class="os-content" id="os-linux-s3">
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Se l'upload fallisce: <span class="font-mono">upload_port = /dev/ttyUSB0</span> in platformio.ini. Verificare i permessi della porta.</p>
-              </div>
             </div>
-            <div class="relative group mt-2">
-              <pre class="bg-slate-950 text-slate-400 font-mono text-[10px] p-2 pr-8 rounded border border-slate-900 overflow-x-auto"><code>pio run --target upload</code></pre>
-              <button class="code-copy-btn bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] font-mono px-1.5 py-1 rounded border border-slate-700" onclick="copyCode(this)" data-key="copy-btn" title="Copia comando">Copia</button>
-            </div>
+            <pre class="bg-slate-950 text-slate-400 font-mono text-[10px] p-2 rounded border border-slate-900 overflow-x-auto mt-2">
+pio run --target upload
+            </pre>
           </div>
         </div>
       </div>
@@ -443,24 +405,6 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- --------------------------------------- -->
-    <!-- TAB 6: DEMO INTERFACCIA DI CONFIGURAZIONE -->
-    <!-- --------------------------------------- -->
-    <section id="tab-demo" class="tab-content space-y-6">
-      <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-4">
-        <div class="border-b border-slate-100 dark:border-slate-800 pb-3">
-          <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase" data-key="demo-tag">[ DEMO INTERATTIVA ]</span>
-          <h2 class="text-md sm:text-lg font-bold text-slate-900 dark:text-white mt-1" data-key="demo-title">Interfaccia di Configurazione del Dispositivo (AP Captive Portal)</h2>
-        </div>
-        <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="demo-desc">
-          Ricostruzione fedele della dashboard servita dal dispositivo quando entra in CONFIG MODE (rete WiFi AP "AegisBeacon", indirizzo 192.168.4.1). I dati mostrati sono simulati: nessuna chiamata raggiunge un vero beacon.
-        </p>
-        <div class="rounded-lg overflow-hidden border border-slate-800" style="height: 78vh; min-height: 560px;">
-          <iframe id="demo-frame" title="Aegis-Beacon Config Demo" class="w-full h-full border-0" sandbox="allow-scripts allow-same-origin allow-modals"></iframe>
         </div>
       </div>
     </section>
@@ -653,13 +597,12 @@
         "hw-row-dim": "Dimensioni PCB",
 
         "fw-title": "Infrastruttura del Firmware",
-        "fw-desc-1": "Scritto interamente in ambiente C++ su piattaforma PlatformIO/Arduino per garantire prestazioni real-time ottimali e tempi di avvio del transceiver inferiori a 50 millisecondi.",
-        "fw-desc-2": "La logica di trasmissione automatica interseca la telemetria dei pulsanti di regolazione e i dati geografici estratti in formato NMEA da un eventuale modulo GPS seriale opzionale di tipo Neo-6M.",
+        "fw-desc-1": "Scritto interamente in ambiente C++ su piattaforma PlatformIO per garantire prestazioni real-time ottimali e tempi di avvio del transceiver inferiori a 50 millisecondi.",
+        "fw-desc-2": "La logica di trasmissione automatica interseca la telemetria analogica e i dati geografici estratti in formato NMEA da un eventuale modulo GPS seriale opzionale di tipo Neo-6M.",
+        "fw-warn": "Nota: Modificare la potenza di trasmissione in base alle normative nazionali vigenti.",
 
         "wiki-up-title": "Aggiornamento Firmware e Flash tramite PlatformIO",
         "wiki-up-desc": "Il firmware di Aegis-Beacon viene compilato in codice macchina ed eseguito direttamente sul chip ESP32. Seguire rigorosamente la sequenza strumentale per caricare le patch software correttive o calibrare le frequenze operative.",
-        "os-select-label": "Istruzioni per:",
-        "copy-btn": "Copia",
         "wiki-up-s1": "Scaricare e installare Visual Studio Code integrando il pacchetto PlatformIO IDE. Clonare il repository Git di sviluppo sul terminale locale.",
         "wiki-up-s2": "Collegare il beacon al computer tramite convertitore USB-TTL (CP2102 o FTDI). Collegare RX a TX, TX a RX e GND in comune. Portare il pin GPIO0 a massa all'avvio per abilitare la modalità flash bootloader.",
         "wiki-up-s3": "Aprire la cartella di progetto in VS Code, verificare i parametri nel file platformio.ini ed eseguire il comando combinato di build ed upload hardware.",
@@ -671,10 +614,6 @@
         "wiki-const-p1": "Saldare prima i resistori e i condensatori SMD con package 0805 o 0603, preferendo l'uso di pasta saldante ad alta conducibilità e stazione ad aria calda.",
         "wiki-const-p2": "Posizionare accuratamente l'ESP32 e il chip SX1262 sulle rispettive piazzole (footprint). Fissare gli angoli prima di rifluire i contatti.",
         "wiki-const-p3": "Saldare il connettore SMA. Attenzione: Non accendere mai l'unità senza aver prima connesso un'antenna idonea o un carico fittizio da 50 Ohm, al fine di evitare la rottura immediata dello stadio finale di potenza.",
-
-        "demo-tag": "[ DEMO INTERATTIVA ]",
-        "demo-title": "Interfaccia di Configurazione del Dispositivo (AP Captive Portal)",
-        "demo-desc": "Ricostruzione fedele della dashboard servita dal dispositivo quando entra in CONFIG MODE (rete WiFi AP \"AegisBeacon\", indirizzo 192.168.4.1). I dati mostrati sono simulati: nessuna chiamata raggiunge un vero beacon.",
 
         "t-title": "Piano Frequenze e Compatibilità Spettrale d'Emergenza",
         "t-subtitle": "Database delle allocazioni radio per il monitoraggio e il soccorso terrestre internazionale.",
@@ -732,13 +671,12 @@
         "hw-row-dim": "PCB Dimensions",
 
         "fw-title": "Firmware Layer & Code Structure",
-        "fw-desc-1": "Written in highly optimized C++ under PlatformIO/Arduino framework to guarantee real-time response times and transceiver boot phases under 50 milliseconds.",
-        "fw-desc-2": "The software sequence parses raw serial NMEA stream statements provided by external low-power Neo-6M GPS modules to inject geocoordinates inside the Morse payload.",
+        "fw-desc-1": "Written in highly optimized C++ under PlatformIO framework to guarantee real-time response times and transceiver boot phases under 50 milliseconds.",
+        "fw-desc-2": "The software sequence parses raw serial NMEA stream statements provided by external low-power Neo-6M GPS modules to inject geocoordinates inside telemetry packets.",
+        "fw-warn": "Important Notice: Adhere strictly to local regulations on maximum transmit duty cycle limits.",
 
         "wiki-up-title": "Firmware Compile and Flash via PlatformIO",
         "wiki-up-desc": "The Aegis-Beacon firmware is compiled into machine code and executed directly on the ESP32. Follow this sequence to load software patches or calibrate operational frequencies.",
-        "os-select-label": "Instructions for:",
-        "copy-btn": "Copy",
         "wiki-up-s1": "Download and install VS Code with PlatformIO IDE. Clone the project Git repository to your local terminal path.",
         "wiki-up-s2": "Connect the beacon via an external USB-TTL converter (CP2102 or FTDI). Bind RX to TX, TX to RX, and shared GND. Short GPIO0 to GND during boot to enter flashing mode.",
         "wiki-up-s3": "Open the workspace folder in VS Code, check parameters in platformio.ini, and build the environment.",
@@ -751,10 +689,6 @@
         "wiki-const-p2": "Precisely align ESP32-WROOM and SX1262 modules on their pads before applying heat to finalize the solder joints.",
         "wiki-const-p3": "Solder the RF SMA connector. Attention: Never power up the device without a connected antenna or 50 Ohm dummy load, to prevent damage to the RF amplifier.",
 
-        "demo-tag": "[ INTERACTIVE DEMO ]",
-        "demo-title": "Device Configuration Interface (AP Captive Portal)",
-        "demo-desc": "Faithful reconstruction of the dashboard served by the device in CONFIG MODE (WiFi AP \"AegisBeacon\", 192.168.4.1). All data shown is simulated: no call reaches a real beacon.",
-
         "t-title": "Frequency Plan & Emergency Spectral Matching",
         "t-subtitle": "Radio allocation database for international ground tracking and Search and Rescue operations.",
         "t-warn": "HARDWARE BOUNDS INCLUDED: 410–525 MHz",
@@ -762,13 +696,13 @@
         "th-area": "Operational Area",
         "th-state": "Hardware State",
         "th-note": "Receiver Engineering Notes",
-        "v-ok": "COMPATIBLE",
-        "v-no": "INCOMPATIBLE",
+        "v-ok": "COMPATIBILE",
+        "v-no": "INCOMPATIBILE",
         "n-1": "National hiking emergency protocol frequency. Main listener and testing link channel.",
         "n-2": "General continental tactical coordination frequency for ground rescue groups.",
         "n-3": "VHF link band completely unsupported by the antenna layout and the native SX1262 front-end.",
         
-        "sim-tag": "// INSTRUMENT DIAGNOSTICS //",
+        "sim-tag": "// DIAGNOSTICS STRUMENTALI //",
         "sim-title": "Operational Loop Validation",
         "sim-desc": "Firmware behavioral emulator bench. Outputs serial data strings (UART stream) during internal system logic changes.",
         "sim-status": "CORE SYSTEM LOGIC STATE",
@@ -792,7 +726,6 @@
 
     let selectedLang = 'it';
     let currentEngineMode = 'RX';
-    let selectedOS = 'windows';
 
     // TAB MANAGER CON SCROLL ORIZZONTALE AUTOMATICO SU MOBILE
     function switchTab(tabId) {
@@ -809,39 +742,6 @@
       
       // Auto-scorrimento al pulsante attivo nei display mobili
       activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-
-      // Carica la demo solo quando la scheda viene aperta (lazy load)
-      if (tabId === 'demo') loadDemoFrame();
-    }
-
-    // SELETTORE SISTEMA OPERATIVO PER LE ISTRUZIONI DI INSTALLAZIONE
-    function switchOS(os) {
-      selectedOS = os;
-      ['windows', 'macos', 'linux'].forEach(o => {
-        const active = (o === os);
-        document.getElementById('os-btn-' + o).className = active
-          ? "os-btn px-3 py-1 text-[10px] font-mono font-bold rounded border border-orange-600 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400"
-          : "os-btn px-3 py-1 text-[10px] font-mono font-medium rounded border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600";
-        ['s1','s2','s3'].forEach(s => {
-          const el = document.getElementById('os-' + o + '-' + s);
-          if (el) el.classList.toggle('active', active);
-        });
-      });
-    }
-
-    // COPIA COMANDI NEGLI SNIPPET DI CODICE
-    function copyCode(btn) {
-      const pre = btn.previousElementSibling;
-      const text = pre.innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        const original = btn.textContent;
-        btn.textContent = selectedLang === 'it' ? 'Copiato!' : 'Copied!';
-        setTimeout(() => { btn.textContent = original; }, 1500);
-      }).catch(() => {
-        const original = btn.textContent;
-        btn.textContent = selectedLang === 'it' ? 'Errore' : 'Error';
-        setTimeout(() => { btn.textContent = original; }, 1500);
-      });
     }
 
     // MULTI-LANGUAGE TRANSLATOR
@@ -951,282 +851,6 @@
           : 'HALT: Transmit status (TX) must be engaged to force NMEA data sentence injection.');
       }
     });
-
-    // ---------------------------------------------------------------------
-    // DEMO: markup dell'interfaccia AP di configurazione del dispositivo
-    // (ricostruzione del captive portal servito da Aegis-Beacon in CONFIG MODE)
-    // con un livello di mock che simula /status e /save senza rete reale.
-    // ---------------------------------------------------------------------
-    let demoLoaded = false;
-    function loadDemoFrame() {
-      if (demoLoaded) return;
-      demoLoaded = true;
-      document.getElementById('demo-frame').srcdoc = DEMO_DASHBOARD_HTML;
-    }
-
-    const DEMO_DASHBOARD_HTML = String.raw`<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AEGIS-BEACON v5.4 // CONFIG</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;900&display=swap');
-:root{
-  --bg:#07090e;--s1:#0b1019;--s2:#0f1825;--border:#182640;
-  --a1:#00e5ff;--a2:#ff3b3b;--a3:#39ff14;--a4:#ff9900;--a5:#b060ff;
-  --txt:#b8ccd8;--dim:#3a5060;--dim2:#2a3a48;
-  --glow1:0 0 18px rgba(0,229,255,.35);--glow2:0 0 18px rgba(255,59,59,.35);
-  --glow3:0 0 18px rgba(57,255,20,.35);--glow5:0 0 18px rgba(176,96,255,.35);
-  --r:5px;--r2:10px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font-family:'Share Tech Mono',monospace;min-height:100vh;
-  background-image:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(0,100,160,.18) 0%,transparent 70%),
-  repeating-linear-gradient(0deg,transparent,transparent 48px,rgba(0,229,255,.025) 48px,rgba(0,229,255,.025) 49px),
-  repeating-linear-gradient(90deg,transparent,transparent 48px,rgba(0,229,255,.025) 48px,rgba(0,229,255,.025) 49px);}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;
-  border-bottom:1px solid var(--border);background:linear-gradient(90deg,rgba(0,229,255,.04),transparent,rgba(0,229,255,.04));
-  position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);}
-.logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.15rem;color:var(--a1);text-shadow:var(--glow1);letter-spacing:4px;}
-.logo em{color:var(--a2);font-style:normal;}
-.badge{font-size:.58rem;color:var(--a1);border:1px solid var(--a1);padding:3px 9px;border-radius:2px;letter-spacing:3px;animation:pulse 2.5s infinite;}
-.badge.demo{color:var(--a4);border-color:var(--a4);}
-@keyframes pulse{0%,100%{opacity:1;box-shadow:var(--glow1)}50%{opacity:.4;box-shadow:none}}
-main{max-width:1000px;margin:0 auto;padding:24px 18px;display:grid;gap:16px;grid-template-columns:1fr 1fr;}
-@media(max-width:640px){main{grid-template-columns:1fr}}
-.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:20px;position:relative;overflow:hidden;transition:border-color .25s;}
-.card:hover{border-color:rgba(0,229,255,.22);}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--a1),transparent);opacity:.5;}
-.card.full{grid-column:1/-1}
-.card.alert::before{background:linear-gradient(90deg,transparent,var(--a2),transparent);}
-.card.ok::before{background:linear-gradient(90deg,transparent,var(--a3),transparent);}
-.card.audio::before{background:linear-gradient(90deg,transparent,var(--a4),transparent);}
-.card.gps::before{background:linear-gradient(90deg,transparent,var(--a3),transparent);}
-.card.id::before{background:linear-gradient(90deg,transparent,var(--a5),transparent);}
-.card.pot::before{background:linear-gradient(90deg,transparent,var(--a4),transparent);}
-.ct{font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:3px;color:var(--a1);margin-bottom:16px;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
-.ct-dot{width:6px;height:6px;border-radius:50%;background:var(--a1);box-shadow:var(--glow1);animation:pulse 2.5s infinite;}
-.card.alert .ct,.card.alert .ct-dot{color:var(--a2);background:var(--a2);box-shadow:var(--glow2);}
-.card.ok .ct,.card.ok .ct-dot,.card.gps .ct,.card.gps .ct-dot{color:var(--a3);background:var(--a3);box-shadow:var(--glow3);}
-.card.audio .ct,.card.audio .ct-dot,.card.pot .ct,.card.pot .ct-dot{color:var(--a4);background:var(--a4);}
-.card.id .ct,.card.id .ct-dot{color:var(--a5);background:var(--a5);box-shadow:var(--glow5);}
-label{display:block;font-size:.66rem;color:var(--dim);margin-bottom:4px;letter-spacing:1px;}
-.form-row{margin-bottom:14px;}
-input[type=text],input[type=number],textarea,select{width:100%;background:#050810;border:1px solid var(--border);border-radius:var(--r);color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:.85rem;padding:8px 11px;outline:none;transition:border-color .2s,box-shadow .2s;}
-input:focus,textarea:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 2px rgba(0,229,255,.1);}
-input[type=range]{-webkit-appearance:none;width:100%;height:5px;background:var(--border);border-radius:3px;outline:none;margin:9px 0 3px;}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--a1);cursor:pointer;box-shadow:var(--glow1);}
-input[type=range].audio-range::-webkit-slider-thumb{background:var(--a4);}
-input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
-.tog-wrap{display:flex;align-items:center;gap:11px;cursor:pointer;margin-top:3px;}
-.tog-cb{position:relative;width:42px;height:22px;flex-shrink:0;}
-.tog-cb input{opacity:0;width:0;height:0;}
-.tog-slider{position:absolute;inset:0;background:var(--dim2);border-radius:11px;cursor:pointer;transition:background .25s;border:1px solid var(--border);}
-.tog-slider::before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:#666;border-radius:50%;transition:transform .25s,background .25s;}
-.tog-cb input:checked+.tog-slider{background:rgba(0,229,255,.15);border-color:var(--a1);}
-.tog-cb input:checked+.tog-slider::before{transform:translateX(20px);background:var(--a1);box-shadow:var(--glow1);}
-.tog-lbl{font-size:.76rem;color:var(--txt);}
-.info-box{background:#050810;border:1px solid var(--dim2);border-radius:var(--r);padding:10px 12px;font-size:.66rem;color:var(--dim);line-height:1.8;margin-top:8px;}
-.coord-display{font-family:'Orbitron',sans-serif;font-size:.85rem;color:var(--a3);text-shadow:var(--glow3);text-align:center;margin:8px 0;letter-spacing:2px;}
-#morsePreview{font-size:.88rem;letter-spacing:4px;color:var(--a1);word-break:break-all;min-height:22px;margin-top:7px;}
-.payload-preview{background:#000;border:2px solid var(--a1);border-radius:4px;padding:9px 11px;font-family:'Share Tech Mono',monospace;font-size:.78rem;color:#fff;letter-spacing:2px;margin-top:8px;word-break:break-all;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:var(--r);font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:2px;cursor:pointer;border:1px solid;transition:all .2s;text-transform:uppercase;white-space:nowrap;}
-.btn:disabled{opacity:.4;cursor:not-allowed;}
-.btn-c{background:rgba(0,229,255,.08);border-color:var(--a1);color:var(--a1);}
-.btn-c:hover:not(:disabled){background:rgba(0,229,255,.18);box-shadow:var(--glow1);}
-.btn-d{background:rgba(255,59,59,.08);border-color:var(--a2);color:var(--a2);}
-.btn-d:hover:not(:disabled){background:rgba(255,59,59,.2);box-shadow:var(--glow2);}
-.btn-g{background:rgba(57,255,20,.08);border-color:var(--a3);color:var(--a3);}
-.btn-g:hover:not(:disabled){background:rgba(57,255,20,.18);box-shadow:var(--glow3);}
-.btn-save{width:100%;padding:13px;font-size:.73rem;background:linear-gradient(135deg,rgba(0,229,255,.12),rgba(0,120,160,.12));border-color:var(--a1);color:var(--a1);margin-top:3px;}
-.btn-save:hover{background:rgba(0,229,255,.22);box-shadow:var(--glow1);}
-.btn-row{display:flex;gap:9px;flex-wrap:wrap;}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-.stat-item{background:#050810;border:1px solid var(--dim2);border-radius:var(--r);padding:9px 12px;}
-.stat-lbl{font-size:.58rem;color:var(--dim);letter-spacing:1px;margin-bottom:2px;}
-.stat-val{font-family:'Orbitron',sans-serif;font-size:.82rem;color:var(--a1);}
-.stat-val.ok{color:var(--a3);}.stat-val.warn{color:var(--a4);}.stat-val.err{color:var(--a2);}
-#freqList{list-style:none;margin-bottom:11px;}
-#freqList li{display:flex;align-items:center;gap:7px;padding:7px 10px;background:#050810;border:1px solid var(--border);border-radius:var(--r);margin-bottom:4px;font-size:.82rem;}
-.fv{flex:1;color:var(--a1);font-family:'Orbitron',sans-serif;font-size:.78rem;}
-.del{background:none;border:1px solid #2a1010;color:var(--a2);padding:2px 7px;border-radius:3px;cursor:pointer;font-size:.68rem;}
-.del:hover{background:rgba(255,59,59,.12);}
-.add-row{display:flex;gap:7px;}.add-row input{flex:1;}
-#scanList{max-height:180px;overflow-y:auto;margin-top:7px;}
-.hit-row{display:flex;align-items:center;gap:9px;padding:5px 9px;border-bottom:1px solid var(--dim2);font-size:.75rem;}
-.hit-freq{color:var(--a1);font-family:'Orbitron',sans-serif;font-size:.73rem;min-width:95px;}
-.rssi-bar-bg{flex:1;height:6px;background:var(--dim2);border-radius:3px;overflow:hidden;}
-.rssi-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--a2),var(--a4),var(--a3));}
-.rssi-val{color:var(--txt);font-size:.72rem;min-width:55px;text-align:right;}
-.hit-lbl{font-size:.62rem;padding:1px 6px;border-radius:2px;font-family:'Orbitron',sans-serif;letter-spacing:1px;}
-.hit-lbl.STRONG{background:rgba(57,255,20,.12);color:var(--a3);border:1px solid var(--a3);}
-.hit-lbl.MEDIUM{background:rgba(255,153,0,.12);color:var(--a4);border:1px solid var(--a4);}
-.hit-lbl.WEAK{background:rgba(255,59,59,.12);color:var(--a2);border:1px solid var(--a2);}
-#toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--a3);color:var(--a3);padding:12px 24px;border-radius:var(--r);font-family:'Orbitron',sans-serif;font-size:.72rem;letter-spacing:1px;box-shadow:var(--glow3);transform:translateY(100px);opacity:0;transition:all .3s ease-in-out;z-index:100;}
-#toast.show{transform:translateY(0);opacity:1;}
-</style>
-</head>
-<body>
-<header>
-  <div class="logo">AEGIS<em>_</em>BEACON</div>
-  <div class="badge demo">MOCK_PORTAL_v5.4</div>
-</header>
-<main>
-  <!-- STATS -->
-  <div class="card full ok">
-    <div class="ct"><div class="ct-dot"></div>Telemetria di Sistema</div>
-    <div class="stat-grid">
-      <div class="stat-item"><div class="stat-lbl">Tensione Batteria</div><div class="stat-val" id="statBat">4.18V</div></div>
-      <div class="stat-item"><div class="stat-lbl">Stato GPS</div><div class="stat-val ok" id="statGps">FIX_3D (5 Sat)</div></div>
-      <div class="stat-item"><div class="stat-lbl">Temperatura MCU</div><div class="stat-val" id="statTemp">32.4 °C</div></div>
-      <div class="stat-item"><div class="stat-lbl">Tempo di Attività</div><div class="stat-val" id="statUptime">00h 14m 52s</div></div>
-    </div>
-  </div>
-
-  <!-- RADIO PARAMETERS -->
-  <div class="card pot">
-    <div class="ct"><div class="ct-dot"></div>Configurazione RF & Transceiver</div>
-    <div class="form-row">
-      <label>Frequenza Portante (MHz)</label>
-      <input type="number" id="rfFreq" value="446.08125" step="0.00001" min="410" max="525">
-    </div>
-    <div class="form-row">
-      <label>Potenza d'Uscita RF (dBm)</label>
-      <select id="rfPower">
-        <option value="10">10 dBm (10mW) - Basso Consumo</option>
-        <option value="14">14 dBm (25mW)</option>
-        <option value="20">20 dBm (100mW) - Medio Raggio</option>
-        <option value="30" selected>30 dBm (1W000mW) - MASSIMA POTENZA</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label>Intervallo Emissione CW (Secondi)</label>
-      <input type="number" id="txInterval" value="10" min="2" max="300">
-    </div>
-  </div>
-
-  <!-- BEACON PAYLOAD (ID & MORSE) -->
-  <div class="card id">
-    <div class="ct"><div class="ct-dot"></div>Identificativo & Codifica Morse</div>
-    <div class="form-row">
-      <label>ID Operatore / Nominativo Radio</label>
-      <input type="text" id="opCallsign" value="IU3XYZ" maxlength="15" placeholder="E.g. IU3XYZ">
-    </div>
-    <div class="form-row">
-      <label>Velocità Morse (WPM)</label>
-      <input type="range" class="wpm-range" id="morseWpm" min="5" max="35" value="15" oninput="document.getElementById('wpmVal').innerText=this.value">
-      <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--dim);margin-top:2px;">
-        <span>Lento (5 WPM)</span>
-        <span style="color:var(--a1)">Attuale: <strong id="wpmVal">15</strong> WPM</span>
-        <span>Rapido (35 WPM)</span>
-      </div>
-    </div>
-    <div class="form-row">
-      <label>Anteprima stringa trasmessa (Morse Payload)</label>
-      <div class="payload-preview" id="payloadPreview">SOS DE IU3XYZ PSN 45.8921N 12.1044E</div>
-    </div>
-  </div>
-
-  <!-- GPS COORDINATES -->
-  <div class="card gps">
-    <div class="ct"><div class="ct-dot"></div>Coordinate Geografiche (GPS)</div>
-    <div class="tog-wrap" style="margin-bottom:14px;">
-      <label class="tog-cb">
-        <input type="checkbox" id="gpsToggle" checked onchange="toggleGpsField(this)">
-        <span class="tog-slider"></span>
-      </label>
-      <span class="tog-lbl">Inietta coordinate reali nel payload Morse</span>
-    </div>
-    <div id="gpsDataBlock">
-      <label>Ultimo Fix Conosciuto</label>
-      <div class="coord-display" id="coordDisplay">45.892100 N , 12.104400 E</div>
-      <div class="info-box">
-        Modulo GPS Neo-6M integrato. Le coordinate vengono auto-aggiornate tramite frame NMEA del bus seriale dell'ESP32.
-      </div>
-    </div>
-  </div>
-
-  <!-- WI-FI PORTAL SETTINGS -->
-  <div class="card">
-    <div class="ct"><div class="ct-dot"></div>Impostazioni Rete Wi-Fi AP</div>
-    <div class="form-row">
-      <label>SSID Rete Captive Portal</label>
-      <input type="text" id="wifiSsid" value="AegisBeacon">
-    </div>
-    <div class="form-row">
-      <label>Password d'Accesso (WPA2)</label>
-      <input type="text" id="wifiPass" value="AegisRescueSystem" placeholder="Lascia vuoto per rete libera">
-    </div>
-    <div class="info-box">
-      La rete WiFi viene disattivata automaticamente dopo 5 minuti dall'avvio se il dispositivo non rileva client agganciati, salvaguardando l'autonomia della batteria.
-    </div>
-  </div>
-
-  <!-- ACTION BUTTONS -->
-  <div class="card full text-center">
-    <button class="btn btn-save btn-c" id="saveBtn" onclick="saveConfiguration()">Salva Configurazione in EEPROM</button>
-  </div>
-</main>
-
-<div id="toast">SALVATAGGIO AVVENUTO — MEMORIA FLASH SCRITTA</div>
-
-<script>
-  // Aggiorna l'anteprima del payload morse al variare dell'ID
-  const callsignInput = document.getElementById('opCallsign');
-  const payloadPreview = document.getElementById('payloadPreview');
-  const gpsToggle = document.getElementById('gpsToggle');
-
-  function updatePayloadPreview() {
-    let base = "SOS DE " + (callsignInput.value.trim().toUpperCase() || "ANONIMO");
-    if(gpsToggle.checked) {
-      base += " PSN 45.8921N 12.1044E";
-    }
-    payloadPreview.textContent = base;
-  }
-
-  callsignInput.addEventListener('input', updatePayloadPreview);
-  
-  function toggleGpsField(checkbox) {
-    const dataBlock = document.getElementById('gpsDataBlock');
-    if(checkbox.checked) {
-      dataBlock.style.opacity = "1";
-    } else {
-      dataBlock.style.opacity = "0.4";
-    }
-    updatePayloadPreview();
-  }
-
-  function saveConfiguration() {
-    const btn = document.getElementById('saveBtn');
-    btn.disabled = true;
-    btn.textContent = "SCRITTURA IN CORSO...";
-    
-    setTimeout(() => {
-      btn.disabled = false;
-      btn.textContent = "Salva Configurazione in EEPROM";
-      
-      const toast = document.getElementById('toast');
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
-    }, 1200);
-  }
-
-  // Simulazione Uptime e Batteria calante millesimalmente
-  let uptimeSec = 892;
-  setInterval(() => {
-    uptimeSec++;
-    let h = Math.floor(uptimeSec / 3600).toString().padStart(2, '0');
-    let m = Math.floor((uptimeSec % 3600) / 60).toString().padStart(2, '0');
-    let s = (uptimeSec % 60).toString().padStart(2, '0');
-    document.getElementById('statUptime').textContent = h + "h " + m + "m " + s + "s";
-  }, 1000);
-</script>
-</body>
-</html>`;
-</script>
+  </script>
 </body>
 </html>
