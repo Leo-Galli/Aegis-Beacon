@@ -4,24 +4,109 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 
-<!-- STRUTTURA METADATI SEO PER IL POSIZIONAMENTO AL PRIMO RISULTATO -->
-<title>Aegis-Beacon v5.4 — Manuale Tecnico di Riferimento e Wiki di Costruzione</title>
-<meta name="description" content="Guida ufficiale Aegis-Beacon v5.4: istruzioni passo-passo per l'assemblaggio hardware SMD, codice sorgente firmware, protocolli di flashing PlatformIO e piano frequenze radio SAR.">
-<meta name="keywords" content="Aegis-Beacon, localizzatore radio, LoRa SAR, firmware ESP32, SX1262, costruzione beacon emergenza, aggiornamento software beacon, schema elettrico beacon">
-<meta name="robots" content="index, follow">
+<!-- 1. METADATI SEO STRUTTURALI (Ottimizzati per CTR e CTR-Booster) -->
+<title>Aegis-Beacon v5.4: Manuale Tecnico e Wiki di Costruzione SAR</title>
+<meta name="description" content="Manuale ufficiale Aegis-Beacon v5.4. Guida passo-passo all'assemblaggio hardware SMD, flashing firmware ESP32 con PlatformIO e gestione frequenze radio SAR.">
+<meta name="keywords" content="Aegis-Beacon, localizzatore radio, LoRa SAR, firmware ESP32, SX1262, costruzione beacon emergenza, aggiornamento software beacon, schema elettrico beacon, programmazione ESP32, radiolocalizzazione alpina">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <link rel="canonical" href="https://aegis-beacon.vercel.app/">
 
-<!-- Open Graph / Social Media Optimization -->
-<meta property="og:type" content="article">
-<meta property="og:title" content="Aegis-Beacon v5.4 — Manuale Tecnico di Riferimento e Wiki di Costruzione">
-<meta property="og:description" content="Manuale ingegneristico standardizzato open-source per lo sviluppo, l'aggiornamento e l'assemblaggio di dispositivi di radiolocalizzazione d'emergenza.">
-<meta property="og:url" content="https://aegis-beacon.vercel.app/">
+<!-- 2. DIRETTIVE PREFETCH & PRECONNECT (Miglioramento Core Web Vitals) -->
+<link rel="preconnect" href="https://github.com">
+<link rel="dns-prefetch" href="https://github.com">
 
-<!-- JSON-LD SCHEMA PER RICH SNIPPETS NEI MOTORI DI RICERCA -->
+<!-- 3. OPEN GRAPH / FACEBOOK / LINKEDIN (Protocollo Semantico) -->
+<meta property="og:locale" content="it_IT">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Aegis-Beacon v5.4 — Manuale Tecnico e Wiki di Costruzione">
+<meta property="og:description" content="Guida hardware e firmware standardizzata per lo sviluppo e l'assemblaggio del dispositivo di radiolocalizzazione d'emergenza LoRa/ESP32.">
+<meta property="og:url" content="https://aegis-beacon.vercel.app/">
+<meta property="og:site_name" content="Aegis-Beacon Open Source Project">
+<meta property="og:image" content="https://aegis-beacon.vercel.app/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/jpeg">
+
+<!-- 4. TWITTER CARDS (Ottimizzazione Microblogging) -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Aegis-Beacon v5.4 — Manuale Tecnico e Wiki di Costruzione">
+<meta name="twitter:description" content="Specifiche hardware, sorgenti firmware e istruzioni di flashing PlatformIO per il localizzatore d'emergenza open-source.">
+<meta name="twitter:image" content="https://aegis-beacon.vercel.app/assets/og-image.jpg">
+
+<!-- 5. ICONE E FAVICON (Miglioramento Visuale in SERP e Brand Search) -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+
+<!-- 6. JSON-LD SCHEMA INTEGRATO E RELAZIONALE (Nodi interconnessi per Rich Snippets avanzati) -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://aegis-beacon.vercel.app/#website",
+      "url": "https://aegis-beacon.vercel.app/",
+      "name": "Aegis-Beacon",
+      "description": "Progetto Open-Source di Radiotracciamento e Localizzazione SAR",
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://aegis-beacon.vercel.app/#organization",
+        "name": "Aegis Open Source Project",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://aegis-beacon.vercel.app/icon.png"
+        }
+      },
+      "inLanguage": "it-IT"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://aegis-beacon.vercel.app/#webpage",
+      "url": "https://aegis-beacon.vercel.app/",
+      "name": "Aegis-Beacon v5.4 — Manuale Tecnico e Wiki di Costruzione",
+      "isPartOf": {
+        "@id": "https://aegis-beacon.vercel.app/#website"
+      },
+      "description": "Specifiche tecniche di sviluppo hardware, architettura firmware e canali di ricezione radio per sistemi SAR.",
+      "inLanguage": "it-IT"
+    },
+    {
+      "@type": "TechArticle",
+      "@id": "https://aegis-beacon.vercel.app/#article",
+      "isPartOf": {
+        "@id": "https://aegis-beacon.vercel.app/#webpage"
+      },
+      "headline": "Aegis-Beacon v5.4 — Manuale Tecnico di Riferimento e Wiki di Costruzione",
+      "description": "Istruzioni ingegneristiche avanzate per la saldatura SMD del modulo radio SX1262 e la compilazione del firmware su microcontrollore ESP32.",
+      "inLanguage": "it-IT",
+      "url": "https://aegis-beacon.vercel.app/",
+      "mainEntityOfPage": "https://aegis-beacon.vercel.app/",
+      "image": "https://aegis-beacon.vercel.app/assets/og-image.jpg",
+      "datePublished": "2024-10-15T08:00:00+02:00",
+      "dateModified": "2026-07-15T12:00:00+02:00",
+      "author": {
+        "@id": "https://aegis-beacon.vercel.app/#organization"
+      },
+      "publisher": {
+        "@id": "https://aegis-beacon.vercel.app/#organization"
+      },
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "LoRa"
+        },
+        {
+          "@type": "Thing",
+          "name": "ESP32"
+        },
+        {
+          "@type": "Thing",
+          "name": "Search and Rescue"
+        }
+      ]
+    },
     {
       "@type": "SoftwareApplication",
       "@id": "https://aegis-beacon.vercel.app/#software",
@@ -37,39 +122,31 @@
       }
     },
     {
-      "@type": "TechArticle",
-      "@id": "https://aegis-beacon.vercel.app/#article",
-      "headline": "Aegis-Beacon v5.4 — Manuale Tecnico di Riferimento e Wiki di Costruzione",
-      "description": "Specifiche tecniche di sviluppo hardware, architettura firmware e canali di ricezione radio per sistemi SAR.",
-      "inLanguage": "it-IT",
-      "url": "https://aegis-beacon.vercel.app/",
-      "author": {
-        "@type": "Organization",
-        "name": "Aegis Open Source Project"
-      }
-    },
-    {
       "@type": "HowTo",
       "@id": "https://aegis-beacon.vercel.app/#howto-update",
+      "isPartOf": {
+        "@id": "https://aegis-beacon.vercel.app/#webpage"
+      },
       "name": "Come aggiornare il software di Aegis-Beacon",
-      "description": "Procedura guidata per la compilazione e l'upload del firmware su microcontrollore ESP32.",
+      "description": "Procedura guidata per la compilazione e l'upload del firmware su microcontrollore ESP32 usando PlatformIO.",
+      "inLanguage": "it-IT",
       "step": [
         {
           "@type": "HowToStep",
           "name": "Installazione Strumenti",
-          "text": "Installare Visual Studio Code e l'estensione PlatformIO IDE.",
+          "text": "Scarica e installa Visual Studio Code e aggiungi l'estensione ufficiale PlatformIO IDE dal marketplace.",
           "url": "https://aegis-beacon.vercel.app/#tab-compilazione"
         },
         {
           "@type": "HowToStep",
           "name": "Connessione Hardware",
-          "text": "Connettere l'unità al PC tramite interfaccia USB-to-UART.",
+          "text": "Collega la scheda Aegis-Beacon al computer tramite un cavo USB e un'interfaccia USB-to-UART compatibile.",
           "url": "https://aegis-beacon.vercel.app/#tab-compilazione"
         },
         {
           "@type": "HowToStep",
           "name": "Flashing Firmware",
-          "text": "Eseguire il comando di compilazione e upload tramite PlatformIO.",
+          "text": "Apri il progetto in VS Code, esegui il target di build e clicca su Upload per caricare il codice sul chip ESP32.",
           "url": "https://aegis-beacon.vercel.app/#tab-compilazione"
         }
       ]
@@ -77,6 +154,7 @@
   ]
 }
 </script>
+
 
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
