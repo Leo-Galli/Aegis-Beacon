@@ -130,7 +130,13 @@ Aegis-Beacon/
 
 **How the site is served:** `website/server.js` (or `website/api/index.js` on Vercel) handles every HTTP request. Pages are rendered by the Node.js runtime: each route reads its HTML template, applies the detected language (`?lang=` query, `aegis-lang` cookie or `Accept-Language` header) and injects the matching translation dictionary. The website is therefore a genuine Node.js application — the HTML files in `public/` are view templates, deliberately kept inside the dedicated `website/` folder.
 
-**Vercel deployment:** set the project **Root Directory** to `website` in the Vercel project settings (Settings → General → Root Directory → `website`). All paths in `website/vercel.json` are relative to that root. The `functions.includeFiles` entry bundles `public/**` into the serverless function so the language-aware page renderer can read its templates at runtime.
+**Vercel deployment (Root Directory = `website`):** the Vercel project must point its **Root Directory** at the `website/` folder, otherwise deployments compile an empty project and every route returns `404 NOT_FOUND`. `rootDirectory` cannot be set inside `vercel.json` — it is a project-level setting. Steps:
+
+1. Open the Vercel dashboard → **aegis-beacon** project → **Settings → General → Root Directory**.
+2. Enter `website` and save. All paths in `website/vercel.json` are relative to that root.
+3. Redeploy (push to `main` or use "Redeploy" in the dashboard). The Git integration then builds from `website/` automatically.
+
+Equivalently, with the Vercel CLI from inside `website/`: `vercel link --yes --project aegis-beacon` then `vercel deploy --prod` (or `vercel build` followed by `vercel deploy --prebuilt --prod`). The `functions.includeFiles` entry bundles `public/**` into the serverless function so the language-aware page renderer can read its templates at runtime.
 
 ---
 
