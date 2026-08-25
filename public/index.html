@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 
 <!-- 1. METADATI SEO STRUTTURALI (Ottimizzati per CTR e CTR-Booster) -->
-<title>Aegis-Beacon v5.4: Manuale Tecnico e Wiki di Costruzione SAR</title>
-<meta name="description" content="Manuale ufficiale Aegis-Beacon v5.4. Guida passo-passo all'assemblaggio hardware SMD, flashing firmware ESP32 con PlatformIO e gestione frequenze radio SAR.">
-<meta name="keywords" content="Aegis-Beacon, localizzatore radio, LoRa SAR, firmware ESP32, SX1262, costruzione beacon emergenza, aggiornamento software beacon, schema elettrico beacon, programmazione ESP32, radiolocalizzazione alpina">
+<title>Aegis-Beacon v5.4: Technical Manual and SAR Build Wiki</title>
+<meta name="description" content="Official Aegis-Beacon v5.4 manual. Step-by-step guide to SMD hardware assembly, ESP32 firmware flashing with PlatformIO, and SAR radio frequency management.">
+<meta name="keywords" content="Aegis-Beacon, radio locator, LoRa SAR, firmware ESP32, SX1262, emergency beacon construction, beacon software updates, beacon wiring diagram, ESP32 programming, alpine radio location">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <link rel="canonical" href="https://aegis-beacon.vercel.app/">
 
@@ -28,23 +28,23 @@
 <meta property="og:locale:alternate" content="fr_FR">
 <meta property="og:locale:alternate" content="es_ES">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Aegis-Beacon v5.4 — Manuale Tecnico e Wiki di Costruzione">
-<meta property="og:description" content="Guida hardware e firmware standardizzata per lo sviluppo e l'assemblaggio del dispositivo di radiolocalizzazione d'emergenza LoRa/ESP32.">
+<meta property="og:title" content="Aegis-Beacon v5.4 | Technical Manual and Build Wiki">
+<meta property="og:description" content="Standardized hardware and firmware guide for developing and assembling the LoRa/ESP32 emergency radio-location device.">
 <meta property="og:url" content="https://aegis-beacon.vercel.app/">
 <meta property="og:type" content="website">
 <meta property="og:image:secure_url" content="https://aegis-beacon.vercel.app/banner.PNG">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Aegis-Beacon v5.4 — Manuale tecnico wiki del beacon di emergenza LoRa SX1262">
+<meta property="og:image:alt" content="Aegis-Beacon v5.4 — Technical manual and wiki for the SX1262 emergency beacon">
 <meta property="og:image:type" content="image/png">
 <meta property="og:determiner" content="the">
 
 <!-- 4a. TWITTER CARDS (ottimizzate al massimo per la condivisione) -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Aegis-Beacon v5.4 — Manuale Tecnico e Wiki di Costruzione">
+<meta name="twitter:title" content="Aegis-Beacon v5.4 | Technical Manual and Build Wiki">
 <meta name="twitter:description" content="Specifiche hardware, sorgenti firmware e istruzioni di flashing PlatformIO per il localizzatore d'emergenza open-source.">
 <meta name="twitter:image" content="https://aegis-beacon.vercel.app/banner.PNG">
-<meta name="twitter:image:alt" content="Aegis-Beacon v5.4 — Schema tecnico del beacon SAR con SX1262">
+<meta name="twitter:image:alt" content="Aegis-Beacon v5.4 — Technical SAR beacon overview with SX1262">
 <!-- twitter:site rimosso: handle Twitter/X personale dell'autore non disponibile. Aggiungere solo se l'account esiste davvero. -->
 
 <!-- 4b. MOBILE / PWA / DISCORD-WHATSAPP PREVIEW -->
@@ -62,7 +62,7 @@
 <meta name="revisit-after" content="7 days">
 <meta name="copyright" content="MIT License — Leonardo Galli © 2026">
 <meta name="author" content="Leonardo Galli">
-<meta name="pagename" content="Aegis-Beacon v5.4 Manuale Tecnico">
+<meta name="pagename" content="Aegis-Beacon v5.4 Technical Manual">
 <meta name="category" content="Technology / Open Source Hardware / Search and Rescue">
 <meta property="og:site_name" content="Aegis-Beacon Open Source Project">
 <meta property="og:image" content="https://aegis-beacon.vercel.app/banner.PNG">
@@ -72,7 +72,7 @@
 
 <!-- 4. TWITTER CARDS (Ottimizzazione con /banner.PNG) -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Aegis-Beacon v5.4 — Manuale Tecnico e Wiki di Costruzione">
+<meta name="twitter:title" content="Aegis-Beacon v5.4 | Technical Manual and Build Wiki">
 <meta name="twitter:description" content="Specifiche hardware, sorgenti firmware e istruzioni di flashing PlatformIO per il localizzatore d'emergenza open-source.">
 <meta name="twitter:image" content="https://aegis-beacon.vercel.app/banner.PNG">
 
@@ -92,7 +92,7 @@
       "@id": "https://aegis-beacon.vercel.app/#website",
       "url": "https://aegis-beacon.vercel.app/",
       "name": "Aegis-Beacon",
-      "description": "Progetto Open-Source di Radiotracciamento e Localizzazione SAR",
+      "description": "Open-source SAR radio tracking and location project",
       "publisher": {      "@type": "Organization",
         "@id": "https://aegis-beacon.vercel.app/#organization",
           "name": "Aegis Open Source Project",
@@ -105,7 +105,7 @@
             "height": 512
           },
           "image": "https://aegis-beacon.vercel.app/banner.PNG",
-          "description": "Progetto open-source di radiolocalizzazione d'emergenza basato su LoRa/SX1262 per operazioni SAR alpine.",
+          "description": "Open-source emergency radio location project based on LoRa/SX1262 for alpine SAR operations.",
           "foundingDate": "2026",
           "founder": {
             "@type": "Person",
@@ -128,11 +128,11 @@
       "@type": "WebPage",
       "@id": "https://aegis-beacon.vercel.app/#webpage",
       "url": "https://aegis-beacon.vercel.app/",
-      "name": "Aegis-Beacon v5.4 — Manuale Tecnico e Wiki di Costruzione",
+      "name": "Aegis-Beacon v5.4 | Technical Manual and Build Wiki",
       "isPartOf": {
         "@id": "https://aegis-beacon.vercel.app/#website"
       },
-      "description": "Specifiche tecniche di sviluppo hardware, architettura firmware e canali di ricezione radio per sistemi SAR.",
+      "description": "Technical specifications for hardware development, firmware architecture, and radio reception channels for SAR systems.",
       "inLanguage": ["it-IT","en-US","fr-FR","es-ES"],
     },
     {
@@ -141,8 +141,8 @@
       "isPartOf": {
         "@id": "https://aegis-beacon.vercel.app/#webpage"
       },
-      "headline": "Aegis-Beacon v5.4 — Manuale Tecnico di Riferimento e Wiki di Costruzione",
-      "description": "Istruzioni ingegneristiche avanzate per la saldatura SMD del modulo radio SX1262 e la compilazione del firmware su microcontrollore ESP32.",
+      "headline": "Aegis-Beacon v5.4 | Technical Reference Manual and Build Wiki",
+      "description": "Advanced engineering instructions for SMD assembly of the SX1262 radio module and firmware compilation on the ESP32 microcontroller.",
       "inLanguage": ["it-IT","en-US","fr-FR","es-ES"],
       "url": "https://aegis-beacon.vercel.app/",
       "mainEntityOfPage": "https://aegis-beacon.vercel.app/",
@@ -190,26 +190,26 @@
       "isPartOf": {
         "@id": "https://aegis-beacon.vercel.app/#webpage"
       },
-      "name": "Come aggiornare il software di Aegis-Beacon",
-      "description": "Procedura guidata per la compilazione e l'upload del firmware su microcontrollore ESP32 usando PlatformIO.",
+      "name": "How to update Aegis-Beacon software",
+      "description": "Guided procedure for compiling and uploading firmware to the ESP32 microcontroller with PlatformIO.",
       "inLanguage": ["it-IT","en-US","fr-FR","es-ES"],
       "step": [
         {
           "@type": "HowToStep",
-          "name": "Installazione Strumenti",
-          "text": "Scarica e installa Visual Studio Code e aggiungi l'estensione ufficiale PlatformIO IDE dal marketplace.",
+          "name": "Install tools",
+          "text": "Download and install Visual Studio Code, then add the official PlatformIO IDE extension from the marketplace.",
           "url": "https://aegis-beacon.vercel.app/#tab-compilazione"
         },
         {
           "@type": "HowToStep",
-          "name": "Connessione Hardware",
-          "text": "Collega la scheda Aegis-Beacon al computer tramite un cavo USB e un'interfaccia USB-to-UART compatibile.",
+          "name": "Connect hardware",
+          "text": "Connect the Aegis-Beacon board to the computer with a USB cable and a compatible USB-to-UART interface.",
           "url": "https://aegis-beacon.vercel.app/#tab-compilazione"
         },
         {
           "@type": "HowToStep",
-          "name": "Flashing Firmware",
-          "text": "Apri il progetto in VS Code, esegui il target di build e clicca su Upload per caricare il codice sul chip ESP32.",
+          "name": "Flash firmware",
+          "text": "Open the project in VS Code, run the build target, and click Upload to write the code to the ESP32 chip.",
           "url": "https://aegis-beacon.vercel.app/#tab-compilazione"
         }
       ]
@@ -238,12 +238,7 @@
   }
 </script>
 
-<!-- gtranslate multi-language widget — classic 3D flags, iniettato nel FOOTER -->
-<!-- Il wrapper visibile è il secondo `.gtranslate_wrapper` in <footer>; questo in <head> resta nascosto come fallback solo per il selettore JS. -->
-<!-- "Aegis-Beacon" è protetto ovunque dalla classe CSS .notranslate. -->
-<div class="gtranslate_wrapper" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true"></div>
-<script>window.gtranslateSettings = {"default_language":"en","languages":["en","fr","it","es"],"wrapper_selector":".gtranslate_wrapper","flag_style":"3d"}</script>
-<script src="https://cdn.gtranslate.net/widgets/latest/flags.js" defer></script>
+<!-- "Aegis-Beacon" is protected by the .notranslate CSS class. -->
 
 <style>
   *, ::before, ::after {
@@ -262,22 +257,22 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* gtranslate globe widget — armonizzato con il tema del sito */
-  .gtranslate_wrapper { display: inline-flex; align-items: center; }
-  .gtranslate_wrapper a, .gtranslate_wrapper .gt_globe {
+  /* Footer language controls */
+
+  .language-link {
     transition: color .2s ease, transform .2s ease, opacity .2s ease;
     opacity: .85;
   }
-  .gtranslate_wrapper a:hover, .gtranslate_wrapper .gt_globe:hover {
+  .language-link:hover {
     opacity: 1;
     transform: translateY(-1px);
     color: #f97316;
   }
-  .dark .gtranslate_wrapper a:hover, .dark .gtranslate_wrapper .gt_globe:hover {
+  .dark .language-link:hover {
     color: #fb923c;
   }
-  /* Evidenzia visivamente le stringhe protette da Google Translate (debug helper) */
-  .notranslate { /* honored by gtranslate & Google Translate */ }
+  /* Keep protected product names stable. */
+  .notranslate { }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-[#090d16] dark:text-slate-200 font-sans antialiased">
@@ -285,19 +280,19 @@
   <!-- TOP BAR & BRANDING -->
   <header class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0d1322] sticky top-0 z-50 px-4 sm:px-6">
     <div class="max-w-7xl mx-auto h-16 flex items-center justify-between gap-4">
-      
+
       <!-- LOGO -->
       <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-2.5 h-2.5 bg-orange-600 rounded-full shrink-0"></div>
         <div class="flex flex-col min-w-0">
           <span class="font-mono font-bold text-xs tracking-wider text-slate-900 dark:text-white uppercase truncate notranslate">Aegis-Beacon</span>
-          <span class="font-mono text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-widest -mt-0.5 truncate">Tech & Build Wiki v5.4</span>
+          <span class="font-mono text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-widest -mt-0.5 truncate">Tech and Build Wiki v5.4</span>
         </div>
       </div>
 
-      <!-- CONTROLLI RAPIDI DI INTERFACCIA (lingua spostata nel footer per non ingombrare la top bar) -->
+      <!-- QUICK INTERFACE CONTROLS -->
       <div class="flex items-center gap-2 shrink-0">
-        <button id="theme-toggle" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-1.5 rounded text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400" title="Inverti schema colori">
+        <button id="theme-toggle" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-1.5 rounded text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400" title="Toggle color scheme">
           <svg id="theme-sun" class="w-3.5 h-3.5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 2a1 1 0 01.664.253l.707.707a1 1 0 01-1.414 1.414l-.707-.707A1 1 0 0114 4zM4 11a1 1 0 100-2H3a1 1 0 100 2h1zm11.364-1.364a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707zM16 11a1 1 0 100-2h-1a1 1 0 100 2h1zM4.636 15.364a1 1 0 011.414-1.414l.707.707a1 1 0 01-1.414 1.414l-.707-.707zM10 14a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM6.253 14.243a1 1 0 01.253.664v.707a1 1 0 11-2 0v-.707a1 1 0 011.747-.664z" /></svg>
           <svg id="theme-moon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
         </button>
@@ -310,7 +305,7 @@
   <!-- SCHEDE NAVIGAZIONE COMPRESSION-RESPONSIVE -->
   <div class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b101c] sticky top-16 z-40">
     <div class="max-w-7xl mx-auto px-4">
-      <nav class="flex gap-1.5 py-3 overflow-x-auto no-scrollbar scroll-smooth" aria-label="Navigazione manuale">
+      <nav class="flex gap-1.5 py-3 overflow-x-auto no-scrollbar scroll-smooth" aria-label="Manual navigation">
         <button onclick="switchTab('panoramica')" id="btn-panoramica" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-bold rounded border border-orange-600 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 whitespace-nowrap">
           [ 01 // OVERVIEW ]
         </button>
@@ -324,7 +319,7 @@
           [ 04 // WIKI: SOFTWARE ]
         </button>
         <button onclick="switchTab('costruzione')" id="btn-costruzione" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
-          [ 05 // WIKI: COSTRUZIONE ]
+          [ 05 // BUILD WIKI ]
         </button>
       </nav>
     </div>
@@ -332,14 +327,14 @@
 
   <!-- MAIN CONTAINER -->
   <main class="max-w-7xl mx-auto px-4 py-6 space-y-6 sm:space-y-8">
-    
+
     <!-- --------------------------------------- -->
     <!-- TAB 1: PANORAMICA                       -->
     <!-- --------------------------------------- -->
     <section id="tab-panoramica" class="tab-content active space-y-6">
       <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 shadow-sm space-y-3">
-        <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 tracking-wider" data-key="sys-doc-title">DOCUMENTAZIONE DI RIFERIMENTO</span>
-        <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white" data-key="main-title">Ecosistema <span class="notranslate">Aegis-Beacon</span> v5.4</h1>
+        <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 tracking-wider" data-key="sys-doc-title">REFERENCE DOCUMENTATION</span>
+        <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white" data-key="main-title">Ecosystem <span class="notranslate">Aegis-Beacon</span> v5.4</h1>
         <div class="flex flex-wrap gap-1.5 pt-0.5">
           <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 text-[10px] font-mono font-bold border border-orange-200 dark:border-orange-900">
             <span class="w-1.5 h-1.5 bg-orange-600 rounded-full animate-pulse"></span>
@@ -347,10 +342,10 @@
           </span>
           <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700">410–525 MHz</span>
           <span class="inline-flex items-center px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono font-medium border border-emerald-200 dark:border-emerald-900">65 h BEACON · 44 h SEARCH</span>
-          <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700" data-key="hero-badges-modes">4 Modi</span>
+          <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700" data-key="hero-badges-modes">4 Modes</span>
         </div>
         <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed max-w-4xl pt-1" data-key="main-desc">
-          Un sistema di radiolocalizzazione d'emergenza a basso costo basato sulla tecnologia LoRa e progettato per il soccorso montano, terrestre e in scenari civili critici. Il beacon opera generando impulsi CW e messaggi digitali a lungo raggio per consentire il radiogoniometramento in condizioni di isolamento o assenza di infrastrutture cellulari.
+          A low-cost emergency radio-location system based on LoRa, designed for mountain rescue, land operations, and critical civilian scenarios. The beacon generates CW pulses and long-range digital messages to support radio direction finding when cellular infrastructure is unavailable.
         </p>
       </div>
 
@@ -358,31 +353,31 @@
         <div class="group relative bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-2 flex flex-col justify-between overflow-hidden hover:border-orange-500/60 dark:hover:border-orange-500/40 hover:shadow-md transition-all duration-200">
           <div aria-hidden="true" class="absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br from-orange-500/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
           <div class="relative">
-            <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold">[ AMBITO ]</span>
-            <h2 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono mt-1" data-key="sc-1-t">Soccorso Alpino e Escursionistico</h2>
+            <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold">[ SCOPE ]</span>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono mt-1" data-key="sc-1-t">Alpine and Backcountry Rescue</h2>
           </div>
           <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-2 relative" data-key="sc-1-d">
-            Consente ai dispersi di trasmettere una traccia Morse stabile (CW 600 Hz) e rintracciabile da squadre SAR con ricevitori PMR446, scanner AM o SDR. Antenna ¼-wave 17.3 cm @ 433 MHz.
+            Enables missing persons to transmit a stable Morse trace (CW 600 Hz) that can be located by SAR teams with PMR446 receivers, AM scanners, or SDRs. Antenna: 17.3 cm quarter-wave at 433 MHz.
           </p>
         </div>
         <div class="group relative bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-2 flex flex-col justify-between overflow-hidden hover:border-orange-500/60 dark:hover:border-orange-500/40 hover:shadow-md transition-all duration-200">
           <div aria-hidden="true" class="absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
           <div class="relative">
-            <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold">[ TECNOLOGIA ]</span>
+            <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold">[ TECHNOLOGY ]</span>
             <h2 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono mt-1" data-key="sc-2-t">FSK / CW Keying (SX1262)</h2>
           </div>
           <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-2 relative" data-key="sc-2-d">
-            Portante continua FSK 0.6 kbps + keying CW tramite transmitDirect()—indistinguibile da OOK in ricezione. TX −9…+22 dBm RadioLib (fino a +30 dBm con PA onboard E22).
+            Continuous 0.6 kbps FSK carrier with CW keying through transmitDirect(), indistinguishable from OOK during reception. TX −9…+22 dBm via RadioLib (up to +30 dBm with the onboard E22 PA).
           </p>
         </div>
         <div class="group relative bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-2 flex flex-col justify-between overflow-hidden hover:border-orange-500/60 dark:hover:border-orange-500/40 hover:shadow-md transition-all duration-200">
           <div aria-hidden="true" class="absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br from-sky-500/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
           <div class="relative">
-            <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold">[ INDIPENDENZA ]</span>
+            <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold">[ INDEPENDENCE ]</span>
             <h2 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono mt-1" data-key="sc-3-t">Zero Infrastructure</h2>
           </div>
           <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-2 relative" data-key="sc-3-d">
-            Nessuna dipendenza da GSM, Wi-Fi o satelliti commerciali. Comunicazione P2P diretta a 410–525 MHz. Modalità CONFIG solo per setup (WiFi AP 192.168.4.1).
+            No dependency on GSM, Wi-Fi, or commercial satellites. Direct peer-to-peer communication at 410–525 MHz. CONFIG mode is used only for setup (WiFi AP 192.168.4.1).
           </p>
         </div>
       </div>
@@ -393,25 +388,25 @@
     <!-- --------------------------------------- -->
     <section id="tab-hardware" class="tab-content space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
+
         <div class="lg:col-span-8 space-y-6">
           <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-4">
-            <h2 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2" data-key="hw-spec-t">Architettura Hardware dell'Unità RF</h2>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2" data-key="hw-spec-t">RF Unit Hardware Architecture</h2>
             <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="hw-spec-d">
-              Il nucleo radio sfrutta l'accoppiamento tra il microprocessore dual-core ESP32 e il chip di ricetrasmissione a lungo raggio Semtech SX1262. Questa combinazione garantisce un'eccellente precisione nella generazione della portante e un consumo ridotto durante le fasi di deep-sleep.
+              The radio core couples the dual-core ESP32 microcontroller with the Semtech SX1262 long-range transceiver. This combination provides precise carrier generation and low power consumption during deep sleep.
             </p>
-            
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div class="border border-slate-100 dark:border-slate-800/80 p-3 rounded bg-slate-50/50 dark:bg-slate-900/40">
-                <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase">[ Stadio Amplificatore RF ]</span>
+                <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase">[ RF Amplifier Stage ]</span>
                 <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-1" data-key="hw-p-1">
-                  Ebyte E22-400M30S basato su SX1262. Integra un amplificatore di potenza (PA) e un amplificatore a basso rumore (LNA) in ricezione per estendere il link-budget a oltre 15 km in linea di vista ottica.
+                  The Ebyte E22-400M30S is based on SX1262. It integrates a power amplifier (PA) and a low-noise receive amplifier (LNA) to extend the link budget beyond 15 km in clear line of sight.
                 </p>
               </div>
               <div class="border border-slate-100 dark:border-slate-800/80 p-3 rounded bg-slate-50/50 dark:bg-slate-900/40">
-                <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase">[ Sistema di Alimentazione ]</span>
+                <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase">[ Power System ]</span>
                 <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-1" data-key="hw-p-2">
-                  Circuito di ricarica LiPo TP4056 integrato con monitoraggio della tensione tramite partitore resistivo accoppiato al pin ADC dell'ESP32 per la telemetria dello stato di scarica.
+                  Integrated TP4056 Li-ion charging circuit with voltage monitoring through a resistor divider connected to the ESP32 ADC pin for discharge telemetry.
                 </p>
               </div>
             </div>
@@ -419,19 +414,19 @@
         </div>
 
         <div class="lg:col-span-4 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-4">
-          <h2 class="text-xs font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2" data-key="hw-aside-t">Caratteristiche Fisiche</h2>
+          <h2 class="text-xs font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2" data-key="hw-aside-t">Physical Characteristics</h2>
           <table class="w-full text-left font-mono text-[11px] text-slate-600 dark:text-slate-400">
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               <tr>
-                <td class="py-2.5 pr-2 font-medium text-slate-800 dark:text-slate-200 w-1/2 align-top" data-key="hw-row-ant">Connettore Antenna</td>
-                <td class="py-2.5 text-right align-top">SMA Femmina 50 Ohm</td>
+                <td class="py-2.5 pr-2 font-medium text-slate-800 dark:text-slate-200 w-1/2 align-top" data-key="hw-row-ant">Antenna Connector</td>
+                <td class="py-2.5 text-right align-top">50-ohm female SMA</td>
               </tr>
               <tr>
-                <td class="py-2.5 pr-2 font-medium text-slate-800 dark:text-slate-200 w-1/2 align-top" data-key="hw-row-mcu">Clock di Sistema</td>
+                <td class="py-2.5 pr-2 font-medium text-slate-800 dark:text-slate-200 w-1/2 align-top" data-key="hw-row-mcu">System Clock</td>
                 <td class="py-2.5 text-right align-top">XTAL 32 MHz (TCXO ±1 ppm)</td>
               </tr>
               <tr>
-                <td class="py-2.5 pr-2 font-medium text-slate-800 dark:text-slate-200 w-1/2 align-top" data-key="hw-row-bat">Consumo Deep Sleep</td>
+                <td class="py-2.5 pr-2 font-medium text-slate-800 dark:text-slate-200 w-1/2 align-top" data-key="hw-row-bat">Deep-Sleep Current</td>
                 <td class="py-2.5 text-right font-mono text-orange-600 dark:text-orange-400 align-top">~10 µA</td>
               </tr>
               <tr>
@@ -439,7 +434,7 @@
                 <td class="py-2.5 text-right align-top">Hammond 1593L (100×60×25)</td>
               </tr>
               <tr>
-                <td class="py-2.5 pr-2 font-medium text-slate-800 dark:text-slate-200 w-1/2 align-top" data-key="hw-row-batlife">Autonomia BEACON</td>
+                <td class="py-2.5 pr-2 font-medium text-slate-800 dark:text-slate-200 w-1/2 align-top" data-key="hw-row-batlife">BEACON Runtime</td>
                 <td class="py-2.5 text-right font-mono text-emerald-600 dark:text-emerald-400 align-top">~65 h (no GPS)</td>
               </tr>
             </tbody>
@@ -453,30 +448,30 @@
     <!-- --------------------------------------- -->
     <section id="tab-firmware" class="tab-content space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
+
         <div class="lg:col-span-6 space-y-6">
           <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-4">
             <h2 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2" data-key="fw-title">
               <span class="w-1.5 h-1.5 bg-orange-600 rounded-full animate-pulse shrink-0"></span>
-              Infrastruttura del Firmware
+              Firmware Infrastructure
             </h2>
             <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="fw-desc-1">
-              Scritto in C++ (Arduino/PlatformIO) basato su RadioLib ≥ 6.x per il front-end SX1262, U8g2 ≥ 2.34 per il display SSD1309 e TinyGPS++ ≥ 1.0.3 per le coordinate NMEA. Stack WiFi/BT disattivato in BEACON/SEARCH per risparmiare ~120 mA.
+              Written in C++ (Arduino/PlatformIO), based on RadioLib ≥ 6.x for the SX1262 front end, U8g2 ≥ 2.34 for the SSD1309 display, and TinyGPS++ ≥ 1.0.3 for NMEA coordinates. The WiFi/BT stack is disabled in BEACON/SEARCH to save ~120 mA.
             </p>
             <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="fw-desc-2">
-              Quattro modalità (BEACON / SEARCH / CONFIG / EMERGENCY) con deep-sleep a ~10 µA, watchdog HW a 30 s, pin DIO1 IRQ-driven e polling obbligatorio del pin BUSY GPIO 21 sulla SX1262.
+              Four modes (BEACON / SEARCH / CONFIG / EMERGENCY) with ~10 µA deep sleep, a 30 s hardware watchdog, IRQ-driven DIO1, and mandatory polling of SX1262 BUSY GPIO 21.
             </p>
             <div class="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-[10px] sm:text-xs font-mono text-slate-600 dark:text-slate-400 space-y-1.5">
-              <div class="text-slate-900 dark:text-white font-bold">// STRUTTURA PAYLOAD MORSE</div>
+              <div class="text-slate-900 dark:text-white font-bold">// MORSE PAYLOAD STRUCTURE</div>
               <div class="break-all leading-relaxed">
                 <span class="text-orange-400">SOS</span>
                 <span class="text-slate-500">  </span>
-                <span class="text-slate-400">[ DE NOME COGNOME ]</span>
+                <span class="text-slate-400">[ DE FIRST LAST ]</span>
                 <span class="text-slate-500">  </span>
                 <span class="text-cyan-400">[ PSN N4553 E01230 ]</span>
               </div>
               <div class="text-[9px] text-slate-500 italic pt-0.5" data-key="fw-fmt-note">
-                Formato coordinate: DDM compatto · N4553 = 45°53′ N · precisione ~185 m.
+                Coordinate format: compact DDM · N4553 = 45°53′ N · approximately 185 m precision.
               </div>
             </div>
             <!-- mini-stats (real firmware values) -->
@@ -504,45 +499,45 @@
               <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold tracking-widest" data-key="fw-live-src">AEGIS-BEACON.ino</span>
             </div>
             <pre class="bg-slate-950 text-slate-300 font-mono text-[10px] sm:text-xs p-3 rounded border border-slate-900 overflow-x-auto mt-2 leading-relaxed"><span class="text-slate-500">// ── Default radio payload ─────────────────</span>
-<span class="text-orange-400">#define DEFAULT_FREQ_MHZ</span>      <span class="text-emerald-300">433.500f</span>   <span class="text-slate-500">// ISM band — slot primario</span>
+<span class="text-orange-400">#define DEFAULT_FREQ_MHZ</span>      <span class="text-emerald-300">433.500f</span>   <span class="text-slate-500">// ISM band — primary slot</span>
 <span class="text-orange-400">#define DEFAULT_MESSAGE</span>       <span class="text-emerald-300">"SOS"</span>      <span class="text-slate-500">// Payload Morse base</span>
 <span class="text-orange-400">#define DEFAULT_WPM</span>           <span class="text-emerald-300">13</span>         <span class="text-slate-500">// PARIS standard</span>
 <span class="text-orange-400">#define DEFAULT_POWER_DBM</span>     <span class="text-emerald-300">17</span>         <span class="text-slate-500">// −9…+22 dBm RadioLib</span>
 <span class="text-slate-500">// ── Sleep + scan ──────────────────────────</span>
-<span class="text-orange-400">#define DEFAULT_SLEEP_SEC</span>     <span class="text-emerald-300">10</span>         <span class="text-slate-500">// Deep-sleep tra TX</span>
-<span class="text-orange-400">#define DEFAULT_SCAN_DWELL_MS</span> <span class="text-emerald-300">400</span>        <span class="text-slate-500">// Ascolto per freq (ms)</span>
-<span class="text-orange-400">#define DEFAULT_RSSI_THRESH</span>   <span class="text-emerald-300">-90</span>        <span class="text-slate-500">// Soglia rilevazione dBm</span>
+<span class="text-orange-400">#define DEFAULT_SLEEP_SEC</span>     <span class="text-emerald-300">10</span>         <span class="text-slate-500">// Deep sleep between TX cycles</span>
+<span class="text-orange-400">#define DEFAULT_SCAN_DWELL_MS</span> <span class="text-emerald-300">400</span>        <span class="text-slate-500">// Listen time per frequency (ms)</span>
+<span class="text-orange-400">#define DEFAULT_RSSI_THRESH</span>   <span class="text-emerald-300">-90</span>        <span class="text-slate-500">// Detection threshold (dBm)</span>
 <span class="text-slate-500">// ── Audio + output ────────────────────────</span>
 <span class="text-orange-400">#define DEFAULT_AUDIO_VOL</span>     <span class="text-emerald-300">180</span>        <span class="text-slate-500">// DAC1 0-255 (≈ 70%)</span>
 <span class="text-orange-400">#define AUDIO_TONE_MORSE</span>      <span class="text-emerald-300">600</span>        <span class="text-slate-500">// Hz — click TX</span>
-<span class="text-orange-400">#define AUDIO_FREQ_HZ</span>         <span class="text-emerald-300">40000</span>      <span class="text-slate-500">// PWM carrier (ultrasuono)</span></pre>
+<span class="text-orange-400">#define AUDIO_FREQ_HZ</span>         <span class="text-emerald-300">40000</span>      <span class="text-slate-500">// PWM carrier (ultrasonic)</span></pre>
           </div>
-          <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono italic" data-key="fw-warn">⚠ Attenzione: la potenza di trasmissione è limitata a +22 dBm da RadioLib (E22-400M30S aggiunge PA fino a +30 dBm). Rispettare le normative radio locali prima di trasmettere.</span>
+          <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono italic" data-key="fw-warn">Warning: RadioLib limits transmit power to +22 dBm (the E22-400M30S PA reaches +30 dBm). Follow local radio regulations before transmitting.</span>
         </div>
       </div>
     </section>
 
     <!-- --------------------------------------- -->
-    <!-- TAB 4: WIKI AGGIORNAMENTO SOFTWARE      -->
+    <!-- TAB 4: SOFTWARE UPDATE WIKI -->
     <!-- --------------------------------------- -->
     <section id="tab-compilazione" class="tab-content space-y-6">
       <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-6">
         <div class="border-b border-slate-100 dark:border-slate-800 pb-3">
-          <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase">[ PROCEDURA SOFTWARE DI COMPILAZIONE ]</span>
-          <h2 class="text-md sm:text-lg font-bold text-slate-900 dark:text-white mt-1" data-key="wiki-up-title">Aggiornamento Firmware e Flash tramite PlatformIO</h2>
+          <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase">[ SOFTWARE BUILD PROCEDURE ]</span>
+          <h2 class="text-md sm:text-lg font-bold text-slate-900 dark:text-white mt-1" data-key="wiki-up-title">Firmware Update and Flashing with PlatformIO</h2>
         </div>
-        
+
         <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="wiki-up-desc">
-          Il firmware di <span class="notranslate">Aegis-Beacon</span> viene compilato in codice macchina ed eseguito direttamente sul chip ESP32. Seguire rigorosamente la sequenza strumentale per caricare le patch software correttive o calibrare le frequenze operative.
+          The <span class="notranslate">Aegis-Beacon</span>  firmware is compiled to machine code and executed directly on the ESP32 chip. Follow the tool sequence to upload corrective software patches or calibrate operating frequencies.
         </p>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
           <!-- STEP 1 -->
           <div class="border border-slate-100 dark:border-slate-800 p-4 rounded bg-slate-50/50 dark:bg-slate-900/40 space-y-2 flex flex-col justify-between">
             <div>
-              <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400">FASE 01 // PREPARAZIONE</span>
+              <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400">STEP 01 // PREPARATION</span>
               <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1" data-key="wiki-up-s1">
-                Scaricare e installare Visual Studio Code integrando il pacchetto PlatformIO IDE. Clonare il repository Git di sviluppo sul terminale locale.
+                Download and install Visual Studio Code with the PlatformIO IDE package. Clone the development Git repository in the local terminal.
               </p>
             </div>
             <pre class="bg-slate-950 text-slate-400 font-mono text-[10px] p-2 rounded border border-slate-900 overflow-x-auto mt-2">
@@ -552,18 +547,18 @@ git clone <span class="notranslate">https://github.com/Leo-Galli/Aegis-Beacon</s
 
           <!-- STEP 2 -->
           <div class="border border-slate-100 dark:border-slate-800 p-4 rounded bg-slate-50/50 dark:bg-slate-900/40 space-y-2">
-            <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400">FASE 02 // COLLEGAMENTO UART</span>
+            <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400">STEP 02 // UART CONNECTION</span>
             <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1" data-key="wiki-up-s2">
-              Collegare il beacon al computer tramite convertitore USB-TTL (CP2102 o FTDI). Collegare RX a TX, TX a RX e GND in comune. Portare il pin GPIO0 a massa all'avvio per abilitare la modalità flash bootloader.
+              Connect the beacon to the computer through a USB-TTL converter (CP2102 or FTDI). Connect RX to TX, TX to RX, and share GND. Pull GPIO0 to ground at startup to enable flash bootloader mode.
             </p>
           </div>
 
           <!-- STEP 3 -->
           <div class="border border-slate-100 dark:border-slate-800 p-4 rounded bg-slate-50/50 dark:bg-slate-900/40 space-y-2 flex flex-col justify-between">
             <div>
-              <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400">FASE 03 // COMPILAZIONE E FLASH</span>
+              <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400">STEP 03 // BUILD AND FLASH</span>
               <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1" data-key="wiki-up-s3">
-                Aprire la cartella di progetto in VS Code, verificare i parametri nel file platformio.ini ed eseguire il comando combinato di build ed upload hardware.
+                Open the project folder in VS Code, verify the parameters in platformio.ini, and run the combined build and hardware upload command.
               </p>
             </div>
             <pre class="bg-slate-950 text-slate-400 font-mono text-[10px] p-2 rounded border border-slate-900 overflow-x-auto mt-2">
@@ -575,22 +570,22 @@ pio run --target upload
     </section>
 
     <!-- --------------------------------------- -->
-    <!-- TAB 5: WIKI MANUALE DI COSTRUZIONE     -->
+    <!-- TAB 5: BUILD MANUAL WIKI     -->
     <!-- --------------------------------------- -->
     <section id="tab-costruzione" class="tab-content space-y-6">
       <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-6">
         <div class="border-b border-slate-100 dark:border-slate-800 pb-3">
-          <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase">[ PROCEDURA STRUTTURALE DI ASSEMBLAGGIO ]</span>
-          <h2 class="text-md sm:text-lg font-bold text-slate-900 dark:text-white mt-1" data-key="wiki-const-title">Manuale di Saldatura e Costruzione Fisica della PCB</h2>
+          <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold uppercase">[ STRUCTURAL ASSEMBLY PROCEDURE ]</span>
+          <h2 class="text-md sm:text-lg font-bold text-slate-900 dark:text-white mt-1" data-key="wiki-const-title">PCB Soldering and Physical Construction Manual</h2>
         </div>
-        
+
         <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="wiki-const-desc">
-          L'assemblaggio dell'unità <span class="notranslate">Aegis-Beacon</span> richiede precisione e competenze basilari nell'ambito della saldatura SMD (Surface Mount Device). Seguire rigorosamente lo schema di montaggio dei componenti per evitare cortocircuiti o danni termici alle sezioni RF sensibili.
+          Assembly of the <span class="notranslate">Aegis-Beacon</span>  unit requires precision and basic SMD (Surface Mount Device) soldering skills. Follow the component assembly plan carefully to avoid shorts or thermal damage to sensitive RF sections.
         </p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-3">
-            <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase font-mono" data-key="wiki-const-h1">Specifiche della Distinta Componenti (BOM)</h3>
+            <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase font-mono" data-key="wiki-const-h1">Bill of Materials (BOM) Specifications</h3>
             <ul class="space-y-2 font-mono text-xs text-slate-600 dark:text-slate-400 list-disc list-inside">
               <li><span class="text-slate-900 dark:text-white font-bold">MCU:</span> ESP32 DevKit V1 30-pin (Espressif, ~$3)</li>
               <li><span class="text-slate-900 dark:text-white font-bold">RF:</span> Ebyte E22-400M30S (SX1262, +30 dBm PA, ~$5.50)</li>
@@ -599,24 +594,24 @@ pio run --target upload
               <li><span class="text-slate-900 dark:text-white font-bold">Audio:</span> DAC1 GPIO25 → 100Ω → 10µF → jack 3.5mm</li>
               <li><span class="text-slate-900 dark:text-white font-bold">Power:</span> TP4056 USB-C + 18650 Li-ion (~$0.50+1.50)</li>
               <li><span class="text-slate-900 dark:text-white font-bold">TCXO:</span> onboard 32 MHz ±1 ppm via E22</li>
-              <li class="pt-1 border-t border-slate-100 dark:border-slate-800"><span class="text-orange-600 dark:text-orange-400 font-bold" data-key="wiki-const-bom-tot">BOM totale stimato: ~$23-28 USD</span></li>
+              <li class="pt-1 border-t border-slate-100 dark:border-slate-800"><span class="text-orange-600 dark:text-orange-400 font-bold" data-key="wiki-const-bom-tot">Estimated total BOM: ~$23-28 USD</span></li>
             </ul>
           </div>
 
           <div class="space-y-3">
-            <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase font-mono" data-key="wiki-const-h2">Guida Operativa Passo-Passo</h3>
+            <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase font-mono" data-key="wiki-const-h2">Step-by-Step Operating Guide</h3>
             <div class="border-l-2 border-orange-600 dark:border-orange-500 pl-4 space-y-4">
               <div>
-                <span class="block text-[11px] font-bold text-slate-900 dark:text-white">1. Saldatura dei Componenti Passivi</span>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5" data-key="wiki-const-p1">Saldare prima i resistori e i condensatori SMD con package 0805 o 0603, preferendo l'uso di pasta saldante ad alta conducibilità e stazione ad aria calda.</p>
+                <span class="block text-[11px] font-bold text-slate-900 dark:text-white">1. Passive Component Soldering</span>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5" data-key="wiki-const-p1">Solder the 0805 or 0603 SMD resistors and capacitors first, preferably using high-conductivity solder paste and a hot-air station.</p>
               </div>
               <div>
                 <span class="block text-[11px] font-bold text-slate-900 dark:text-white">2. Allineamento dei Moduli Integrati</span>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5" data-key="wiki-const-p2">Posizionare accuratamente l'ESP32 e il chip SX1262 sulle rispettive piazzole (footprint). Fissare gli angoli prima di rifluire i contatti.</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5" data-key="wiki-const-p2">Position the ESP32 and SX1262 chip accurately on their respective footprints. Tack the corners before reflowing the contacts.</p>
               </div>
               <div>
                 <span class="block text-[11px] font-bold text-slate-900 dark:text-white">3. Connessione dell'Antenna e Test RF</span>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5" data-key="wiki-const-p3">Saldare il connettore SMA. Attenzione: Non accendere mai l'unità senza aver prima connesso un'antenna idonea o un carico fittizio da 50 Ohm, al fine di evitare la rottura immediata dello stadio finale di potenza.</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5" data-key="wiki-const-p3">Solder the SMA connector. Warning: never power the unit without first connecting a suitable antenna or 50-ohm dummy load, otherwise the power amplifier stage may fail immediately.</p>
               </div>
             </div>
           </div>
@@ -624,15 +619,15 @@ pio run --target upload
       </div>
     </section>
 
-    <!-- TABELLA COMPATIBILITÀ RETE RADIO (TOTALMENTE RESPONSIVE) -->
+    <!-- RADIO NETWORK COMPATIBILITY TABLE (FULLY RESPONSIVE) -->
     <section class="space-y-6">
       <div class="border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1626] rounded-lg overflow-hidden shadow-sm">
         <div class="p-4 bg-slate-50 dark:bg-[#131b2e] border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider" data-key="t-title">Piano Frequenze e Compatibilità Spettrale d'Emergenza</h2>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5" data-key="t-subtitle">Database delle allocazioni radio per il monitoraggio e il soccorso terrestre internazionale.</p>
+            <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider" data-key="t-title">Emergency Frequency and Spectrum Compatibility Plan</h2>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5" data-key="t-subtitle">Radio allocation database for international monitoring and land rescue.</p>
           </div>
-          <span class="self-start md:self-center font-mono text-[9px] bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60 px-2.5 py-1 rounded font-bold whitespace-nowrap" data-key="t-warn">LIMITI HARDWARE COMPRESI: 410–525 MHz</span>
+          <span class="self-start md:self-center font-mono text-[9px] bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60 px-2.5 py-1 rounded font-bold whitespace-nowrap" data-key="t-warn">HARDWARE LIMIT INCLUDED: 410–525 MHz</span>
         </div>
 
         <!-- RESPONSIVE CARD VIEW ON MOBILE / TABLE VIEW ON DESKTOP -->
@@ -641,63 +636,63 @@ pio run --target upload
           <div class="p-4 space-y-2">
             <div class="flex justify-between items-center">
               <span class="font-bold text-slate-900 dark:text-white">446.08125 MHz</span>
-              <span class="text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBILE</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</span>
             </div>
             <div class="grid grid-cols-2 gap-1 text-[11px] text-slate-500">
               <div>Canale: PMR CH 7</div>
-              <div>Ambito: Italia / Rete Montana</div>
+              <div>Scope: Italy / Mountain Network</div>
             </div>
             <p class="text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-900" data-key="n-1">
-              Frequenza di sicurezza escursionistica nazionale. Canale primario di ascolto e test.
+              National hiking safety frequency. Primary monitoring and test channel.
             </p>
           </div>
           <!-- CARD 2 -->
           <div class="p-4 space-y-2">
             <div class="flex justify-between items-center">
               <span class="font-bold text-slate-900 dark:text-white">446.09375 MHz</span>
-              <span class="text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBILE</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</span>
             </div>
             <div class="grid grid-cols-2 gap-1 text-[11px] text-slate-500">
               <div>Canale: PMR CH 8</div>
-              <div>Ambito: Europa Standard</div>
+              <div>Scope: European Standard</div>
             </div>
             <p class="text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-900" data-key="n-2">
-              Canale coordinamento radio generico montano in ambito continentale.
+              General mountain radio coordination channel for continental use.
             </p>
           </div>
           <!-- CARD 3 -->
           <div class="p-4 space-y-2">
             <div class="flex justify-between items-center">
               <span class="font-bold text-slate-400 dark:text-slate-600">161.300 MHz</span>
-              <span class="text-rose-600 dark:text-rose-400 font-bold" data-key="v-no">INCOMPATIBILE</span>
+              <span class="text-rose-600 dark:text-rose-400 font-bold" data-key="v-no">INCOMPATIBLE</span>
             </div>
             <div class="grid grid-cols-2 gap-1 text-[11px] text-slate-500">
               <div>Canal E (REGA)</div>
-              <div>Ambito: VHF</div>
+              <div>Scope: VHF</div>
             </div>
             <p class="text-[11px] text-slate-400 dark:text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-900" data-key="n-3">
-              Banda VHF fuori dal filtro del modulo E22/SX1262 (410–525 MHz).
+              VHF band outside the E22/SX1262 module filter (410–525 MHz).
             </p>
           </div>
           <!-- CARD 4 — GMRS USA -->
           <div class="p-4 space-y-2">
             <div class="flex justify-between items-center">
               <span class="font-bold text-slate-900 dark:text-white">462.675 MHz</span>
-              <span class="text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBILE</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</span>
             </div>
             <div class="grid grid-cols-2 gap-1 text-[11px] text-slate-500">
               <div>GMRS CH 20</div>
               <div>Wilderness Protocol</div>
             </div>
             <p class="text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-900" data-key="n-4">
-              CTCSS 141.3 Hz analogico — CW beacon decodificabile da scanner AM/SDR.
+              Analog 141.3 Hz CTCSS; CW beacon can be decoded by AM scanners or SDRs.
             </p>
           </div>
           <!-- CARD 3b — UHF CB Oceania -->
           <div class="p-4 space-y-2">
             <div class="flex justify-between items-center">
               <span class="font-bold text-slate-900 dark:text-white">477.275 MHz</span>
-              <span class="text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBILE</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</span>
             </div>
             <div class="grid grid-cols-2 gap-1 text-[11px] text-slate-500">
               <div>UHF CB CH 35</div>
@@ -714,10 +709,10 @@ pio run --target upload
           <table class="w-full text-left font-mono text-xs border-collapse">
             <thead>
               <tr class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 text-[11px]">
-                <th class="p-3.5 font-semibold w-1/5">Frequenza</th>
+                <th class="p-3.5 font-semibold w-1/5">Frequency</th>
                 <th class="p-3.5 font-semibold w-1/5" data-key="th-ch">Canale</th>
-                <th class="p-3.5 font-semibold w-1/5" data-key="th-area">Ambito d'Uso</th>
-                <th class="p-3.5 font-semibold text-center w-1/6" data-key="th-state">Stato Hardware</th>
+                <th class="p-3.5 font-semibold w-1/5" data-key="th-area">Usage Scope</th>
+                <th class="p-3.5 font-semibold text-center w-1/6" data-key="th-state">Hardware Status</th>
                 <th class="p-3.5 font-semibold w-3/12" data-key="th-note">Note Operative di Ricezione</th>
               </tr>
             </thead>
@@ -726,35 +721,35 @@ pio run --target upload
                 <td class="p-3.5 font-bold text-slate-900 dark:text-white">446.08125 MHz</td>
                 <td class="p-3.5">PMR CH 7 (Tono 7)</td>
                 <td class="p-3.5">Italia / Rete Montana</td>
-                <td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBILE</td>
-                <td class="p-3.5" data-key="n-1">Frequenza di sicurezza escursionistica nazionale. Canale primario di ascolto e test.</td>
+                <td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</td>
+                <td class="p-3.5" data-key="n-1">National hiking safety frequency. Primary monitoring and test channel.</td>
               </tr>
               <tr class="bg-slate-50/40 dark:bg-slate-900/10">
                 <td class="p-3.5 font-bold text-slate-900 dark:text-white">446.09375 MHz</td>
                 <td class="p-3.5">PMR CH 8</td>
                 <td class="p-3.5">Europa Standard</td>
-                <td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBILE</td>
-                <td class="p-3.5" data-key="n-2">Canale coordinamento radio generico montano in ambito continentale.</td>
+                <td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</td>
+                <td class="p-3.5" data-key="n-2">General mountain radio coordination channel for continental use.</td>
               </tr>
               <tr>
                 <td class="p-3.5 font-bold text-slate-400 dark:text-slate-600">161.300 MHz</td>
                 <td class="p-3.5">Canal E (Emergenza)</td>
                 <td class="p-3.5">Svizzera / REGA</td>
-                <td class="p-3.5 text-center text-rose-600 dark:text-rose-400 font-bold" data-key="v-no">INCOMPATIBILE</td>
-                <td class="p-3.5 text-slate-400 dark:text-slate-500" data-key="n-3">Banda VHF fuori dal filtro del modulo E22 (410–525 MHz).</td>
+                <td class="p-3.5 text-center text-rose-600 dark:text-rose-400 font-bold" data-key="v-no">INCOMPATIBLE</td>
+                <td class="p-3.5 text-slate-400 dark:text-slate-500" data-key="n-3">VHF band outside the E22 module filter (410–525 MHz).</td>
               </tr>
               <tr class="bg-slate-50/40 dark:bg-slate-900/10">
                 <td class="p-3.5 font-bold text-slate-900 dark:text-white">462.675 MHz</td>
                 <td class="p-3.5">GMRS CH 20</td>
                 <td class="p-3.5">USA / Wilderness Protocol</td>
-                <td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBILE</td>
-                <td class="p-3.5" data-key="n-4">CTCSS 141.3 Hz analogico — CW beacon decodificabile da scanner AM/SDR.</td>
+                <td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</td>
+                <td class="p-3.5" data-key="n-4">Analog 141.3 Hz CTCSS; CW beacon can be decoded by AM scanners or SDRs.</td>
               </tr>
               <tr>
                 <td class="p-3.5 font-bold text-slate-900 dark:text-white">477.275 MHz</td>
                 <td class="p-3.5">UHF CB CH 35</td>
                 <td class="p-3.5">Australia / Nuova Zelanda</td>
-                <td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBILE</td>
+                <td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</td>
                 <td class="p-3.5" data-key="n-5">Emergency Repeater Input (duplex con CH 5 / 476.525 MHz). ACMA class licence.</td>
               </tr>
             </tbody>
@@ -767,16 +762,16 @@ pio run --target upload
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 shadow-sm">
       <div class="lg:col-span-5 space-y-2">
         <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider" data-key="sim-tag">// DIAGNOSTICA STRUMENTALE //</span>
-        <h3 class="text-base font-bold text-slate-900 dark:text-white" data-key="sim-title">Verifica del Loop Operativo</h3>
+        <h3 class="text-base font-bold text-slate-900 dark:text-white" data-key="sim-title">Operational Loop Verification</h3>
         <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="sim-desc">
-          Console di test per la simulazione del firmware. Permette di comprendere l'output sequenziale inviato tramite porta seriale (UART) durante la commutazione degli stati logici dell'apparato.
+          Test console for firmware simulation. It shows the sequential output sent through the serial (UART) port while the device changes logical states.
         </p>
       </div>
-      
+
       <!-- SERIAL EMULATOR CORE -->
       <div class="lg:col-span-7 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 sm:p-4 space-y-3 w-full">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between text-[10px] font-mono text-slate-500 gap-2">
-          <span data-key="sim-status">STATO LOGICO CORE</span>
+          <span data-key="sim-status">CORE LOGICAL STATUS</span>
           <span id="state-indicator" class="self-start sm:self-auto text-slate-700 dark:text-slate-300 font-bold px-2 py-0.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded">SYS_STATUS: STANDBY_RX</span>
         </div>
 
@@ -798,10 +793,10 @@ pio run --target upload
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <button id="btn-toggle-sys" class="bg-slate-900 dark:bg-orange-600 text-white hover:bg-slate-800 dark:hover:bg-orange-500 text-xs font-mono py-3 sm:py-2.5 rounded font-medium transition w-full" data-key="sb-btn-tx">
-            Commuta in Emissione (TX)
+            Switch to Transmit (TX)
           </button>
           <button id="btn-trigger-gps" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-mono py-3 sm:py-2.5 rounded font-medium transition w-full" data-key="sb-btn-gps">
-            Inietta Stringa GPS
+            Inject GPS String
           </button>
         </div>
       </div>
@@ -810,43 +805,43 @@ pio run --target upload
     <!-- FOOTER LEGAL FOOTNOTES -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
       <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded p-4 space-y-1">
-        <span class="font-bold text-slate-900 dark:text-white block uppercase text-xs" data-key="f1-t">01 / DISPIEGAMENTO</span>
-        <p class="leading-relaxed" data-key="f1-d">I file di configurazione Gerber del circuito stampato e la distinta componenti (BOM) sono pronti per i processi di produzione e assemblaggio industriale automatizzato SMT.</p>
+        <span class="font-bold text-slate-900 dark:text-white block uppercase text-xs" data-key="f1-t">01 / DEPLOYMENT</span>
+        <p class="leading-relaxed" data-key="f1-d">The PCB Gerber files and bill of materials (BOM) are ready for automated SMT production and assembly processes.</p>
       </div>
       <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded p-4 space-y-1">
-        <span class="font-bold text-slate-900 dark:text-white block uppercase text-xs" data-key="f2-t">02 / LIMITI DI LEGGE</span>
-        <p class="leading-relaxed" data-key="f2-d">L'attivazione abusiva di emissioni continue (CW) al di fuori delle finestre radio pubbliche autorizzate (LPD/PMR) senza stato di reale pericolo costituisce illecito normativo locale.</p>
+        <span class="font-bold text-slate-900 dark:text-white block uppercase text-xs" data-key="f2-t">02 / LEGAL LIMITS</span>
+        <p class="leading-relaxed" data-key="f2-d">Unauthorized continuous-wave (CW) transmissions outside permitted public radio allocations (LPD/PMR), without a genuine emergency, may violate local regulations.</p>
       </div>
       <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded p-4 space-y-1 sm:col-span-2 lg:col-span-1">
-        <span class="font-bold text-slate-900 dark:text-white block uppercase text-xs" data-key="f3-t">03 / LICENZA MIT</span>
-        <p class="leading-relaxed" data-key="f3-d">Il codice sorgente e gli schemi fisici d'architettura hardware sono distribuiti sotto licenza aperta MIT, consentendo modifiche strutturali libere con obbligo di attribuzione.</p>
+        <span class="font-bold text-slate-900 dark:text-white block uppercase text-xs" data-key="f3-t">03 / MIT LICENSE</span>
+        <p class="leading-relaxed" data-key="f3-d">The source code and physical hardware architecture schematics are distributed under the MIT open license, allowing structural modifications with attribution required.</p>
       </div>
     </section>
 
     <footer class="border-t border-slate-200 dark:border-slate-800 pt-4 px-2 text-[10px] font-mono text-slate-400 dark:text-slate-600 space-y-3">
       <p class="text-center"><span class="notranslate">Aegis</span> Open Source Engineering Network — Technical File Reference v5.4 Revision 2026.</p>
       <div class="flex flex-wrap items-center justify-center gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-        <span class="text-[9px] uppercase tracking-widest notranslate">Lingua / Language:</span>
-        <!-- Widget lingua classico (gtranslate flags.js) — 4 lingue supportate, integrato nel footer -->
-        <div class="gtranslate_wrapper inline-flex items-center gap-1" id="gtranslate-footer"></div>
+        <span class="text-[9px] uppercase tracking-widest notranslate">Language:</span>
+        <!-- Language selector -->
+        <div class="inline-flex items-center gap-2"><a class="language-link" href="?lang=en">EN</a><a class="language-link" href="?lang=fr">FR</a><a class="language-link" href="?lang=it">IT</a><a class="language-link" href="?lang=es">ES</a></div>
       </div>
     </footer>
 
   </main>
 
-  <!-- LOGICA DI INTERATTIVITÀ ESTESA (gtranslate gestisce le traduzioni en/it/de/fr) -->
+  <!-- INTERACTION LOGIC -->
   <script>
-    // Stato del simulatore TX/RX (i testi italiani predefiniti sono tradotti automaticamente
-    // dal widget gtranslate — nessun dizionario locale necessario)
+    // TX/RX simulator state.
+
     const SIM_LABELS = {
       rxState: 'SYS_STATUS: STANDBY_RX',
       txState: 'SYS_STATUS: TRANSMITTING_TX',
-      btnRx: 'Commuta in Ascolto (RX)',
-      btnTx: 'Commuta in Emissione (TX)',
+      btnRx: 'Switch to Receive (RX)',
+      btnTx: 'Switch to Transmit (TX)',
       txBody: [
-        '<p class="text-orange-500 font-bold animate-pulse leading-tight">EMISSIONE ATTIVATA — TRASMISSIONE CONTINUA CW</p>',
-        '<p class="text-slate-400 leading-tight">Frequenza portante: 433.500 MHz [UHF — ISM EU]</p>',
-        '<p class="text-slate-500 leading-tight" id="gps-stream-row">GPS Data State: richiesta poll al modulo UART interno...</p>'
+        '<p class="text-orange-500 font-bold animate-pulse leading-tight">TRANSMISSION ENABLED — CONTINUOUS CW TX</p>',
+        '<p class="text-slate-400 leading-tight">Carrier frequency: 433.500 MHz [UHF — EU ISM]</p>',
+        '<p class="text-slate-500 leading-tight" id="gps-stream-row">GPS data state: polling the internal UART module...</p>'
       ].join(''),
       rxBody: [
         '<p id="init-line" class="leading-tight"><span class="text-slate-500">[ 12400][GPS  ]</span> <span class="text-cyan-400">Fix acquired: 45.53124  12.30456 sats=6</span></p>',
@@ -854,17 +849,17 @@ pio run --target upload
         '<p id="volt-line" class="leading-tight"><span class="text-slate-500">[   140][INFO ]</span> <span class="text-slate-300">TX: "SOS DE MARIO ROSSI PSN N4553 E01230" (31 chars) @ 13WPM</span></p>'
       ].join(''),
       gpsUpdate: 'UART NMEA FRAME STABLE // FIX: LAT 45.8921 N — LON 12.1044 E [BURST INJECTED]',
-      gpsAlertIt: '⚠ ERRORE: Abilitare lo stato logico di emissione (TX) per iniettare i pacchetti di telemetria NMEA.',
-      gpsAlertEn: '⚠ HALT: Transmit status (TX) must be engaged to force NMEA data sentence injection.',
-      gpsAlertDe: '⚠ HALT: Übertragungsstatus (TX) muss aktiviert sein, um NMEA-Datensätze einzufügen.',
-      gpsAlertFr: '⚠ ARRÊT: l\'état TX doit être activé pour injecter les phrases NMEA.'
+      gpsAlertIt: 'HALT: Transmit status (TX) must be engaged to force NMEA data sentence injection.',
+      gpsAlertEn: 'HALT: Transmit status (TX) must be engaged to force NMEA data sentence injection.',
+      gpsAlertDe: 'HALT: Transmit status (TX) must be engaged to force NMEA data sentence injection.',
+      gpsAlertFr: 'HALT: Transmit status (TX) must be engaged to force NMEA data sentence injection.'
     };
 
     let currentEngineMode = 'RX';
-    // Nota: tutte le traduzioni UI sono gestite dal widget gtranslate (en/fr/it/es).
-    // La stringa "Aegis-Beacon" è protetta globalmente dalla classe CSS `notranslate`.
+    // The UI is authored in English and does not require runtime translation.
+    // The "Aegis-Beacon" string is protected globally by the `notranslate` CSS class.
 
-    // TAB MANAGER CON SCROLL ORIZZONTALE AUTOMATICO SU MOBILE
+    // Tab manager with automatic horizontal scrolling on mobile.
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
@@ -876,14 +871,13 @@ pio run --target upload
       document.getElementById('tab-' + tabId).classList.add('active');
       const activeBtn = document.getElementById('btn-' + tabId);
       activeBtn.className = "tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-bold rounded border border-orange-600 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 whitespace-nowrap";
-      
-      // Auto-scorrimento al pulsante attivo nei display mobili
+
+      // Scroll the active button into view on mobile displays.
       activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
 
-    // Le traduzioni sono gestite automaticamente dal widget gtranslate (en/it/de/fr)
-    // caricato in <head>: possiamo lasciare le stringhe italiane nel DOM e vengono
-    // tradotte lato client senza bisogno di un dizionario locale.
+    // The interface text is authored in English and requires no translation dependency.
+
 
     // DARK MODE DETECTOR & SWITCHER
     const modeBtn = document.getElementById('theme-toggle');
@@ -945,15 +939,14 @@ pio run --target upload
           row.className = 'text-white font-bold bg-slate-900 dark:bg-slate-800 border border-slate-800 dark:border-slate-700 p-1 text-center rounded mt-1 text-[9px] sm:text-[10px] break-all';
         }
       } else {
-        // gtranslate traduce l'alert automaticamente in base alla lingua selezionata
-        // (IT/EN/DE/FR). Le costanti SIM_LABELS mantengono un fallback bilingue hardcoded.
-        let alertMsg = SIM_LABELS.gpsAlertIt;
+        // The alert uses the English fallback in this static build.
+        let alertMsg = SIM_LABELS.gpsAlertEn;
         try {
-          const uiLang = (document.documentElement.lang || navigator.language || 'it').slice(0, 2).toLowerCase();
+          const uiLang = (document.documentElement.lang || navigator.language || 'en').slice(0, 2).toLowerCase();
           if (uiLang === 'en') alertMsg = SIM_LABELS.gpsAlertEn;
           else if (uiLang === 'de') alertMsg = SIM_LABELS.gpsAlertDe;
           else if (uiLang === 'fr') alertMsg = SIM_LABELS.gpsAlertFr;
-        } catch (_) { /* keep default IT */ }
+        } catch (_) { /* keep the English fallback */ }
         alert(alertMsg);
       }
     });
