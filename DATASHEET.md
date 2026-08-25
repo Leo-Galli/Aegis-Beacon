@@ -36,7 +36,7 @@ The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled
 | Audio output load impedance        | 16     | 600     | Ω    |
 | Battery voltage divider input      | 0      | 4.5     | V    |
 
-> ⚠️ **Never connect SX1262 VCC or OLED VCC to 5 V / VBUS — permanent damage will result.**
+> **Never connect SX1262 VCC or OLED VCC to 5 V / VBUS — permanent damage will result.**
 
 ---
 
@@ -78,7 +78,7 @@ The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled
 | SEARCH    | Continuous     | Off | On   | ~44 hours         |
 | EMERGENCY | Continuous     | On  | On   | ~12 hours         |
 
-> 💡 At −20 °C, expect 40–60% of nominal capacity from standard Li-ion. Use LiFePO4 (rated to −30 °C) for alpine cold-weather deployments. Below −10 °C replace the 100 µF electrolytic bulk cap with a 47 µF X7R ceramic.
+> At −20 °C, expect 40–60% of nominal capacity from standard Li-ion. Use LiFePO4 (rated to −30 °C) for alpine cold-weather deployments. Below −10 °C replace the 100 µF electrolytic bulk cap with a 47 µF X7R ceramic.
 
 ---
 
@@ -98,9 +98,9 @@ The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled
 | Antenna interface            | SMA            | —     | External 433 MHz SMA whip recommended         |
 | RX current draw              | ~5             | mA    | Better than SX1276 (~12 mA)                   |
 
-> ℹ️ The SX1262 does **not** support OOK modulation. Morse keying is implemented by toggling a continuous FSK carrier via `transmitDirect()` (on) and `standby()` (off). The resulting CW signal is indistinguishable from OOK at the receiver.
+> The SX1262 does **not** support OOK modulation. Morse keying is implemented by toggling a continuous FSK carrier via `transmitDirect()` (on) and `standby()` (off). The resulting CW signal is indistinguishable from OOK at the receiver.
 
-> ⚠️ **SX1262 vs SX1276 key differences:** (1) BUSY pin is **mandatory** — must wire to GPIO 21; (2) main IRQ is **DIO1**, not DIO0; (3) RadioLib power cap is +22 dBm (E22 PA adds more externally).
+> **SX1262 vs SX1276 key differences:** (1) BUSY pin is **mandatory** — must wire to GPIO 21; (2) main IRQ is **DIO1**, not DIO0; (3) RadioLib power cap is +22 dBm (E22 PA adds more externally).
 
 ### 4.2 Receiver (SEARCH mode)
 
@@ -231,7 +231,7 @@ The last known GPS fix is stored in RTC RAM (`g_rtcLat`, `g_rtcLng`, `g_rtcFixVa
 | Enable/disable             | NVS toggle  | `oledEnabled`                             |
 | Invert mode                | NVS toggle  | `oledInvert`                              |
 
-> ℹ️ Software SPI is used deliberately so the OLED does not share the VSPI bus with the radio. Both devices can operate simultaneously. The overhead is ~2 ms per full-screen update, imperceptible at 120 ms refresh.
+> Software SPI is used deliberately so the OLED does not share the VSPI bus with the radio. Both devices can operate simultaneously. The overhead is ~2 ms per full-screen update, imperceptible at 120 ms refresh.
 
 ### 7.1 Battery Icon
 
@@ -400,7 +400,7 @@ Volume is adjustable live via SW_UP / SW_DN (step ±10). Persisted to NVS with S
 | 36   | Input     | ADC1_CH0 — battery voltage divider wiper (SVP, input-only)    | No pull needed                      |
 | 39   | Input     | TP4056 STDBY detect (SVN, input-only)                         | Optional; LOW = charging/full       |
 
-> ⚠️ **GPIO 34, 35, 36, 39 have no internal pull-up resistors.** Use external 10 kΩ pull-ups for SW_UP (35) and SW_DN (34). GPIO 36 and 39 are ADC/detect-only inputs requiring no pull-up.
+> **GPIO 34, 35, 36, 39 have no internal pull-up resistors.** Use external 10 kΩ pull-ups for SW_UP (35) and SW_DN (34). GPIO 36 and 39 are ADC/detect-only inputs requiring no pull-up.
 
 ---
 
@@ -487,7 +487,7 @@ The device serves a single-page captive-portal dashboard on `http://192.168.4.1`
 | `/emergency` | POST   | Sets EMERGENCY mode flag and reboots                  |
 | `/factory`   | POST   | NVS wipe + reboot (factory reset)                     |
 
-> ℹ️ v5.4 consolidates the v4.0 `/api/config`, `/api/scan`, `/api/tx`, `/api/hits`, and `/api/hits/clear` endpoints. The scan history is now served embedded in the dashboard page; the `/status` endpoint covers all device state.
+> v5.4 consolidates the v4.0 `/api/config`, `/api/scan`, `/api/tx`, `/api/hits`, and `/api/hits/clear` endpoints. The scan history is now served embedded in the dashboard page; the `/status` endpoint covers all device state.
 
 **Example `/status` GET response fields:** `boot`, `heap`, `tx`, `hits`, `mode`, GPS fix state, satellite count, battery %, WPM, volume.
 
@@ -497,10 +497,10 @@ The device serves a single-page captive-portal dashboard on `http://192.168.4.1`
 
 | Mode           | TX | RX | WiFi | OLED layout              | Audio                    | Deep sleep         |
 |----------------|----|----|------|--------------------------|--------------------------|--------------------|
-| **BEACON**     | ✅  | ❌  | Off  | Freq + TX progress + bat | Morse click stream       | Yes (configurable) |
-| **SEARCH**     | ❌  | ✅  | Off  | RSSI bar + hits + bat    | Variable pitch (440–2200 Hz) | No (continuous) |
-| **CONFIG**     | ❌  | ❌  | AP   | SSID + IP + instructions | Silent                   | No                 |
-| **EMERGENCY**  | ✅  | ❌  | Off  | Full-screen SOS + coords | Continuous 1760 Hz       | No                 |
+| **BEACON**     | Yes | No | Off  | Freq + TX progress + bat | Morse click stream       | Yes (configurable) |
+| **SEARCH**     | No | Yes | Off  | RSSI bar + hits + bat    | Variable pitch (440–2200 Hz) | No (continuous) |
+| **CONFIG**     | No | No | AP   | SSID + IP + instructions | Silent                   | No                 |
+| **EMERGENCY**  | Yes | No | Off  | Full-screen SOS + coords | Continuous 1760 Hz       | No                 |
 
 **EMERGENCY mode specifics:** TX power maximum (+22 dBm RadioLib / +30 dBm E22 PA), message repeated 3× per frequency, full payload always transmitted (name + GPS if enabled), flag persisted in RTC RAM across power cycles. Cleared by entering CONFIG mode and saving.
 
@@ -599,7 +599,7 @@ Connect at **115200 baud, 8N1**.
 | North America | 433 MHz ISM         | Amateur or Part 15 | Check FCC Part 15 or amateur licence           |
 | North America | 915 MHz ISM         | License-free       | Part 15 ISM band                               |
 
-> ⚠️ This device is an experimental emergency tool, **not** a certified distress beacon. In genuine life-threatening emergencies, use certified PLB/EPIRB equipment alongside this device. Always verify local regulations before operation.
+> This device is an experimental emergency tool, **not** a certified distress beacon. In genuine life-threatening emergencies, use certified PLB/EPIRB equipment alongside this device. Always verify local regulations before operation.
 
 ---
 
@@ -659,7 +659,7 @@ Connect at **115200 baud, 8N1**.
 
 ## 23. v4.0 → v5.4 Migration
 
-> ⚠️ **Breaking change — full hardware revision.** Do not run v5.x firmware on the original ESP32-C3 board with RA-02 module without complete rewiring.
+> **Breaking change — full hardware revision.** Do not run v5.x firmware on the original ESP32-C3 board with RA-02 module without complete rewiring.
 
 | Feature              | v4.0                       | v5.4                                                   |
 |----------------------|----------------------------|--------------------------------------------------------|
@@ -679,5 +679,5 @@ Connect at **115200 baud, 8N1**.
 
 ---
 
-*MIT License — Copyright © 2026 Leonardo Galli*
+*MIT License — Copyright (c) 2026 Leonardo Galli*
 *https://github.com/Leo-Galli/Aegis-Beacon*

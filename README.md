@@ -13,7 +13,7 @@
 
 ![Banner](https://github.com/Leo-Galli/Aegis-Beacon/blob/main/banner.PNG?raw=true)
 ### Professional Dual-Mode Avalanche Rescue System
-### SSD1309 2.42" OLED · SX1262 Radio · GPS Payload · Battery Monitor
+### SSD1309 2.42" OLED | SX1262 Radio | GPS Payload | Battery Monitor
 
 [![Version](https://img.shields.io/badge/version-5.4.0-blue?style=for-the-badge&logo=github)](https://github.com/leo-galli/aegis-beacon/releases)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
@@ -46,12 +46,12 @@
 
 <br/>
 
-> **⚡ BEACON mode** — transmits Morse SOS on multiple frequencies via CW carrier. Optionally includes your **name** and **live GPS coordinates** in the Morse payload.<br>
-> **🔍 SEARCH mode** — continuously scans all configured frequencies, measures RSSI, logs signals, and emits pitch-variable audio tones that rise with signal strength.<br>
-> **📺 2.42" OLED** — real-time status on a large SSD1309 128×64 display: mode, frequency, RSSI bar, GPS fix, battery percentage, cycle counter.<br>
-> **🔋 Battery monitor** — live percentage and voltage from a 100kΩ/100kΩ voltage divider on the TP4056 BAT+ rail, shown in every screen header.<br>
-> **🎛️ 4-button control** — MODE, SEL, UP and DOWN buttons for instant mode switching and live volume/WPM adjustment without opening the config portal.<br>
-> **🛰️ GPS payload** — optional NEO-6M module appends your coordinates to every Morse transmission in a compact format readable by any operator.
+> **BEACON mode** — transmits Morse SOS on multiple frequencies via CW carrier. Optionally includes your **name** and **live GPS coordinates** in the Morse payload.<br>
+> **SEARCH mode** — continuously scans all configured frequencies, measures RSSI, logs signals, and emits pitch-variable audio tones that rise with signal strength.<br>
+> **2.42" OLED** — real-time status on a large SSD1309 128×64 display: mode, frequency, RSSI bar, GPS fix, battery percentage, cycle counter.<br>
+> **Battery monitor** — live percentage and voltage from a 100kΩ/100kΩ voltage divider on the TP4056 BAT+ rail, shown in every screen header.<br>
+> **4-button control** — MODE, SEL, UP and DOWN buttons for instant mode switching and live volume/WPM adjustment without opening the config portal.<br>
+> **GPS payload** — optional NEO-6M module appends your coordinates to every Morse transmission in a compact format readable by any operator.
 
 <br/>
 
@@ -108,10 +108,10 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 
 | Mode              | LED        | OLED                                 | Audio               | What it does                                                     |
 |-------------------|------------|--------------------------------------|---------------------|------------------------------------------------------------------|
-| 🔴 **BEACON**     | Red blink  | Freq + TX bar + payload + bat%       | Morse click stream  | Transmits Morse SOS + name + GPS on 1–10 frequencies            |
-| 🔵 **SEARCH**     | Blue blink | Freq + RSSI bar + last hit + bat%    | Variable pitch beep | Scans all frequencies, logs RSSI, audio alert on detection       |
-| ⚙️ **CONFIG**     | Both blink | SSID + IP + steps                    | Silent              | WiFi AP + full captive-portal dashboard                          |
-| ⚡ **EMERGENCY**   | Red fast   | Full-screen inverted "SOS" + coords  | Continuous tone     | Max power, continuous TX with name + GPS, no sleep               |
+| **BEACON**     | Red blink  | Freq + TX bar + payload + bat%       | Morse click stream  | Transmits Morse SOS + name + GPS on 1–10 frequencies            |
+| **SEARCH**     | Blue blink | Freq + RSSI bar + last hit + bat%    | Variable pitch beep | Scans all frequencies, logs RSSI, audio alert on detection       |
+| **CONFIG**     | Both blink | SSID + IP + steps                    | Silent              | WiFi AP + full captive-portal dashboard                          |
+| **EMERGENCY**   | Red fast   | Full-screen inverted "SOS" + coords  | Continuous tone     | Max power, continuous TX with name + GPS, no sleep               |
 
 ---
 
@@ -134,7 +134,7 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 | BUSY pin                 | N/A                          | **GPIO 21 — mandatory on SX1262**                    |
 | Dependencies             | Adafruit SSD1306 + GFX       | **U8g2 + TinyGPS++**                                 |
 
-> ⚠️ **Breaking change from v4.0:** This is a full hardware revision. All GPIO assignments have changed. Do not attempt to run v5.x firmware on the original ESP32-C3 board with RA-02 module without rewiring.
+> **Breaking change from v4.0:** This is a full hardware revision. All GPIO assignments have changed. Do not attempt to run v5.x firmware on the original ESP32-C3 board with RA-02 module without rewiring.
 
 ---
 
@@ -142,106 +142,106 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 
 ### RF & Transmission
 
-- ✅ **SX1262 CW keying** — manual FSK carrier on/off (`transmitDirect()` / `standby()`), audible on any AM-mode scanner or SDR
-- ✅ **Up to +22 dBm** via RadioLib; **+30 dBm** with E22-400M30S onboard PA
-- ✅ **Frequency hopping** — up to 10 configurable frequencies per cycle
-- ✅ **PARIS-standard Morse timing** — dot / dash / gaps all calibrated to WPM
-- ✅ **Configurable WPM** — 5–40 WPM, adjustable live via UP/DN buttons
-- ✅ **Configurable TX power** — −9 to +22 dBm via dashboard
-- ✅ **Configurable repeat count** — 1–10 message repetitions per cycle
-- ✅ **Mid-TX interrupt** — mode button aborts transmission immediately
+- **SX1262 CW keying** — manual FSK carrier on/off (`transmitDirect()` / `standby()`), audible on any AM-mode scanner or SDR
+- **Up to +22 dBm** via RadioLib; **+30 dBm** with E22-400M30S onboard PA
+- **Frequency hopping** — up to 10 configurable frequencies per cycle
+- **PARIS-standard Morse timing** — dot / dash / gaps all calibrated to WPM
+- **Configurable WPM** — 5–40 WPM, adjustable live via UP/DN buttons
+- **Configurable TX power** — −9 to +22 dBm via dashboard
+- **Configurable repeat count** — 1–10 message repetitions per cycle
+- **Mid-TX interrupt** — mode button aborts transmission immediately
 
 ### GPS Payload
 
-- ✅ **NEO-6M GPS module** on UART2 (GPIO 22 RX, GPIO 12 TX)
-- ✅ **Coordinates in Morse** — compact DDM format: `N4553 E01230` = 45.53°N 12.30°E
-- ✅ **Name in Morse** — configurable first + last name appended after `DE`
-- ✅ **Payload formats** (selectable from dashboard):
+- **NEO-6M GPS module** on UART2 (GPIO 22 RX, GPIO 12 TX)
+- **Coordinates in Morse** — compact DDM format: `N4553 E01230` = 45.53°N 12.30°E
+- **Name in Morse** — configurable first + last name appended after `DE`
+- **Payload formats** (selectable from dashboard):
   - `SOS` — base only
   - `SOS DE MARIO ROSSI` — with name
   - `SOS PSN N4553 E01230` — with GPS
   - `SOS DE MARIO ROSSI PSN N4553 E01230` — full
-- ✅ **Stale fix reuse** — last known coordinates stored in RTC RAM and retransmitted after deep sleep
-- ✅ **Fix wait screen** — satellite count, elapsed time, and progress bar at boot
-- ✅ **Skip via MODE button** — press MODE to skip GPS wait if in a hurry
-- ✅ **Fix timeout** — configurable 10–120 s; device transmits without coords if exceeded
+- **Stale fix reuse** — last known coordinates stored in RTC RAM and retransmitted after deep sleep
+- **Fix wait screen** — satellite count, elapsed time, and progress bar at boot
+- **Skip via MODE button** — press MODE to skip GPS wait if in a hurry
+- **Fix timeout** — configurable 10–120 s; device transmits without coords if exceeded
 
 ### Battery Monitor
 
-- ✅ **Piecewise Li-ion curve** — 9-point calibration for realistic % from voltage
-- ✅ **32-sample ADC averaging** — reduces ESP32 ADC noise
-- ✅ **Live in every screen header** — pixel-art battery icon (18×9 px) with 4 fill levels
-- ✅ **Critical blink** — icon blinks at ≤10% battery
-- ✅ **Charging detection** — `CHG` shown when TP4056 STDBY pin (GPIO 39) detects charge
-- ✅ **Calibratable** — `BAT_VREF_MV` constant adjustable to match real hardware
-- ✅ **Exposed in dashboard** — bar chart + mV + % updated every 4 s
-- ✅ **5 s read interval** — no impact on radio or display performance
+- **Piecewise Li-ion curve** — 9-point calibration for realistic % from voltage
+- **32-sample ADC averaging** — reduces ESP32 ADC noise
+- **Live in every screen header** — pixel-art battery icon (18×9 px) with 4 fill levels
+- **Critical blink** — icon blinks at ≤10% battery
+- **Charging detection** — `CHG` shown when TP4056 STDBY pin (GPIO 39) detects charge
+- **Calibratable** — `BAT_VREF_MV` constant adjustable to match real hardware
+- **Exposed in dashboard** — bar chart + mV + % updated every 4 s
+- **5 s read interval** — no impact on radio or display performance
 
 ### Physical Controls (4 buttons)
 
-- ✅ **SW_MODE** (GPIO 33) — short: toggle BEACON/SEARCH | long 2 s: EMERGENCY
-- ✅ **SW_SEL** (GPIO 32) — short: toggle VOL/WPM target | long 3 s: config portal
-- ✅ **SW_UP** (GPIO 35) — increment selected parameter (vol +10, WPM +1)
-- ✅ **SW_DN** (GPIO 34) — decrement selected parameter
-- ✅ **Auto-repeat** — hold UP/DN for fast repeat after 500 ms, every 150 ms
-- ✅ **Adj overlay** — OLED shows live value bar at bottom for 2.5 s after adjustment
-- ✅ **NVS save** — hold SEL 1 s to persist current values
-- ✅ **Factory reset** — hold MODE + SEL at boot for 5 s
+- **SW_MODE** (GPIO 33) — short: toggle BEACON/SEARCH | long 2 s: EMERGENCY
+- **SW_SEL** (GPIO 32) — short: toggle VOL/WPM target | long 3 s: config portal
+- **SW_UP** (GPIO 35) — increment selected parameter (vol +10, WPM +1)
+- **SW_DN** (GPIO 34) — decrement selected parameter
+- **Auto-repeat** — hold UP/DN for fast repeat after 500 ms, every 150 ms
+- **Adj overlay** — OLED shows live value bar at bottom for 2.5 s after adjustment
+- **NVS save** — hold SEL 1 s to persist current values
+- **Factory reset** — hold MODE + SEL at boot for 5 s
 
 ### 2.42" OLED Display
 
-- ✅ **SSD1309 128×64** via software SPI, U8g2 full-frame buffer (no flicker)
-- ✅ **Battery icon** in every header bar — 4 fill levels + charging indicator
-- ✅ **Mode-specific layouts** — distinct UI for all 5 screens
-- ✅ **Large frequency display** — `logisoso24` font, clearly readable outdoors
-- ✅ **GPS fix dot** — solid square = fix OK, outline = searching
-- ✅ **Adj overlay** — bottom 12 px inverted bar shows live VOL or WPM while adjusting
-- ✅ **TX payload scroll** — message scrolls through bottom bar during transmission
-- ✅ **120 ms refresh** — smooth updates without CPU overhead
-- ✅ **Power save** — OLED off command (`setPowerSave(1)`) before deep sleep
-- ✅ **Invert mode** — configurable for bright sunlight readability
+- **SSD1309 128×64** via software SPI, U8g2 full-frame buffer (no flicker)
+- **Battery icon** in every header bar — 4 fill levels + charging indicator
+- **Mode-specific layouts** — distinct UI for all 5 screens
+- **Large frequency display** — `logisoso24` font, clearly readable outdoors
+- **GPS fix dot** — solid square = fix OK, outline = searching
+- **Adj overlay** — bottom 12 px inverted bar shows live VOL or WPM while adjusting
+- **TX payload scroll** — message scrolls through bottom bar during transmission
+- **120 ms refresh** — smooth updates without CPU overhead
+- **Power save** — OLED off command (`setPowerSave(1)`) before deep sleep
+- **Invert mode** — configurable for bright sunlight readability
 
 ### Search / Scan Engine
 
-- ✅ **Per-frequency RSSI measurement** with configurable dwell time
-- ✅ **Configurable detection threshold** (−120 to −40 dBm)
-- ✅ **Rolling hit log** — last 20 detections in RTC RAM (survives deep sleep)
-- ✅ **Signal classification** — STRONG / MEDIUM / WEAK with distinct OLED labels
-- ✅ **Threshold tick** — visual marker on RSSI bar at configured threshold
-- ✅ **LED heartbeat** — slow blink = scanning, fast blink = signal detected
+- **Per-frequency RSSI measurement** with configurable dwell time
+- **Configurable detection threshold** (−120 to −40 dBm)
+- **Rolling hit log** — last 20 detections in RTC RAM (survives deep sleep)
+- **Signal classification** — STRONG / MEDIUM / WEAK with distinct OLED labels
+- **Threshold tick** — visual marker on RSSI bar at configured threshold
+- **LED heartbeat** — slow blink = scanning, fast blink = signal detected
 
 ### Audio Alert System
 
-- ✅ **Native DAC1 on GPIO 25** — cleaner audio than PWM-only ESP32-C3
-- ✅ **Mid-rail parking** — `dacWrite(128)` at silence eliminates click transients
-- ✅ **LEDC PWM** for precise tone frequency control
-- ✅ **Metal-detector style** — pitch rises continuously from 440 Hz to 2200 Hz with signal strength
-- ✅ **Morse click stream** in BEACON mode
-- ✅ **Volume adjustable live** via UP/DN buttons (no reboot needed)
-- ✅ **Volume persisted** to NVS on demand
+- **Native DAC1 on GPIO 25** — cleaner audio than PWM-only ESP32-C3
+- **Mid-rail parking** — `dacWrite(128)` at silence eliminates click transients
+- **LEDC PWM** for precise tone frequency control
+- **Metal-detector style** — pitch rises continuously from 440 Hz to 2200 Hz with signal strength
+- **Morse click stream** in BEACON mode
+- **Volume adjustable live** via UP/DN buttons (no reboot needed)
+- **Volume persisted** to NVS on demand
 
 ### Dashboard & Configuration
 
-- ✅ **WiFi captive portal** — any phone opens automatically
-- ✅ **GPS settings** — enable/disable, include in beacon, fix timeout
-- ✅ **Identity settings** — first name, last name, enable toggle
-- ✅ **Battery panel** — animated bar chart, mV readout, charging indicator
-- ✅ **Live Morse payload preview** — shows full `SOS DE MARIO ROSSI PSN N4553 E01230` as you type
-- ✅ **Frequency manager** — up to 10 frequencies
-- ✅ **Audio controls** — volume slider + master toggle
-- ✅ **OLED controls** — enable + invert toggles
-- ✅ **TX power** — −9 to +22 dBm (SX1262 RadioLib range)
-- ✅ **Scan history** — RSSI bar charts, live refresh
+- **WiFi captive portal** — any phone opens automatically
+- **GPS settings** — enable/disable, include in beacon, fix timeout
+- **Identity settings** — first name, last name, enable toggle
+- **Battery panel** — animated bar chart, mV readout, charging indicator
+- **Live Morse payload preview** — shows full `SOS DE MARIO ROSSI PSN N4553 E01230` as you type
+- **Frequency manager** — up to 10 frequencies
+- **Audio controls** — volume slider + master toggle
+- **OLED controls** — enable + invert toggles
+- **TX power** — −9 to +22 dBm (SX1262 RadioLib range)
+- **Scan history** — RSSI bar charts, live refresh
 
 ### Reliability & Safety
 
-- ✅ **Hardware watchdog** — 30 s WDT
-- ✅ **NVS fail-safe** — hardcoded defaults on empty/corrupt storage
-- ✅ **RTC RAM state** — mode, counters, scan hits, GPS fix survive deep sleep
-- ✅ **Interrupt-driven buttons** — responsive during TX
-- ✅ **SX1262 BUSY polling** — RadioLib handles BUSY pin before every SPI transfer
-- ✅ **ADC range guard** — ignores battery readings outside 2.5–4.5 V (bad connection detection)
-- ✅ **Wi-Fi / BT stack shutdown** — saves ~120 mA during TX/RX cycles
+- **Hardware watchdog** — 30 s WDT
+- **NVS fail-safe** — hardcoded defaults on empty/corrupt storage
+- **RTC RAM state** — mode, counters, scan hits, GPS fix survive deep sleep
+- **Interrupt-driven buttons** — responsive during TX
+- **SX1262 BUSY polling** — RadioLib handles BUSY pin before every SPI transfer
+- **ADC range guard** — ignores battery readings outside 2.5–4.5 V (bad connection detection)
+- **Wi-Fi / BT stack shutdown** — saves ~120 mA during TX/RX cycles
 
 ---
 
@@ -274,7 +274,7 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 
 **Total: ~$23–28 USD**
 
-> 💡 **Cold weather:** Below −10 °C replace C1 electrolytic with a 47 µF X7R ceramic. Use a **LiFePO4** cell instead of Li-ion for alpine deployments — rated to −30 °C with minimal capacity loss.
+> **Cold weather:** Below −10 °C replace C1 electrolytic with a 47 µF X7R ceramic. Use a **LiFePO4** cell instead of Li-ion for alpine deployments — rated to −30 °C with minimal capacity loss.
 
 ---
 
@@ -296,7 +296,7 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 | TXEN             | N/C (−1)   | Pulled internally on E22 module                    |
 | RXEN             | N/C (−1)   | Pulled internally on E22 module                    |
 
-> ⚠️ **BUSY is not optional.** If GPIO 21 is not wired to BUSY, the firmware will hang on the first radio call.
+> **BUSY is not optional.** If GPIO 21 is not wired to BUSY, the firmware will hang on the first radio call.
 
 #### SSD1309 2.42" OLED (7-pin SPI) ↔ ESP32 DevKit V1
 
@@ -310,7 +310,7 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 | DC (A0)     | GPIO 16    | Data / Command select           |
 | CS          | GPIO 17    | Chip Select (active LOW)        |
 
-> ℹ️ Software SPI is used so the OLED does not share the VSPI bus with the radio. Both devices can operate simultaneously.
+> Software SPI is used so the OLED does not share the VSPI bus with the radio. Both devices can operate simultaneously.
 
 #### NEO-6M GPS ↔ ESP32 DevKit V1 (UART2)
 
@@ -407,7 +407,7 @@ Divider output: `VBAT / 2` → 4.2 V full = 2.1 V on GPIO 36 (safely within 3.3 
 | **U8g2** by oliver                 | `≥ 2.34.0` | Arduino Library Manager / PlatformIO     |
 | **TinyGPS++** by Mikal Hart        | `≥ 1.0.3`  | Arduino Library Manager / PlatformIO     |
 
-> ℹ️ U8g2 replaces the Adafruit SSD1306 + GFX libraries used in v4.0. It supports the SSD1309 natively, uses a full-frame buffer for flicker-free rendering, and provides superior font support.
+> U8g2 replaces the Adafruit SSD1306 + GFX libraries used in v4.0. It supports the SSD1309 natively, uses a full-frame buffer for flicker-free rendering, and provides superior font support.
 
 ---
 
@@ -630,9 +630,9 @@ This encoding is intentionally compact to minimise transmission time. Full decim
 | **SW_DN**      | 34   | Hold           | > 500 ms    | Auto-repeat decrement every 150 ms        |
 | **MODE + SEL** | 33+32| Both at boot   | ≥ 5000 ms   | **Factory reset** (NVS wipe + reboot)     |
 
-> 💡 During TX: SW_MODE aborts the active Morse transmission immediately and switches mode. The interrupt fires at hardware level — no polling delay.
+> During TX: SW_MODE aborts the active Morse transmission immediately and switches mode. The interrupt fires at hardware level — no polling delay.
 
-> 💡 **VOL/WPM overlay:** after pressing UP or DN, the OLED shows a live adjustment bar at the bottom of the screen for 2.5 seconds. The target (VOL or WPM) is always shown in the bottom-right corner of the main screen.
+> **VOL/WPM overlay:** after pressing UP or DN, the OLED shows a live adjustment bar at the bottom of the screen for 2.5 seconds. The target (VOL or WPM) is always shown in the bottom-right corner of the main screen.
 
 ---
 
@@ -831,7 +831,7 @@ word gap            = 7 units
 | `SOS PSN N4553 E01230`                             | ~18 s     |
 | `SOS DE MARIO ROSSI PSN N4553 E01230`              | ~45 s     |
 
-> 💡 Use shorter names and higher WPM to reduce cycle time in emergency situations.
+> Use shorter names and higher WPM to reduce cycle time in emergency situations.
 
 **Mid-TX interrupt:** SW_MODE aborts transmission immediately between characters. The interrupt flag is checked after every character — maximum latency is one character duration.
 
@@ -862,7 +862,7 @@ word gap            = 7 units
 | SEARCH    | Continuous     | Off    | On   | ~44 hours    |
 | EMERGENCY | Continuous     | On     | On   | ~12 hours    |
 
-> 💡 At −20 °C with standard Li-ion, expect 40–60% of these figures. For alpine deployments use LiFePO4 (rated to −30 °C).
+> At −20 °C with standard Li-ion, expect 40–60% of these figures. For alpine deployments use LiFePO4 (rated to −30 °C).
 
 ---
 
@@ -951,15 +951,15 @@ The repository includes a GitHub Actions pipeline at `.github/workflows/aegis_su
 ```
 push / PR / tag
       │
-      ├── 🔍 validate          ← YAML syntax, required files, platformio.ini
+      ├── validate          ← YAML syntax, required files, platformio.ini
       │
-      ├── 🔨 build-arduino  ─── matrix: 240 MHz + 80 MHz
-      ├── 🔧 build-pio       ─── esp32dev target
-      └── 🛡️ static-analysis ─── cppcheck + size report
+      ├── build-arduino  ─── matrix: 240 MHz + 80 MHz
+      ├── build-pio       ─── esp32dev target
+      └── static-analysis ─── cppcheck + size report
                 │
-                ├── 📊 size-report  (PR only — posts flash/RAM comment)
-                ├── 🚀 release      (tag v*.*.* only — creates GitHub Release)
-                └── 📋 notify       (always — writes CI summary)
+                ├── size-report  (PR only — posts flash/RAM comment)
+                ├── release      (tag v*.*.* only — creates GitHub Release)
+                └── notify       (always — writes CI summary)
 ```
 
 Trigger a release:
@@ -1001,7 +1001,7 @@ THE SOFTWARE.
 
 <div align="center">
 
-**Built with ❤️ by [@Leo-Galli](https://github.com/Leo-Galli) for mountain safety.**
+**Built by [@Leo-Galli](https://github.com/Leo-Galli) for mountain safety.**
 
 [![GitHub Stars](https://img.shields.io/github/stars/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&label=Stars)](https://github.com/Leo-Galli/Aegis-Beacon)
 [![GitHub Forks](https://img.shields.io/github/forks/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&label=Forks)](https://github.com/Leo-Galli/Aegis-Beacon/fork)
