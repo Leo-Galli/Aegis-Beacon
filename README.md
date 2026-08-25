@@ -97,6 +97,32 @@
 - [FAQ](#faq)
 - [Changelog](#changelog)
 - [License](#license)
+- [Repository Structure](#repository-structure)
+
+---
+
+## Repository Structure
+
+The project is split into two clearly separated areas: the **embedded firmware** (Arduino/PlatformIO, lives in the repository root) and the **Node.js website** (all web assets live in the dedicated `public/` folder and are served by a small Node.js runtime).
+
+```text
+Aegis-Beacon/
+├── public/              # Website files (all site assets live here)
+│   ├── index.html       # Single-page technical manual and build wiki
+│   └── banner.png       # Open Graph / Twitter sharing banner
+├── server.js            # Node.js HTTP server (local dev, npm start)
+├── api/                 # Vercel serverless function
+│   └── index.js         # Re-exports the Node.js request handler
+├── vercel.json          # Vercel build + routing configuration
+├── package.json         # Node.js project metadata and scripts
+├── AegisBeacon.ino      # ESP32 firmware (Arduino source)
+├── README.md            # This document
+├── DATASHEET.md         # Hardware datasheet
+├── FREQUENCIES.md       # SAR frequency reference
+└── LICENSE
+```
+
+**How the site is served:** `server.js` (or `api/index.js` on Vercel) handles every HTTP request and serves the static views from `public/`. The site is therefore a Node.js application — the only HTML file in the repository is the view template, deliberately kept inside the dedicated `public/` folder.
 
 ---
 
