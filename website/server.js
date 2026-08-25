@@ -4,13 +4,14 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_LANG, DICTIONARIES, SUPPORTED_LANGS } from './translations.js';
+import { renderManualPage } from './views/manual.js';
+import { renderDemoPage } from './views/demo.js';
 
 const publicDirectory = fileURLToPath(new URL('./public/', import.meta.url));
 const port = Number(process.env.PORT || 3000);
 const appVersion = createRequire(import.meta.url)('./package.json').version;
 
 const contentTypes = {
-  '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
@@ -22,15 +23,15 @@ const contentTypes = {
 };
 
 /**
- * Node-rendered pages. Each page is read as a template, annotated with the
- * active language (`<html lang>`), and injected with its translation
- * dictionary (`window.AEGIS_I18N`) before being served.
+ * Node-rendered pages. There are NO static .html files in this repository:
+ * every page is assembled at request time by the view modules in /views
+ * (manual.js — the technical wiki; demo.js — the firmware simulator).
  */
-const PAGE_TEMPLATES = {
-  '/': 'index.html',
-  '/index.html': 'index.html',
-  '/demo.html': 'demo.html',
-  '/demo': 'demo.html'
+const PAGE_RENDERERS = {
+  '/': renderManualPage,
+  '/index.html': renderManualPage,
+  '/demo.html': renderDemoPage,
+  '/demo': renderDemoPage
 };
 
 function detectLanguage(request, requestUrl) {
@@ -45,15 +46,6 @@ function detectLanguage(request, requestUrl) {
   if (SUPPORTED_LANGS.includes(preferred)) return preferred;
 
   return DEFAULT_LANG;
-}
-
-async function renderPage(pageName, lang) {
-  const template = await readFile(join(publicDirectory, pageName), 'utf8');
-  const dictionary = DICTIONARIES[lang] || DICTIONARIES[DEFAULT_LANG];
-  const dictJson = JSON.stringify(dictionary).replace(/</g, '\\u003c');
-  return template
-    .replace(/<html lang="[a-z]{2}"/, `<html lang="${lang}"`)
-    .replace(/<!--\s*AEGIS-I18N\s*-->/, `<script>window.AEGIS_I18N = ${dictJson};</script>`);
 }
 
 export async function handleRequest(request, response) {
@@ -83,11 +75,12 @@ export async function handleRequest(request, response) {
     return;
   }
 
-  // Node-rendered page routes (language-aware templates).
-  if (PAGE_TEMPLATES[pathname]) {
+  // Node-rendered page routes (language-aware, no static HTML involved).
+  const renderer = PAGE_RENDERERS[pathname];
+  if (renderer) {
     const lang = detectLanguage(request, requestUrl);
     try {
-      const html = await renderPage(PAGE_TEMPLATES[pathname], lang);
+      const html = renderer(lang, DICTIONARIES[lang] || DICTIONARIES[DEFAULT_LANG]);
       response.writeHead(200, {
         'cache-control': 'no-cache',
         'content-type': 'text/html; charset=utf-8'
@@ -100,7 +93,7 @@ export async function handleRequest(request, response) {
     return;
   }
 
-  // Static assets (banner.png, favicon, ...) with path-traversal protection.
+  // Static assets (banner.png, favicon, /js/*, /css/*) with path-traversal protection.
   const requestedPath = pathname;
   const filePath = normalize(join(publicDirectory, `.${requestedPath}`));
   const rootPrefix = publicDirectory.endsWith(sep) ? publicDirectory : `${publicDirectory}${sep}`;
@@ -113,7 +106,7 @@ export async function handleRequest(request, response) {
   try {
     const file = await readFile(filePath);
     response.writeHead(200, {
-      'cache-control': extname(filePath) === '.html' ? 'no-cache' : 'public, max-age=3600',
+      'cache-control': 'public, max-age=3600',
       'content-type': contentTypes[extname(filePath)] || 'application/octet-stream'
     });
     response.end(file);

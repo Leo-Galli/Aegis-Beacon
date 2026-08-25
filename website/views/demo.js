@@ -1,72 +1,107 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+/**
+ * Aegis-Beacon — firmware demo page, rendered entirely by Node.
+ *
+ * The complete interactive demo (SSD1309 OLED, virtual keypad, Morse engine,
+ * frequency planner, GPS payload builder, RSSI scan, battery monitor and
+ * serial console) is generated here. Interactive element ids consumed by
+ * /js/demo.js (`oled-body`, `key-mode`, `bat-slider`, `morse-input`,
+ * `serial`, ...) are preserved verbatim.
+ */
 
-<title>Aegis-Beacon v5.4 — Live Firmware Demo</title>
-<meta name="description" content="Interactive demonstration of the Aegis-Beacon v5.4 firmware: BEACON / SEARCH / CONFIG / EMERGENCY modes, Morse engine, frequency planner, GPS payload builder, battery monitor, RSSI scan and serial console.">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://aegis-beacon.vercel.app/demo.html">
+import { renderPage, SITE_URL } from './layout.js';
 
-<meta property="og:locale" content="en_US">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Aegis-Beacon v5.4 — Live Firmware Demo">
-<meta property="og:description" content="Interactive simulation of the Aegis-Beacon emergency beacon firmware: all four operating modes, Morse engine, GPS payload, battery monitor and more.">
-<meta property="og:url" content="https://aegis-beacon.vercel.app/demo.html">
-<meta property="og:image" content="https://aegis-beacon.vercel.app/banner.png">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Aegis-Beacon v5.4 — Live Firmware Demo">
-<meta name="twitter:description" content="Interactive simulation of the Aegis-Beacon emergency beacon firmware.">
-<meta name="twitter:image" content="https://aegis-beacon.vercel.app/banner.png">
+/* ── Data: hero badges ─────────────────────────────────────────────── */
+const DEMO_BADGES = [
+  { className: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-900', dot: true, text: '4 Modes' },
+  { className: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700', text: 'Morse 5-40 WPM' },
+  { className: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900', text: 'SOS + Name + GPS' },
+  { className: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700', text: '10 Frequencies' },
+  { className: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700', text: 'SSD1309 OLED' }
+];
 
-<meta name="theme-color" content="#ea580c">
-<meta name="author" content="Leonardo Galli">
+/* ── Data: status rows ─────────────────────────────────────────────── */
+const STATUS_ROWS = [
+  { label: 'Mode', id: 'st-mode', value: 'BEACON', accent: 'text-orange-600 dark:text-orange-400' },
+  { label: 'Frequency', id: 'st-freq', value: '433.500 MHz' },
+  { label: 'Adjust target', id: 'st-adj', value: 'VOL' },
+  { label: 'Volume', id: 'st-vol', value: '180 / 255' },
+  { label: 'WPM', id: 'st-wpm', value: '13' },
+  { label: 'RSSI (SEARCH)', id: 'st-rssi', value: '-112 dBm' },
+  { label: 'Battery', id: 'st-bat', value: '87% · 4100 mV', accent: 'text-emerald-600 dark:text-emerald-400' },
+  { label: 'TX power', id: 'st-pwr', value: '+17 dBm', last: true }
+];
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="/js/tailwind.config.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css">
-<!-- AEGIS-I18N -->
-</head>
-<body class="bg-slate-50 text-slate-800 dark:bg-[#090d16] dark:text-slate-200 font-sans antialiased">
+/* ── Data: operating mode cards ────────────────────────────────────── */
+const MODE_CARDS = [
+  { mode: 'beacon', tag: 'MODE 01', tagClass: 'text-orange-600 dark:text-orange-400', hover: 'hover:border-orange-500/60', title: 'BEACON', desc: 'Morse SOS + name + GPS on every configured frequency, then deep sleep.' },
+  { mode: 'search', tag: 'MODE 02', tagClass: 'text-emerald-600 dark:text-emerald-400', hover: 'hover:border-emerald-500/60', title: 'SEARCH', desc: 'Scans all frequencies, measures RSSI, rising-pitch audio alert.' },
+  { mode: 'config', tag: 'MODE 03', tagClass: 'text-sky-600 dark:text-sky-400', hover: 'hover:border-sky-500/60', title: 'CONFIG', desc: 'WiFi captive-portal dashboard at 192.168.4.1 for field configuration.' },
+  { mode: 'emergency', tag: 'MODE 04', tagClass: 'text-rose-600 dark:text-rose-400', hover: 'hover:border-rose-500/60', title: 'EMERGENCY', desc: 'Max power, continuous TX with full payload, no deep sleep, 1760 Hz tone.' }
+];
 
-  <!-- TOP BAR -->
-  <header class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0d1322] sticky top-0 z-50 px-4 sm:px-6">
-    <div class="max-w-7xl mx-auto h-16 flex items-center justify-between gap-4">
-      <a href="/" class="flex items-center gap-2.5 min-w-0 group">
-        <div class="w-2.5 h-2.5 bg-orange-600 rounded-full shrink-0 group-hover:scale-125 transition-transform"></div>
-        <div class="flex flex-col min-w-0">
-          <span class="font-mono font-bold text-xs tracking-wider text-slate-900 dark:text-white uppercase truncate notranslate" translate="no">Aegis-Beacon</span>
-          <span class="font-mono text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-widest -mt-0.5 truncate">Live Firmware Demo v5.4</span>
-        </div>
-      </a>
-      <div class="flex items-center gap-2 shrink-0">
-        <a href="/" class="text-[11px] font-mono border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded hover:border-orange-500 dark:hover:border-orange-400 hover:text-orange-600 dark:hover:text-orange-400 transition">Manual</a>
-        <button id="theme-toggle" class="theme-switch" role="switch" aria-checked="false" aria-label="Toggle color scheme" title="Toggle color scheme">
-          <span class="theme-switch-knob">
-            <svg class="theme-switch-sun" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 2a1 1 0 01.664.253l.707.707a1 1 0 01-1.414 1.414l-.707-.707A1 1 0 0114 4zM4 11a1 1 0 100-2H3a1 1 0 100 2h1zm11.364-1.364a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707zM16 11a1 1 0 100-2h-1a1 1 0 100 2h1zM4.636 15.364a1 1 0 011.414-1.414l.707.707a1 1 0 01-1.414 1.414l-.707-.707zM10 14a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM6.253 14.243a1 1 0 01.253.664v.707a1 1 0 11-2 0v-.707a1 1 0 011.747-.664z" /></svg>
-            <svg class="theme-switch-moon" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
-          </span>
-        </button>
-        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="text-[11px] font-mono bg-slate-900 dark:bg-orange-600 text-white px-2.5 py-1.5 rounded hover:bg-slate-800 dark:hover:bg-orange-500 transition">Repo ↗</a>
-      </div>
-    </div>
-  </header>
+/* ── Data: battery curve rows ──────────────────────────────────────── */
+const BATTERY_CURVE = [
+  ['4.20 V → 100%', '3.65 V → 50%'],
+  ['4.05 V → 90%', '3.55 V → 35%'],
+  ['3.90 V → 75%', '3.40 V → 20%'],
+  ['3.75 V → 60%', '3.20 V → 10% · 3.00 V → 0%']
+];
 
-  <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
+/* ── Data: serial console actions ──────────────────────────────────── */
+const SERIAL_ACTIONS = [
+  { sim: 'boot', label: 'BOOT' },
+  { sim: 'tx', label: 'TX SOS' },
+  { sim: 'scan', label: 'SCAN HIT' },
+  { sim: 'gps', label: 'GPS FIX' },
+  { sim: 'sleep', label: 'DEEP SLEEP' },
+  { sim: 'clear', label: 'CLEAR', danger: true }
+];
 
+function renderDemoBadges() {
+  return DEMO_BADGES.map((b) => {
+    const dot = b.dot ? '<span class="w-1.5 h-1.5 bg-orange-600 rounded-full animate-pulse"></span>' : '';
+    return `<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md ${b.className} text-[10px] font-mono font-medium border">${dot}${b.text}</span>`;
+  }).join('\n');
+}
+
+function renderStatusRows() {
+  return STATUS_ROWS.map((r) => `
+          <div class="flex justify-between${r.last ? '' : ' border-b border-slate-100 dark:border-slate-800 pb-2'}"><dt class="text-slate-500 dark:text-slate-400">${r.label}</dt><dd id="${r.id}" class="${r.accent || 'text-slate-900 dark:text-white'} font-bold">${r.value}</dd></div>`).join('');
+}
+
+function renderModeCards() {
+  return MODE_CARDS.map((m) => `
+        <button data-set-mode="${m.mode}" class="mode-card text-left bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-1.5 ${m.hover} hover:shadow-md transition-all">
+          <span class="font-mono text-[9px] ${m.tagClass} font-bold">${m.tag}</span>
+          <span class="block text-xs font-bold text-slate-900 dark:text-white font-mono">${m.title}</span>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">${m.desc}</p>
+        </button>`).join('');
+}
+
+function renderBatteryCurve() {
+  return BATTERY_CURVE.map(([left, right]) =>
+    `<tr><td class="py-1">${left}</td><td class="py-1 text-right">${right}</td></tr>`
+  ).join('\n            ');
+}
+
+function renderSerialActions() {
+  return SERIAL_ACTIONS.map((a) => {
+    const cls = a.danger
+      ? 'bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/40 transition'
+      : 'bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition';
+    return `<button data-sim="${a.sim}" class="${cls}">${a.label}</button>`;
+  }).join('\n          ');
+}
+
+/** Render the full demo page for the requested language. */
+export function renderDemoPage(lang, dict) {
+  const content = `
     <!-- HERO -->
     <section class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-3">
       <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 tracking-wider">// INTERACTIVE FIRMWARE SIMULATION</span>
       <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Aegis-Beacon v5.4 — Complete Live Demo</h1>
       <div class="flex flex-wrap gap-1.5">
-        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 text-[10px] font-mono font-bold border border-orange-200 dark:border-orange-900"><span class="w-1.5 h-1.5 bg-orange-600 rounded-full animate-pulse"></span>4 Modes</span>
-        <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700">Morse 5-40 WPM</span>
-        <span class="inline-flex items-center px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono font-medium border border-emerald-200 dark:border-emerald-900">SOS + Name + GPS</span>
-        <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700">10 Frequencies</span>
-        <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700">SSD1309 OLED</span>
+${renderDemoBadges()}
       </div>
       <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed max-w-4xl">
         This page simulates the complete <span class="notranslate" translate="no">Aegis-Beacon</span> firmware (<code class="text-orange-600 dark:text-orange-400">AegisBeacon.ino</code>) in the browser. Use the virtual buttons to switch modes, adjust WPM and volume, and watch the OLED, LEDs and serial console react exactly like the real ESP32 device.
@@ -75,7 +110,6 @@
 
     <!-- DEVICE SIMULATOR -->
     <section id="simulator" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- OLED + LEDs -->
       <div class="lg:col-span-7 space-y-4">
         <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-4">
           <div class="flex items-center justify-between">
@@ -95,7 +129,6 @@
             <div id="oled-body" class="mt-3 space-y-1.5"></div>
           </div>
 
-          <!-- Virtual buttons -->
           <div class="grid grid-cols-4 gap-2 pt-1">
             <button id="key-mode" class="key-btn bg-slate-900 dark:bg-slate-800 text-white border border-slate-700 rounded-lg py-3 font-mono text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-700 transition">MODE</button>
             <button id="key-sel" class="key-btn bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-lg py-3 font-mono text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition">SEL</button>
@@ -106,18 +139,10 @@
         </div>
       </div>
 
-      <!-- Status panel -->
       <div class="lg:col-span-5 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-4">
         <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">Device Status</h2>
         <dl class="font-mono text-xs space-y-2.5">
-          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">Mode</dt><dd id="st-mode" class="text-orange-600 dark:text-orange-400 font-bold">BEACON</dd></div>
-          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">Frequency</dt><dd id="st-freq" class="text-slate-900 dark:text-white font-bold">433.500 MHz</dd></div>
-          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">Adjust target</dt><dd id="st-adj" class="text-slate-900 dark:text-white font-bold">VOL</dd></div>
-          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">Volume</dt><dd id="st-vol" class="text-slate-900 dark:text-white font-bold">180 / 255</dd></div>
-          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">WPM</dt><dd id="st-wpm" class="text-slate-900 dark:text-white font-bold">13</dd></div>
-          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">RSSI (SEARCH)</dt><dd id="st-rssi" class="text-slate-900 dark:text-white font-bold">-112 dBm</dd></div>
-          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">Battery</dt><dd id="st-bat" class="text-emerald-600 dark:text-emerald-400 font-bold">87% · 4100 mV</dd></div>
-          <div class="flex justify-between"><dt class="text-slate-500 dark:text-slate-400">TX power</dt><dd id="st-pwr" class="text-slate-900 dark:text-white font-bold">+17 dBm</dd></div>
+${renderStatusRows()}
         </dl>
         <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
           <div class="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400"><span>Battery level</span><span id="bat-slider-val">87%</span></div>
@@ -130,26 +155,7 @@
     <section class="space-y-3">
       <h2 class="text-xs font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Operating Modes</h2>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <button data-set-mode="beacon" class="mode-card text-left bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-1.5 hover:border-orange-500/60 hover:shadow-md transition-all">
-          <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold">MODE 01</span>
-          <span class="block text-xs font-bold text-slate-900 dark:text-white font-mono">BEACON</span>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">Morse SOS + name + GPS on every configured frequency, then deep sleep.</p>
-        </button>
-        <button data-set-mode="search" class="mode-card text-left bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-1.5 hover:border-emerald-500/60 hover:shadow-md transition-all">
-          <span class="font-mono text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">MODE 02</span>
-          <span class="block text-xs font-bold text-slate-900 dark:text-white font-mono">SEARCH</span>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">Scans all frequencies, measures RSSI, rising-pitch audio alert.</p>
-        </button>
-        <button data-set-mode="config" class="mode-card text-left bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-1.5 hover:border-sky-500/60 hover:shadow-md transition-all">
-          <span class="font-mono text-[9px] text-sky-600 dark:text-sky-400 font-bold">MODE 03</span>
-          <span class="block text-xs font-bold text-slate-900 dark:text-white font-mono">CONFIG</span>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">WiFi captive-portal dashboard at 192.168.4.1 for field configuration.</p>
-        </button>
-        <button data-set-mode="emergency" class="mode-card text-left bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-1.5 hover:border-rose-500/60 hover:shadow-md transition-all">
-          <span class="font-mono text-[9px] text-rose-600 dark:text-rose-400 font-bold">MODE 04</span>
-          <span class="block text-xs font-bold text-slate-900 dark:text-white font-mono">EMERGENCY</span>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">Max power, continuous TX with full payload, no deep sleep, 1760 Hz tone.</p>
-        </button>
+${renderModeCards()}
       </div>
     </section>
 
@@ -244,10 +250,7 @@
         </div>
         <table class="w-full font-mono text-[10px] text-slate-500 dark:text-slate-400">
           <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-            <tr><td class="py-1">4.20 V → 100%</td><td class="py-1 text-right">3.65 V → 50%</td></tr>
-            <tr><td class="py-1">4.05 V → 90%</td><td class="py-1 text-right">3.55 V → 35%</td></tr>
-            <tr><td class="py-1">3.90 V → 75%</td><td class="py-1 text-right">3.40 V → 20%</td></tr>
-            <tr><td class="py-1">3.75 V → 60%</td><td class="py-1 text-right">3.20 V → 10% · 3.00 V → 0%</td></tr>
+${renderBatteryCurve()}
           </tbody>
         </table>
         <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">32-sample ADC averaging · critical blink ≤10% · CHG when TP4056 STDBY low.</p>
@@ -259,24 +262,26 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">Serial Debug Console <span class="text-slate-400 dark:text-slate-500 font-medium">115200 baud</span></h2>
         <div class="flex flex-wrap gap-2">
-          <button data-sim="boot" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition">BOOT</button>
-          <button data-sim="tx" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition">TX SOS</button>
-          <button data-sim="scan" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition">SCAN HIT</button>
-          <button data-sim="gps" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition">GPS FIX</button>
-          <button data-sim="sleep" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition">DEEP SLEEP</button>
-          <button data-sim="clear" class="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/40 transition">CLEAR</button>
+${renderSerialActions()}
         </div>
       </div>
       <pre id="serial" class="bg-slate-950 text-slate-300 font-mono text-[10px] sm:text-[11px] rounded p-3 h-56 overflow-y-auto leading-relaxed"></pre>
-    </section>
+    </section>`;
 
-    <!-- FOOTER -->
-    <footer class="border-t border-slate-200 dark:border-slate-800 pt-4 px-2 text-[10px] font-mono text-slate-400 dark:text-slate-600 space-y-2">
-      <p class="text-center"><span class="notranslate" translate="no">Aegis</span> Open Source Engineering Network — Firmware Demo v5.4 · Simulation of <code class="text-slate-500 dark:text-slate-500">AegisBeacon.ino</code> for educational use.</p>
-      <p class="text-center">This is a browser simulation, not a real radio. Always verify local regulations before transmitting.</p>
-    </footer>
-  </main>
-
-  <script type="module" src="/js/demo.js"></script>
-</body>
-</html>
+  return renderPage({
+    lang,
+    dict,
+    title: 'Aegis-Beacon v5.4 — Live Firmware Demo',
+    description: 'Interactive demonstration of the Aegis-Beacon v5.4 firmware: BEACON / SEARCH / CONFIG / EMERGENCY modes, Morse engine, frequency planner, GPS payload builder, battery monitor, RSSI scan and serial console.',
+    canonical: `${SITE_URL}/demo.html`,
+    header: { logoHref: '/', action: 'Manual', actionHref: '/', subtitle: 'Live Firmware Demo v5.4' },
+    tabs: false,
+    content,
+    footer: {
+      tagline: '<span class="notranslate" translate="no">Aegis</span> Open Source Engineering Network — Firmware Demo v5.4 · Simulation of <code class="text-slate-500 dark:text-slate-500">AegisBeacon.ino</code> for educational use.',
+      legalNote: 'This is a browser simulation, not a real radio. Always verify local regulations before transmitting.',
+      languageSelector: false
+    },
+    scriptSrc: '/js/demo.js'
+  });
+}
