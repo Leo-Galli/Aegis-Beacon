@@ -1,0 +1,179 @@
+/* ════════════════════════════════════════════════════════════════
+   Aegis-Beacon — shared site styles
+   Redesigned animated theme toggle + global polish.
+   Light theme is the default; `.dark` on <html> switches to dark.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Base transitions & scrollbars ─────────────────────────────── */
+*, ::before, ::after {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.1s ease;
+}
+
+::selection {
+  background: rgba(249, 115, 22, 0.3);
+}
+
+:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.dark ::-webkit-scrollbar-track { background: transparent; }
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Hide the navigation scrollbar while preserving scrolling */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Tab system (index page) ───────────────────────────────────── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── Footer language selector ──────────────────────────────────── */
+.language-link {
+  transition: color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0.85;
+}
+.language-link:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+  color: #f97316;
+}
+.dark .language-link:hover {
+  color: #fb923c;
+}
+.language-link-active {
+  opacity: 1;
+  color: #ea580c;
+  font-weight: 700;
+}
+.dark .language-link-active {
+  color: #fb923c;
+}
+
+/* Keep protected product names stable under auto-translation. */
+.notranslate { }
+
+/* ── Animated theme switch ─────────────────────────────────────── */
+.theme-switch {
+  --switch-w: 56px;
+  --switch-h: 28px;
+  --switch-knob: 22px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: var(--switch-w);
+  height: var(--switch-h);
+  padding: 3px;
+  border-radius: 9999px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: linear-gradient(135deg, #fde68a, #fb923c);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.theme-switch:hover {
+  border-color: rgba(234, 88, 12, 0.6);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(234, 88, 12, 0.25);
+}
+.theme-switch:active .theme-switch-knob {
+  width: calc(var(--switch-knob) + 4px);
+}
+.dark .theme-switch {
+  border-color: rgba(100, 116, 139, 0.55);
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+}
+.dark .theme-switch:hover {
+  border-color: rgba(148, 163, 184, 0.75);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5), 0 2px 10px rgba(56, 189, 248, 0.18);
+}
+
+.theme-switch-knob {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--switch-knob);
+  height: var(--switch-knob);
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s ease, background 0.3s ease;
+}
+.dark .theme-switch-knob {
+  transform: translateX(calc(var(--switch-w) - var(--switch-knob) - 8px));
+  background: #1e293b;
+}
+.theme-switch-knob svg {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  transition: opacity 0.25s ease, transform 0.3s ease;
+}
+.theme-switch-sun {
+  color: #f59e0b;
+  transform: rotate(0deg) scale(1);
+}
+.theme-switch-moon {
+  color: #93c5fd;
+  transform: rotate(90deg) scale(0.4);
+  opacity: 0;
+}
+.dark .theme-switch-sun {
+  transform: rotate(-90deg) scale(0.4);
+  opacity: 0;
+}
+.dark .theme-switch-moon {
+  transform: rotate(0deg) scale(1);
+  opacity: 1;
+}
+
+/* ── Virtual SSD1309 128x64 OLED screen (demo page) ────────────── */
+.oled-screen {
+  background: #030712;
+  border: 1px solid #1e293b;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.8), 0 0 0 6px #0f172a, 0 0 0 7px #1e293b, 0 12px 32px rgba(0, 0, 0, 0.35);
+  font-family: 'JetBrains Mono', monospace;
+  position: relative;
+  overflow: hidden;
+}
+.oled-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 3px);
+  pointer-events: none;
+}
+.oled-invert {
+  background: #0ea5e9;
+  color: #030712;
+}
+.oled-blink { animation: oledBlink 1s steps(2, start) infinite; }
+@keyframes oledBlink { 50% { opacity: 0; } }
+
+/* ── Virtual keypad buttons (demo page) ────────────────────────── */
+.key-btn {
+  user-select: none;
+  touch-action: manipulation;
+}
+.key-btn:active {
+  transform: translateY(2px);
+}

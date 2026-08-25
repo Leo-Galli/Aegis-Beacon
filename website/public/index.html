@@ -215,69 +215,14 @@
 </script>
 
 
-<!-- Tailwind CSS -->
+<!-- Tailwind CSS (CDN) -->
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="/js/tailwind.config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
-<script>
-  tailwind.config = {
-    darkMode: 'class',
-    theme: {
-      extend: {
-        fontFamily: {
-          sans: ['Inter', 'sans-serif'],
-          mono: ['JetBrains Mono', 'monospace'],
-        }
-      }
-    }
-  }
-</script>
+<link rel="stylesheet" href="/css/site.css">
 
 <!-- "Aegis-Beacon" is protected by the .notranslate CSS class. -->
-
-<style>
-  *, ::before, ::after {
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.1s ease;
-  }
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  .dark ::-webkit-scrollbar-track { background: #0f172a; }
-  ::-webkit-scrollbar-track { background: #f1f5f9; }
-  .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
-  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
-
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-
-  /* Nasconde la scrollbar di navigazione ma preserva lo scorrimento */
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-  /* Footer language controls */
-
-  .language-link {
-    transition: color .2s ease, transform .2s ease, opacity .2s ease;
-    opacity: .85;
-  }
-  .language-link:hover {
-    opacity: 1;
-    transform: translateY(-1px);
-    color: #f97316;
-  }
-  .dark .language-link:hover {
-    color: #fb923c;
-  }
-  /* Keep protected product names stable. */
-  .notranslate { }
-  .language-link-active {
-    opacity: 1;
-    color: #ea580c;
-    font-weight: 700;
-  }
-  .dark .language-link-active {
-    color: #fb923c;
-  }
-</style>
 
 <!-- AEGIS-I18N -->
 </head>
@@ -298,9 +243,11 @@
 
       <!-- QUICK INTERFACE CONTROLS -->
       <div class="flex items-center gap-2 shrink-0">
-        <button id="theme-toggle" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-1.5 rounded text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400" title="Toggle color scheme">
-          <svg id="theme-sun" class="w-3.5 h-3.5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 2a1 1 0 01.664.253l.707.707a1 1 0 01-1.414 1.414l-.707-.707A1 1 0 0114 4zM4 11a1 1 0 100-2H3a1 1 0 100 2h1zm11.364-1.364a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707zM16 11a1 1 0 100-2h-1a1 1 0 100 2h1zM4.636 15.364a1 1 0 011.414-1.414l.707.707a1 1 0 01-1.414 1.414l-.707-.707zM10 14a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM6.253 14.243a1 1 0 01.253.664v.707a1 1 0 11-2 0v-.707a1 1 0 011.747-.664z" /></svg>
-          <svg id="theme-moon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+        <button id="theme-toggle" class="theme-switch" role="switch" aria-checked="false" aria-label="Toggle color scheme" title="Toggle color scheme">
+          <span class="theme-switch-knob">
+            <svg class="theme-switch-sun" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 2a1 1 0 01.664.253l.707.707a1 1 0 01-1.414 1.414l-.707-.707A1 1 0 0114 4zM4 11a1 1 0 100-2H3a1 1 0 100 2h1zm11.364-1.364a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707zM16 11a1 1 0 100-2h-1a1 1 0 100 2h1zM4.636 15.364a1 1 0 011.414-1.414l.707.707a1 1 0 01-1.414 1.414l-.707-.707zM10 14a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM6.253 14.243a1 1 0 01.253.664v.707a1 1 0 11-2 0v-.707a1 1 0 011.747-.664z" /></svg>
+            <svg class="theme-switch-moon" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+          </span>
         </button>
 
         <a href="/demo.html" class="text-[11px] font-mono border border-orange-600 text-orange-600 dark:text-orange-400 px-2.5 py-1.5 rounded hover:bg-orange-50 dark:hover:bg-orange-950/20 transition">Demo</a>
@@ -313,19 +260,19 @@
   <div class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b101c] sticky top-16 z-40">
     <div class="max-w-7xl mx-auto px-4">
       <nav class="flex gap-1.5 py-3 overflow-x-auto no-scrollbar scroll-smooth" aria-label="Manual navigation">
-        <button onclick="switchTab('panoramica')" id="btn-panoramica" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-bold rounded border border-orange-600 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 whitespace-nowrap">
+        <button data-tab="panoramica" id="btn-panoramica" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-bold rounded border border-orange-600 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 whitespace-nowrap">
           [ 01 // OVERVIEW ]
         </button>
-        <button onclick="switchTab('hardware')" id="btn-hardware" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+        <button data-tab="hardware" id="btn-hardware" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
           [ 02 // HARDWARE ]
         </button>
-        <button onclick="switchTab('firmware')" id="btn-firmware" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+        <button data-tab="firmware" id="btn-firmware" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
           [ 03 // FIRMWARE ]
         </button>
-        <button onclick="switchTab('compilazione')" id="btn-compilazione" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+        <button data-tab="compilazione" id="btn-compilazione" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
           [ 04 // WIKI: SOFTWARE ]
         </button>
-        <button onclick="switchTab('costruzione')" id="btn-costruzione" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+        <button data-tab="costruzione" id="btn-costruzione" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
           [ 05 // BUILD WIKI ]
         </button>
       </nav>
@@ -838,200 +785,7 @@ pio run --target upload
 
   </main>
 
-  <!-- INTERACTION LOGIC -->
-  <script>
-    // i18n: applies the server-injected dictionary and drives the language selector.
-    (function () {
-      'use strict';
-      var LANGS = ['en', 'it', 'fr', 'es'];
-      var dict = window.AEGIS_I18N || {};
-
-      function currentLang() {
-        var m = window.location.search.match(/[?&]lang=([a-z]{2})/i);
-        if (m && LANGS.indexOf(m[1].toLowerCase()) !== -1) return m[1].toLowerCase();
-        try {
-          var stored = localStorage.getItem('aegis-lang');
-          if (stored && LANGS.indexOf(stored) !== -1) return stored;
-        } catch (e) { /* storage unavailable */ }
-        // Fall back to the language already applied by the server renderer.
-        var serverLang = document.documentElement.lang || 'en';
-        if (LANGS.indexOf(serverLang) !== -1) return serverLang;
-        var nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
-        return LANGS.indexOf(nav) !== -1 ? nav : 'en';
-      }
-
-      function applyTo(el, key) {
-        var val = dict[key];
-        if (!val) return;
-        // Values carrying protected markup (notranslate spans) are trusted HTML.
-        if (/<[a-z][^>]*>/i.test(val)) { el.innerHTML = val; return; }
-        // Plain values: replace text nodes only, preserving child spans (e.g. pulse dot).
-        var texts = [];
-        for (var i = 0; i < el.childNodes.length; i++) {
-          if (el.childNodes[i].nodeType === 3) texts.push(el.childNodes[i]);
-        }
-        if (texts.length === 0) { el.appendChild(document.createTextNode(val)); return; }
-        texts[0].nodeValue = val;
-        for (var j = 1; j < texts.length; j++) texts[j].nodeValue = '';
-      }
-
-      function applyTranslations() {
-        var els = document.querySelectorAll('[data-key]');
-        for (var i = 0; i < els.length; i++) {
-          applyTo(els[i], els[i].getAttribute('data-key'));
-        }
-        document.documentElement.lang = currentLang();
-        var links = document.querySelectorAll('.language-link');
-        for (var k = 0; k < links.length; k++) {
-          var l = (links[k].getAttribute('href') || '').match(/lang=([a-z]{2})/i);
-          var active = l && l[1].toLowerCase() === currentLang();
-          links[k].classList.toggle('language-link-active', active);
-        }
-      }
-
-      function switchLang(lang) {
-        try { localStorage.setItem('aegis-lang', lang); } catch (e) {}
-        document.cookie = 'aegis-lang=' + lang + ';path=/;max-age=31536000';
-        fetch('/i18n/' + lang + '.json').then(function (r) { return r.json(); }).then(function (d) {
-          dict = d;
-          var url = new URL(window.location.href);
-          url.searchParams.set('lang', lang);
-          window.history.replaceState(null, '', url.toString());
-          applyTranslations();
-          document.documentElement.lang = lang;
-        }).catch(function () { window.location.href = '?lang=' + lang; });
-      }
-
-      var links = document.querySelectorAll('.language-link');
-      for (var i = 0; i < links.length; i++) {
-        links[i].addEventListener('click', function (e) {
-          var l = (this.getAttribute('href') || '').match(/lang=([a-z]{2})/i);
-          if (l) { e.preventDefault(); switchLang(l[1].toLowerCase()); }
-        });
-      }
-
-      applyTranslations();
-    })();
-
-    // TX/RX simulator state.
-
-    const SIM_LABELS = {
-      rxState: 'SYS_STATUS: STANDBY_RX',
-      txState: 'SYS_STATUS: TRANSMITTING_TX',
-      btnRx: 'Switch to Receive (RX)',
-      btnTx: 'Switch to Transmit (TX)',
-      txBody: [
-        '<p class="text-orange-500 font-bold animate-pulse leading-tight">TRANSMISSION ENABLED — CONTINUOUS CW TX</p>',
-        '<p class="text-slate-400 leading-tight">Carrier frequency: 433.500 MHz [UHF — EU ISM]</p>',
-        '<p class="text-slate-500 leading-tight" id="gps-stream-row">GPS data state: polling the internal UART module...</p>'
-      ].join(''),
-      rxBody: [
-        '<p id="init-line" class="leading-tight"><span class="text-slate-500">[ 12400][GPS  ]</span> <span class="text-cyan-400">Fix acquired: 45.53124  12.30456 sats=6</span></p>',
-        '<p id="freq-line" class="leading-tight"><span class="text-slate-500">[   139][INFO ]</span> <span class="text-emerald-400">SX1262 CW TX ready: 433.500 MHz @ +17 dBm</span></p>',
-        '<p id="volt-line" class="leading-tight"><span class="text-slate-500">[   140][INFO ]</span> <span class="text-slate-300">TX: "SOS DE MARIO ROSSI PSN N4553 E01230" (31 chars) @ 13WPM</span></p>'
-      ].join(''),
-      gpsUpdate: 'UART NMEA FRAME STABLE // FIX: LAT 45.8921 N — LON 12.1044 E [BURST INJECTED]',
-      gpsAlertIt: 'HALT: Transmit status (TX) must be engaged to force NMEA data sentence injection.',
-      gpsAlertEn: 'HALT: Transmit status (TX) must be engaged to force NMEA data sentence injection.',
-      gpsAlertDe: 'HALT: Transmit status (TX) must be engaged to force NMEA data sentence injection.',
-      gpsAlertFr: 'HALT: Transmit status (TX) must be engaged to force NMEA data sentence injection.'
-    };
-
-    let currentEngineMode = 'RX';
-    // The UI is authored in English and does not require runtime translation.
-    // The "Aegis-Beacon" string is protected globally by the `notranslate` CSS class.
-
-    // Tab manager with automatic horizontal scrolling on mobile.
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.className = "tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap";
-      });
-
-      document.getElementById('tab-' + tabId).classList.add('active');
-      const activeBtn = document.getElementById('btn-' + tabId);
-      activeBtn.className = "tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-bold rounded border border-orange-600 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 whitespace-nowrap";
-
-      // Scroll the active button into view on mobile displays.
-      activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
-
-    // The interface text is authored in English and requires no translation dependency.
-
-
-    // DARK MODE DETECTOR & SWITCHER
-    const modeBtn = document.getElementById('theme-toggle');
-    const sunNode = document.getElementById('theme-sun');
-    const moonNode = document.getElementById('theme-moon');
-
-    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-      sunNode.classList.remove('hidden');
-      moonNode.classList.add('hidden');
-    }
-
-    modeBtn.addEventListener('click', () => {
-      if (document.documentElement.classList.contains('dark')) {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-        sunNode.classList.add('hidden');
-        moonNode.classList.remove('hidden');
-      } else {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-        sunNode.classList.remove('hidden');
-        moonNode.classList.add('hidden');
-      }
-    });
-
-    // TIMING & TERMINAL EMULATION
-    setInterval(() => {
-      const time = new Date();
-      document.getElementById('clock-display').textContent = time.toTimeString().split(' ')[0];
-    }, 1000);
-
-    const toggleBtn = document.getElementById('btn-toggle-sys');
-    const gpsBtn = document.getElementById('btn-trigger-gps');
-    const panelBody = document.getElementById('terminal-body');
-    const stateFlag = document.getElementById('state-indicator');
-
-    toggleBtn.addEventListener('click', () => {
-      if (currentEngineMode === 'RX') {
-        currentEngineMode = 'TX';
-        stateFlag.textContent = SIM_LABELS.txState;
-        stateFlag.className = 'self-start sm:self-auto text-orange-700 dark:text-orange-400 font-bold px-2 py-0.5 border border-orange-300 dark:border-orange-900 bg-orange-50 dark:bg-orange-950/20 rounded';
-        toggleBtn.textContent = SIM_LABELS.btnRx;
-        panelBody.innerHTML = SIM_LABELS.txBody;
-      } else {
-        currentEngineMode = 'RX';
-        stateFlag.textContent = SIM_LABELS.rxState;
-        stateFlag.className = 'self-start sm:self-auto text-slate-700 dark:text-slate-300 font-bold px-2 py-0.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded';
-        toggleBtn.textContent = SIM_LABELS.btnTx;
-        panelBody.innerHTML = SIM_LABELS.rxBody;
-      }
-    });
-
-    gpsBtn.addEventListener('click', () => {
-      if (currentEngineMode === 'TX') {
-        const row = document.getElementById('gps-stream-row');
-        if (row) {
-          row.textContent = SIM_LABELS.gpsUpdate;
-          row.className = 'text-white font-bold bg-slate-900 dark:bg-slate-800 border border-slate-800 dark:border-slate-700 p-1 text-center rounded mt-1 text-[9px] sm:text-[10px] break-all';
-        }
-      } else {
-        // The alert uses the English fallback in this static build.
-        let alertMsg = SIM_LABELS.gpsAlertEn;
-        try {
-          const uiLang = (document.documentElement.lang || navigator.language || 'en').slice(0, 2).toLowerCase();
-          if (uiLang === 'en') alertMsg = SIM_LABELS.gpsAlertEn;
-          else if (uiLang === 'de') alertMsg = SIM_LABELS.gpsAlertDe;
-          else if (uiLang === 'fr') alertMsg = SIM_LABELS.gpsAlertFr;
-        } catch (_) { /* keep the English fallback */ }
-        alert(alertMsg);
-      }
-    });
-  </script>
+  <!-- INTERACTION LOGIC (modular ES modules in /js/) -->
+  <script type="module" src="/js/main.js"></script>
 </body>
 </html>
