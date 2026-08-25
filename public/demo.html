@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+
+<title>Aegis-Beacon v5.4 — Live Firmware Demo</title>
+<meta name="description" content="Interactive demonstration of the Aegis-Beacon v5.4 firmware: BEACON / SEARCH / CONFIG / EMERGENCY modes, Morse engine, frequency planner, GPS payload builder, battery monitor, RSSI scan and serial console.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://aegis-beacon.vercel.app/demo.html">
+
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Aegis-Beacon v5.4 — Live Firmware Demo">
+<meta property="og:description" content="Interactive simulation of the Aegis-Beacon emergency beacon firmware: all four operating modes, Morse engine, GPS payload, battery monitor and more.">
+<meta property="og:url" content="https://aegis-beacon.vercel.app/demo.html">
+<meta property="og:image" content="https://aegis-beacon.vercel.app/banner.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Aegis-Beacon v5.4 — Live Firmware Demo">
+<meta name="twitter:description" content="Interactive simulation of the Aegis-Beacon emergency beacon firmware.">
+<meta name="twitter:image" content="https://aegis-beacon.vercel.app/banner.png">
+
+<meta name="theme-color" content="#ea580c">
+<meta name="author" content="Leonardo Galli">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace'],
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  *, ::before, ::after {
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.1s ease;
+  }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  .dark ::-webkit-scrollbar-track { background: #0f172a; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Virtual SSD1309 128x64 OLED screen */
+  .oled-screen {
+    background: #030712;
+    border: 1px solid #1e293b;
+    box-shadow: inset 0 0 24px rgba(0,0,0,.8), 0 0 0 6px #0f172a, 0 0 0 7px #1e293b, 0 12px 32px rgba(0,0,0,.35);
+    font-family: 'JetBrains Mono', monospace;
+    position: relative;
+    overflow: hidden;
+  }
+  .oled-screen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+  }
+  .oled-invert {
+    background: #0ea5e9;
+    color: #030712;
+  }
+  .oled-blink { animation: oledBlink 1s steps(2, start) infinite; }
+  @keyframes oledBlink { 50% { opacity: 0; } }
+
+  .key-btn {
+    user-select: none;
+    touch-action: manipulation;
+  }
+  .key-btn:active {
+    transform: translateY(2px);
+  }
+
+  .toggle-off { background: #1e293b; }
+  .toggle-on { background: #f97316; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-[#090d16] dark:text-slate-200 font-sans antialiased">
+
+  <!-- TOP BAR -->
+  <header class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0d1322] sticky top-0 z-50 px-4 sm:px-6">
+    <div class="max-w-7xl mx-auto h-16 flex items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-2.5 min-w-0 group">
+        <div class="w-2.5 h-2.5 bg-orange-600 rounded-full shrink-0 group-hover:scale-125 transition-transform"></div>
+        <div class="flex flex-col min-w-0">
+          <span class="font-mono font-bold text-xs tracking-wider text-slate-900 dark:text-white uppercase truncate notranslate">Aegis-Beacon</span>
+          <span class="font-mono text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-widest -mt-0.5 truncate">Live Firmware Demo v5.4</span>
+        </div>
+      </a>
+      <div class="flex items-center gap-2 shrink-0">
+        <a href="/" class="text-[11px] font-mono border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded hover:border-orange-500 dark:hover:border-orange-400 hover:text-orange-600 dark:hover:text-orange-400 transition">Manual</a>
+        <button id="theme-toggle" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-1.5 rounded text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400" title="Toggle color scheme">
+          <svg id="theme-sun" class="w-3.5 h-3.5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 2a1 1 0 01.664.253l.707.707a1 1 0 01-1.414 1.414l-.707-.707A1 1 0 0114 4zM4 11a1 1 0 100-2H3a1 1 0 100 2h1zm11.364-1.364a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707zM16 11a1 1 0 100-2h-1a1 1 0 100 2h1zM4.636 15.364a1 1 0 011.414-1.414l.707.707a1 1 0 01-1.414 1.414l-.707-.707zM10 14a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM6.253 14.243a1 1 0 01.253.664v.707a1 1 0 11-2 0v-.707a1 1 0 011.747-.664z" /></svg>
+          <svg id="theme-moon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+        </button>
+        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="text-[11px] font-mono bg-slate-900 dark:bg-orange-600 text-white px-2.5 py-1.5 rounded hover:bg-slate-800 dark:hover:bg-orange-500 transition">Repo ↗</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
+
+    <!-- HERO -->
+    <section class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-3">
+      <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 tracking-wider">// INTERACTIVE FIRMWARE SIMULATION</span>
+      <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Aegis-Beacon v5.4 — Complete Live Demo</h1>
+      <div class="flex flex-wrap gap-1.5">
+        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 text-[10px] font-mono font-bold border border-orange-200 dark:border-orange-900"><span class="w-1.5 h-1.5 bg-orange-600 rounded-full animate-pulse"></span>4 Modes</span>
+        <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700">Morse 5-40 WPM</span>
+        <span class="inline-flex items-center px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono font-medium border border-emerald-200 dark:border-emerald-900">SOS + Name + GPS</span>
+        <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700">10 Frequencies</span>
+        <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700">SSD1309 OLED</span>
+      </div>
+      <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed max-w-4xl">
+        This page simulates the complete <span class="notranslate">Aegis-Beacon</span> firmware (<code class="text-orange-600 dark:text-orange-400">AegisBeacon.ino</code>) in the browser. Use the virtual buttons to switch modes, adjust WPM and volume, and watch the OLED, LEDs and serial console react exactly like the real ESP32 device.
+      </p>
+    </section>
+
+    <!-- DEVICE SIMULATOR -->
+    <section id="simulator" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- OLED + LEDs -->
+      <div class="lg:col-span-7 space-y-4">
+        <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">SSD1309 128×64 OLED</h2>
+            <div class="flex items-center gap-3 font-mono text-[10px]">
+              <span class="flex items-center gap-1.5"><span id="led-red" class="w-2.5 h-2.5 rounded-full bg-slate-800 dark:bg-slate-700"></span>RED (BEACON)</span>
+              <span class="flex items-center gap-1.5"><span id="led-blue" class="w-2.5 h-2.5 rounded-full bg-slate-800 dark:bg-slate-700"></span>BLUE (SEARCH)</span>
+            </div>
+          </div>
+
+          <div class="oled-screen rounded aspect-[2/1] p-3 sm:p-4 text-[11px] sm:text-xs text-sky-200 leading-relaxed">
+            <div id="oled-header" class="flex justify-between items-center oled-invert px-2 py-1 rounded text-[9px] sm:text-[10px] font-bold tracking-wider">
+              <span id="oled-mode-label">TX BEACON</span>
+              <span id="oled-cycle">cycle #1</span>
+              <span id="oled-battery">[████] 87%</span>
+            </div>
+            <div id="oled-body" class="mt-3 space-y-1.5"></div>
+          </div>
+
+          <!-- Virtual buttons -->
+          <div class="grid grid-cols-4 gap-2 pt-1">
+            <button id="key-mode" class="key-btn bg-slate-900 dark:bg-slate-800 text-white border border-slate-700 rounded-lg py-3 font-mono text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-700 transition">MODE</button>
+            <button id="key-sel" class="key-btn bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-lg py-3 font-mono text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition">SEL</button>
+            <button id="key-up" class="key-btn bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-lg py-3 font-mono text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition">UP ▲</button>
+            <button id="key-dn" class="key-btn bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-lg py-3 font-mono text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition">DN ▼</button>
+          </div>
+          <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Hints: MODE short = BEACON↔SEARCH · MODE hold 2 s = EMERGENCY · SEL short = VOL/WPM target · SEL hold 3 s = CONFIG · UP/DN adjust selected parameter.</p>
+        </div>
+      </div>
+
+      <!-- Status panel -->
+      <div class="lg:col-span-5 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-4">
+        <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">Device Status</h2>
+        <dl class="font-mono text-xs space-y-2.5">
+          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">Mode</dt><dd id="st-mode" class="text-orange-600 dark:text-orange-400 font-bold">BEACON</dd></div>
+          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">Frequency</dt><dd id="st-freq" class="text-slate-900 dark:text-white font-bold">433.500 MHz</dd></div>
+          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">Adjust target</dt><dd id="st-adj" class="text-slate-900 dark:text-white font-bold">VOL</dd></div>
+          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">Volume</dt><dd id="st-vol" class="text-slate-900 dark:text-white font-bold">180 / 255</dd></div>
+          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">WPM</dt><dd id="st-wpm" class="text-slate-900 dark:text-white font-bold">13</dd></div>
+          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">RSSI (SEARCH)</dt><dd id="st-rssi" class="text-slate-900 dark:text-white font-bold">-112 dBm</dd></div>
+          <div class="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2"><dt class="text-slate-500 dark:text-slate-400">Battery</dt><dd id="st-bat" class="text-emerald-600 dark:text-emerald-400 font-bold">87% · 4100 mV</dd></div>
+          <div class="flex justify-between"><dt class="text-slate-500 dark:text-slate-400">TX power</dt><dd id="st-pwr" class="text-slate-900 dark:text-white font-bold">+17 dBm</dd></div>
+        </dl>
+        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+          <div class="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400"><span>Battery level</span><span id="bat-slider-val">87%</span></div>
+          <input id="bat-slider" type="range" min="0" max="100" value="87" class="w-full accent-orange-600">
+        </div>
+      </div>
+    </section>
+
+    <!-- MODE CARDS -->
+    <section class="space-y-3">
+      <h2 class="text-xs font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Operating Modes</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <button data-set-mode="beacon" class="mode-card text-left bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-1.5 hover:border-orange-500/60 hover:shadow-md transition-all">
+          <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold">MODE 01</span>
+          <span class="block text-xs font-bold text-slate-900 dark:text-white font-mono">BEACON</span>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">Morse SOS + name + GPS on every configured frequency, then deep sleep.</p>
+        </button>
+        <button data-set-mode="search" class="mode-card text-left bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-1.5 hover:border-emerald-500/60 hover:shadow-md transition-all">
+          <span class="font-mono text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">MODE 02</span>
+          <span class="block text-xs font-bold text-slate-900 dark:text-white font-mono">SEARCH</span>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">Scans all frequencies, measures RSSI, rising-pitch audio alert.</p>
+        </button>
+        <button data-set-mode="config" class="mode-card text-left bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-1.5 hover:border-sky-500/60 hover:shadow-md transition-all">
+          <span class="font-mono text-[9px] text-sky-600 dark:text-sky-400 font-bold">MODE 03</span>
+          <span class="block text-xs font-bold text-slate-900 dark:text-white font-mono">CONFIG</span>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">WiFi captive-portal dashboard at 192.168.4.1 for field configuration.</p>
+        </button>
+        <button data-set-mode="emergency" class="mode-card text-left bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-4 space-y-1.5 hover:border-rose-500/60 hover:shadow-md transition-all">
+          <span class="font-mono text-[9px] text-rose-600 dark:text-rose-400 font-bold">MODE 04</span>
+          <span class="block text-xs font-bold text-slate-900 dark:text-white font-mono">EMERGENCY</span>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">Max power, continuous TX with full payload, no deep sleep, 1760 Hz tone.</p>
+        </button>
+      </div>
+    </section>
+
+    <!-- MORSE ENGINE -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-7 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+          <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">Morse Engine — PARIS Standard</h2>
+          <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold">dot = 1200 / WPM</span>
+        </div>
+        <div>
+          <label class="text-[10px] font-mono text-slate-500 dark:text-slate-400">Message (A-Z, 0-9, space)</label>
+          <input id="morse-input" type="text" value="SOS DE MARIO ROSSI PSN N4553 E1230" class="w-full mt-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-2.5 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-orange-500">
+        </div>
+        <div>
+          <div class="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400 mb-1"><span>WPM: <span id="morse-wpm-val" class="text-orange-600 dark:text-orange-400 font-bold">13</span></span><span id="morse-timing">dot 92 ms · dash 277 ms</span></div>
+          <input id="morse-wpm" type="range" min="5" max="40" value="13" class="w-full accent-orange-600">
+        </div>
+        <div id="morse-output" class="bg-slate-950 rounded p-3 font-mono text-[11px] leading-loose min-h-[3.5rem] break-all text-sky-200"></div>
+        <div id="morse-meta" class="text-[10px] font-mono text-slate-400 dark:text-slate-500"></div>
+      </div>
+
+      <div class="lg:col-span-5 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-3">
+        <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">Timing Table</h2>
+        <table class="w-full font-mono text-[11px] text-slate-600 dark:text-slate-400">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tr><td class="py-2">Dot</td><td class="py-2 text-right" id="t-dot">92 ms</td></tr>
+            <tr><td class="py-2">Dash</td><td class="py-2 text-right" id="t-dash">277 ms</td></tr>
+            <tr><td class="py-2">Intra-character gap</td><td class="py-2 text-right" id="t-intra">92 ms</td></tr>
+            <tr><td class="py-2">Inter-character gap</td><td class="py-2 text-right" id="t-inter">277 ms</td></tr>
+            <tr><td class="py-2">Word gap</td><td class="py-2 text-right" id="t-word">646 ms</td></tr>
+          </tbody>
+        </table>
+        <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500 leading-relaxed">PARIS word = exactly 50 units. Payload duration estimate shown under the encoder above.</p>
+      </div>
+    </section>
+
+    <!-- FREQUENCY PLANNER -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-6 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-3">
+        <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">Frequency Planner <span class="text-slate-400 dark:text-slate-500 font-medium">(max 10)</span></h2>
+        <div class="flex gap-2">
+          <input id="freq-input" type="number" step="0.00001" value="434.500" class="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-2.5 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-orange-500">
+          <button id="freq-add" class="bg-slate-900 dark:bg-orange-600 text-white rounded px-4 font-mono text-xs font-bold hover:bg-slate-800 dark:hover:bg-orange-500 transition">ADD</button>
+        </div>
+        <ul id="freq-list" class="space-y-1.5 font-mono text-xs"></ul>
+        <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">BEACON cycles through all frequencies; SEARCH scans them sequentially with configurable dwell time.</p>
+      </div>
+
+      <div class="lg:col-span-6 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-3">
+        <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">GPS Payload Builder</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="gps-first" type="text" placeholder="First name" value="MARIO" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-2.5 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-orange-500">
+          <input id="gps-last" type="text" placeholder="Last name" value="ROSSI" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-2.5 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-orange-500">
+          <input id="gps-lat" type="text" placeholder="Lat 45.8850" value="45.8850" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-2.5 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-orange-500">
+          <input id="gps-lon" type="text" placeholder="Lon 12.5000" value="12.5000" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-2.5 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-orange-500">
+        </div>
+        <div class="bg-slate-950 rounded p-3 font-mono text-[11px] text-sky-200 break-all" id="gps-payload">SOS DE MARIO ROSSI PSN N4553 E1230</div>
+        <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">DDM encoding: N4553 = 45°53' N · E1230 = 12°30' E · ~185 m precision. Demo truncates minutes like the firmware (minutes × 10).</p>
+      </div>
+    </section>
+
+    <!-- RSSI SCAN + BATTERY -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-6 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-3">
+        <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">SEARCH — RSSI Scan &amp; Audio Pitch</h2>
+        <div class="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400"><span>RSSI: <span id="rssi-val" class="text-orange-600 dark:text-orange-400 font-bold">-87 dBm</span></span><span id="rssi-class" class="text-emerald-600 dark:text-emerald-400 font-bold">MEDIUM</span></div>
+        <input id="rssi-slider" type="range" min="-120" max="-40" value="-87" class="w-full accent-orange-600">
+        <div class="flex items-end h-24 gap-[3px] rounded border border-slate-200 dark:border-slate-800 p-2 bg-slate-50 dark:bg-slate-900/40">
+          <div id="rssi-fill" class="w-full rounded-sm bg-gradient-to-t from-orange-600 to-emerald-400 transition-all duration-150" style="height:40%"></div>
+        </div>
+        <div class="flex items-center justify-between">
+          <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Pitch rises 440 → 2200 Hz with signal strength. <span id="pitch-val" class="text-slate-600 dark:text-slate-300">~880 Hz</span></p>
+          <div class="flex gap-2">
+            <button id="audio-on" class="bg-emerald-600 text-white text-[10px] font-mono px-2.5 py-1 rounded hover:bg-emerald-500 transition">PLAY TONE</button>
+            <button id="audio-off" class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition">STOP</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-6 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-3">
+        <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">Battery Monitor — Piecewise Li-ion Curve</h2>
+        <div class="flex items-center gap-4">
+          <div class="relative w-24 h-12 border-2 border-slate-300 dark:border-slate-600 rounded-sm">
+            <div id="bat-fill" class="absolute left-0 bottom-0 bg-emerald-500 transition-all duration-300" style="width:100%;height:87%"></div>
+            <div class="absolute -right-[7px] top-1/2 -translate-y-1/2 w-[5px] h-5 bg-slate-300 dark:bg-slate-600 rounded-r-sm"></div>
+          </div>
+          <div class="font-mono text-xs space-y-1">
+            <div class="text-slate-900 dark:text-white font-bold" id="bat-label">87% · 4100 mV</div>
+            <div class="text-slate-500 dark:text-slate-400">Divider: BAT+ → 100k → GPIO36 → 100k → GND</div>
+          </div>
+        </div>
+        <table class="w-full font-mono text-[10px] text-slate-500 dark:text-slate-400">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tr><td class="py-1">4.20 V → 100%</td><td class="py-1 text-right">3.65 V → 50%</td></tr>
+            <tr><td class="py-1">4.05 V → 90%</td><td class="py-1 text-right">3.55 V → 35%</td></tr>
+            <tr><td class="py-1">3.90 V → 75%</td><td class="py-1 text-right">3.40 V → 20%</td></tr>
+            <tr><td class="py-1">3.75 V → 60%</td><td class="py-1 text-right">3.20 V → 10% · 3.00 V → 0%</td></tr>
+          </tbody>
+        </table>
+        <p class="text-[10px] font-mono text-slate-400 dark:text-slate-500">32-sample ADC averaging · critical blink ≤10% · CHG when TP4056 STDBY low.</p>
+      </div>
+    </section>
+
+    <!-- SERIAL CONSOLE -->
+    <section class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-3">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h2 class="text-xs font-mono font-bold text-slate-900 dark:text-white uppercase tracking-wider">Serial Debug Console <span class="text-slate-400 dark:text-slate-500 font-medium">115200 baud</span></h2>
+        <div class="flex flex-wrap gap-2">
+          <button data-sim="boot" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition">BOOT</button>
+          <button data-sim="tx" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition">TX SOS</button>
+          <button data-sim="scan" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition">SCAN HIT</button>
+          <button data-sim="gps" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition">GPS FIX</button>
+          <button data-sim="sleep" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition">DEEP SLEEP</button>
+          <button data-sim="clear" class="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 text-[10px] font-mono px-2.5 py-1.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/40 transition">CLEAR</button>
+        </div>
+      </div>
+      <pre id="serial" class="bg-slate-950 text-slate-300 font-mono text-[10px] sm:text-[11px] rounded p-3 h-56 overflow-y-auto leading-relaxed"></pre>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-200 dark:border-slate-800 pt-4 px-2 text-[10px] font-mono text-slate-400 dark:text-slate-600 space-y-2">
+      <p class="text-center"><span class="notranslate">Aegis</span> Open Source Engineering Network — Firmware Demo v5.4 · Simulation of <code class="text-slate-500 dark:text-slate-500">AegisBeacon.ino</code> for educational use.</p>
+      <p class="text-center">This is a browser simulation, not a real radio. Always verify local regulations before transmitting.</p>
+    </footer>
+  </main>
+
+  <script>
+    // ── State ────────────────────────────────────────────────────────────
+    const SIM = {
+      mode: 'beacon',            // beacon | search | config | emergency
+      freqIdx: 0,
+      adjust: 'VOL',             // VOL | WPM
+      vol: 180,
+      wpm: 13,
+      power: 17,
+      rssi: -87,
+      battery: 87,
+      cycle: 1,
+      freqs: [433.500, 434.500, 435.000, 446.08125, 446.09375],
+      hitCount: 0,
+      payload: 'SOS DE MARIO ROSSI PSN N4553 E1230'
+    };
+
+    const MORSE = {
+      'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....','I':'..','J':'.---',
+      'K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-',
+      'U':'..-','V':'...-','W':'.--','X':'-..-','Y':'-.--','Z':'--..','0':'-----','1':'.----','2':'..---',
+      '3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.'
+    };
+
+    // ── DOM refs ─────────────────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+
+    // ── OLED render ──────────────────────────────────────────────────────
+    function renderOled() {
+      const header = $('oled-header');
+      const body = $('oled-body');
+      header.className = 'flex justify-between items-center px-2 py-1 rounded text-[9px] sm:text-[10px] font-bold tracking-wider ' + (SIM.mode === 'emergency' ? 'oled-invert' : 'oled-invert');
+      $('oled-mode-label').textContent =
+        SIM.mode === 'beacon' ? 'TX BEACON' :
+        SIM.mode === 'search' ? 'RX SEARCH' :
+        SIM.mode === 'config' ? 'CONFIG MODE' : 'EMERGENCY TX';
+      $('oled-cycle').textContent = SIM.mode === 'beacon' ? `cycle #${SIM.cycle}` : SIM.mode === 'search' ? `hits ${SIM.hitCount}` : '';
+      $('oled-cycle').style.display = (SIM.mode === 'beacon' || SIM.mode === 'search') ? '' : 'none';
+      $('oled-battery').textContent = batteryIcon();
+
+      let html = '';
+      const f = SIM.freqs[SIM.freqIdx] || SIM.freqs[0];
+      if (SIM.mode === 'beacon') {
+        html += `<div class="text-2xl sm:text-3xl font-bold text-white tracking-wider">${f.toFixed(3)} MHz</div>`;
+        html += `<div class="text-sky-400">${SIM.payload}</div>`;
+        html += `<div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-400" style="width:${progressPct()}%"></div></div><span class="text-[9px] text-slate-400">TX</span></div>`;
+        html += `<div class="text-[10px] text-slate-400">CH ${SIM.freqIdx + 1}/${SIM.freqs.length} · PWR ${SIM.power >= 0 ? '+' : ''}${SIM.power} dBm · ${SIM.wpm} WPM</div>`;
+      } else if (SIM.mode === 'search') {
+        html += `<div class="text-2xl sm:text-3xl font-bold text-white tracking-wider">${f.toFixed(3)} MHz</div>`;
+        html += `<div class="flex items-center gap-2"><div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-orange-400" style="width:${rssiPct()}%"></div></div><span class="text-[9px] text-slate-400">${SIM.rssi} dBm</span></div>`;
+        html += `<div class="text-[10px]"><span class="text-emerald-400 font-bold">${signalClass()}</span> <span class="text-slate-400">· scan pass ${SIM.cycle}</span></div>`;
+      } else if (SIM.mode === 'config') {
+        html += `<div class="text-white font-bold">SSID: AegisBeacon</div>`;
+        html += `<div class="text-sky-400">http://192.168.4.1</div>`;
+        html += `<div class="text-[10px] text-slate-400 leading-relaxed">1. Connect to WiFi network<br>2. Open captive portal<br>3. Save & reboot</div>`;
+      } else {
+        html += `<div class="text-3xl sm:text-4xl font-black text-white oled-blink tracking-widest text-center">SOS</div>`;
+        html += `<div class="text-center text-[10px] text-white font-bold">EMERGENCY BEACON TX</div>`;
+        html += `<div class="text-center text-[10px] text-slate-300">${f.toFixed(3)} MHz · +22 dBm · 1760 Hz</div>`;
+        html += `<div class="text-center text-[10px] text-emerald-300">N4553 E1230</div>`;
+      }
+      body.innerHTML = html;
+    }
+
+    function batteryIcon() {
+      const p = SIM.battery;
+      if (SIM.mode === 'emergency') return '[SOS]';
+      const seg = p > 75 ? 4 : p > 50 ? 3 : p > 25 ? 2 : p > 10 ? 1 : 0;
+      const bar = p <= 10 ? '!' : '█'.repeat(seg) + ' '.repeat(Math.max(0, 4 - seg));
+      return `[${bar}] ${p}%`;
+    }
+    function progressPct() { return 40 + (SIM.cycle * 7) % 55; }
+    function rssiPct() { return Math.max(5, Math.min(100, (SIM.rssi + 120) / 80 * 100)); }
+    function signalClass() { return SIM.rssi >= -60 ? 'STRONG' : SIM.rssi >= -80 ? 'MEDIUM' : SIM.rssi >= -90 ? 'WEAK' : 'QUIET'; }
+
+    // ── Status panel ─────────────────────────────────────────────────────
+    function renderStatus() {
+      $('st-mode').textContent = SIM.mode.toUpperCase();
+      $('st-freq').textContent = `${(SIM.freqs[SIM.freqIdx] || SIM.freqs[0]).toFixed(3)} MHz`;
+      $('st-adj').textContent = SIM.adjust;
+      $('st-vol').textContent = `${SIM.vol} / 255`;
+      $('st-wpm').textContent = SIM.wpm;
+      $('st-rssi').textContent = `${SIM.rssi} dBm`;
+      $('st-bat').textContent = `${SIM.battery}% · ${Math.round(3.0 + SIM.battery / 100 * 1.2).toFixed(3)} V`;
+      $('st-pwr').textContent = `${SIM.power >= 0 ? '+' : ''}${SIM.power} dBm`;
+
+      const bat = SIM.battery;
+      $('bat-fill').style.height = bat + '%';
+      $('bat-fill').style.background = bat <= 10 ? '#f43f5e' : bat <= 25 ? '#f59e0b' : '#10b981';
+      $('bat-label').textContent = `${bat}% · ${Math.round(3.0 + bat / 100 * 1.2).toFixed(3)} V`;
+      $('bat-slider-val').textContent = bat + '%';
+
+      // LEDs
+      const red = $('led-red'), blue = $('led-blue');
+      red.className = 'w-2.5 h-2.5 rounded-full ' + (SIM.mode === 'beacon' || SIM.mode === 'emergency' ? 'bg-red-500 animate-pulse' : 'bg-slate-800 dark:bg-slate-700');
+      blue.className = 'w-2.5 h-2.5 rounded-full ' + (SIM.mode === 'search' ? 'bg-blue-500 animate-pulse' : 'bg-slate-800 dark:bg-slate-700');
+    }
+
+    // ── Serial console ───────────────────────────────────────────────────
+    function serial(line) {
+      const el = $('serial');
+      el.innerHTML += line + '\n';
+      el.scrollTop = el.scrollHeight;
+    }
+    const LOG_COLORS = { cyan: '#22d3ee', green: '#4ade80', magenta: '#e879f9', blue: '#60a5fa', white: '#e2e8f0', orange: '#fb923c', red: '#f87171' };
+    let simTick = 0;
+    function log(tag, color, msg) {
+      simTick += 1000;
+      const t = String(simTick).padStart(8, ' ');
+      const c = LOG_COLORS[color] || '#e2e8f0';
+      serial(`<span style="color:#64748b">[${t}]</span><span style="color:${c}">[${tag}]</span> <span style="color:#cbd5e1">${msg}</span>`);
+    }
+    function simBoot() {
+      serial('╔══════════════════════════════════════════════════════════╗');
+      serial('║  AEGIS-BEACON v5.4 — SX1262+GPS+BTN+BAT+SSD1309         ║');
+      serial('╚══════════════════════════════════════════════════════════╝');
+      log('INFO ', 'cyan', 'Boot #1  reset_reason=1  heap=290244 B  cpu=240MHz');
+      log('BAT  ', 'green', 'Boot battery: ' + SIM.battery + '%  ' + Math.round(3.0 + SIM.battery / 100 * 1.2) + '00mV  charging=NO');
+      log('OK   ', 'green', 'OLED ready — SSD1309 128x64');
+      log('AUDIO', 'green', 'LEDC GPIO25 (DAC1) ch0 @ 40000 Hz 8-bit');
+      log('MODE ', 'magenta', 'Starting: ' + SIM.mode.toUpperCase());
+    }
+    function simTx() {
+      const f = SIM.freqs[SIM.freqIdx] || SIM.freqs[0];
+      log('OK   ', 'green', `SX1262 CW TX ready: ${f.toFixed(3)} MHz @ ${SIM.power >= 0 ? '+' : ''}${SIM.power} dBm`);
+      log('INFO ', 'cyan', `TX: "${SIM.payload}" (${SIM.payload.length} chars) @ ${SIM.wpm}WPM`);
+      log('OK   ', 'green', `TX done: ${SIM.payload.length} chars in ${Math.round((SIM.payload.length * 6.5 * 1200 / SIM.wpm) / 1000)} ms`);
+    }
+    function simScan() {
+      const idx = Math.floor(Math.random() * SIM.freqs.length);
+      const f = SIM.freqs[idx];
+      const r = -120 + Math.round(Math.random() * 75);
+      const hit = r >= -90;
+      log('SCAN ', 'blue', `[${idx}] ${f.toFixed(3)} MHz  RSSI=${r} dBm  ${hit ? '*** HIT ***' : 'quiet'}`);
+      if (hit) { SIM.hitCount++; log('SCAN ', 'blue', `HIT: ${f.toFixed(3)} MHz ${r} dBm [${r >= -60 ? 'STRONG' : r >= -80 ? 'MEDIUM' : 'WEAK'}]  total=${SIM.hitCount}`); renderOled(); renderStatus(); }
+    }
+    function simGps() {
+      log('GPS  ', 'cyan', 'Waiting for GPS fix (timeout 30s)...');
+      setTimeout(() => {
+        log('GPS  ', 'cyan', 'Fix acquired: 45.53124  12.30456  sats=6');
+        log('INFO ', 'cyan', 'Payload ready: "' + SIM.payload + '"');
+      }, 400);
+    }
+    function simSleep() {
+      log('BAT  ', 'green', 'VBAT=' + Math.round(3.0 + SIM.battery / 100 * 1.2) + '00mV  pct=' + SIM.battery + '%  charging=NO');
+      log('INFO ', 'cyan', 'Deep sleep 10 s...');
+    }
+
+    // ── Morse engine ─────────────────────────────────────────────────────
+    function dotMs() { return 1200 / SIM.wpm; }
+    function renderMorse() {
+      const text = $('morse-input').value.toUpperCase();
+      const d = dotMs();
+      $('t-dot').textContent = Math.round(d) + ' ms';
+      $('t-dash').textContent = Math.round(d * 3) + ' ms';
+      $('t-intra').textContent = Math.round(d) + ' ms';
+      $('t-inter').textContent = Math.round(d * 3) + ' ms';
+      $('t-word').textContent = Math.round(d * 7) + ' ms';
+      $('morse-timing').textContent = `dot ${Math.round(d)} ms · dash ${Math.round(d * 3)} ms`;
+
+      let out = '';
+      let units = 0;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === ' ') { out += '<span class="text-slate-500"> / </span>'; units += 7; continue; }
+        const code = MORSE[ch];
+        if (!code) { out += `<span class="text-rose-400">?</span>`; continue; }
+        for (const sym of code) {
+          out += `<span class="${sym === '.' ? 'text-emerald-400' : 'text-orange-400'} font-bold">${sym === '.' ? '•' : '▬'}</span>`;
+          units += sym === '.' ? 1 : 3;
+          units += 1; // intra-char gap
+        }
+        units -= 1; // no gap after last symbol
+        units += 3; // inter-char gap
+        out += '<span class="text-slate-600"> </span>';
+      }
+      units -= 3;
+      $('morse-output').innerHTML = out;
+      const secs = (units * d / 1000);
+      $('morse-meta').textContent = `${text.length} chars · ${units} units · ~${secs.toFixed(1)} s at ${SIM.wpm} WPM`;
+    }
+
+    // ── Frequency planner ────────────────────────────────────────────────
+    function renderFreqs() {
+      const list = $('freq-list');
+      list.innerHTML = '';
+      SIM.freqs.forEach((f, i) => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded px-3 py-2';
+        li.innerHTML = `<span><span class="text-slate-400">${i + 1}.</span> <span class="text-slate-900 dark:text-white font-bold">${f.toFixed(3)} MHz</span> ${i === 0 ? '<span class="text-[9px] text-orange-600 dark:text-orange-400 font-bold">PRIMARY</span>' : ''}</span>
+          <button data-del="${i}" class="text-rose-500 hover:text-rose-400 font-mono text-[10px]">REMOVE</button>`;
+        list.appendChild(li);
+      });
+      $('freq-add').disabled = SIM.freqs.length >= 10;
+    }
+
+    // ── Buttons (virtual keypad) ─────────────────────────────────────────
+    const LONG_PRESS_MS = { mode: 2000, sel: 3000 };
+    let pressTimer = null, pressMode = null;
+    function keyDown(name) {
+      pressMode = name;
+      pressTimer = setTimeout(() => {
+        if (name === 'mode') { SIM.mode = 'emergency'; log('MODE ', 'magenta', 'Long press → EMERGENCY ACTIVATED'); }
+        if (name === 'sel') { SIM.mode = 'config'; log('CFG  ', 'white', 'Long press → CONFIG portal (192.168.4.1)'); }
+        renderOled(); renderStatus();
+      }, LONG_PRESS_MS[name] || 2000);
+    }
+    function keyUp(name) {
+      clearTimeout(pressTimer);
+      if (pressMode !== name) return;
+      if (name === 'mode') {
+        if (SIM.mode === 'emergency') { /* already emergency */ }
+        else { SIM.mode = SIM.mode === 'beacon' ? 'search' : 'beacon'; log('MODE ', 'magenta', 'Short press → ' + SIM.mode.toUpperCase()); }
+      } else if (name === 'sel') {
+        if (SIM.mode === 'config') { SIM.mode = 'beacon'; log('CFG  ', 'white', 'CONFIG saved → reboot into BEACON'); }
+        else { SIM.adjust = SIM.adjust === 'VOL' ? 'WPM' : 'VOL'; log('BTN  ', 'white', 'Adjust target → ' + SIM.adjust); }
+      } else if (name === 'up') {
+        if (SIM.adjust === 'VOL') SIM.vol = Math.min(255, SIM.vol + 10);
+        else SIM.wpm = Math.min(40, SIM.wpm + 1);
+        log('BTN  ', 'white', `UP → ${SIM.adjust} ${SIM.adjust === 'VOL' ? SIM.vol : SIM.wpm}`);
+      } else if (name === 'dn') {
+        if (SIM.adjust === 'VOL') SIM.vol = Math.max(20, SIM.vol - 10);
+        else SIM.wpm = Math.max(5, SIM.wpm - 1);
+        log('BTN  ', 'white', `DN → ${SIM.adjust} ${SIM.adjust === 'VOL' ? SIM.vol : SIM.wpm}`);
+      }
+      renderOled(); renderStatus(); renderMorse();
+    }
+
+    function setMode(m) {
+      SIM.mode = m;
+      if (m === 'search') { SIM.rssi = -87; }
+      log('MODE ', 'magenta', 'Switch → ' + m.toUpperCase());
+      renderOled(); renderStatus();
+    }
+
+    // ── Wire up ──────────────────────────────────────────────────────────
+    function wire() {
+      ['mode', 'sel', 'up', 'dn'].forEach(n => {
+        const el = $('key-' + n);
+        el.addEventListener('mousedown', () => keyDown(n));
+        el.addEventListener('mouseup', () => keyUp(n));
+        el.addEventListener('mouseleave', () => { clearTimeout(pressTimer); pressMode = null; });
+        el.addEventListener('touchstart', e => { e.preventDefault(); keyDown(n); });
+        el.addEventListener('touchend', e => { e.preventDefault(); keyUp(n); });
+      });
+      document.querySelectorAll('.mode-card').forEach(c => c.addEventListener('click', () => setMode(c.dataset.setMode)));
+
+      $('bat-slider').addEventListener('input', e => { SIM.battery = +e.target.value; renderOled(); renderStatus(); });
+      $('morse-wpm').addEventListener('input', e => { SIM.wpm = +e.target.value; $('morse-wpm-val').textContent = SIM.wpm; renderMorse(); });
+      $('morse-input').addEventListener('input', renderMorse);
+      $('rssi-slider').addEventListener('input', e => {
+        SIM.rssi = +e.target.value;
+        $('rssi-val').textContent = SIM.rssi + ' dBm';
+        $('rssi-class').textContent = signalClass();
+        $('rssi-class').className = 'font-bold ' + (SIM.rssi >= -60 ? 'text-emerald-600 dark:text-emerald-400' : SIM.rssi >= -80 ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 dark:text-slate-400');
+        $('rssi-fill').style.height = rssiPct() + '%';
+        $('pitch-val').textContent = '~' + Math.round(440 + (SIM.rssi + 120) / 80 * 1760) + ' Hz';
+        if (audioPlaying) { tone.frequency.setValueAtTime(currentPitchHz(), audioCtx.currentTime); }
+        renderOled();
+      });
+
+      // WebAudio tone (SEARCH audio alert emulation) — idempotent on repeated clicks
+      let audioCtx = null, tone = null, toneGain = null, audioPlaying = false;
+      function currentPitchHz() { return Math.round(440 + (SIM.rssi + 120) / 80 * 1760); }
+      $('audio-on').addEventListener('click', () => {
+        try {
+          if (!audioPlaying) {
+            audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            tone = audioCtx.createOscillator();
+            toneGain = audioCtx.createGain();
+            toneGain.gain.value = 0.04;
+            tone.type = 'square';
+            tone.frequency.value = currentPitchHz();
+            tone.connect(toneGain).connect(audioCtx.destination);
+            tone.start();
+            audioPlaying = true;
+            log('AUDIO', 'green', 'LEDC GPIO25 (DAC1) tone ' + currentPitchHz() + ' Hz (simulated)');
+          } else {
+            tone.frequency.setValueAtTime(currentPitchHz(), audioCtx.currentTime);
+          }
+        } catch (_) { log('AUDIO', 'red', 'Audio unavailable in this browser'); }
+      });
+      $('audio-off').addEventListener('click', () => {
+        if (tone && audioPlaying) {
+          try { tone.stop(); toneGain.disconnect(); audioCtx.close(); } catch (_) {}
+          tone = null; toneGain = null; audioCtx = null; audioPlaying = false;
+          log('AUDIO', 'green', 'Audio tone stopped — DAC parked at 1.65 V');
+        }
+      });
+      $('freq-add').addEventListener('click', () => {
+        const v = parseFloat($('freq-input').value);
+        if (!isNaN(v) && SIM.freqs.length < 10) { SIM.freqs.push(v); renderFreqs(); log('CFG  ', 'white', 'Added frequency ' + v.toFixed(3) + ' MHz'); }
+      });
+      $('freq-list').addEventListener('click', e => {
+        const btn = e.target.closest('[data-del]');
+        if (btn) { SIM.freqs.splice(+btn.dataset.del, 1); renderFreqs(); renderOled(); }
+      });
+
+      document.querySelectorAll('[data-sim]').forEach(b => {
+        b.addEventListener('click', () => {
+          const a = { boot: simBoot, tx: simTx, scan: simScan, gps: simGps, sleep: simSleep, clear: () => { $('serial').innerHTML = ''; } };
+          a[b.dataset.sim]();
+        });
+      });
+
+      ['gps-first', 'gps-last', 'gps-lat', 'gps-lon'].forEach(id => $(id).addEventListener('input', buildPayload));
+    }
+
+    function buildPayload() {
+      const first = ($('gps-first').value || 'MARIO').toUpperCase().replace(/[^A-Z ]/g, '');
+      const last = ($('gps-last').value || 'ROSSI').toUpperCase().replace(/[^A-Z ]/g, '');
+      const lat = parseFloat($('gps-lat').value);
+      const lon = parseFloat($('gps-lon').value);
+      const latEnc = ddm(lat, true), lonEnc = ddm(lon, false);
+      const name = (first + ' ' + last).trim();
+      SIM.payload = `SOS DE ${name} PSN ${latEnc} ${lonEnc}`;
+      $('gps-payload').textContent = SIM.payload;
+      renderMorse(); renderOled();
+    }
+    function ddm(deg, isLat) {
+      if (isNaN(deg)) return 'UNKN';
+      const hemi = isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'W');
+      const abs = Math.abs(deg);
+      const d = Math.floor(abs);
+      const m = Math.floor((abs - d) * 60);
+      return `${hemi}${String(d).padStart(2, '0')}${String(m).padStart(2, '0')}`;
+    }
+
+    // ── Theme ────────────────────────────────────────────────────────────
+    const modeBtn = $('theme-toggle'), sun = $('theme-sun'), moon = $('theme-moon');
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark'); sun.classList.remove('hidden'); moon.classList.add('hidden');
+    }
+    modeBtn.addEventListener('click', () => {
+      const dark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+      sun.classList.toggle('hidden', !dark); moon.classList.toggle('hidden', dark);
+    });
+
+    // ── Init ─────────────────────────────────────────────────────────────
+    renderFreqs();
+    renderMorse();
+    buildPayload();
+    renderOled();
+    renderStatus();
+    simBoot();
+    wire();
+  </script>
+</body>
+</html>

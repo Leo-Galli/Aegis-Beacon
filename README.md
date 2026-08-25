@@ -12,6 +12,8 @@
 # Aegis-Beacon v5.4
 
 ![Banner](https://github.com/Leo-Galli/Aegis-Beacon/blob/main/public/banner.png?raw=true)
+*Banner artwork generated with Google Gemini (AI).*
+
 ### Professional Dual-Mode Avalanche Rescue System
 ### SSD1309 2.42" OLED | SX1262 Radio | GPS Payload | Battery Monitor
 
