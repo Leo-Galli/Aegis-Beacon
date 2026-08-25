@@ -274,6 +274,6 @@ The SX1262 produces a narrow CW carrier (FSK carrier on, key off = silence). Thi
 
 *Document version: 2026.2 | Project: [Leo-Galli/Aegis-Beacon](https://github.com/Leo-Galli/Aegis-Beacon)*
 
-*Built with  for mountain safety.*
+*Built with care for mountain safety.*
 
 </div>
