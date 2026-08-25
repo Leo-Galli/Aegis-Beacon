@@ -78,7 +78,19 @@ export const DICTIONARIES = {
     'f2-t': '02 / LEGAL LIMITS',
     'f2-d': 'Unauthorized continuous-wave (CW) transmissions outside permitted public radio allocations (LPD/PMR), without a genuine emergency, may violate local regulations.',
     'f3-t': '03 / MIT LICENSE',
-    'f3-d': 'The source code and physical hardware architecture schematics are distributed under the MIT open license, allowing structural modifications with attribution required.'
+    'f3-d': 'The source code and physical hardware architecture schematics are distributed under the MIT open license, allowing structural modifications with attribution required.',
+    'ts-title': 'Technology Stack',
+    'ts-subtitle': 'Complete picture of the technologies, libraries and tooling used across the firmware, hardware and website.',
+    'ts-fw-t': 'Firmware',
+    'ts-fw-d': 'C++ (Arduino/PlatformIO) on a dual-core ESP32. RadioLib 6.x drives the SX1262 front end, U8g2 2.34 renders the SSD1309 OLED, TinyGPS++ 1.0.3 parses NMEA sentences, ArduinoJson 7.x serves the configuration dashboard.',
+    'ts-hw-t': 'Hardware',
+    'ts-hw-d': 'ESP32 DevKit V1, Ebyte E22-400M30S (SX1262/LLCC68), SSD1309 2.42" OLED, NEO-6M GPS, TP4056 charger, 18650 Li-ion cell. Approximate BOM $23-28 USD.',
+    'ts-web-t': 'Website',
+    'ts-web-d': 'Node.js 18+ with zero runtime dependencies, ES modules, language-aware rendering (EN/IT/FR/ES), Tailwind CSS, WebAudio demo, deployed as a Vercel serverless function.',
+    'ts-tools-t': 'Tooling and Deployment',
+    'ts-tools-d': 'PlatformIO and Arduino IDE for flashing, Vercel CLI and Git integration for hosting (Root Directory website), npm run check validates dictionary parity.',
+    'ts-docs-t': 'Documentation',
+    'ts-docs-d': 'README.md, DATASHEET.md, FREQUENCIES.md and TECHNOLOGIES.md cover the whole project; the live site mirrors them with a language selector and an interactive firmware demo.'
   },
 
   it: {
@@ -146,7 +158,19 @@ export const DICTIONARIES = {
     'f2-t': '02 / LIMITI LEGALI',
     'f2-d': 'Trasmissioni non autorizzate a onda continua (CW) al di fuori delle allocazioni radio pubbliche consentite (LPD/PMR), senza una vera emergenza, possono violare le normative locali.',
     'f3-t': '03 / LICENZA MIT',
-    'f3-d': 'Il codice sorgente e gli schemi dell’architettura hardware fisica sono distribuiti sotto licenza open MIT, consentendo modifiche strutturali con attribuzione richiesta.'
+    'f3-d': 'Il codice sorgente e gli schemi dell’architettura hardware fisica sono distribuiti sotto licenza open MIT, consentendo modifiche strutturali con attribuzione richiesta.',
+    'ts-title': 'Stack Tecnologico',
+    'ts-subtitle': 'Quadro completo delle tecnologie, librerie e strumenti usati in firmware, hardware e sito web.',
+    'ts-fw-t': 'Firmware',
+    'ts-fw-d': 'C++ (Arduino/PlatformIO) su ESP32 dual-core. RadioLib 6.x pilota il front-end SX1262, U8g2 2.34 renderizza l’OLED SSD1309, TinyGPS++ 1.0.3 decodifica le frasi NMEA, ArduinoJson 7.x alimenta la dashboard di configurazione.',
+    'ts-hw-t': 'Hardware',
+    'ts-hw-d': 'ESP32 DevKit V1, Ebyte E22-400M30S (SX1262/LLCC68), OLED SSD1309 2.42", GPS NEO-6M, caricatore TP4056, cella Li-ion 18650. BOM stimato $23-28 USD.',
+    'ts-web-t': 'Sito Web',
+    'ts-web-d': 'Node.js 18+ senza dipendenze runtime, moduli ES, rendering multilingua (EN/IT/FR/ES), Tailwind CSS, demo WebAudio, distribuito come funzione serverless Vercel.',
+    'ts-tools-t': 'Strumenti e Deployment',
+    'ts-tools-d': 'PlatformIO e Arduino IDE per il flashing, CLI Vercel e integrazione Git per l’hosting (Root Directory website), npm run check valida la parità dei dizionari.',
+    'ts-docs-t': 'Documentazione',
+    'ts-docs-d': 'README.md, DATASHEET.md, FREQUENCIES.md e TECHNOLOGIES.md coprono l’intero progetto; il sito live li rispecchia con selettore lingua e demo interattiva del firmware.'
   },
 
   fr: {
@@ -214,7 +238,19 @@ export const DICTIONARIES = {
     'f2-t': '02 / LIMITES LÉGALES',
     'f2-d': 'Des émissions non autorisées à onde continue (CW) en dehors des allocations radio publiques permises (LPD/PMR), sans urgence réelle, peuvent enfreindre les réglementations locales.',
     'f3-t': '03 / LICENCE MIT',
-    'f3-d': 'Le code source et les schémas de l’architecture matérielle physique sont distribués sous licence ouverte MIT, permettant des modifications structurelles avec attribution requise.'
+    'f3-d': 'Le code source et les schémas de l’architecture matérielle physique sont distribués sous licence ouverte MIT, permettant des modifications structurelles avec attribution requise.',
+    'ts-title': 'Pile Technique',
+    'ts-subtitle': 'Vue complète des technologies, bibliothèques et outils utilisés pour le firmware, le matériel et le site web.',
+    'ts-fw-t': 'Firmware',
+    'ts-fw-d': 'C++ (Arduino/PlatformIO) sur ESP32 double cœur. RadioLib 6.x pilote le front-end SX1262, U8g2 2.34 affiche l’OLED SSD1309, TinyGPS++ 1.0.3 décode les trames NMEA, ArduinoJson 7.x alimente le tableau de bord de configuration.',
+    'ts-hw-t': 'Matériel',
+    'ts-hw-d': 'ESP32 DevKit V1, Ebyte E22-400M30S (SX1262/LLCC68), OLED SSD1309 2,42", GPS NEO-6M, chargeur TP4056, cellule Li-ion 18650. BOM estimé à 23-28 USD.',
+    'ts-web-t': 'Site Web',
+    'ts-web-d': 'Node.js 18+ sans dépendance runtime, modules ES, rendu multilingue (EN/IT/FR/ES), Tailwind CSS, démo WebAudio, déployé en fonction serverless Vercel.',
+    'ts-tools-t': 'Outils et Déploiement',
+    'ts-tools-d': 'PlatformIO et Arduino IDE pour le flashage, CLI Vercel et intégration Git pour l’hébergement (Root Directory website), npm run check valide la parité des dictionnaires.',
+    'ts-docs-t': 'Documentation',
+    'ts-docs-d': 'README.md, DATASHEET.md, FREQUENCIES.md et TECHNOLOGIES.md couvrent l’ensemble du projet ; le site live les reflète avec un sélecteur de langue et une démo interactive du firmware.'
   },
 
   es: {
@@ -282,7 +318,19 @@ export const DICTIONARIES = {
     'f2-t': '02 / LÍMITES LEGALES',
     'f2-d': 'Las transmisiones no autorizadas de onda continua (CW) fuera de las asignaciones de radio públicas permitidas (LPD/PMR), sin una emergencia real, pueden violar las normativas locales.',
     'f3-t': '03 / LICENCIA MIT',
-    'f3-d': 'El código fuente y los esquemas de la arquitectura de hardware física se distribuyen bajo licencia abierta MIT, permitiendo modificaciones estructurales con atribución requerida.'
+    'f3-d': 'El código fuente y los esquemas de la arquitectura de hardware física se distribuyen bajo licencia abierta MIT, permitiendo modificaciones estructurales con atribución requerida.',
+    'ts-title': 'Stack Tecnológico',
+    'ts-subtitle': 'Panorama completo de las tecnologías, bibliotecas y herramientas utilizadas en el firmware, el hardware y el sitio web.',
+    'ts-fw-t': 'Firmware',
+    'ts-fw-d': 'C++ (Arduino/PlatformIO) en ESP32 de doble núcleo. RadioLib 6.x maneja el front-end SX1262, U8g2 2.34 renderiza el OLED SSD1309, TinyGPS++ 1.0.3 decodifica tramas NMEA, ArduinoJson 7.x alimenta el panel de configuración.',
+    'ts-hw-t': 'Hardware',
+    'ts-hw-d': 'ESP32 DevKit V1, Ebyte E22-400M30S (SX1262/LLCC68), OLED SSD1309 2,42", GPS NEO-6M, cargador TP4056, celda Li-ion 18650. BOM estimado de 23-28 USD.',
+    'ts-web-t': 'Sitio Web',
+    'ts-web-d': 'Node.js 18+ sin dependencias runtime, módulos ES, renderizado multilingüe (EN/IT/FR/ES), Tailwind CSS, demo WebAudio, desplegado como función serverless de Vercel.',
+    'ts-tools-t': 'Herramientas y Despliegue',
+    'ts-tools-d': 'PlatformIO y Arduino IDE para el flasheo, CLI de Vercel e integración Git para el hosting (Root Directory website), npm run check valida la paridad de diccionarios.',
+    'ts-docs-t': 'Documentación',
+    'ts-docs-d': 'README.md, DATASHEET.md, FREQUENCIES.md y TECHNOLOGIES.md cubren todo el proyecto; el sitio live los refleja con selector de idioma y demo interactiva del firmware.'
   }
 };
 

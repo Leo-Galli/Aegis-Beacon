@@ -275,6 +275,9 @@
         <button data-tab="costruzione" id="btn-costruzione" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
           [ 05 // BUILD WIKI ]
         </button>
+        <button data-tab="techstack" id="btn-techstack" class="tab-btn px-3 py-1.5 text-[10px] sm:text-xs font-mono font-medium rounded border border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+          [ 06 // TECH STACK ]
+        </button>
       </nav>
     </div>
   </div>
@@ -571,6 +574,51 @@ pio run --target upload
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------- -->
+    <!-- TAB 6: TECHNOLOGY STACK                 -->
+    <!-- --------------------------------------- -->
+    <section id="tab-techstack" class="tab-content space-y-6">
+      <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-3">
+        <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 tracking-wider">// DOCUMENTATION &amp; STACK</span>
+        <h2 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono" data-key="ts-title">Technology Stack</h2>
+        <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-4xl" data-key="ts-subtitle">Complete picture of the technologies, libraries and tooling used across the firmware, hardware and website.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div class="group relative bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-2 overflow-hidden hover:border-orange-500/60 dark:hover:border-orange-500/40 hover:shadow-md transition-all duration-200">
+          <span class="font-mono text-[9px] text-orange-600 dark:text-orange-400 font-bold">[ C++ / ESP32 ]</span>
+          <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono mt-1" data-key="ts-fw-t">Firmware</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-2" data-key="ts-fw-d">C++ (Arduino/PlatformIO) on a dual-core ESP32. RadioLib 6.x drives the SX1262 front end, U8g2 2.34 renders the SSD1309 OLED, TinyGPS++ 1.0.3 parses NMEA sentences, ArduinoJson 7.x serves the configuration dashboard.</p>
+        </div>
+        <div class="group relative bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-2 overflow-hidden hover:border-emerald-500/60 dark:hover:border-emerald-500/40 hover:shadow-md transition-all duration-200">
+          <span class="font-mono text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">[ BOM ]</span>
+          <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono mt-1" data-key="ts-hw-t">Hardware</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-2" data-key="ts-hw-d">ESP32 DevKit V1, Ebyte E22-400M30S (SX1262/LLCC68), SSD1309 2.42&quot; OLED, NEO-6M GPS, TP4056 charger, 18650 Li-ion cell. Approximate BOM $23-28 USD.</p>
+        </div>
+        <div class="group relative bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-2 overflow-hidden hover:border-sky-500/60 dark:hover:border-sky-500/40 hover:shadow-md transition-all duration-200">
+          <span class="font-mono text-[9px] text-sky-600 dark:text-sky-400 font-bold">[ NODE.JS / VERCEL ]</span>
+          <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono mt-1" data-key="ts-web-t">Website</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-2" data-key="ts-web-d">Node.js 18+ with zero runtime dependencies, ES modules, language-aware rendering (EN/IT/FR/ES), Tailwind CSS, WebAudio demo, deployed as a Vercel serverless function.</p>
+        </div>
+        <div class="group relative bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 space-y-2 overflow-hidden hover:border-violet-500/60 dark:hover:border-violet-500/40 hover:shadow-md transition-all duration-200">
+          <span class="font-mono text-[9px] text-violet-600 dark:text-violet-400 font-bold">[ CI / DEPLOY ]</span>
+          <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono mt-1" data-key="ts-tools-t">Tooling and Deployment</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-2" data-key="ts-tools-d">PlatformIO and Arduino IDE for flashing, Vercel CLI and Git integration for hosting (Root Directory website), npm run check validates dictionary parity.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-3">
+        <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase font-mono border-b border-slate-100 dark:border-slate-800 pb-2" data-key="ts-docs-t">Documentation</h3>
+        <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="ts-docs-d">README.md, DATASHEET.md, FREQUENCIES.md and TECHNOLOGIES.md cover the whole project; the live site mirrors them with a language selector and an interactive firmware demo.</p>
+        <div class="flex flex-wrap gap-2 pt-1">
+          <a href="https://github.com/Leo-Galli/Aegis-Beacon/blob/main/README.md" target="_blank" rel="noopener" class="text-[10px] font-mono border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition notranslate">README.md</a>
+          <a href="https://github.com/Leo-Galli/Aegis-Beacon/blob/main/DATASHEET.md" target="_blank" rel="noopener" class="text-[10px] font-mono border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition notranslate">DATASHEET.md</a>
+          <a href="https://github.com/Leo-Galli/Aegis-Beacon/blob/main/FREQUENCIES.md" target="_blank" rel="noopener" class="text-[10px] font-mono border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition notranslate">FREQUENCIES.md</a>
+          <a href="https://github.com/Leo-Galli/Aegis-Beacon/blob/main/TECHNOLOGIES.md" target="_blank" rel="noopener" class="text-[10px] font-mono border border-orange-600 text-orange-600 dark:text-orange-400 px-2.5 py-1.5 rounded hover:bg-orange-50 dark:hover:bg-orange-950/20 transition notranslate">TECHNOLOGIES.md</a>
         </div>
       </div>
     </section>
