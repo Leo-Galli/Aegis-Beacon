@@ -11,7 +11,7 @@
 
 # Aegis-Beacon v5.4
 
-![Banner](https://github.com/Leo-Galli/Aegis-Beacon/blob/main/public/banner.png?raw=true)
+![Banner](https://github.com/Leo-Galli/Aegis-Beacon/blob/main/website/public/banner.png?raw=true)
 *Banner artwork generated with Google Gemini (AI).*
 
 ### Professional Dual-Mode Avalanche Rescue System
@@ -105,18 +105,22 @@
 
 ## Repository Structure
 
-The project is split into two clearly separated areas: the **embedded firmware** (Arduino/PlatformIO, lives in the repository root) and the **Node.js website** (all web assets live in the dedicated `public/` folder and are served by a small Node.js runtime).
+The project is split into two clearly separated areas: the **embedded firmware** (Arduino/PlatformIO, lives in the repository root) and the **Node.js website** (all web assets and server code live in the dedicated `website/` folder).
 
 ```text
 Aegis-Beacon/
-├── public/              # Website files (all site assets live here)
-│   ├── index.html       # Single-page technical manual and build wiki
-│   └── banner.png       # Open Graph / Twitter sharing banner
-├── server.js            # Node.js HTTP server (local dev, npm start)
-├── api/                 # Vercel serverless function
-│   └── index.js         # Re-exports the Node.js request handler
-├── vercel.json          # Vercel build + routing configuration
-├── package.json         # Node.js project metadata and scripts
+├── website/             # Node.js website (everything web lives here)
+│   ├── public/          # Views and static assets
+│   │   ├── index.html   # Single-page technical manual and build wiki
+│   │   ├── demo.html    # Interactive firmware simulation page
+│   │   └── banner.png   # Open Graph / Twitter sharing banner
+│   ├── api/             # Vercel serverless function
+│   │   └── index.js     # Re-exports the Node.js request handler
+│   ├── translations.js  # i18n dictionaries (EN / IT / FR / ES)
+│   ├── server.js        # Node.js HTTP server (language-aware rendering)
+│   ├── vercel.json      # Vercel build + routing configuration
+│   ├── package.json     # Node.js project metadata and scripts
+│   └── package-lock.json
 ├── AegisBeacon.ino      # ESP32 firmware (Arduino source)
 ├── README.md            # This document
 ├── DATASHEET.md         # Hardware datasheet
@@ -124,7 +128,9 @@ Aegis-Beacon/
 └── LICENSE
 ```
 
-**How the site is served:** `server.js` (or `api/index.js` on Vercel) handles every HTTP request and serves the static views from `public/`. The site is therefore a Node.js application — the only HTML file in the repository is the view template, deliberately kept inside the dedicated `public/` folder.
+**How the site is served:** `website/server.js` (or `website/api/index.js` on Vercel) handles every HTTP request. Pages are rendered by the Node.js runtime: each route reads its HTML template, applies the detected language (`?lang=` query, `aegis-lang` cookie or `Accept-Language` header) and injects the matching translation dictionary. The website is therefore a genuine Node.js application — the HTML files in `public/` are view templates, deliberately kept inside the dedicated `website/` folder.
+
+**Vercel deployment:** set the project **Root Directory** to `website` in the Vercel project settings (Settings → General → Root Directory → `website`). All paths in `website/vercel.json` are relative to that root. The `functions.includeFiles` entry bundles `public/**` into the serverless function so the language-aware page renderer can read its templates at runtime.
 
 ---
 

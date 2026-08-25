@@ -269,7 +269,17 @@
   }
   /* Keep protected product names stable. */
   .notranslate { }
+  .language-link-active {
+    opacity: 1;
+    color: #ea580c;
+    font-weight: 700;
+  }
+  .dark .language-link-active {
+    color: #fb923c;
+  }
 </style>
+
+<!-- AEGIS-I18N -->
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-[#090d16] dark:text-slate-200 font-sans antialiased">
 
@@ -335,10 +345,10 @@
         <div class="flex flex-wrap gap-1.5 pt-0.5">
           <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 text-[10px] font-mono font-bold border border-orange-200 dark:border-orange-900">
             <span class="w-1.5 h-1.5 bg-orange-600 rounded-full animate-pulse"></span>
-            ~$23-28 BOM
+            <span class="notranslate" translate="no">~$23-28 BOM</span>
           </span>
-          <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700">410–525 MHz</span>
-          <span class="inline-flex items-center px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono font-medium border border-emerald-200 dark:border-emerald-900">65 h BEACON · 44 h SEARCH</span>
+          <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700 notranslate" translate="no">410–525 MHz</span>
+          <span class="inline-flex items-center px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono font-medium border border-emerald-200 dark:border-emerald-900 notranslate" translate="no">65 h BEACON · 44 h SEARCH</span>
           <span class="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-mono font-medium border border-slate-200 dark:border-slate-700" data-key="hero-badges-modes">4 Modes</span>
         </div>
         <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed max-w-4xl pt-1" data-key="main-desc">
@@ -822,7 +832,7 @@ pio run --target upload
       <div class="flex flex-wrap items-center justify-center gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
         <span class="text-[9px] uppercase tracking-widest notranslate">Language:</span>
         <!-- Language selector -->
-        <div class="inline-flex items-center gap-2"><a class="language-link" href="?lang=en">EN</a><a class="language-link" href="?lang=fr">FR</a><a class="language-link" href="?lang=it">IT</a><a class="language-link" href="?lang=es">ES</a></div>
+        <div class="inline-flex items-center gap-2"><a class="language-link" href="?lang=en" data-lang="en">EN</a><a class="language-link" href="?lang=fr" data-lang="fr">FR</a><a class="language-link" href="?lang=it" data-lang="it">IT</a><a class="language-link" href="?lang=es" data-lang="es">ES</a></div>
       </div>
     </footer>
 
@@ -830,6 +840,79 @@ pio run --target upload
 
   <!-- INTERACTION LOGIC -->
   <script>
+    // i18n: applies the server-injected dictionary and drives the language selector.
+    (function () {
+      'use strict';
+      var LANGS = ['en', 'it', 'fr', 'es'];
+      var dict = window.AEGIS_I18N || {};
+
+      function currentLang() {
+        var m = window.location.search.match(/[?&]lang=([a-z]{2})/i);
+        if (m && LANGS.indexOf(m[1].toLowerCase()) !== -1) return m[1].toLowerCase();
+        try {
+          var stored = localStorage.getItem('aegis-lang');
+          if (stored && LANGS.indexOf(stored) !== -1) return stored;
+        } catch (e) { /* storage unavailable */ }
+        // Fall back to the language already applied by the server renderer.
+        var serverLang = document.documentElement.lang || 'en';
+        if (LANGS.indexOf(serverLang) !== -1) return serverLang;
+        var nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+        return LANGS.indexOf(nav) !== -1 ? nav : 'en';
+      }
+
+      function applyTo(el, key) {
+        var val = dict[key];
+        if (!val) return;
+        // Values carrying protected markup (notranslate spans) are trusted HTML.
+        if (/<[a-z][^>]*>/i.test(val)) { el.innerHTML = val; return; }
+        // Plain values: replace text nodes only, preserving child spans (e.g. pulse dot).
+        var texts = [];
+        for (var i = 0; i < el.childNodes.length; i++) {
+          if (el.childNodes[i].nodeType === 3) texts.push(el.childNodes[i]);
+        }
+        if (texts.length === 0) { el.appendChild(document.createTextNode(val)); return; }
+        texts[0].nodeValue = val;
+        for (var j = 1; j < texts.length; j++) texts[j].nodeValue = '';
+      }
+
+      function applyTranslations() {
+        var els = document.querySelectorAll('[data-key]');
+        for (var i = 0; i < els.length; i++) {
+          applyTo(els[i], els[i].getAttribute('data-key'));
+        }
+        document.documentElement.lang = currentLang();
+        var links = document.querySelectorAll('.language-link');
+        for (var k = 0; k < links.length; k++) {
+          var l = (links[k].getAttribute('href') || '').match(/lang=([a-z]{2})/i);
+          var active = l && l[1].toLowerCase() === currentLang();
+          links[k].classList.toggle('language-link-active', active);
+        }
+      }
+
+      function switchLang(lang) {
+        try { localStorage.setItem('aegis-lang', lang); } catch (e) {}
+        document.cookie = 'aegis-lang=' + lang + ';path=/;max-age=31536000';
+        fetch('/i18n/' + lang + '.json').then(function (r) { return r.json(); }).then(function (d) {
+          dict = d;
+          var url = new URL(window.location.href);
+          url.searchParams.set('lang', lang);
+          window.history.replaceState(null, '', url.toString());
+          applyTranslations();
+          document.documentElement.lang = lang;
+        }).catch(function () { window.location.href = '?lang=' + lang; });
+      }
+
+      var links = document.querySelectorAll('.language-link');
+      for (var i = 0; i < links.length; i++) {
+        links[i].addEventListener('click', function (e) {
+          var l = (this.getAttribute('href') || '').match(/lang=([a-z]{2})/i);
+          if (l) { e.preventDefault(); switchLang(l[1].toLowerCase()); }
+        });
+      }
+
+      applyTranslations();
+    })();
+
     // TX/RX simulator state.
 
     const SIM_LABELS = {
