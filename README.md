@@ -69,6 +69,8 @@
 ## Table of Contents
 
 - [Overview](#overview)
+- [Technology Stack](#technology-stack)
+- [Documentation](#documentation)
 - [What's New in v5.x](#whats-new-in-v5x)
 - [Features](#features)
 - [Hardware](#hardware)
@@ -122,9 +124,10 @@ Aegis-Beacon/
 │   ├── package.json     # Node.js project metadata and scripts
 │   └── package-lock.json
 ├── AegisBeacon.ino      # ESP32 firmware (Arduino source)
-├── README.md            # This document
+├── README.md            # Project overview, quick start and guides
 ├── DATASHEET.md         # Hardware datasheet
 ├── FREQUENCIES.md       # SAR frequency reference
+├── TECHNOLOGIES.md      # Technology stack reference
 └── LICENSE
 ```
 
@@ -137,6 +140,35 @@ Aegis-Beacon/
 3. Redeploy (push to `main` or use "Redeploy" in the dashboard). The Git integration then builds from `website/` automatically.
 
 Equivalently, with the Vercel CLI from inside `website/`: `vercel link --yes --project aegis-beacon` then `vercel deploy --prod` (or `vercel build` followed by `vercel deploy --prebuilt --prod`). The `functions.includeFiles` entry bundles `public/**` into the serverless function so the language-aware page renderer can read its templates at runtime.
+
+---
+
+## Technology Stack
+
+| Layer               | Technologies                                                                                              |
+|:--------------------|:----------------------------------------------------------------------------------------------------------|
+| **Firmware**        | C++ (Arduino framework) · PlatformIO · RadioLib ≥ 6.x (SX1262) · U8g2 ≥ 2.34 (SSD1309) · TinyGPS++ ≥ 1.0.3 · ArduinoJson ≥ 7.x |
+| **Hardware**        | ESP32 DevKit V1 · Ebyte E22-400M30S (SX1262/LLCC68) · SSD1309 2.42" OLED · NEO-6M GPS · TP4056 · 18650 Li-ion |
+| **Website**         | Node.js ≥ 18 (zero runtime dependencies) · ES modules · Vercel serverless · Tailwind CSS · Vanilla JS · WebAudio API |
+| **i18n**            | Dictionary-driven EN / IT / FR / ES with `notranslate` protection for technical terms                     |
+| **Tooling / Deploy**| Git + GitHub · PlatformIO · Arduino IDE · Vercel CLI · Vercel Git integration (Root Directory `website`)   |
+
+See **[TECHNOLOGIES.md](TECHNOLOGIES.md)** for the full stack reference: exact libraries, versions, build commands, architecture and verification checklist.
+
+---
+
+## Documentation
+
+All project documentation is written in English and kept in the repository root. The website mirrors the manual content and adds an interactive firmware simulation.
+
+| Document                        | Content                                                                  |
+|:--------------------------------|:-------------------------------------------------------------------------|
+| [README.md](README.md)          | Project overview, features, quick start, hardware and firmware guides     |
+| [DATASHEET.md](DATASHEET.md)    | Complete electrical specifications, GPIO map and operating parameters     |
+| [FREQUENCIES.md](FREQUENCIES.md) | Global SAR frequency reference and regional compatibility database        |
+| [TECHNOLOGIES.md](TECHNOLOGIES.md) | Technology stack, architecture and verification checklist               |
+
+**Interactive documentation:** the live website (`https://aegis-beacon.vercel.app`) renders the same manual with a language selector (EN/IT/FR/ES) and a complete browser simulation of the firmware at `/demo.html` (OLED, Morse engine, frequency planner, GPS payload, RSSI audio, battery monitor, serial console).
 
 ---
 
