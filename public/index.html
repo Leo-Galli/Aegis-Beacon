@@ -4,25 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 
-<!-- 1. METADATI SEO STRUTTURALI (Ottimizzati per CTR e CTR-Booster) -->
+<!-- 1. STRUCTURAL SEO METADATA (optimized for CTR and CTR-Booster) -->
 <title>Aegis-Beacon v5.4: Technical Manual and SAR Build Wiki</title>
 <meta name="description" content="Official Aegis-Beacon v5.4 manual. Step-by-step guide to SMD hardware assembly, ESP32 firmware flashing with PlatformIO, and SAR radio frequency management.">
 <meta name="keywords" content="Aegis-Beacon, radio locator, LoRa SAR, firmware ESP32, SX1262, emergency beacon construction, beacon software updates, beacon wiring diagram, ESP32 programming, alpine radio location">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <link rel="canonical" href="https://aegis-beacon.vercel.app/">
 
-<!-- SEO multi-language: hreflang alternate links per indicizzare tutte le 4 lingue -->
+<!-- SEO multi-language: hreflang alternate links to index all 4 languages -->
 <link rel="alternate" hreflang="x-default" href="https://aegis-beacon.vercel.app/" />
 <link rel="alternate" hreflang="en" href="https://aegis-beacon.vercel.app/" />
 <link rel="alternate" hreflang="fr" href="https://aegis-beacon.vercel.app/" />
 <link rel="alternate" hreflang="it" href="https://aegis-beacon.vercel.app/" />
 <link rel="alternate" hreflang="es" href="https://aegis-beacon.vercel.app/" />
 
-<!-- 2. DIRETTIVE PREFETCH & PRECONNECT (Miglioramento Core Web Vitals) -->
+<!-- 2. PREFETCH & PRECONNECT DIRECTIVES (Core Web Vitals improvement) -->
 <link rel="preconnect" href="https://github.com">
 <link rel="dns-prefetch" href="https://github.com">
 
-<!-- 3. OPEN GRAPH / FACEBOOK / LINKEDIN (Protocollo Semantico con /banner.PNG) -->
+<!-- 3. OPEN GRAPH / FACEBOOK / LINKEDIN (Semantic protocol with /banner.png) -->
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:locale:alternate" content="fr_FR">
@@ -32,20 +32,20 @@
 <meta property="og:description" content="Standardized hardware and firmware guide for developing and assembling the LoRa/ESP32 emergency radio-location device.">
 <meta property="og:url" content="https://aegis-beacon.vercel.app/">
 <meta property="og:type" content="website">
-<meta property="og:image:secure_url" content="https://aegis-beacon.vercel.app/banner.PNG">
+<meta property="og:image:secure_url" content="https://aegis-beacon.vercel.app/banner.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Aegis-Beacon v5.4 — Technical manual and wiki for the SX1262 emergency beacon">
 <meta property="og:image:type" content="image/png">
 <meta property="og:determiner" content="the">
 
-<!-- 4a. TWITTER CARDS (ottimizzate al massimo per la condivisione) -->
+<!-- 4a. TWITTER CARDS (optimized for maximum sharing) -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Aegis-Beacon v5.4 | Technical Manual and Build Wiki">
-<meta name="twitter:description" content="Specifiche hardware, sorgenti firmware e istruzioni di flashing PlatformIO per il localizzatore d'emergenza open-source.">
-<meta name="twitter:image" content="https://aegis-beacon.vercel.app/banner.PNG">
+<meta name="twitter:description" content="Hardware specifications, firmware sources, and PlatformIO flashing instructions for the open-source emergency locator.">
+<meta name="twitter:image" content="https://aegis-beacon.vercel.app/banner.png">
 <meta name="twitter:image:alt" content="Aegis-Beacon v5.4 — Technical SAR beacon overview with SX1262">
-<!-- twitter:site rimosso: handle Twitter/X personale dell'autore non disponibile. Aggiungere solo se l'account esiste davvero. -->
+<!-- twitter:site omitted: the author's personal Twitter/X handle is unavailable. Add it only if the account actually exists. -->
 
 <!-- 4b. MOBILE / PWA / DISCORD-WHATSAPP PREVIEW -->
 <meta name="theme-color" content="#ea580c">
@@ -65,24 +65,20 @@
 <meta name="pagename" content="Aegis-Beacon v5.4 Technical Manual">
 <meta name="category" content="Technology / Open Source Hardware / Search and Rescue">
 <meta property="og:site_name" content="Aegis-Beacon Open Source Project">
-<meta property="og:image" content="https://aegis-beacon.vercel.app/banner.PNG">
+<meta property="og:image" content="https://aegis-beacon.vercel.app/banner.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/png">
 
-<!-- 4. TWITTER CARDS (Ottimizzazione con /banner.PNG) -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Aegis-Beacon v5.4 | Technical Manual and Build Wiki">
-<meta name="twitter:description" content="Specifiche hardware, sorgenti firmware e istruzioni di flashing PlatformIO per il localizzatore d'emergenza open-source.">
-<meta name="twitter:image" content="https://aegis-beacon.vercel.app/banner.PNG">
 
-<!-- 5. ICONE E FAVICON (Miglioramento Visuale in SERP e Brand Search) -->
+
+<!-- 5. ICONS AND FAVICON (visual improvement in SERP and brand search) -->
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 
-<!-- 6. JSON-LD SCHEMA INTEGRATO E RELAZIONALE (Nodi interconnessi per Rich Snippets avanzati) -->
+<!-- 6. INTEGRATED RELATIONAL JSON-LD SCHEMA (interconnected nodes for advanced rich snippets) -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -104,7 +100,7 @@
             "width": 512,
             "height": 512
           },
-          "image": "https://aegis-beacon.vercel.app/banner.PNG",
+          "image": "https://aegis-beacon.vercel.app/banner.png",
           "description": "Open-source emergency radio location project based on LoRa/SX1262 for alpine SAR operations.",
           "foundingDate": "2026",
           "founder": {
@@ -146,7 +142,7 @@
       "inLanguage": ["it-IT","en-US","fr-FR","es-ES"],
       "url": "https://aegis-beacon.vercel.app/",
       "mainEntityOfPage": "https://aegis-beacon.vercel.app/",
-      "image": "https://aegis-beacon.vercel.app/banner.PNG",
+      "image": "https://aegis-beacon.vercel.app/banner.png",
       "datePublished": "2024-10-15T08:00:00+02:00",
       "dateModified": "2026-07-15T12:00:00+02:00",
       "author": {
@@ -302,7 +298,7 @@
     </div>
   </header>
 
-  <!-- SCHEDE NAVIGAZIONE COMPRESSION-RESPONSIVE -->
+  <!-- RESPONSIVE COMPRESSION NAVIGATION TABS -->
   <div class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b101c] sticky top-16 z-40">
     <div class="max-w-7xl mx-auto px-4">
       <nav class="flex gap-1.5 py-3 overflow-x-auto no-scrollbar scroll-smooth" aria-label="Manual navigation">
@@ -329,7 +325,7 @@
   <main class="max-w-7xl mx-auto px-4 py-6 space-y-6 sm:space-y-8">
 
     <!-- --------------------------------------- -->
-    <!-- TAB 1: PANORAMICA                       -->
+    <!-- TAB 1: OVERVIEW                         -->
     <!-- --------------------------------------- -->
     <section id="tab-panoramica" class="tab-content active space-y-6">
       <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 shadow-sm space-y-3">
@@ -347,6 +343,7 @@
         <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed max-w-4xl pt-1" data-key="main-desc">
           A low-cost emergency radio-location system based on LoRa, designed for mountain rescue, land operations, and critical civilian scenarios. The beacon generates CW pulses and long-range digital messages to support radio direction finding when cellular infrastructure is unavailable.
         </p>
+        <img src="/banner.png" alt="Aegis-Beacon v5.4 technical manual and build wiki banner" width="1376" height="768" class="w-full h-auto rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
@@ -606,11 +603,11 @@ pio run --target upload
                 <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5" data-key="wiki-const-p1">Solder the 0805 or 0603 SMD resistors and capacitors first, preferably using high-conductivity solder paste and a hot-air station.</p>
               </div>
               <div>
-                <span class="block text-[11px] font-bold text-slate-900 dark:text-white">2. Allineamento dei Moduli Integrati</span>
+                <span class="block text-[11px] font-bold text-slate-900 dark:text-white">2. Aligning the Integrated Modules</span>
                 <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5" data-key="wiki-const-p2">Position the ESP32 and SX1262 chip accurately on their respective footprints. Tack the corners before reflowing the contacts.</p>
               </div>
               <div>
-                <span class="block text-[11px] font-bold text-slate-900 dark:text-white">3. Connessione dell'Antenna e Test RF</span>
+                <span class="block text-[11px] font-bold text-slate-900 dark:text-white">3. Antenna Connection and RF Test</span>
                 <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5" data-key="wiki-const-p3">Solder the SMA connector. Warning: never power the unit without first connecting a suitable antenna or 50-ohm dummy load, otherwise the power amplifier stage may fail immediately.</p>
               </div>
             </div>
@@ -639,7 +636,7 @@ pio run --target upload
               <span class="text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</span>
             </div>
             <div class="grid grid-cols-2 gap-1 text-[11px] text-slate-500">
-              <div>Canale: PMR CH 7</div>
+              <div>Channel: PMR CH 7</div>
               <div>Scope: Italy / Mountain Network</div>
             </div>
             <p class="text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-900" data-key="n-1">
@@ -653,7 +650,7 @@ pio run --target upload
               <span class="text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</span>
             </div>
             <div class="grid grid-cols-2 gap-1 text-[11px] text-slate-500">
-              <div>Canale: PMR CH 8</div>
+              <div>Channel: PMR CH 8</div>
               <div>Scope: European Standard</div>
             </div>
             <p class="text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-900" data-key="n-2">
@@ -699,7 +696,7 @@ pio run --target upload
               <div>Oceania</div>
             </div>
             <p class="text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-900" data-key="n-5">
-              Emergency Repeater Input (duplex, accoppiato a CH 5 / 476.525 MHz). Accordo ACMA class licence.
+              Emergency Repeater Input (duplex, paired with CH 5 / 476.525 MHz). ACMA class licence.
             </p>
           </div>
         </div>
@@ -710,31 +707,31 @@ pio run --target upload
             <thead>
               <tr class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 text-[11px]">
                 <th class="p-3.5 font-semibold w-1/5">Frequency</th>
-                <th class="p-3.5 font-semibold w-1/5" data-key="th-ch">Canale</th>
+                <th class="p-3.5 font-semibold w-1/5" data-key="th-ch">Channel</th>
                 <th class="p-3.5 font-semibold w-1/5" data-key="th-area">Usage Scope</th>
                 <th class="p-3.5 font-semibold text-center w-1/6" data-key="th-state">Hardware Status</th>
-                <th class="p-3.5 font-semibold w-3/12" data-key="th-note">Note Operative di Ricezione</th>
+                <th class="p-3.5 font-semibold w-3/12" data-key="th-note">Operational Reception Notes</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-600 dark:text-slate-300 text-[11px]">
               <tr>
                 <td class="p-3.5 font-bold text-slate-900 dark:text-white">446.08125 MHz</td>
-                <td class="p-3.5">PMR CH 7 (Tono 7)</td>
-                <td class="p-3.5">Italia / Rete Montana</td>
+                <td class="p-3.5">PMR CH 7 (Tone 7)</td>
+                <td class="p-3.5">Italy / Mountain Network</td>
                 <td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</td>
                 <td class="p-3.5" data-key="n-1">National hiking safety frequency. Primary monitoring and test channel.</td>
               </tr>
               <tr class="bg-slate-50/40 dark:bg-slate-900/10">
                 <td class="p-3.5 font-bold text-slate-900 dark:text-white">446.09375 MHz</td>
                 <td class="p-3.5">PMR CH 8</td>
-                <td class="p-3.5">Europa Standard</td>
+                <td class="p-3.5">European Standard</td>
                 <td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</td>
                 <td class="p-3.5" data-key="n-2">General mountain radio coordination channel for continental use.</td>
               </tr>
               <tr>
                 <td class="p-3.5 font-bold text-slate-400 dark:text-slate-600">161.300 MHz</td>
-                <td class="p-3.5">Canal E (Emergenza)</td>
-                <td class="p-3.5">Svizzera / REGA</td>
+                <td class="p-3.5">Canal E (Emergency)</td>
+                <td class="p-3.5">Switzerland / REGA</td>
                 <td class="p-3.5 text-center text-rose-600 dark:text-rose-400 font-bold" data-key="v-no">INCOMPATIBLE</td>
                 <td class="p-3.5 text-slate-400 dark:text-slate-500" data-key="n-3">VHF band outside the E22 module filter (410–525 MHz).</td>
               </tr>
@@ -748,9 +745,9 @@ pio run --target upload
               <tr>
                 <td class="p-3.5 font-bold text-slate-900 dark:text-white">477.275 MHz</td>
                 <td class="p-3.5">UHF CB CH 35</td>
-                <td class="p-3.5">Australia / Nuova Zelanda</td>
+                <td class="p-3.5">Australia / New Zealand</td>
                 <td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold" data-key="v-ok">COMPATIBLE</td>
-                <td class="p-3.5" data-key="n-5">Emergency Repeater Input (duplex con CH 5 / 476.525 MHz). ACMA class licence.</td>
+                <td class="p-3.5" data-key="n-5">              Emergency Repeater Input (duplex with CH 5 / 476.525 MHz). ACMA class licence.</td>
               </tr>
             </tbody>
           </table>
@@ -758,10 +755,10 @@ pio run --target upload
       </div>
     </section>
 
-    <!-- TEST E DIAGNOSTICA STRUMENTALE (ADATTAMENTO LIQUIDO) -->
+    <!-- INSTRUMENTAL TEST AND DIAGNOSTICS (LIQUID ADAPTATION) -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 shadow-sm">
       <div class="lg:col-span-5 space-y-2">
-        <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider" data-key="sim-tag">// DIAGNOSTICA STRUMENTALE //</span>
+        <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider" data-key="sim-tag">// INSTRUMENT DIAGNOSTICS //</span>
         <h3 class="text-base font-bold text-slate-900 dark:text-white" data-key="sim-title">Operational Loop Verification</h3>
         <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" data-key="sim-desc">
           Test console for firmware simulation. It shows the sequential output sent through the serial (UART) port while the device changes logical states.

@@ -88,7 +88,7 @@ The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled
 
 | Parameter                    | Value          | Unit  | Notes                                         |
 |------------------------------|----------------|-------|-----------------------------------------------|
-| RF module                    | Ebyte E22-400M30S |    | SX1262 or LLCC68 inside; TCXO onboard        |
+| RF module                    | Ebyte E22-400M30S | —   | SX1262 or LLCC68 inside; TCXO onboard        |
 | Frequency range              | 410–525        | MHz   | Hardware-limited by module filter             |
 | Modulation                   | CW (FSK keying)| —     | `transmitDirect()` / `standby()` carrier keying |
 | Output power range (RadioLib)| −9 to +22      | dBm   | SX1262 PA hardware limit                      |
