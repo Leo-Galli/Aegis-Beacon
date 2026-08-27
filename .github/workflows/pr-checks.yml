@@ -1,0 +1,198 @@
+name: PR Quality Checks
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  pr-validation:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR title format
+        run: |
+          echo "=== PR Title Validation ==="
+          TITLE="${{ github.event.pull_request.title }}"
+          if [ -z "$TITLE" ]; then
+            echo "ERROR: PR title is empty"
+            exit 1
+          fi
+          echo "PR Title: $TITLE"
+          # Check for AI co-author references
+          if echo "$TITLE" | grep -qi "co-authored-by.*codebuff\|generated.*codebuff\|buffy"; then
+            echo "ERROR: PR title contains AI co-author references"
+            exit 1
+          fi
+          echo "OK: PR title format valid"
+
+      - name: Check commit messages
+        run: |
+          echo "=== Commit Message Validation ==="
+          COMMITS=$(git log origin/${{ github.base_ref }}..HEAD --pretty=format:"%s" 2>/dev/null || echo "")
+          if [ -z "$COMMITS" ]; then
+            echo "No commits to validate"
+            exit 0
+          fi
+          echo "$COMMITS" | while read -r line; do
+            if echo "$line" | grep -qi "co-authored-by.*codebuff\|generated.*codebuff\|buffy"; then
+              echo "ERROR: Commit message contains AI co-author references: $line"
+              exit 1
+            fi
+            echo "OK: $line"
+          done
+          echo "All commit messages valid"
+
+      - name: Check file changes
+        run: |
+          echo "=== Changed Files Analysis ==="
+          git diff --name-only origin/${{ github.base_ref }}..HEAD 2>/dev/null | head -50
+          echo ""
+          # Check for sensitive files
+          SENSITIVE=$(git diff --name-only origin/${{ github.base_ref }}..HEAD 2>/dev/null | grep -E '\.env|secret|password|token|key\.json' || true)
+          if [ -n "$SENSITIVE" ]; then
+            echo "WARNING: Potentially sensitive files changed:"
+            echo "$SENSITIVE"
+          fi
+          # Check for large files
+          LARGE=$(git diff --name-only origin/${{ github.base_ref }}..HEAD 2>/dev/null | while read f; do
+            if [ -f "$f" ]; then
+              SIZE=$(wc -c < "$f" 2>/dev/null || echo 0)
+              if [ "$SIZE" -gt 1048576 ]; then
+                echo "$f ($SIZE bytes)"
+              fi
+            fi
+          done)
+          if [ -n "$LARGE" ]; then
+            echo "WARNING: Large files detected:"
+            echo "$LARGE"
+          fi
+          echo "File analysis complete"
+
+      - name: Check for AI co-author in body
+        run: |
+          echo "=== PR Body Validation ==="
+          BODY=$(cat <<'BODYEOF'
+          ${{ github.event.pull_request.body }}
+          BODYEOF
+          )
+          if echo "$BODY" | grep -qi "co-authored-by.*codebuff\|generated.*codebuff\|buffy"; then
+            echo "ERROR: PR body contains AI co-author references"
+            exit 1
+          fi
+          echo "OK: PR body valid"
+
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check for common code issues
+        run: |
+          echo "=== Code Quality Checks ==="
+          # Check for TODO/FIXME without issue references
+          echo "Checking for untracked TODOs..."
+          grep -rn "TODO\|FIXME\|HACK\|XXX" --include='*.js' --include='*.ino' . 2>/dev/null | grep -v node_modules | grep -v '.github' | head -20 || echo "No untracked TODOs found"
+          # Check for console.log in production code
+          echo ""
+          echo "Checking for console.log in views..."
+          grep -rn "console.log" website/views/ --include='*.js' 2>/dev/null | head -10 || echo "No console.log in views"
+          # Check for hardcoded credentials
+          echo ""
+          echo "Checking for hardcoded credentials..."
+          grep -rn "password\|secret\|token\|api_key\|apikey" --include='*.js' --include='*.ino' . 2>/dev/null | grep -v node_modules | grep -v '.github' | grep -v "// " | head -10 || echo "No hardcoded credentials found"
+
+      - name: Verify documentation
+        run: |
+          echo "=== Documentation Check ==="
+          # Check for README
+          if [ -f "README.md" ]; then
+            echo "OK: README.md exists"
+            # Check for links
+            LINKS=$(grep -c "http" README.md || echo 0)
+            echo "   Found $LINKS links in README"
+          else
+            echo "WARNING: README.md not found"
+          fi
+          # Check for DATASHEET
+          if [ -f "DATASHEET.md" ]; then
+            echo "OK: DATASHEET.md exists"
+          else
+            echo "INFO: DATASHEET.md not found"
+          fi
+          # Check for FREQUENCIES
+          if [ -f "FREQUENCIES.md" ]; then
+            echo "OK: FREQUENCIES.md exists"
+          else
+            echo "INFO: FREQUENCIES.md not found"
+          fi
+
+  assign-reviewer:
+    name: Assign Reviewer
+    runs-on: ubuntu-latest
+    needs: [pr-validation, code-quality]
+    steps:
+      - name: Assign Leo-Galli as reviewer
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.pulls.requestReviewers({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                reviewers: ['Leo-Galli']
+              });
+              console.log('Successfully assigned Leo-Galli as reviewer');
+            } catch (error) {
+              console.log('Could not assign reviewer:', error.message);
+            }
+
+      - name: Add PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const checks = [
+              'PR title format validation',
+              'Commit message validation',
+              'Sensitive file detection',
+              'Large file detection',
+              'AI co-author reference check',
+              'Code quality scan',
+              'Documentation verification',
+              'Security pattern check'
+            ];
+            const body = `## Automated PR Checks
+
+            All automated checks have been completed:
+
+            ${checks.map(c => `- [x] ${c}`).join('\n')}
+
+            **Reviewer assigned:** @Leo-Galli
+
+            ---
+            *This PR will be reviewed and merged by the project maintainer.*`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });

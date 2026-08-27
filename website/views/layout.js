@@ -145,8 +145,20 @@ export function renderHeader({ logoHref = null, action = 'Demo', actionHref = '/
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const toggle = document.getElementById('lang-toggle');
-  const dropdown = document.getElementById('lang-dropdown');
+  // Theme toggle
+  var themeBtn = document.getElementById('theme-toggle');
+  if (themeBtn) {
+    var isDark = document.documentElement.classList.contains('dark');
+    themeBtn.setAttribute('aria-checked', String(isDark));
+    themeBtn.addEventListener('click', () => {
+      var dark = document.documentElement.classList.toggle('dark');
+      try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch(e) {}
+      themeBtn.setAttribute('aria-checked', String(dark));
+    });
+  }
+  // Language dropdown
+  var toggle = document.getElementById('lang-toggle');
+  var dropdown = document.getElementById('lang-dropdown');
   if (toggle && dropdown) {
     toggle.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -218,6 +230,16 @@ export function renderPage({
   return `<!DOCTYPE html>
 <html lang="${lang}" class="scroll-smooth">
 <head>
+<script>
+(function(){
+  try {
+    var t = localStorage.getItem('theme');
+    if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme:dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  } catch(e) {}
+})();
+</script>
 ${renderHead({ title, description, canonical, jsonLd, withIconLinks })}
 <script>window.AEGIS_I18N = ${dictJson};</script>
 </head>

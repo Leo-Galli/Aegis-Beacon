@@ -1,0 +1,167 @@
+name: Website CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - '.github/workflows/website-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - '.github/workflows/website-ci.yml'
+
+jobs:
+  check:
+    name: Type Check & Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run syntax checks
+        run: npm run check
+
+      - name: Check for console errors
+        run: |
+          echo "=== Checking for common issues ==="
+          # Check for .html references in routes
+          echo "Checking for .html in route files..."
+          if grep -rn '\.html' views/ server.js --include='*.js' | grep -v node_modules | grep -v '// ' | grep -v 'href=.*http' | grep -v 'external'; then
+            echo "WARNING: Found .html references in route files"
+          else
+            echo "OK: No internal .html references"
+          fi
+          # Check for hardcoded URLs
+          echo "Checking for hardcoded localhost..."
+          if grep -rn 'localhost' views/ --include='*.js' | grep -v SITE_URL; then
+            echo "WARNING: Found hardcoded localhost references"
+          else
+            echo "OK: No hardcoded localhost"
+          fi
+
+  build:
+    name: Build & Verify
+    runs-on: ubuntu-latest
+    needs: check
+    defaults:
+      run:
+        working-directory: website
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify all routes respond
+        run: |
+          echo "=== Route verification ==="
+          node -e "
+            import { createServer } from 'node:http';
+            import { handleRequest } from './server.js';
+            const server = createServer(handleRequest);
+            server.listen(0, async () => {
+              const port = server.address().port;
+              const routes = ['/', '/wiki', '/manual', '/demo', '/builder', '/health', '/version'];
+              let failed = false;
+              for (const r of routes) {
+                const res = await fetch('http://localhost:' + port + r);
+                if (res.status !== 200) {
+                  console.error('FAIL: ' + r + ' returned ' + res.status);
+                  failed = true;
+                } else {
+                  console.log('OK: ' + r + ' -> ' + res.status);
+                }
+              }
+              server.close();
+              if (failed) process.exit(1);
+              console.log('All routes OK');
+            });
+          "
+
+      - name: Verify i18n dictionaries
+        run: |
+          node -e "
+            import('./translations.js').then(m => {
+              const missing = m.validateDictionaries();
+              const bad = Object.entries(missing).filter(([, v]) => v.length);
+              if (bad.length) {
+                console.error('Missing translation keys:', JSON.stringify(bad));
+                process.exit(1);
+              }
+              console.log('i18n OK: ' + m.SUPPORTED_LANGS.join(', '));
+            });
+          "
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate || true
+
+      - name: Check for path traversal protection
+        run: |
+          echo "=== Checking security patterns ==="
+          if grep -q 'filePath.startsWith(rootPrefix)' server.js; then
+            echo "OK: Path traversal protection found"
+          else
+            echo "WARNING: Path traversal protection not found in server.js"
+          fi
+          if grep -q 'normalize.*join' server.js; then
+            echo "OK: Path normalization found"
+          else
+            echo "WARNING: Path normalization not found"
+          fi
+
+  assign-reviewer:
+    name: Assign Reviewer
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Assign Leo-Galli as reviewer
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              reviewers: ['Leo-Galli']
+            });
+            console.log('Assigned Leo-Galli as reviewer');
