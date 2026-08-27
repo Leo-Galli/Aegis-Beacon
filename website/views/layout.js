@@ -72,7 +72,34 @@ ${jsonLd ? `<script type="application/ld+json">${jsonLd}</script>` : ''}
 <script src="/js/tailwind.config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="${FONTS_HREF}" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css">`;
+<link rel="stylesheet" href="/css/site.css">
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script>
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,it,fr,es,de,pt,ru,ja,zh-CN,ko',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+    autoDisplay: false
+  }, 'google_translate_element');
+}
+</script>
+<style>
+/* Hide Google Translate bar, show only our widget */
+.goog-te-banner-frame, .goog-te-spinner-pos, #goog-gt-tt { display: none !important; }
+body { top: 0 !important; }
+/* Style the Google Translate dropdown to match site */
+#google_translate_element .goog-te-gadget { font-family: 'JetBrains Mono', monospace !important; font-size: 10px !important; }
+#google_translate_element .goog-te-gadget select { 
+  background: transparent; border: 1px solid var(--border); border-radius: 6px; 
+  padding: 4px 8px; font-size: 10px; font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary); cursor: pointer; appearance: auto;
+}
+#google_translate_element .goog-te-gadget select:hover { border-color: var(--orange-500); }
+.dark #google_translate_element .goog-te-gadget select { background: var(--surface-alt); color: var(--text-primary); }
+/* Do not translate elements with notranslate class */
+.notranslate, .notranslate * { google:ignore; }
+</style>`;
 }
 
 const THEME_TOGGLE = `<button id="theme-toggle" class="theme-switch" role="switch" aria-checked="false" aria-label="Toggle color scheme" title="Toggle color scheme">
@@ -83,31 +110,12 @@ const THEME_TOGGLE = `<button id="theme-toggle" class="theme-switch" role="switc
 </button>`;
 
 /**
- * Language switcher dropdown.
+ * Google Translate widget — automatic translation.
+ * Protects notranslate elements from being translated.
  */
 function renderLanguageSwitcher(currentLang, currentPath = '/') {
-  const langs = [
-    { code: 'en', label: 'EN', full: 'English' },
-    { code: 'it', label: 'IT', full: 'Italiano' },
-    { code: 'fr', label: 'FR', full: 'Francais' },
-    { code: 'es', label: 'ES', full: 'Espanol' }
-  ];
-
-  const options = langs.map((l) =>
-    `<a href="/set-lang?lang=${l.code}&redirect=${encodeURIComponent(currentPath)}"
-       class="block px-3 py-1.5 text-[10px] font-mono ${l.code === currentLang ? 'text-orange-600 dark:text-orange-400 font-bold bg-orange-50 dark:bg-orange-950/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'} transition-colors"
-       data-lang="${l.code}">${l.full}</a>`
-  ).join('');
-
   return `<div class="relative" id="lang-switcher">
-    <button id="lang-toggle" class="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded hover:border-orange-500 dark:hover:border-orange-500 transition-colors">
-      <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
-      <span>${currentLang.toUpperCase()}</span>
-      <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-    </button>
-    <div id="lang-dropdown" class="hidden absolute right-0 top-full mt-1 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1 z-50 min-w-[100px]">
-      ${options}
-    </div>
+    <div id="google_translate_element"></div>
   </div>`;
 }
 
@@ -155,17 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
       try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch(e) {}
       themeBtn.setAttribute('aria-checked', String(dark));
     });
-  }
-  // Language dropdown
-  var toggle = document.getElementById('lang-toggle');
-  var dropdown = document.getElementById('lang-dropdown');
-  if (toggle && dropdown) {
-    toggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      dropdown.classList.toggle('hidden');
-    });
-    document.addEventListener('click', () => dropdown.classList.add('hidden'));
-    dropdown.addEventListener('click', (e) => e.stopPropagation());
   }
 });
 </script>`;
@@ -226,7 +223,6 @@ export function renderPage({
   currentPath = '/',
   extraScripts = ''
 }) {
-  const dictJson = JSON.stringify(dict).replace(/</g, '\\u003c');
   return `<!DOCTYPE html>
 <html lang="${lang}" class="scroll-smooth">
 <head>
@@ -241,7 +237,6 @@ export function renderPage({
 })();
 </script>
 ${renderHead({ title, description, canonical, jsonLd, withIconLinks })}
-<script>window.AEGIS_I18N = ${dictJson};</script>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-[#090d16] dark:text-slate-200 font-sans antialiased">
 ${renderHeader({ ...header, currentLang: lang, currentPath })}
@@ -250,7 +245,6 @@ ${tabs ? renderTabs() : ''}
 ${content}
 ${renderFooter({ ...footer, currentLang: lang, currentPath })}
 </main>
-<script src="/js/i18n.js"></script>
 ${scriptSrc ? `<script type="module" src="${scriptSrc}"></script>` : ''}
 ${extraScripts}
 </body>
