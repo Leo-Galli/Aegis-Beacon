@@ -92,9 +92,9 @@ function detectLanguage(request, requestUrl) {
   return DEFAULT_LANG;
 }
 
-function renderPageSafe(renderer, lang, pathname) {
+async function renderPageSafe(renderer, lang, pathname) {
   const dict = DICTIONARIES[lang] || DICTIONARIES[DEFAULT_LANG];
-  return renderer(lang, dict, pathname);
+  return await renderer(lang, dict, pathname);
 }
 
 export async function handleRequest(request, response) {
@@ -133,7 +133,7 @@ export async function handleRequest(request, response) {
     const renderer = PAGE_RENDERERS[pathname];
     if (!renderer) return new Response('Not found', { status: 404 });
     const lang = detectLanguage(request, requestUrl);
-    const html = renderPageSafe(renderer, lang, pathname);
+    const html = await renderPageSafe(renderer, lang, pathname);
     return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } });
   }
 
@@ -185,7 +185,7 @@ export async function handleRequest(request, response) {
   if (renderer) {
     const lang = detectLanguage(request, requestUrl);
     try {
-      const html = renderPageSafe(renderer, lang, pathname);
+      const html = await renderPageSafe(renderer, lang, pathname);
       response.writeHead(200, {
         'cache-control': 'no-cache',
         'content-type': 'text/html; charset=utf-8'
