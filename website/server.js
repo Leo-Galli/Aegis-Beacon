@@ -6,6 +6,13 @@ import { fileURLToPath } from 'node:url';
 import { DEFAULT_LANG, DICTIONARIES, SUPPORTED_LANGS } from './translations.js';
 import { renderLandingPage } from './views/landing.js';
 import { renderWikiPage } from './views/wiki.js';
+import { renderOverviewPage } from './views/wiki/overview.js';
+import { renderHardwarePage } from './views/wiki/hardware.js';
+import { renderFirmwarePage } from './views/wiki/firmware.js';
+import { renderAssemblyPage } from './views/wiki/assembly.js';
+import { renderFrequenciesPage } from './views/wiki/frequencies.js';
+import { renderPowerPage } from './views/wiki/power.js';
+import { renderSupportPage } from './views/wiki/support.js';
 import { renderManualPage } from './views/manual.js';
 import { renderDemoPage } from './views/demo.js';
 import { renderBuilderPage } from './views/builder.js';
@@ -34,6 +41,13 @@ const contentTypes = {
 const PAGE_RENDERERS = {
   '/': renderLandingPage,
   '/wiki': renderWikiPage,
+  '/wiki/overview': renderOverviewPage,
+  '/wiki/hardware': renderHardwarePage,
+  '/wiki/firmware': renderFirmwarePage,
+  '/wiki/assembly': renderAssemblyPage,
+  '/wiki/frequencies': renderFrequenciesPage,
+  '/wiki/power': renderPowerPage,
+  '/wiki/support': renderSupportPage,
   '/manual': renderManualPage,
   '/demo': renderDemoPage,
   '/builder': renderBuilderPage,
