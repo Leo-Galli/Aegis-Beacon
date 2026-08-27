@@ -14,6 +14,16 @@ export const DEFAULT_LANG = 'en';
 
 export const DICTIONARIES = {
   en: {
+    'hero-badge': 'Open Source Emergency Radio System',
+    'hero-desc': 'Low-cost emergency radio-location system based on LoRa. Designed for mountain rescue, land operations, and critical civilian scenarios when cellular infrastructure is unavailable.',
+    'features-title': 'Built for Critical Missions',
+    'features-sub': 'Every component selected for reliability when lives depend on it.',
+    'modes-title': 'Four Modes for Every Scenario',
+    'modes-sub': 'From passive beacon to emergency high-power output.',
+    'bom-title': 'Bill of Materials',
+    'bom-sub': 'Every component listed with sourcing links and pricing.',
+    'cta-title': 'Ready to Build Your Own?',
+    'cta-desc': 'Complete documentation, step-by-step assembly guide, interactive firmware demo, and BOM calculator.',
     'sys-doc-title': 'REFERENCE DOCUMENTATION',
     'main-title': 'Ecosystem <span class="notranslate" translate="no">Aegis-Beacon</span> v5.4',
     'hero-badges-modes': '4 Modes',
@@ -94,6 +104,16 @@ export const DICTIONARIES = {
   },
 
   it: {
+    'hero-badge': 'Sistema Radio di Emergenza Open Source',
+    'hero-desc': 'Sistema di radiolocalizzazione d\u2019emergenza a basso costo basato su LoRa. Progettato per il soccorso montano, le operazioni terrestri e gli scenari civili critici quando le infrastrutture cellulari non sono disponibili.',
+    'features-title': 'Costruito per Missioni Critiche',
+    'features-sub': 'Ogni componente selezionato per l\u2019affidabilit\u00e0 quando le vite ne dipendono.',
+    'modes-title': 'Quattro Modalit\u00e0 per Ogni Scenario',
+    'modes-sub': 'Dal beacon passivo all\u2019uscita ad alta potenza di emergenza.',
+    'bom-title': 'Bill of Materials',
+    'bom-sub': 'Ogni componente elencato con link di approvvigionamento e prezzi.',
+    'cta-title': 'Pronto a Costruire il Tuo?',
+    'cta-desc': 'Documentazione completa, guida all\u2019assemblaggio passo-passo, demo firmware interattiva e calcolatore BOM.',
     'sys-doc-title': 'DOCUMENTAZIONE DI RIFERIMENTO',
     'main-title': 'Ecosistema <span class="notranslate" translate="no">Aegis-Beacon</span> v5.4',
     'hero-badges-modes': '4 Modalità',
@@ -174,6 +194,16 @@ export const DICTIONARIES = {
   },
 
   fr: {
+    'hero-badge': 'Syst\u00e8me Radio d\u2019Urgence Open Source',
+    'hero-desc': 'Syst\u00e8me de radiolocalisation d\u2019urgence \u00e0 faible co\u00fbt bas\u00e9 sur LoRa. Con\u00e7u pour le secours en montagne, les op\u00e9rations terrestres et les sc\u00e9narios civils critiques.',
+    'features-title': 'Con\u00e7u pour les Missions Critiques',
+    'features-sub': 'Chaque composant s\u00e9lectionn\u00e9 pour la fiabilit\u00e9 lorsque des vies en d\u00e9pendent.',
+    'modes-title': 'Quatre Modes pour Chaque Sc\u00e9nario',
+    'modes-sub': 'Du balise passive \u00e0 la sortie haute puissance d\u2019urgence.',
+    'bom-title': 'Liste des Composants',
+    'bom-sub': 'Chaque composant list\u00e9 avec liens d\u2019approvisionnement et prix.',
+    'cta-title': 'Pr \u00e0 Construire le V\u00f4tre?',
+    'cta-desc': 'Documentation compl\u00e8te, guide d\u2019assemblage \u00e0 l\u2019\u00e9tape, d\u00e9mo firmware interactive et calculateur BOM.',
     'sys-doc-title': 'DOCUMENTATION DE RÉFÉRENCE',
     'main-title': 'Écosystème <span class="notranslate" translate="no">Aegis-Beacon</span> v5.4',
     'hero-badges-modes': '4 Modes',
@@ -254,6 +284,16 @@ export const DICTIONARIES = {
   },
 
   es: {
+    'hero-badge': 'Sistema de Radio de Emergencia Open Source',
+    'hero-desc': 'Sistema de radiolocalizaci\u00f3n de emergencia de bajo coste basado en LoRa. Dise\u00f1ado para el rescate de monta\u00f1a, las operaciones terrestres y los escenarios civiles cr\u00edticos.',
+    'features-title': 'Dise\u00f1ado para Misiones Cr\u00edticas',
+    'features-sub': 'Cada componente seleccionado por su fiabilidad cuando las vidas dependen de ello.',
+    'modes-title': 'Cuatro Modos para Cada Escenario',
+    'modes-sub': 'Desde baliza pasiva hasta salida de alta potencia de emergencia.',
+    'bom-title': 'Lista de Materiales',
+    'bom-sub': 'Cada componente listado con enlaces de adquisici\u00f3n y precios.',
+    'cta-title': 'Listo para Construir el Tuyo?',
+    'cta-desc': 'Documentaci\u00f3n completa, gu\u00eda de ensamblaje, demo de firmware interactiva y calculadora BOM.',
     'sys-doc-title': 'DOCUMENTACIÓN DE REFERENCIA',
     'main-title': 'Ecosistema <span class="notranslate" translate="no">Aegis-Beacon</span> v5.4',
     'hero-badges-modes': '4 Modos',

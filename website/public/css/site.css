@@ -131,14 +131,15 @@
 .theme-switch-sun {
   color: #f59e0b;
   transform: rotate(0deg) scale(1);
+  opacity: 1;
 }
 .theme-switch-moon {
   color: #93c5fd;
-  transform: rotate(90deg) scale(0.4);
+  transform: rotate(-90deg) scale(0.5);
   opacity: 0;
 }
 .dark .theme-switch-sun {
-  transform: rotate(-90deg) scale(0.4);
+  transform: rotate(90deg) scale(0.5);
   opacity: 0;
 }
 .dark .theme-switch-moon {

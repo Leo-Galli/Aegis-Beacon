@@ -77,8 +77,8 @@ ${jsonLd ? `<script type="application/ld+json">${jsonLd}</script>` : ''}
 
 const THEME_TOGGLE = `<button id="theme-toggle" class="theme-switch" role="switch" aria-checked="false" aria-label="Toggle color scheme" title="Toggle color scheme">
   <span class="theme-switch-knob">
-    <svg class="theme-switch-sun" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 2a1 1 0 01.664.253l.707.707a1 1 0 01-1.414 1.414l-.707-.707A1 1 0 0114 4zM4 11a1 1 0 100-2H3a1 1 0 100 2h1zm11.364-1.364a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707zM16 11a1 1 0 100-2h-1a1 1 0 100 2h1zM4.636 15.364a1 1 0 011.414-1.414l.707.707a1 1 0 01-1.414 1.414l-.707-.707zM10 14a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM6.253 14.243a1 1 0 01.253.664v.707a1 1 0 11-2 0v-.707a1 1 0 011.747-.664z" /></svg>
-    <svg class="theme-switch-moon" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+    <svg class="theme-switch-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg class="theme-switch-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
   </span>
 </button>`;
 
@@ -250,6 +250,7 @@ ${tabs ? renderTabs() : ''}
 ${content}
 ${renderFooter({ ...footer, currentLang: lang, currentPath })}
 </main>
+<script src="/js/i18n.js"></script>
 ${scriptSrc ? `<script type="module" src="${scriptSrc}"></script>` : ''}
 ${extraScripts}
 </body>

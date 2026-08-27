@@ -105,6 +105,60 @@ jobs:
             else
               echo "WARNING: Deep sleep not found"
             fi
+            # Check for WiFi/BT disable in beacon mode
+            if grep -q "WiFi.begin\|btStop" AegisBeacon.ino; then
+              echo "OK: WiFi/BT management found"
+            else
+              echo "INFO: No WiFi/BT management found"
+            fi
+            # Check for GPS integration
+            if grep -q "TinyGPS\|GPS" AegisBeacon.ino; then
+              echo "OK: GPS integration found"
+            else
+              echo "INFO: No GPS code found"
+            fi
+            # Check for frequency defines
+            if grep -q "DEFAULT_FREQ\|FREQ" AegisBeacon.ino; then
+              echo "OK: Frequency configuration found"
+            else
+              echo "WARNING: No frequency configuration found"
+            fi
+            # Check for Morse timing
+            if grep -q "WPM\|dot\|dash\|morse" AegisBeacon.ino; then
+              echo "OK: Morse timing found"
+            else
+              echo "WARNING: No Morse timing found"
+            fi
+            # Check for OLED display
+            if grep -q "U8g2\|oled\|OLED\|display" AegisBeacon.ino; then
+              echo "OK: Display code found"
+            else
+              echo "INFO: No display code found"
+            fi
+            # Check for audio output
+            if grep -q "DAC\|tone\|audio\|AUDIO" AegisBeacon.ino; then
+              echo "OK: Audio output found"
+            else
+              echo "INFO: No audio code found"
+            fi
+            # Check for battery monitoring
+            if grep -q "ADC\|battery\|BATTERY\|VBAT" AegisBeacon.ino; then
+              echo "OK: Battery monitoring found"
+            else
+              echo "INFO: No battery monitoring found"
+            fi
+            # Check for config portal
+            if grep -q "WiFi.softAP\|captive\|portal" AegisBeacon.ino; then
+              echo "OK: Config portal found"
+            else
+              echo "INFO: No config portal found"
+            fi
+            # Check for LED indicators
+            if grep -q "LED\|led\|digitalWrite.*2\|digitalWrite.*4" AegisBeacon.ino; then
+              echo "OK: LED indicators found"
+            else
+              echo "INFO: No LED code found"
+            fi
           else
             echo "WARNING: AegisBeacon.ino not found in root"
           fi
