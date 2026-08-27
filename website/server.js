@@ -13,6 +13,18 @@ import { renderAssemblyPage } from './views/wiki/assembly.js';
 import { renderFrequenciesPage } from './views/wiki/frequencies.js';
 import { renderPowerPage } from './views/wiki/power.js';
 import { renderSupportPage } from './views/wiki/support.js';
+import { renderPinmapPage } from './views/wiki/pinmap.js';
+import { renderMorsePage } from './views/wiki/morse.js';
+import { renderGpsPage } from './views/wiki/gps.js';
+import { renderAntennaPage } from './views/wiki/antenna.js';
+import { renderConfigPage } from './views/wiki/config.js';
+import { renderDisplayPage } from './views/wiki/display.js';
+import { renderRfDesignPage } from './views/wiki/rf-design.js';
+import { renderEnclosurePage } from './views/wiki/enclosure.js';
+import { renderTestingPage } from './views/wiki/testing.js';
+import { renderGlossaryPage } from './views/wiki/glossary.js';
+import { renderFaqPage } from './views/wiki/faq.js';
+import { renderSecurityPage } from './views/wiki/security.js';
 import { renderManualPage } from './views/manual.js';
 import { renderDemoPage } from './views/demo.js';
 import { renderBuilderPage } from './views/builder.js';
@@ -43,10 +55,22 @@ const PAGE_RENDERERS = {
   '/wiki': renderWikiPage,
   '/wiki/overview': renderOverviewPage,
   '/wiki/hardware': renderHardwarePage,
+  '/wiki/pinmap': renderPinmapPage,
+  '/wiki/rf-design': renderRfDesignPage,
+  '/wiki/antenna': renderAntennaPage,
   '/wiki/firmware': renderFirmwarePage,
+  '/wiki/morse': renderMorsePage,
+  '/wiki/config': renderConfigPage,
+  '/wiki/display': renderDisplayPage,
+  '/wiki/gps': renderGpsPage,
+  '/wiki/power': renderPowerPage,
   '/wiki/assembly': renderAssemblyPage,
   '/wiki/frequencies': renderFrequenciesPage,
-  '/wiki/power': renderPowerPage,
+  '/wiki/enclosure': renderEnclosurePage,
+  '/wiki/testing': renderTestingPage,
+  '/wiki/security': renderSecurityPage,
+  '/wiki/faq': renderFaqPage,
+  '/wiki/glossary': renderGlossaryPage,
   '/wiki/support': renderSupportPage,
   '/manual': renderManualPage,
   '/demo': renderDemoPage,
