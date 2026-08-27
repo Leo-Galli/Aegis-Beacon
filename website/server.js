@@ -4,6 +4,8 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_LANG, DICTIONARIES, SUPPORTED_LANGS } from './translations.js';
+import { renderLandingPage } from './views/landing.js';
+import { renderWikiPage } from './views/wiki.js';
 import { renderManualPage } from './views/manual.js';
 import { renderDemoPage } from './views/demo.js';
 
@@ -25,11 +27,14 @@ const contentTypes = {
 /**
  * Node-rendered pages. There are NO static .html files in this repository:
  * every page is assembled at request time by the view modules in /views
- * (manual.js — the technical wiki; demo.js — the firmware simulator).
+ * (landing.js — hero-style landing page; wiki.js — comprehensive wiki;
+ * manual.js — legacy manual; demo.js — firmware simulator).
  */
 const PAGE_RENDERERS = {
-  '/': renderManualPage,
-  '/index.html': renderManualPage,
+  '/': renderLandingPage,
+  '/index.html': renderLandingPage,
+  '/wiki': renderWikiPage,
+  '/manual': renderManualPage,
   '/demo.html': renderDemoPage,
   '/demo': renderDemoPage
 };
