@@ -43,6 +43,43 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* ── Responsive adjustments ────────────────────────────────────── */
+@media (max-width: 640px) {
+  .theme-switch {
+    --switch-w: 44px;
+    --switch-h: 24px;
+    --switch-knob: 18px;
+  }
+  .theme-switch-knob svg {
+    width: 11px;
+    height: 11px;
+  }
+  main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Wiki content responsive tables */
+.wiki-content table {
+  display: table;
+  width: 100%;
+}
+
+/* Smooth scroll for anchor links */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+/* Mobile-friendly details/summary */
+details summary {
+  list-style: none;
+}
+details summary::-webkit-details-marker {
+  display: none;
+}
+
 /* ── Tab system (index page) ───────────────────────────────────── */
 .tab-content { display: none; }
 .tab-content.active { display: block; }
