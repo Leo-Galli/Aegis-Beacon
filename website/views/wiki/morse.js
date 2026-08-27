@@ -30,5 +30,5 @@ function renderContent() {
 }
 
 export function renderMorsePage(lang, dict, currentPath = '/') {
-  return renderWikiPageLayout({ pageId: 'morse', title: 'Morse Code Engine', file: 'AegisBeacon.ino', content: renderContent(), lang, dict, currentPath });
+  return renderWikiPageLayout({ pageId: 'morse', title: 'Morse Code Engine', file: 'wiki/morse.md', content: renderContent(), lang, dict, currentPath });
 }

@@ -25,5 +25,5 @@ function renderContent() {
 }
 
 export function renderGpsPage(lang, dict, currentPath = '/') {
-  return renderWikiPageLayout({ pageId: 'gps', title: 'GPS Integration', file: 'AegisBeacon.ino', content: renderContent(), lang, dict, currentPath });
+  return renderWikiPageLayout({ pageId: 'gps', title: 'GPS Integration', file: 'wiki/gps.md', content: renderContent(), lang, dict, currentPath });
 }

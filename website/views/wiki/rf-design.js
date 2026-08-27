@@ -98,7 +98,7 @@ export function renderRfDesignPage(lang, dict, currentPath = '/') {
   return renderWikiPageLayout({
     pageId: 'rf-design',
     title: 'RF Design & Link Budget',
-    file: 'DATASHEET.md',
+    file: 'wiki/rf-design.md',
     content: renderContent(),
     lang, dict, currentPath
   });

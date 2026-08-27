@@ -71,7 +71,7 @@ export function renderDisplayPage(lang, dict, currentPath = '/') {
   return renderWikiPageLayout({
     pageId: 'display',
     title: 'OLED Display',
-    file: 'DATASHEET.md',
+    file: 'wiki/display.md',
     content: renderContent(),
     lang, dict, currentPath
   });

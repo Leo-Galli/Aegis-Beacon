@@ -35,5 +35,5 @@ function renderContent() {
 }
 
 export function renderFrequenciesPage(lang, dict, currentPath = '/') {
-  return renderWikiPageLayout({ pageId: 'frequencies', title: 'Frequency Compatibility', file: 'FREQUENCIES.md', content: renderContent(), lang, dict, currentPath });
+  return renderWikiPageLayout({ pageId: 'frequencies', title: 'Frequency Compatibility', file: 'wiki/frequencies.md', content: renderContent(), lang, dict, currentPath });
 }

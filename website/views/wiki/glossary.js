@@ -69,7 +69,7 @@ export function renderGlossaryPage(lang, dict, currentPath = '/') {
   return renderWikiPageLayout({
     pageId: 'glossary',
     title: 'Glossary',
-    file: 'README.md',
+    file: 'wiki/glossary.md',
     content: renderContent(),
     lang, dict, currentPath
   });

@@ -51,5 +51,5 @@ function renderContent() {
 }
 
 export function renderPinmapPage(lang, dict, currentPath = '/') {
-  return renderWikiPageLayout({ pageId: 'pinmap', title: 'GPIO Pin Mapping', file: 'DATASHEET.md', content: renderContent(), lang, dict, currentPath });
+  return renderWikiPageLayout({ pageId: 'pinmap', title: 'GPIO Pin Mapping', file: 'wiki/pinmap.md', content: renderContent(), lang, dict, currentPath });
 }
