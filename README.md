@@ -12,48 +12,24 @@
 # Aegis-Beacon v5.4
 
 ![Banner](https://github.com/Leo-Galli/Aegis-Beacon/blob/main/website/public/banner.png?raw=true)
-*Banner artwork generated with Google Gemini (AI).*
 
-### Professional Dual-Mode Avalanche Rescue System
-### SSD1309 2.42" OLED | SX1262 Radio | GPS Payload | Battery Monitor
-
-[![Version](https://img.shields.io/badge/version-5.4.0-blue?style=for-the-badge&logo=github)](https://github.com/leo-galli/aegis-beacon/releases)
-[![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
-
-[![Quality Gate](https://img.shields.io/sonar/quality_gate/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Quality%20Gate)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
-
-[![Bugs](https://img.shields.io/sonar/bugs/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Bugs)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
-[![Code Smells](https://img.shields.io/sonar/code_smells/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Code%20Smells)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
-[![Duplicated Lines](https://img.shields.io/sonar/duplicated_lines_density/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Duplicated%20Lines)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
-
-[![Reliability Rating](https://img.shields.io/sonar/reliability_rating/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Reliability)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
-[![Security Rating](https://img.shields.io/sonar/security_rating/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Security)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
-[![Technical Debt](https://img.shields.io/sonar/sqale_index/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Technical%20Debt)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
-[![Maintainability Rating](https://img.shields.io/sonar/sqale_rating/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Maintainability)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
-[![Vulnerabilities](https://img.shields.io/sonar/vulnerabilities/Leo-Galli_Aegis-Beacon?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge&logo=sonarcloud&logoColor=white&label=Vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
-
-[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=Leo-Galli_Aegis-Beacon)
-
-[![Release](https://img.shields.io/github/v/release/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&color=blue&label=Firmware)](https://github.com/Leo-Galli/Aegis-Beacon/releases)
-
-[![Platform](https://img.shields.io/badge/platform-ESP32_DevKit_V1-red?style=for-the-badge&logo=espressif)](https://www.espressif.com/en/products/socs/esp32)
-[![Radio](https://img.shields.io/badge/radio-SX1262_CW%2FFSK-orange?style=for-the-badge)](https://www.semtech.com/products/wireless-rf/lora-connect/sx1262)
-[![Display](https://img.shields.io/badge/display-SSD1309_2.42%22_OLED-white?style=for-the-badge)](https://github.com/olikraus/u8g2)
-[![GPS](https://img.shields.io/badge/GPS-NEO--6M_UART-brightgreen?style=for-the-badge)]()
-[![Audio](https://img.shields.io/badge/audio-3.5mm_DAC1-yellow?style=for-the-badge)]()
-[![Framework](https://img.shields.io/badge/framework-Arduino_PlatformIO-teal?style=for-the-badge&logo=arduino)](https://platformio.org)
-[![RadioLib](https://img.shields.io/badge/RadioLib-≥6.0-purple?style=for-the-badge)](https://github.com/jgromes/RadioLib)
-[![U8g2](https://img.shields.io/badge/U8g2-≥2.34-blue?style=for-the-badge)](https://github.com/olikraus/u8g2)
-[![Cost](https://img.shields.io/badge/BOM_cost-~%2423_USD-yellow?style=for-the-badge)](DATASHEET.md)
+**Open-Source Emergency Radio-Location System | ESP32 + SX1262 + GPS**
 
 <br/>
 
-> **BEACON mode** — transmits Morse SOS on multiple frequencies via CW carrier. Optionally includes your **name** and **live GPS coordinates** in the Morse payload.<br>
-> **SEARCH mode** — continuously scans all configured frequencies, measures RSSI, logs signals, and emits pitch-variable audio tones that rise with signal strength.<br>
-> **2.42" OLED** — real-time status on a large SSD1309 128×64 display: mode, frequency, RSSI bar, GPS fix, battery percentage, cycle counter.<br>
-> **Battery monitor** — live percentage and voltage from a 100kΩ/100kΩ voltage divider on the TP4056 BAT+ rail, shown in every screen header.<br>
-> **4-button control** — MODE, SEL, UP and DOWN buttons for instant mode switching and live volume/WPM adjustment without opening the config portal.<br>
-> **GPS payload** — optional NEO-6M module appends your coordinates to every Morse transmission in a compact format readable by any operator.
+[![Version](https://img.shields.io/badge/version-5.4.0-0f172a?style=flat-square&labelColor=f97316&color=f97316)](https://github.com/leo-galli/aegis-beacon/releases)
+[![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square&labelColor=22c55e&color=16a34a)](LICENSE)
+[![CI](https://img.shields.io/badge/CI-Passing-22c55e?style=flat-square&logo=github-actions&logoColor=white&labelColor=22c55e&color=16a34a)](https://github.com/Leo-Galli/Aegis-Beacon/actions)
+[![Firmware](https://img.shields.io/badge/Firmware-ESP32-blue?style=flat-square&logo=platformio&logoColor=white&labelColor=3b82f6&color=2563eb)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/firmware-ci.yml)
+[![Website](https://img.shields.io/badge/Website-Node.js-22c55e?style=flat-square&logo=node.js&logoColor=white&labelColor=22c55e&color=16a34a)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/website-ci.yml)
+[![Security](https://img.shields.io/badge/Security-Audited-ef4444?style=flat-square&logo=shield&logoColor=white&labelColor=ef4444&color=dc2626)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/pr-checks.yml)
+
+[![Radio](https://img.shields.io/badge/Radio-SX1262-f97316?style=flat-square&logo=semtech&logoColor=white)](https://www.semtech.com/products/wireless-rf/lora-connect/sx1262)
+[![Platform](https://img.shields.io/badge/Platform-ESP32_240MHz-ef4444?style=flat-square&logo=espressif&logoColor=white)](https://www.espressif.com/en/products/socs/esp32)
+[![Display](https://img.shields.io/badge/Display-SSD1309_2.42--6366f1?style=flat-square&logo=github&logoColor=white)](https://github.com/olikraus/u8g2)
+[![GPS](https://img.shields.io/badge/GPS-NEO--6M-22c55e?style=flat-square&logo=location-dot&logoColor=white)](https://docs.arduino.cc/hardware/nano-33-iot/)
+[![Framework](https://img.shields.io/badge/Framework-Arduino-0891b2?style=flat-square&logo=arduino&logoColor=white)](https://www.arduino.cc/)
+[![Cost](https://img.shields.io/badge/BOM-~%2423_USD-eab308?style=flat-square&logo=dollar-sign&logoColor=white)](DATASHEET.md)
 
 <br/>
 
@@ -1075,9 +1051,9 @@ THE SOFTWARE.
 
 **Built by [@Leo-Galli](https://github.com/Leo-Galli) for mountain safety.**
 
-[![GitHub Stars](https://img.shields.io/github/stars/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&label=Stars)](https://github.com/Leo-Galli/Aegis-Beacon)
-[![GitHub Forks](https://img.shields.io/github/forks/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&label=Forks)](https://github.com/Leo-Galli/Aegis-Beacon/fork)
-[![GitHub Issues](https://img.shields.io/github/issues/Leo-Galli/Aegis-Beacon?style=for-the-badge&logo=github&logoColor=white&label=Issues)](https://github.com/Leo-Galli/Aegis-Beacon/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/Leo-Galli/Aegis-Beacon?style=flat-square&logo=github&logoColor=white&label=Stars)](https://github.com/Leo-Galli/Aegis-Beacon)
+[![GitHub Forks](https://img.shields.io/github/forks/Leo-Galli/Aegis-Beacon?style=flat-square&logo=github&logoColor=white&label=Forks)](https://github.com/Leo-Galli/Aegis-Beacon/fork)
+[![GitHub Issues](https://img.shields.io/github/issues/Leo-Galli/Aegis-Beacon?style=flat-square&logo=github&logoColor=white&label=Issues)](https://github.com/Leo-Galli/Aegis-Beacon/issues)
 
 *If this project saves a life, please open a PR and let us know.*
 
