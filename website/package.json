@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check api/index.js && node --check translations.js && node --check views/layout.js && node --check views/manual.js && node --check views/demo.js && node -e \"import('./translations.js').then(m => { const missing = m.validateDictionaries(); const bad = Object.entries(missing).filter(([, v]) => v.length); if (bad.length) { console.error('Missing translation keys:', JSON.stringify(bad)); process.exit(1); } console.log('i18n dictionaries OK: ' + m.SUPPORTED_LANGS.join(', ')); })\""
+    "check": "node --check server.js && node --check api/index.js && node --check translations.js && node --check views/layout.js && node --check views/landing.js && node --check views/wiki.js && node --check views/manual.js && node --check views/demo.js && node -e \"import('./translations.js').then(m => { const missing = m.validateDictionaries(); const bad = Object.entries(missing).filter(([, v]) => v.length); if (bad.length) { console.error('Missing translation keys:', JSON.stringify(bad)); process.exit(1); } console.log('i18n dictionaries OK: ' + m.SUPPORTED_LANGS.join(', ')); })\""
   },
   "engines": {
     "node": ">=18"
