@@ -6,6 +6,7 @@ node_modules/
 dist/
 build/
 .vercel/
+website/.vercel/
 
 # Runtime and tooling files
 *.log
