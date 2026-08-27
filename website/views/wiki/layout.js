@@ -170,6 +170,7 @@ export function renderWikiPageLayout({ pageId, title, file, content, lang, dict,
     scriptSrc: null,
     withIconLinks: true,
     currentPath,
-    extraScripts: tocScript
+    extraScripts: tocScript,
+    enableTranslate: lang !== 'en'
   });
 }

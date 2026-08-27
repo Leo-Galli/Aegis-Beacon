@@ -141,8 +141,24 @@ export function renderHeader({ logoHref = null, action = 'Demo', actionHref = '/
 </header>
 
 <script>
+(function(){
+  /* Auto-detect browser language on first visit */
+  try {
+    if (!localStorage.getItem('aegis-lang-set')) {
+      var bl = (navigator.language || navigator.userLanguage || '').slice(0,2).toLowerCase();
+      var map = { it:'it', fr:'fr', es:'es', de:'en', pt:'en', ru:'en', ja:'en', zh:'en', ko:'en' };
+      var target = map[bl] || 'en';
+      if (target !== 'en') {
+        localStorage.setItem('aegis-lang-set','1');
+        window.location.href = '/set-lang?lang=' + target + '&redirect=' + encodeURIComponent(window.location.pathname);
+        return;
+      }
+      localStorage.setItem('aegis-lang-set','1');
+    }
+  } catch(e) {}
+})();
 document.addEventListener('DOMContentLoaded', () => {
-  // Theme toggle
+  /* Theme toggle */
   var themeBtn = document.getElementById('theme-toggle');
   if (themeBtn) {
     var isDark = document.documentElement.classList.contains('dark');
@@ -153,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
       themeBtn.setAttribute('aria-checked', String(dark));
     });
   }
-  // Language dropdown
+  /* Language dropdown */
   var toggle = document.getElementById('lang-toggle');
   var dropdown = document.getElementById('lang-dropdown');
   if (toggle && dropdown) {
@@ -163,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.addEventListener('click', () => dropdown.classList.add('hidden'));
     dropdown.addEventListener('click', (e) => e.stopPropagation());
-    // Language selection
     dropdown.querySelectorAll('[data-set-lang]').forEach(btn => {
       btn.addEventListener('click', () => {
         var lang = btn.getAttribute('data-set-lang');
@@ -171,6 +186,20 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/set-lang?lang=' + lang + '&redirect=' + encodeURIComponent(path);
       });
     });
+  }
+  /* Google Translate auto-init for wiki pages */
+  if (document.getElementById('google-translate-init')) {
+    var gtScript = document.createElement('script');
+    gtScript.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    document.body.appendChild(gtScript);
+    window.googleTranslateElementInit = function() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'it,fr,es,de,pt,ru,ja,zh-CN,ko',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+      }, 'google-translate-element');
+    };
   }
 });
 </script>`;
@@ -229,8 +258,10 @@ export function renderPage({
   scriptSrc,
   withIconLinks = false,
   currentPath = '/',
-  extraScripts = ''
+  extraScripts = '',
+  enableTranslate = false
 }) {
+  const translateInit = enableTranslate ? `<div id="google-translate-init"></div><div id="google-translate-element" style="position:fixed;bottom:80px;right:20px;z-index:999;"></div>` : '';
   return `<!DOCTYPE html>
 <html lang="${lang}" class="scroll-smooth">
 <head>
@@ -253,6 +284,7 @@ ${tabs ? renderTabs() : ''}
 ${content}
 ${renderFooter({ ...footer, currentLang: lang, currentPath })}
 </main>
+${translateInit}
 ${scriptSrc ? `<script type="module" src="${scriptSrc}"></script>` : ''}
 ${extraScripts}
 </body>
