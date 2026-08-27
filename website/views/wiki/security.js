@@ -86,7 +86,7 @@ export function renderSecurityPage(lang, dict, currentPath = '/') {
   return renderWikiPageLayout({
     pageId: 'security',
     title: 'Security & Legal',
-    file: 'README.md',
+    file: 'wiki/security.md',
     content: renderContent(),
     lang, dict, currentPath
   });

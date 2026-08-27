@@ -73,5 +73,5 @@ function renderContent() {
 }
 
 export function renderHardwarePage(lang, dict, currentPath = '/') {
-  return renderWikiPageLayout({ pageId: 'hardware', title: 'Hardware', file: 'DATASHEET.md', content: renderContent(), lang, dict, currentPath });
+  return renderWikiPageLayout({ pageId: 'hardware', title: 'Hardware', file: 'wiki/hardware.md', content: renderContent(), lang, dict, currentPath });
 }

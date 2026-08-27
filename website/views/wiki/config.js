@@ -94,7 +94,7 @@ export function renderConfigPage(lang, dict, currentPath = '/') {
   return renderWikiPageLayout({
     pageId: 'config',
     title: 'Configuration Reference',
-    file: 'AegisBeacon.ino',
+    file: 'wiki/config.md',
     content: renderContent(),
     lang, dict, currentPath
   });

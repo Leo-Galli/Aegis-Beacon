@@ -77,5 +77,5 @@ function renderContent() {
 }
 
 export function renderSupportPage(lang, dict, currentPath = '/') {
-  return renderWikiPageLayout({ pageId: 'support', title: 'Support', file: 'README.md', content: renderContent(), lang, dict, currentPath });
+  return renderWikiPageLayout({ pageId: 'support', title: 'Support', file: 'wiki/support.md', content: renderContent(), lang, dict, currentPath });
 }

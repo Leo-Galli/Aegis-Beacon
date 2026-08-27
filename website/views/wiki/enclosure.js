@@ -95,7 +95,7 @@ export function renderEnclosurePage(lang, dict, currentPath = '/') {
   return renderWikiPageLayout({
     pageId: 'enclosure',
     title: 'Enclosure & Mechanical',
-    file: 'DATASHEET.md',
+    file: 'wiki/enclosure.md',
     content: renderContent(),
     lang, dict, currentPath
   });

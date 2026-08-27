@@ -37,7 +37,7 @@ const MODES = [
 
 function renderHero() {
   const statBar = STATS.map((s, i) => `
-    <div class="text-center animate-fade-in-up" style="animation-delay: ${0.6 + i * 0.1}s; opacity: 0;">
+    <div class="text-center animate-fade-in-up" style="animation-delay: ${0.6 + i * 0.1}s">
       <div class="text-xl sm:text-2xl font-bold font-mono stat-value">${s.value}</div>
       <div class="text-[9px] sm:text-[10px] font-mono text-orange-200/70 uppercase tracking-widest mt-1">${s.label}</div>
     </div>`).join('');
@@ -51,24 +51,24 @@ function renderHero() {
 
       <div class="relative z-10 px-6 sm:px-12 py-16 sm:py-20 text-center space-y-8">
         <!-- Badge -->
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-orange-500/20 bg-orange-500/5 backdrop-blur-sm animate-fade-in-up" style="animation-delay: 0.1s; opacity: 0;">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-orange-500/20 bg-orange-500/5 backdrop-blur-sm animate-fade-in-up" style="animation-delay: 0.1s">
           <span class="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
           <span class="text-[11px] font-mono font-bold text-orange-300 uppercase tracking-wider" data-key="hero-badge">Open Source Emergency Radio System</span>
         </div>
 
         <!-- Title -->
-        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.1] animate-fade-in-up" style="animation-delay: 0.2s; opacity: 0;">
+        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.1] animate-fade-in-up" style="animation-delay: 0.2s">
           <span class="notranslate">Aegis</span><span class="gradient-text">-</span><span class="notranslate">Beacon</span>
           <span class="block text-3xl sm:text-4xl lg:text-5xl font-mono text-orange-400/80 mt-3">v5.4</span>
         </h1>
 
         <!-- Subtitle -->
-        <p class="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed animate-fade-in-up" style="animation-delay: 0.3s; opacity: 0;" data-key="hero-desc">
+        <p class="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed animate-fade-in-up" style="animation-delay: 0.3s" data-key="hero-desc">
           Low-cost emergency radio-location system based on LoRa. Designed for mountain rescue, land operations, and critical civilian scenarios when cellular infrastructure is unavailable.
         </p>
 
         <!-- CTAs -->
-        <div class="flex flex-wrap justify-center gap-4 pt-2 animate-fade-in-up" style="animation-delay: 0.4s; opacity: 0;">
+        <div class="flex flex-wrap justify-center gap-4 pt-2 animate-fade-in-up" style="animation-delay: 0.4s">
           <a href="/wiki" class="group inline-flex items-center gap-2 px-7 py-3.5 bg-orange-500 hover:bg-orange-400 text-white font-mono text-sm font-bold rounded-xl transition-all duration-200 shadow-lg shadow-orange-500/25 hover:shadow-orange-400/40 hover:scale-105">
             Explore Wiki
             <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
@@ -107,7 +107,7 @@ function renderFeatures() {
   const cards = FEATURES.map((f, i) => {
     const c = colorMap[f.color];
     return `
-    <div class="group relative bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3 hover:border-orange-500/40 hover:shadow-xl hover:${c.glow} transition-all duration-300 hover-lift animate-fade-in-up" style="animation-delay: ${0.1 + i * 0.1}s; opacity: 0;">
+    <div class="group relative bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3 hover:border-orange-500/40 hover:shadow-xl hover:${c.glow} transition-all duration-300 hover-lift animate-fade-in-up" style="animation-delay: ${0.1 + i * 0.1}s">
       <div class="w-10 h-10 rounded-xl ${c.accent}/10 flex items-center justify-center">
         <div class="w-2.5 h-2.5 rounded-full ${c.accent} animate-pulse"></div>
       </div>
@@ -120,8 +120,8 @@ function renderFeatures() {
   return `<section class="space-y-10">
     <div class="text-center space-y-3">
       <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest animate-fade-in">// CORE CAPABILITIES</span>
-      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white animate-fade-in-up" style="animation-delay: 0.1s; opacity: 0;" data-key="features-title">Built for Critical Missions</h2>
-      <p class="text-slate-500 dark:text-slate-400 max-w-xl mx-auto animate-fade-in-up" style="animation-delay: 0.2s; opacity: 0;" data-key="feat-subtitle">Every component selected for reliability when lives depend on it.</p>
+      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white animate-fade-in-up" style="animation-delay: 0.1s" data-key="features-title">Built for Critical Missions</h2>
+      <p class="text-slate-500 dark:text-slate-400 max-w-xl mx-auto animate-fade-in-up" style="animation-delay: 0.2s" data-key="feat-subtitle">Every component selected for reliability when lives depend on it.</p>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">${cards}</div>
   </section>`;
@@ -137,7 +137,7 @@ function renderModes() {
   const cards = MODES.map((m, i) => {
     const c = colorMap[m.color];
     return `
-    <div class="border ${c.border} ${c.bg} rounded-2xl p-6 space-y-4 hover:shadow-lg transition-all duration-300 hover-lift animate-fade-in-up" style="animation-delay: ${0.1 + i * 0.1}s; opacity: 0;">
+    <div class="border ${c.border} ${c.bg} rounded-2xl p-6 space-y-4 hover:shadow-lg transition-all duration-300 hover-lift animate-fade-in-up" style="animation-delay: ${0.1 + i * 0.1}s">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
           <span class="w-2.5 h-2.5 rounded-full ${c.dot} animate-pulse"></span>
@@ -152,8 +152,8 @@ function renderModes() {
   return `<section class="space-y-10">
     <div class="text-center space-y-3">
       <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest animate-fade-in">// OPERATING MODES</span>
-      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white animate-fade-in-up" style="animation-delay: 0.1s; opacity: 0;" data-key="modes-title">Four Modes for Every Scenario</h2>
-      <p class="text-slate-500 dark:text-slate-400 max-w-xl mx-auto animate-fade-in-up" style="animation-delay: 0.2s; opacity: 0;" data-key="modes-subtitle">From passive beacon to emergency high-power output.</p>
+      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white animate-fade-in-up" style="animation-delay: 0.1s" data-key="modes-title">Four Modes for Every Scenario</h2>
+      <p class="text-slate-500 dark:text-slate-400 max-w-xl mx-auto animate-fade-in-up" style="animation-delay: 0.2s" data-key="modes-subtitle">From passive beacon to emergency high-power output.</p>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">${cards}</div>
   </section>`;
@@ -181,10 +181,10 @@ function renderHardware() {
   return `<section class="space-y-10">
     <div class="text-center space-y-3">
       <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest animate-fade-in">// HARDWARE</span>
-      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white animate-fade-in-up" style="animation-delay: 0.1s; opacity: 0;" data-key="bom-title">Bill of Materials</h2>
-      <p class="text-slate-500 dark:text-slate-400 max-w-xl mx-auto animate-fade-in-up" style="animation-delay: 0.2s; opacity: 0;" data-key="bom-subtitle">Every component listed with sourcing links and pricing.</p>
+      <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white animate-fade-in-up" style="animation-delay: 0.1s" data-key="bom-title">Bill of Materials</h2>
+      <p class="text-slate-500 dark:text-slate-400 max-w-xl mx-auto animate-fade-in-up" style="animation-delay: 0.2s" data-key="bom-subtitle">Every component listed with sourcing links and pricing.</p>
     </div>
-    <div class="max-w-3xl mx-auto bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 animate-fade-in-up" style="animation-delay: 0.3s; opacity: 0;">
+    <div class="max-w-3xl mx-auto bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 animate-fade-in-up" style="animation-delay: 0.3s">
       ${rows}
       <div class="flex items-center justify-between pt-4 mt-2 border-t-2 border-orange-200 dark:border-orange-900/40">
         <span class="text-sm font-bold text-slate-900 dark:text-white">Estimated Total</span>
@@ -201,7 +201,7 @@ function renderHardware() {
 }
 
 function renderCTA() {
-  return `<section class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 p-[1px] animate-fade-in-up" style="animation-delay: 0.2s; opacity: 0;">
+  return `<section class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 p-[1px] animate-fade-in-up" style="animation-delay: 0.2s">
     <div class="relative rounded-3xl bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] p-10 sm:p-14 text-center space-y-6">
       <div class="absolute inset-0 overflow-hidden pointer-events-none">
         <div class="absolute -top-20 -right-20 w-60 h-60 bg-orange-500/10 rounded-full blur-[80px] animate-float"></div>

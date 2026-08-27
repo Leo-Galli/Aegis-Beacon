@@ -27,5 +27,5 @@ function renderContent() {
 }
 
 export function renderAntennaPage(lang, dict, currentPath = '/') {
-  return renderWikiPageLayout({ pageId: 'antenna', title: 'Antenna Design', file: 'DATASHEET.md', content: renderContent(), lang, dict, currentPath });
+  return renderWikiPageLayout({ pageId: 'antenna', title: 'Antenna Design', file: 'wiki/antenna.md', content: renderContent(), lang, dict, currentPath });
 }

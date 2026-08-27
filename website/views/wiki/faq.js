@@ -88,7 +88,7 @@ export function renderFaqPage(lang, dict, currentPath = '/') {
   return renderWikiPageLayout({
     pageId: 'faq',
     title: 'FAQ',
-    file: 'README.md',
+    file: 'wiki/faq.md',
     content: renderContent(),
     lang, dict, currentPath
   });

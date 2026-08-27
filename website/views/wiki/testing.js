@@ -107,7 +107,7 @@ export function renderTestingPage(lang, dict, currentPath = '/') {
   return renderWikiPageLayout({
     pageId: 'testing',
     title: 'Testing & Calibration',
-    file: 'AegisBeacon.ino',
+    file: 'wiki/testing.md',
     content: renderContent(),
     lang, dict, currentPath
   });

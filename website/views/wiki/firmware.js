@@ -57,5 +57,5 @@ function renderContent() {
 }
 
 export function renderFirmwarePage(lang, dict, currentPath = '/') {
-  return renderWikiPageLayout({ pageId: 'firmware', title: 'Firmware', file: 'AegisBeacon.ino', content: renderContent(), lang, dict, currentPath });
+  return renderWikiPageLayout({ pageId: 'firmware', title: 'Firmware', file: 'wiki/firmware.md', content: renderContent(), lang, dict, currentPath });
 }

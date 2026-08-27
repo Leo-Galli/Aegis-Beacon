@@ -94,7 +94,7 @@ export function renderOverviewPage(lang, dict, currentPath = '/') {
   return renderWikiPageLayout({
     pageId: 'overview',
     title: 'Project Overview',
-    file: 'README.md',
+    file: 'wiki/overview.md',
     content: renderContent(),
     lang, dict, currentPath
   });
