@@ -12,34 +12,22 @@ import { dirname, join, resolve } from 'node:path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Resolve wiki directory relative to project root
-// On Vercel, __dirname is inside the serverless function bundle
-// We need to find website/wiki/ from the project root
-function getWikiDir() {
-  // Try multiple paths for compatibility
+// On Vercel, __dirname is inside .vercel/output/functions/...
+// The wiki/ folder is bundled alongside api/index.js via includeFiles
+// So it's at: <function_dir>/../wiki/ or <cwd>/website/wiki/
+function findWikiDir() {
   const candidates = [
-    join(__dirname, '..', '..', 'wiki'),        // views/wiki/../../wiki = website/wiki/
-    join(__dirname, '..', 'wiki'),              // views/wiki/../wiki = views/wiki (wrong, fallback)
-    resolve(process.cwd(), 'website', 'wiki'),  // From project root
-    resolve(process.cwd(), 'wiki'),              // From website/ directory
+    // Vercel: wiki is bundled next to the function
+    join(__dirname, '..', 'wiki'),               // api/../wiki = website/wiki/
+    join(__dirname, '..', '..', 'wiki'),         // views/wiki/../../wiki = website/wiki/
+    // Local dev paths
+    resolve(process.cwd(), 'wiki'),              // from website/
+    resolve(process.cwd(), 'website', 'wiki'),   // from project root
   ];
-  
-  for (const p of candidates) {
-    try {
-      // Test if this path exists by trying to resolve it
-      const testPath = join(p, 'project-overview.md');
-      // We'll check existence in loadWikiMarkdown
-      return p;
-    } catch (e) {
-      continue;
-    }
-  }
-  
-  // Default fallback
-  return join(__dirname, '..', '..', 'wiki');
+  return candidates;
 }
 
-const WIKI_DIR = getWikiDir();
+const WIKI_CANDIDATES = findWikiDir();
 
 /**
  * Markdown to HTML converter.
@@ -279,12 +267,7 @@ function processParagraphs(html) {
  * Load a wiki .md file and return rendered HTML.
  */
 export async function loadWikiMarkdown(filename) {
-  const searchPaths = [
-    join(WIKI_DIR, filename),
-    join(__dirname, '..', '..', 'wiki', filename),
-    join(process.cwd(), 'website', 'wiki', filename),
-    join(process.cwd(), 'wiki', filename),
-  ];
+  const searchPaths = WIKI_CANDIDATES.map(dir => join(dir, filename));
 
   for (const filePath of searchPaths) {
     try {

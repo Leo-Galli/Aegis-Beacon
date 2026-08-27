@@ -2,11 +2,8 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "includeFiles": "public/**",
+      "includeFiles": "wiki/**",
       "maxDuration": 30
-    },
-    "server.js": {
-      "includeFiles": "wiki/**"
     }
   },
   "routes": [
