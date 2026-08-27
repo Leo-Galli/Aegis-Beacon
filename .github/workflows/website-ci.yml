@@ -84,7 +84,7 @@ jobs:
             const server = createServer(handleRequest);
             server.listen(0, async () => {
               const port = server.address().port;
-              const routes = ['/', '/wiki', '/manual', '/demo', '/builder', '/health', '/version'];
+              const routes = ['/', '/wiki', '/manual', '/demo', '/builder', '/status', '/health', '/version'];
               let failed = false;
               for (const r of routes) {
                 const res = await fetch('http://localhost:' + port + r);
@@ -145,6 +145,36 @@ jobs:
             echo "OK: Path normalization found"
           else
             echo "WARNING: Path normalization not found"
+          fi
+          # Check for eval usage
+          if grep -q 'eval(' views/*.js 2>/dev/null; then
+            echo "WARNING: eval() found in views"
+          else
+            echo "OK: No eval() in views"
+          fi
+          # Check for innerHTML without sanitization
+          INNER_COUNT=$(grep -c 'innerHTML' views/*.js 2>/dev/null || echo 0)
+          echo "innerHTML usage count: $INNER_COUNT"
+          # Check for proper error handling
+          TRY_COUNT=$(grep -c 'try {' server.js 2>/dev/null || echo 0)
+          echo "try/catch blocks in server.js: $TRY_COUNT"
+          # Check for input validation
+          if grep -q 'parseInt\|parseFloat\|Number(' server.js 2>/dev/null; then
+            echo "OK: Input validation found"
+          else
+            echo "INFO: No numeric parsing in server.js"
+          fi
+          # Check for proper HTTP headers
+          if grep -q 'content-type' server.js; then
+            echo "OK: Content-Type headers set"
+          else
+            echo "WARNING: No Content-Type headers found"
+          fi
+          # Check for CORS headers
+          if grep -q 'Access-Control' server.js 2>/dev/null; then
+            echo "INFO: CORS headers found"
+          else
+            echo "OK: No CORS headers (not needed for same-origin)"
           fi
 
   assign-reviewer:

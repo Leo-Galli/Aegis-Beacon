@@ -64,7 +64,7 @@ function renderHero() {
         <!-- Badge -->
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-orange-500/20 bg-orange-500/5 backdrop-blur-sm">
           <span class="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
-          <span class="text-[11px] font-mono font-bold text-orange-300 uppercase tracking-wider">Open Source Emergency Radio System</span>
+          <span class="text-[11px] font-mono font-bold text-orange-300 uppercase tracking-wider" data-key="hero-badge">Open Source Emergency Radio System</span>
         </div>
 
         <!-- Title -->
@@ -74,7 +74,7 @@ function renderHero() {
         </h1>
 
         <!-- Subtitle -->
-        <p class="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+        <p class="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed" data-key="hero-desc">
           Low-cost emergency radio-location system based on LoRa. Designed for mountain rescue, land operations, and critical civilian scenarios when cellular infrastructure is unavailable.
         </p>
 
