@@ -51,6 +51,14 @@ function detectLanguage(request, requestUrl) {
 export async function handleRequest(request, response) {
   const requestUrl = new URL(request.url || '/', 'http://localhost');
   const pathname = requestUrl.pathname;
+  if (!response) {
+    const renderer = PAGE_RENDERERS[pathname];
+    if (!renderer) return new Response('Not found', { status: 404 });
+    const lang = detectLanguage(request, requestUrl);
+    return new Response(renderer(lang, DICTIONARIES[lang] || DICTIONARIES[DEFAULT_LANG]), {
+      headers: { 'content-type': 'text/html; charset=utf-8' }
+    });
+  }
 
   if (pathname === '/health') {
     response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
