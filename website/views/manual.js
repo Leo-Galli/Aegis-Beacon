@@ -671,7 +671,7 @@ const JSON_LD = `{
 }`;
 
 /** Render the full manual (wiki) page for the requested language. */
-export function renderManualPage(lang, dict) {
+export function renderManualPage(lang, dict, currentPath = '/') {
   const content = [
     renderOverviewTab(),
     renderHardwareTab(),
@@ -691,13 +691,14 @@ export function renderManualPage(lang, dict) {
     description: 'Official Aegis-Beacon v5.4 manual. Step-by-step guide to SMD hardware assembly, ESP32 firmware flashing with PlatformIO, and SAR radio frequency management.',
     canonical: `${SITE_URL}/`,
     jsonLd: JSON_LD,
-    header: { action: 'Demo', actionHref: '/demo.html' },
+    header: { action: 'Demo', actionHref: '/demo' },
     tabs: true,
     content,
     footer: {
-      tagline: '<span class="notranslate">Aegis</span> Open Source Engineering Network — Technical File Reference v5.4 Revision 2026.'
+      tagline: '<span class="notranslate">Aegis</span> Open Source Engineering Network -- Technical File Reference v5.4 Revision 2026.'
     },
     scriptSrc: '/js/main.js',
-    withIconLinks: true
+    withIconLinks: true,
+    currentPath
   });
 }

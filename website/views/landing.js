@@ -1,18 +1,13 @@
 /**
- * Aegis-Beacon — Landing page, rendered entirely by Node.
+ * Aegis-Beacon -- Landing page, rendered entirely by Node.
  *
- * Modern hero-style landing page with:
- * - Animated hero section with gradient background
- * - Statistics counters
- * - Feature cards with hover effects
- * - Technology stack overview
- * - Call-to-action section
- * - Orange theme throughout
+ * Modern hero-style landing page with orange theme, animated elements,
+ * statistics, feature cards, and call-to-action. All URLs are clean
+ * (no .html extensions).
  */
 
 import { renderPage, SITE_URL } from './layout.js';
 
-/* ── Data: hero stats ─────────────────────────────────────────────── */
 const HERO_STATS = [
   { value: '~$23-28', label: 'Bill of Materials', accent: true },
   { value: '410-525', label: 'MHz Frequency Range' },
@@ -20,7 +15,6 @@ const HERO_STATS = [
   { value: '4', label: 'Operating Modes' }
 ];
 
-/* ── Data: feature cards ──────────────────────────────────────────── */
 const FEATURES = [
   {
     icon: `<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.348 14.651a3.75 3.75 0 010-5.303m5.304 0a3.75 3.75 0 010 5.303m-7.425 2.122a6.75 6.75 0 010-9.546m9.546 0a6.75 6.75 0 010 9.546M5.106 18.894c-3.808-3.808-3.808-9.98 0-13.789m13.788 0c3.808 3.808 3.808 9.981 0 13.79M12 12h.008v.007H12V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>`,
@@ -66,7 +60,6 @@ const FEATURES = [
   }
 ];
 
-/* ── Data: technology stack ───────────────────────────────────────── */
 const STACK_ITEMS = [
   { name: 'ESP32', category: 'MCU', detail: 'Dual-core 240 MHz' },
   { name: 'SX1262', category: 'RF', detail: '+30 dBm PA' },
@@ -76,15 +69,12 @@ const STACK_ITEMS = [
   { name: 'Vercel', category: 'DEPLOY', detail: 'Serverless' }
 ];
 
-/* ── Data: operating modes ────────────────────────────────────────── */
 const MODES = [
-  { name: 'BEACON', desc: 'Morse SOS + GPS on all frequencies, deep sleep cycles', color: 'orange', freq: '433.5 MHz', power: '+17 dBm' },
-  { name: 'SEARCH', desc: 'Sequential frequency scanning with RSSI measurement', color: 'emerald', freq: 'All stored', power: 'Rx only' },
-  { name: 'CONFIG', desc: 'WiFi captive portal for field configuration', color: 'sky', freq: '2.4 GHz', power: 'WiFi AP' },
-  { name: 'EMERGENCY', desc: 'Max power continuous TX, no sleep, 1760 Hz tone', color: 'rose', freq: 'All stored', power: '+22 dBm' }
+  { name: 'BEACON', desc: 'Morse SOS + GPS on all frequencies, deep sleep cycles', color: 'orange', power: '+17 dBm' },
+  { name: 'SEARCH', desc: 'Sequential frequency scanning with RSSI measurement', color: 'emerald', power: 'Rx only' },
+  { name: 'CONFIG', desc: 'WiFi captive portal for field configuration', color: 'sky', power: 'WiFi AP' },
+  { name: 'EMERGENCY', desc: 'Max power continuous TX, no sleep, 1760 Hz tone', color: 'rose', power: '+22 dBm' }
 ];
-
-/* ── Section renderers ─────────────────────────────────────────────── */
 
 function renderHeroStats() {
   const stats = HERO_STATS.map((s) => `
@@ -94,11 +84,9 @@ function renderHeroStats() {
     </div>`).join('');
 
   return `<section class="relative overflow-hidden bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-[#0d1322] dark:via-[#090d16] dark:to-[#0d1322] rounded-2xl border border-orange-200/50 dark:border-orange-900/30 p-8 sm:p-12">
-    <!-- Animated background elements -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
       <div class="absolute -top-40 -right-40 w-80 h-80 bg-orange-400/10 dark:bg-orange-500/5 rounded-full blur-3xl animate-pulse"></div>
       <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-amber-400/10 dark:bg-amber-500/5 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-300/5 dark:bg-orange-400/3 rounded-full blur-3xl"></div>
     </div>
 
     <div class="relative z-10 text-center space-y-8">
@@ -121,7 +109,7 @@ function renderHeroStats() {
           <span>Explore Wiki</span>
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
         </a>
-        <a href="/demo.html" class="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono text-sm font-bold rounded-lg hover:border-orange-500 dark:hover:border-orange-500 transition-all duration-200">
+        <a href="/demo" class="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono text-sm font-bold rounded-lg hover:border-orange-500 dark:hover:border-orange-500 transition-all duration-200">
           <span>Live Demo</span>
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         </a>
@@ -132,7 +120,6 @@ function renderHeroStats() {
       </div>
     </div>
 
-    <!-- Stats bar -->
     <div class="relative z-10 mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-orange-200/50 dark:border-orange-900/30 pt-8">
       ${stats}
     </div>
@@ -159,7 +146,7 @@ function renderFeatures() {
     <div class="text-center space-y-3">
       <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest">// CORE CAPABILITIES</span>
       <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Built for Critical Missions</h2>
-      <p class="text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Every component selected for reliability in emergency scenarios. From RF amplification to ultra-low power management.</p>
+      <p class="text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Every component selected for reliability in emergency scenarios.</p>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       ${cards}
@@ -185,13 +172,9 @@ function renderModes() {
     <div class="border ${colors[m.color]} rounded-xl p-5 space-y-3">
       <div class="flex items-center justify-between">
         <span class="font-mono text-xs font-bold ${textColors[m.color]}">${m.name}</span>
-        <span class="text-[10px] font-mono text-slate-500">${m.freq}</span>
+        <span class="text-[10px] font-mono text-slate-500">${m.power}</span>
       </div>
       <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">${m.desc}</p>
-      <div class="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800/50">
-        <span class="text-[10px] font-mono text-slate-500">TX Power</span>
-        <span class="text-[10px] font-mono font-bold ${textColors[m.color]}">${m.power}</span>
-      </div>
     </div>`;
   }).join('');
 
@@ -199,7 +182,7 @@ function renderModes() {
     <div class="text-center space-y-3">
       <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest">// OPERATING MODES</span>
       <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Four Modes for Every Scenario</h2>
-      <p class="text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">From passive beacon transmission to emergency high-power output, the system adapts to mission requirements.</p>
+      <p class="text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">From passive beacon to emergency high-power output.</p>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       ${cards}
@@ -219,7 +202,6 @@ function renderStack() {
     <div class="text-center space-y-3">
       <span class="text-[10px] font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest">// TECHNOLOGY STACK</span>
       <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Engineered with Proven Technologies</h2>
-      <p class="text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Every technology chosen for reliability, performance, and community support in critical applications.</p>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-4xl mx-auto">
       ${items}
@@ -242,7 +224,6 @@ function renderCTA() {
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
         </a>
         <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 bg-orange-700 text-white font-mono text-sm font-bold rounded-lg hover:bg-orange-800 transition-all duration-200">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
           <span>Source Code</span>
         </a>
       </div>
@@ -252,54 +233,13 @@ function renderCTA() {
 
 const JSON_LD = `{
   "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": "https://aegis-beacon.vercel.app/#website",
-      "url": "https://aegis-beacon.vercel.app/",
-      "name": "Aegis-Beacon",
-      "description": "Open-source SAR radio tracking and location project",
-      "publisher": {
-        "@type": "Organization",
-        "@id": "https://aegis-beacon.vercel.app/#organization",
-        "name": "Aegis Open Source Project",
-        "alternateName": "Aegis-Beacon",
-        "url": "https://aegis-beacon.vercel.app/",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://aegis-beacon.vercel.app/icon.png",
-          "width": 512,
-          "height": 512
-        },
-        "image": "https://aegis-beacon.vercel.app/banner.png",
-        "description": "Open-source emergency radio location project based on LoRa/SX1262 for alpine SAR operations.",
-        "foundingDate": "2026",
-        "founder": {
-          "@type": "Person",
-          "name": "Leonardo Galli",
-          "url": "https://github.com/Leo-Galli"
-        },
-        "sameAs": [
-          "https://github.com/Leo-Galli/Aegis-Beacon",
-          "https://github.com/Leo-Galli"
-        ]
-      },
-      "inLanguage": ["it-IT","en-US","fr-FR","es-ES"]
-    },
-    {
-      "@type": "WebPage",
-      "@id": "https://aegis-beacon.vercel.app/#webpage",
-      "url": "https://aegis-beacon.vercel.app/",
-      "name": "Aegis-Beacon v5.4 | Open Source Emergency Radio System",
-      "isPartOf": { "@id": "https://aegis-beacon.vercel.app/#website" },
-      "description": "Low-cost emergency radio-location system based on LoRa for mountain rescue and SAR operations.",
-      "inLanguage": ["it-IT","en-US","fr-FR","es-ES"]
-    }
-  ]
+  "@type": "WebSite",
+  "name": "Aegis-Beacon",
+  "url": "https://aegis-beacon.vercel.app/",
+  "description": "Open-source emergency radio-location system based on LoRa"
 }`;
 
-/** Render the full landing page for the requested language. */
-export function renderLandingPage(lang, dict) {
+export function renderLandingPage(lang, dict, currentPath = '/') {
   const content = [
     renderHeroStats(),
     renderFeatures(),
@@ -312,16 +252,17 @@ export function renderLandingPage(lang, dict) {
     lang,
     dict,
     title: 'Aegis-Beacon v5.4 | Open Source Emergency Radio System',
-    description: 'Low-cost emergency radio-location system based on LoRa. Designed for mountain rescue, land operations, and critical civilian scenarios when cellular infrastructure is unavailable.',
+    description: 'Low-cost emergency radio-location system based on LoRa for mountain rescue and SAR operations.',
     canonical: `${SITE_URL}/`,
     jsonLd: JSON_LD,
     header: { action: 'Wiki', actionHref: '/wiki' },
     tabs: false,
     content,
     footer: {
-      tagline: '<span class="notranslate">Aegis</span> Open Source Engineering Network -- Technical File Reference v5.4 Revision 2026.'
+      tagline: 'Aegis Open Source Engineering Network - Technical Reference v5.4'
     },
     scriptSrc: null,
-    withIconLinks: true
+    withIconLinks: true,
+    currentPath
   });
 }

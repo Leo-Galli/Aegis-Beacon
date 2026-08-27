@@ -21,21 +21,18 @@ const contentTypes = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.svg': 'image/svg+xml',
-  '.webmanifest': 'application/manifest+json; charset=utf-8'
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
+  '.ico': 'image/x-icon'
 };
 
 /**
- * Node-rendered pages. There are NO static .html files in this repository:
- * every page is assembled at request time by the view modules in /views
- * (landing.js — hero-style landing page; wiki.js — comprehensive wiki;
- * manual.js — legacy manual; demo.js — firmware simulator).
+ * Clean URL routes -- no .html extensions.
+ * Every page is assembled at request time by the view modules in /views.
  */
 const PAGE_RENDERERS = {
   '/': renderLandingPage,
-  '/index.html': renderLandingPage,
   '/wiki': renderWikiPage,
   '/manual': renderManualPage,
-  '/demo.html': renderDemoPage,
   '/demo': renderDemoPage
 };
 
@@ -53,30 +50,83 @@ function detectLanguage(request, requestUrl) {
   return DEFAULT_LANG;
 }
 
+function renderPageSafe(renderer, lang, pathname) {
+  const dict = DICTIONARIES[lang] || DICTIONARIES[DEFAULT_LANG];
+  return renderer(lang, dict, pathname);
+}
+
 export async function handleRequest(request, response) {
   const requestUrl = new URL(request.url || '/', 'http://localhost');
   const pathname = requestUrl.pathname;
+
+  // Fetch API handler (no Node response object -- used by Vercel serverless)
   if (!response) {
+    if (pathname === '/health') {
+      return new Response(JSON.stringify({ status: 'ok' }), {
+        headers: { 'content-type': 'application/json; charset=utf-8' }
+      });
+    }
+    if (pathname === '/version') {
+      return new Response(JSON.stringify({ name: 'aegis-beacon', version: appVersion, runtime: `node ${process.version}` }), {
+        headers: { 'content-type': 'application/json; charset=utf-8' }
+      });
+    }
+    if (pathname === '/set-lang') {
+      const lang = requestUrl.searchParams.get('lang');
+      const redirect = requestUrl.searchParams.get('redirect') || '/';
+      const headers = new Headers({ 'Location': redirect });
+      if (lang && SUPPORTED_LANGS.includes(lang)) {
+        headers.append('Set-Cookie', `aegis-lang=${lang}; Path=/; Max-Age=31536000; SameSite=Lax`);
+      }
+      return new Response(null, { status: 302, headers });
+    }
+    const i18nMatch = pathname.match(/^\/i18n\/([a-z]{2})\.json$/);
+    if (i18nMatch) {
+      const lang = SUPPORTED_LANGS.includes(i18nMatch[1]) ? i18nMatch[1] : DEFAULT_LANG;
+      return new Response(JSON.stringify(DICTIONARIES[lang]), {
+        status: 200,
+        headers: { 'cache-control': 'public, max-age=3600', 'content-type': 'application/json; charset=utf-8' }
+      });
+    }
     const renderer = PAGE_RENDERERS[pathname];
     if (!renderer) return new Response('Not found', { status: 404 });
     const lang = detectLanguage(request, requestUrl);
-    return new Response(renderer(lang, DICTIONARIES[lang] || DICTIONARIES[DEFAULT_LANG]), {
-      headers: { 'content-type': 'text/html; charset=utf-8' }
-    });
+    const html = renderPageSafe(renderer, lang, pathname);
+    return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } });
   }
 
+  // Health check
   if (pathname === '/health') {
     response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
     response.end(JSON.stringify({ status: 'ok' }));
     return;
   }
+
+  // Version info
   if (pathname === '/version') {
     response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
     response.end(JSON.stringify({ name: 'aegis-beacon', version: appVersion, runtime: `node ${process.version}` }));
     return;
   }
 
-  // i18n dictionary endpoint (used by the client-side language switcher).
+  // Set language cookie when switching
+  if (pathname === '/set-lang') {
+    const lang = requestUrl.searchParams.get('lang');
+    const redirect = requestUrl.searchParams.get('redirect') || '/';
+    if (lang && SUPPORTED_LANGS.includes(lang)) {
+      response.writeHead(302, {
+        'Set-Cookie': `aegis-lang=${lang}; Path=/; Max-Age=31536000; SameSite=Lax`,
+        'Location': redirect
+      });
+      response.end();
+    } else {
+      response.writeHead(302, { 'Location': redirect });
+      response.end();
+    }
+    return;
+  }
+
+  // i18n dictionary endpoint
   const i18nMatch = pathname.match(/^\/i18n\/([a-z]{2})\.json$/);
   if (i18nMatch) {
     const lang = SUPPORTED_LANGS.includes(i18nMatch[1]) ? i18nMatch[1] : DEFAULT_LANG;
@@ -88,27 +138,27 @@ export async function handleRequest(request, response) {
     return;
   }
 
-  // Node-rendered page routes (language-aware, no static HTML involved).
+  // Node-rendered page routes (clean URLs, no .html)
   const renderer = PAGE_RENDERERS[pathname];
   if (renderer) {
     const lang = detectLanguage(request, requestUrl);
     try {
-      const html = renderer(lang, DICTIONARIES[lang] || DICTIONARIES[DEFAULT_LANG]);
+      const html = renderPageSafe(renderer, lang, pathname);
       response.writeHead(200, {
         'cache-control': 'no-cache',
         'content-type': 'text/html; charset=utf-8'
       });
       response.end(html);
-    } catch {
+    } catch (err) {
+      console.error('Render error:', err);
       response.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' });
       response.end('Internal server error');
     }
     return;
   }
 
-  // Static assets (banner.png, favicon, /js/*, /css/*) with path-traversal protection.
-  const requestedPath = pathname;
-  const filePath = normalize(join(publicDirectory, `.${requestedPath}`));
+  // Static assets with path-traversal protection
+  const filePath = normalize(join(publicDirectory, `.${pathname}`));
   const rootPrefix = publicDirectory.endsWith(sep) ? publicDirectory : `${publicDirectory}${sep}`;
   if (!filePath.startsWith(rootPrefix)) {
     response.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' });

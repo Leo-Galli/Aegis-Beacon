@@ -549,7 +549,7 @@ const JSON_LD = `{
 }`;
 
 /** Render the full wiki page for the requested language. */
-export function renderWikiPage(lang, dict) {
+export function renderWikiPage(lang, dict, currentPath = '/') {
   const content = [
     renderTOC(),
     renderOverviewSection(),
@@ -573,13 +573,14 @@ export function renderWikiPage(lang, dict) {
     description: 'Complete technical wiki for Aegis-Beacon: hardware architecture, firmware modes, assembly guide, frequency compatibility, GPS integration, power management, troubleshooting, and FAQ.',
     canonical: `${SITE_URL}/wiki`,
     jsonLd: JSON_LD,
-    header: { logoHref: '/', action: 'Demo', actionHref: '/demo.html', subtitle: 'Technical Wiki v5.4' },
+    header: { logoHref: '/', action: 'Demo', actionHref: '/demo', subtitle: 'Technical Wiki v5.4' },
     tabs: false,
     content,
     footer: {
       tagline: '<span class="notranslate">Aegis</span> Open Source Engineering Network -- Technical Wiki v5.4 Revision 2026.'
     },
     scriptSrc: null,
-    withIconLinks: true
+    withIconLinks: true,
+    currentPath
   });
 }
