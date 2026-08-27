@@ -1,8 +1,8 @@
 /**
- * Aegis-Beacon -- Shared wiki page layout (20 pages).
+ * Aegis-Beacon Wiki -- Classic Wiki Layout
  *
- * Provides consistent navigation, sidebar, and page structure for all
- * wiki sub-pages. Fully responsive with mobile hamburger menu.
+ * Wikipedia-inspired layout with sidebar TOC, edit links,
+ * classic wiki typography, and prev/next navigation.
  */
 
 import { renderPage, SITE_URL } from '../layout.js';
@@ -32,29 +32,38 @@ export const WIKI_PAGES = [
 ];
 
 /**
- * Render wiki sidebar navigation.
+ * Render classic wiki sidebar navigation.
  */
 export function renderWikiSidebar(currentPage) {
   const links = WIKI_PAGES.map((p) => {
     const active = p.id === currentPage;
     return `
-    <a href="/wiki/${p.id}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-mono rounded-lg transition-all ${active ? 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 font-bold border border-orange-200 dark:border-orange-900/50' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'}">
-      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${p.icon}"/></svg>
+    <a href="/wiki/${p.id}" class="flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all ${active ? 'bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 font-bold border-l-2 border-orange-500' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent'}">
+      <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${p.icon}"/></svg>
       <span>${p.title}</span>
     </a>`;
   }).join('');
 
   return `
   <!-- Desktop sidebar -->
-  <aside class="hidden lg:block w-56 shrink-0 sticky top-20 h-fit">
-    <div class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-xl p-3 space-y-1 max-h-[calc(100vh-6rem)] overflow-y-auto">
-      <span class="text-[9px] font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest block pb-2 mb-1 border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white dark:bg-[#0f1626]">Wiki</span>
+  <aside class="hidden lg:block w-52 shrink-0 sticky top-20 h-fit">
+    <div class="bg-white dark:bg-[var(--surface-alt)] border border-slate-200 dark:border-slate-800 rounded-lg p-3 space-y-0.5 max-h-[calc(100vh-6rem)] overflow-y-auto">
+      <div class="flex items-center gap-2 px-3 py-2 mb-2">
+        <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+        <span class="text-[11px] font-bold text-slate-900 dark:text-white">Documentation</span>
+      </div>
       ${links}
+      <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="flex items-center gap-2 px-3 py-2 text-xs text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          <span>View on GitHub</span>
+        </a>
+      </div>
     </div>
   </aside>
 
   <!-- Mobile navigation -->
-  <div class="lg:hidden sticky top-16 z-30 bg-white dark:bg-[#0d1322] border-b border-slate-200 dark:border-slate-800 px-4 py-2">
+  <div class="lg:hidden sticky top-16 z-30 bg-white dark:bg-[var(--surface-alt)] border-b border-slate-200 dark:border-slate-800 px-4 py-2">
     <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
       ${WIKI_PAGES.map((p) => {
         const active = p.id === currentPage;
@@ -65,22 +74,31 @@ export function renderWikiSidebar(currentPage) {
 }
 
 /**
- * Render wiki page header with edit button.
+ * Render wiki page header with edit button (Wikipedia-style).
  */
 export function renderWikiHeader(id, title, file) {
   const editLink = file
-    ? `<a href="${GITHUB_EDIT}/${file}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[10px] font-mono text-slate-400 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+    ? `<a href="${GITHUB_EDIT}/${file}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 border border-slate-200 dark:border-slate-700 rounded-md hover:border-orange-300 dark:hover:border-orange-700 transition-all">
         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
-        Edit on GitHub
+        Edit
       </a>`
     : '';
 
-  return `<div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-6">
+  return `<div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
     <div>
-      <span class="text-[9px] font-mono font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest">// ${title.toUpperCase()}</span>
-      <h1 id="${id}" class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mt-1">${title}</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">${title}</h1>
     </div>
     ${editLink}
+  </div>`;
+}
+
+/**
+ * Render wiki page table of contents (auto-generated from headings).
+ */
+export function renderWikiTOC() {
+  return `<div class="hidden xl:block w-48 shrink-0 sticky top-20 h-fit">
+    <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 px-3">On this page</div>
+    <nav class="wiki-toc space-y-1 px-3" id="wiki-toc"></nav>
   </div>`;
 }
 
@@ -93,39 +111,56 @@ export function renderWikiNav(currentPage) {
   const next = idx < WIKI_PAGES.length - 1 ? WIKI_PAGES[idx + 1] : null;
 
   const prevLink = prev
-    ? `<a href="/wiki/${prev.id}" class="flex items-center gap-2 px-4 py-3 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-xl hover:border-orange-500/50 transition-all flex-1 min-w-0">
-        <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-        <div class="min-w-0"><div class="text-[9px] font-mono text-slate-500 uppercase">Previous</div><div class="text-xs font-bold text-slate-900 dark:text-white truncate">${prev.title}</div></div>
+    ? `<a href="/wiki/${prev.id}" class="flex items-center gap-3 px-5 py-4 bg-white dark:bg-[var(--surface-alt)] border border-slate-200 dark:border-slate-800 rounded-xl hover:border-orange-500/50 hover:shadow-md transition-all flex-1 min-w-0 group">
+        <svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+        <div class="min-w-0"><div class="text-[10px] font-mono text-slate-500 dark:text-slate-500 uppercase tracking-wider">Previous</div><div class="text-sm font-bold text-slate-900 dark:text-white truncate">${prev.title}</div></div>
       </a>`
     : '<div class="flex-1"></div>';
 
   const nextLink = next
-    ? `<a href="/wiki/${next.id}" class="flex items-center gap-2 px-4 py-3 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-xl hover:border-orange-500/50 transition-all flex-1 min-w-0 text-right justify-end">
-        <div class="min-w-0"><div class="text-[9px] font-mono text-slate-500 uppercase">Next</div><div class="text-xs font-bold text-slate-900 dark:text-white truncate">${next.title}</div></div>
-        <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+    ? `<a href="/wiki/${next.id}" class="flex items-center gap-3 px-5 py-4 bg-white dark:bg-[var(--surface-alt)] border border-slate-200 dark:border-slate-800 rounded-xl hover:border-orange-500/50 hover:shadow-md transition-all flex-1 min-w-0 text-right justify-end group">
+        <div class="min-w-0"><div class="text-[10px] font-mono text-slate-500 dark:text-slate-500 uppercase tracking-wider">Next</div><div class="text-sm font-bold text-slate-900 dark:text-white truncate">${next.title}</div></div>
+        <svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
       </a>`
     : '<div class="flex-1"></div>';
 
-  return `<div class="flex flex-col sm:flex-row gap-3 pt-8 border-t border-slate-200 dark:border-slate-800">${prevLink}${nextLink}</div>`;
+  return `<div class="flex flex-col sm:flex-row gap-3 pt-8 mt-8 border-t border-slate-200 dark:border-slate-800">${prevLink}${nextLink}</div>`;
 }
 
 /**
- * Render a full wiki page.
+ * Render a full wiki page with classic Wikipedia-style layout.
  */
 export function renderWikiPageLayout({ pageId, title, file, content, lang, dict, currentPath = '/' }) {
+  const tocScript = `<script>
+(function(){
+  var toc = document.getElementById('wiki-toc');
+  if (!toc) return;
+  var headings = document.querySelectorAll('.wiki-content h2, .wiki-content h3');
+  headings.forEach(function(h) {
+    if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.className = 'block py-1 text-xs ' + (h.tagName === 'H3' ? 'pl-4 ' : '') + 'text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors truncate';
+    a.textContent = h.textContent;
+    toc.appendChild(a);
+  });
+})();
+</script>`;
+
   const body = `<div class="flex gap-0 lg:gap-8">
     ${renderWikiSidebar(pageId)}
     <div class="flex-1 min-w-0">
       ${renderWikiHeader(pageId, title, file)}
-      <div class="wiki-content space-y-6">${content}</div>
+      <div class="wiki-content prose-wiki space-y-6">${content}</div>
       ${renderWikiNav(pageId)}
     </div>
+    ${renderWikiTOC()}
   </div>`;
 
   return renderPage({
     lang,
     dict,
-    title: `Aegis-Beacon | ${title}`,
+    title: `Aegis-Beacon Wiki | ${title}`,
     description: `Technical documentation: ${title} for the Aegis-Beacon emergency radio system.`,
     canonical: `${SITE_URL}/wiki/${pageId}`,
     header: { logoHref: '/', action: 'Builder', actionHref: '/builder', subtitle: `Wiki: ${title}` },
@@ -134,6 +169,7 @@ export function renderWikiPageLayout({ pageId, title, file, content, lang, dict,
     footer: { tagline: 'Aegis Open Source Engineering Network -- Technical Wiki v5.4' },
     scriptSrc: null,
     withIconLinks: true,
-    currentPath
+    currentPath,
+    extraScripts: tocScript
   });
 }
