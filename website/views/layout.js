@@ -211,7 +211,8 @@ export function renderPage({
   footer = {},
   scriptSrc,
   withIconLinks = false,
-  currentPath = '/'
+  currentPath = '/',
+  extraScripts = ''
 }) {
   const dictJson = JSON.stringify(dict).replace(/</g, '\\u003c');
   return `<!DOCTYPE html>
@@ -228,6 +229,7 @@ ${content}
 ${renderFooter({ ...footer, currentLang: lang, currentPath })}
 </main>
 ${scriptSrc ? `<script type="module" src="${scriptSrc}"></script>` : ''}
+${extraScripts}
 </body>
 </html>`;
 }
