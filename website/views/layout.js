@@ -1,5 +1,5 @@
 /**
- * Aegis-Beacon — shared page layout, rendered entirely by Node.
+ * Aegis-Beacon -- shared page layout, rendered entirely by Node.
  *
  * Single source of truth for the HTML shell: document head (SEO metadata,
  * Open Graph, Twitter cards, JSON-LD), top bar with language switcher,
@@ -72,34 +72,7 @@ ${jsonLd ? `<script type="application/ld+json">${jsonLd}</script>` : ''}
 <script src="/js/tailwind.config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="${FONTS_HREF}" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css">
-<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-<script>
-function googleTranslateElementInit() {
-  new google.translate.TranslateElement({
-    pageLanguage: 'en',
-    includedLanguages: 'en,it,fr,es,de,pt,ru,ja,zh-CN,ko',
-    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-    autoDisplay: false
-  }, 'google_translate_element');
-}
-</script>
-<style>
-/* Hide Google Translate bar, show only our widget */
-.goog-te-banner-frame, .goog-te-spinner-pos, #goog-gt-tt { display: none !important; }
-body { top: 0 !important; }
-/* Style the Google Translate dropdown to match site */
-#google_translate_element .goog-te-gadget { font-family: 'JetBrains Mono', monospace !important; font-size: 10px !important; }
-#google_translate_element .goog-te-gadget select { 
-  background: transparent; border: 1px solid var(--border); border-radius: 6px; 
-  padding: 4px 8px; font-size: 10px; font-family: 'JetBrains Mono', monospace;
-  color: var(--text-primary); cursor: pointer; appearance: auto;
-}
-#google_translate_element .goog-te-gadget select:hover { border-color: var(--orange-500); }
-.dark #google_translate_element .goog-te-gadget select { background: var(--surface-alt); color: var(--text-primary); }
-/* Do not translate elements with notranslate class */
-.notranslate, .notranslate * { google:ignore; }
-</style>`;
+<link rel="stylesheet" href="/css/site.css">`;
 }
 
 const THEME_TOGGLE = `<button id="theme-toggle" class="theme-switch" role="switch" aria-checked="false" aria-label="Toggle color scheme" title="Toggle color scheme">
@@ -110,12 +83,28 @@ const THEME_TOGGLE = `<button id="theme-toggle" class="theme-switch" role="switc
 </button>`;
 
 /**
- * Google Translate widget — automatic translation.
- * Protects notranslate elements from being translated.
+ * Clean language switcher dropdown.
  */
 function renderLanguageSwitcher(currentLang, currentPath = '/') {
+  const langs = [
+    { code: 'en', label: 'EN' },
+    { code: 'it', label: 'IT' },
+    { code: 'fr', label: 'FR' },
+    { code: 'es', label: 'ES' }
+  ];
+
+  const options = langs.map((l) =>
+    `<button data-set-lang="${l.code}" class="lang-opt px-2 py-1 text-[10px] font-mono font-bold rounded transition-all ${l.code === currentLang ? 'bg-orange-500 text-white' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}">${l.label}</button>`
+  ).join('');
+
   return `<div class="relative" id="lang-switcher">
-    <div id="google_translate_element"></div>
+    <button id="lang-toggle" class="flex items-center gap-1 px-2 py-1.5 text-[10px] font-mono font-bold text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-orange-400 dark:hover:border-orange-500 transition-colors">
+      <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+      <span>${currentLang.toUpperCase()}</span>
+    </button>
+    <div id="lang-dropdown" class="hidden absolute right-0 top-full mt-1 bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1.5 px-1.5 z-50 flex gap-1">
+      ${options}
+    </div>
   </div>`;
 }
 
@@ -142,7 +131,7 @@ export function renderHeader({ logoHref = null, action = 'Demo', actionHref = '/
   return `<header class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0d1322] sticky top-0 z-50 px-4 sm:px-6">
   <div class="max-w-7xl mx-auto h-16 flex items-center justify-between gap-4">
     ${logo}
-    <div class="flex items-center gap-3 shrink-0">
+    <div class="flex items-center gap-2 shrink-0">
       ${THEME_TOGGLE}
       ${renderLanguageSwitcher(currentLang, currentPath)}
       <a href="${actionHref}" class="text-[11px] font-mono border border-orange-600 text-orange-600 dark:text-orange-400 px-2.5 py-1.5 rounded hover:bg-orange-50 dark:hover:bg-orange-950/20 transition">${action}</a>
@@ -162,6 +151,25 @@ document.addEventListener('DOMContentLoaded', () => {
       var dark = document.documentElement.classList.toggle('dark');
       try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch(e) {}
       themeBtn.setAttribute('aria-checked', String(dark));
+    });
+  }
+  // Language dropdown
+  var toggle = document.getElementById('lang-toggle');
+  var dropdown = document.getElementById('lang-dropdown');
+  if (toggle && dropdown) {
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('hidden');
+    });
+    document.addEventListener('click', () => dropdown.classList.add('hidden'));
+    dropdown.addEventListener('click', (e) => e.stopPropagation());
+    // Language selection
+    dropdown.querySelectorAll('[data-set-lang]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        var lang = btn.getAttribute('data-set-lang');
+        var path = window.location.pathname + window.location.search;
+        window.location.href = '/set-lang?lang=' + lang + '&redirect=' + encodeURIComponent(path);
+      });
     });
   }
 });
