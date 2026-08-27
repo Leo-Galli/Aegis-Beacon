@@ -94,7 +94,7 @@ function renderSerialActions() {
 }
 
 /** Render the full demo page for the requested language. */
-export function renderDemoPage(lang, dict) {
+export function renderDemoPage(lang, dict, currentPath = '/') {
   const content = `
     <!-- HERO -->
     <section class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-3">
@@ -273,8 +273,8 @@ ${renderSerialActions()}
     dict,
     title: 'Aegis-Beacon v5.4 — Live Firmware Demo',
     description: 'Interactive demonstration of the Aegis-Beacon v5.4 firmware: BEACON / SEARCH / CONFIG / EMERGENCY modes, Morse engine, frequency planner, GPS payload builder, battery monitor, RSSI scan and serial console.',
-    canonical: `${SITE_URL}/demo.html`,
-    header: { logoHref: '/', action: 'Manual', actionHref: '/', subtitle: 'Live Firmware Demo v5.4' },
+    canonical: `${SITE_URL}/demo`,
+    header: { logoHref: '/', action: 'Manual', actionHref: '/manual', subtitle: 'Live Firmware Demo v5.4' },
     tabs: false,
     content,
     footer: {
@@ -282,6 +282,7 @@ ${renderSerialActions()}
       legalNote: 'This is a browser simulation, not a real radio. Always verify local regulations before transmitting.',
       languageSelector: false
     },
-    scriptSrc: '/js/demo.js'
+    scriptSrc: '/js/demo.js',
+    currentPath
   });
 }
