@@ -8,6 +8,7 @@ import { renderLandingPage } from './views/landing.js';
 import { renderWikiPage } from './views/wiki.js';
 import { renderManualPage } from './views/manual.js';
 import { renderDemoPage } from './views/demo.js';
+import { renderBuilderPage } from './views/builder.js';
 
 const publicDirectory = fileURLToPath(new URL('./public/', import.meta.url));
 const port = Number(process.env.PORT || 3000);
@@ -33,7 +34,8 @@ const PAGE_RENDERERS = {
   '/': renderLandingPage,
   '/wiki': renderWikiPage,
   '/manual': renderManualPage,
-  '/demo': renderDemoPage
+  '/demo': renderDemoPage,
+  '/builder': renderBuilderPage
 };
 
 function detectLanguage(request, requestUrl) {
