@@ -166,11 +166,10 @@ export function renderWikiPageLayout({ pageId, title, file, content, lang, dict,
     header: { logoHref: '/', action: 'Builder', actionHref: '/builder', subtitle: `Wiki: ${title}` },
     tabs: false,
     content: body,
-    footer: { tagline: 'Aegis Open Source Engineering Network -- Technical Wiki v5.4' },
+    footer: {},
     scriptSrc: null,
     withIconLinks: true,
     currentPath,
-    extraScripts: tocScript,
-    enableTranslate: lang !== 'en'
+    extraScripts: tocScript
   });
 }

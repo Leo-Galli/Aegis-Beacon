@@ -694,9 +694,7 @@ export function renderManualPage(lang, dict, currentPath = '/') {
     header: { action: 'Demo', actionHref: '/demo' },
     tabs: true,
     content,
-    footer: {
-      tagline: '<span class="notranslate">Aegis</span> Open Source Engineering Network -- Technical File Reference v5.4 Revision 2026.'
-    },
+    footer: {},
     scriptSrc: '/js/main.js',
     withIconLinks: true,
     currentPath

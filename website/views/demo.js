@@ -277,11 +277,7 @@ ${renderSerialActions()}
     header: { logoHref: '/', action: 'Manual', actionHref: '/manual', subtitle: 'Live Firmware Demo v5.4' },
     tabs: false,
     content,
-    footer: {
-      tagline: '<span class="notranslate" translate="no">Aegis</span> Open Source Engineering Network — Firmware Demo v5.4 · Simulation of <code class="text-slate-500 dark:text-slate-500">AegisBeacon.ino</code> for educational use.',
-      legalNote: 'This is a browser simulation, not a real radio. Always verify local regulations before transmitting.',
-      languageSelector: false
-    },
+    footer: {},
     scriptSrc: '/js/demo.js',
     currentPath
   });

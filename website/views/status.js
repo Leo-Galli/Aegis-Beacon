@@ -209,9 +209,7 @@ export function renderStatusPage(lang, dict, currentPath = '/') {
     header: { logoHref: '/', action: 'Wiki', actionHref: '/wiki', subtitle: 'Project Status' },
     tabs: false,
     content,
-    footer: {
-      tagline: 'Aegis Open Source Engineering Network -- Project Status v5.4'
-    },
+    footer: {},
     scriptSrc: null,
     withIconLinks: true,
     currentPath

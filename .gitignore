@@ -1,5 +1,6 @@
 # Local workspace metadata
 .freebuff/
+COMMIT.md
 
 # Node dependencies and build output
 node_modules/

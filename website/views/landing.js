@@ -398,9 +398,7 @@ export function renderLandingPage(lang, dict, currentPath = '/') {
     header: { action: 'Wiki', actionHref: '/wiki' },
     tabs: false,
     content,
-    footer: {
-      tagline: 'Aegis Open Source Engineering Network - Technical Reference v5.4'
-    },
+    footer: {},
     scriptSrc: null,
     withIconLinks: true,
     currentPath

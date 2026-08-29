@@ -71,7 +71,7 @@ export function renderWikiPage(lang, dict, currentPath = '/') {
     header: { logoHref: '/', action: 'Builder', actionHref: '/builder', subtitle: 'Documentation' },
     tabs: false,
     content,
-    footer: { tagline: 'Aegis Open Source Engineering Network -- Technical Wiki v5.4' },
+    footer: {},
     scriptSrc: null,
     withIconLinks: true,
     currentPath
