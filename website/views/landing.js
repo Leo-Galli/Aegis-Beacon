@@ -161,15 +161,15 @@ function renderFeatures() {
   const cards = FEATURES.map((f, i) => {
     const c = colorClasses[f.color];
     return `
-    <div class="group relative bg-[var(--surface-alt)] border border-[var(--border)] rounded-2xl p-6 sm:p-7 space-y-4 ${c.borderHover} hover:shadow-xl transition-all duration-400 hover-lift animate-fade-in-up" style="animation-delay: ${0.1 + i * 0.08}s">
-      <div class="w-12 h-12 rounded-xl ${c.iconBg} flex items-center justify-center ${c.iconText}">
+    <div class="group relative bg-[var(--surface-alt)] border border-[var(--border)] rounded-2xl p-6 sm:p-7 space-y-4 ${c.borderHover} hover:shadow-xl transition-all duration-300 hover-lift animate-fade-in-up" style="animation-delay: ${0.1 + i * 0.08}s">
+      <div class="w-12 h-12 rounded-xl ${c.iconBg} flex items-center justify-center ${c.iconText} group-hover:scale-110 transition-transform duration-300">
         ${f.icon}
       </div>
       <div>
         <span class="text-[10px] font-mono font-bold ${c.tagText} uppercase tracking-wider">${f.tag}</span>
       </div>
-      <h3 class="text-lg font-bold text-[var(--text-primary)]">${f.title}</h3>
-      <p class="text-sm text-[var(--text-secondary)] leading-relaxed">${f.desc}</p>
+      <h3 class="text-lg font-bold text-[var(--text-primary)]" data-key="feat-${i}-title">${f.title}</h3>
+      <p class="text-sm text-[var(--text-secondary)] leading-relaxed" data-key="feat-${i}-desc">${f.desc}</p>
     </div>`;
   }).join('');
 
@@ -209,7 +209,7 @@ function renderModes() {
         </div>
         <span class="text-[10px] font-mono text-[var(--text-muted)] px-2 py-0.5 rounded-full bg-[var(--surface)] border border-[var(--border-subtle)]">${m.power}</span>
       </div>
-      <p class="text-sm text-[var(--text-secondary)] leading-relaxed">${m.desc}</p>
+      <p class="text-sm text-[var(--text-secondary)] leading-relaxed" data-key="mode-${i}-desc">${m.desc}</p>
       <div class="flex items-center gap-1.5 pt-1">
         <span class="text-[9px] font-mono text-[var(--text-muted)] uppercase">LED:</span>
         <span class="text-[10px] font-mono text-[var(--text-secondary)]">${m.led}</span>
