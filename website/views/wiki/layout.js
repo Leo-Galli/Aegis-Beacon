@@ -38,24 +38,24 @@ export function renderWikiSidebar(currentPage) {
   const links = WIKI_PAGES.map((p) => {
     const active = p.id === currentPage;
     return `
-    <a href="/wiki/${p.id}" class="flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all ${active ? 'bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 font-bold border-l-2 border-orange-500' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent'}">
-      <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${p.icon}"/></svg>
+    <a href="/wiki/${p.id}" class="wiki-sidebar-link ${active ? 'active' : 'text-slate-600 dark:text-slate-400'}">
+      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${p.icon}"/></svg>
       <span>${p.title}</span>
     </a>`;
   }).join('');
 
   return `
   <!-- Desktop sidebar -->
-  <aside class="hidden lg:block w-52 shrink-0 sticky top-20 h-fit">
-    <div class="bg-white dark:bg-[var(--surface-alt)] border border-slate-200 dark:border-slate-800 rounded-lg p-3 space-y-0.5 max-h-[calc(100vh-6rem)] overflow-y-auto">
-      <div class="flex items-center gap-2 px-3 py-2 mb-2">
-        <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-        <span class="text-[11px] font-bold text-slate-900 dark:text-white">Documentation</span>
+  <aside class="hidden lg:block w-56 shrink-0 sticky top-20 h-fit">
+    <div class="bg-white dark:bg-[var(--surface-alt)] border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-1 max-h-[calc(100vh-6rem)] overflow-y-auto shadow-sm">
+      <div class="flex items-center gap-2.5 px-3 py-2.5 mb-3 border-b border-slate-100 dark:border-slate-800">
+        <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
+        <span class="text-xs font-bold text-slate-900 dark:text-white tracking-wide">Documentation</span>
       </div>
       ${links}
-      <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="flex items-center gap-2 px-3 py-2 text-xs text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+      <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="wiki-sidebar-link text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
           <span>View on GitHub</span>
         </a>
       </div>
@@ -63,11 +63,11 @@ export function renderWikiSidebar(currentPage) {
   </aside>
 
   <!-- Mobile navigation -->
-  <div class="lg:hidden sticky top-16 z-30 bg-white dark:bg-[var(--surface-alt)] border-b border-slate-200 dark:border-slate-800 px-4 py-2">
+  <div class="lg:hidden sticky top-16 z-30 bg-white dark:bg-[var(--surface-alt)] border-b border-slate-200 dark:border-slate-800 px-4 py-3">
     <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
       ${WIKI_PAGES.map((p) => {
         const active = p.id === currentPage;
-        return `<a href="/wiki/${p.id}" class="shrink-0 px-3 py-1.5 text-[10px] font-mono font-bold rounded-full border transition-all ${active ? 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50' : 'text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700'}">${p.title}</a>`;
+        return `<a href="/wiki/${p.id}" class="shrink-0 px-4 py-2 text-[10px] font-bold rounded-lg border transition-all ${active ? 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50' : 'text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700'}">${p.title}</a>`;
       }).join('')}
     </div>
   </div>`;
@@ -78,15 +78,15 @@ export function renderWikiSidebar(currentPage) {
  */
 export function renderWikiHeader(id, title, file) {
   const editLink = file
-    ? `<a href="${GITHUB_EDIT}/${file}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 border border-slate-200 dark:border-slate-700 rounded-md hover:border-orange-300 dark:hover:border-orange-700 transition-all">
-        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
-        Edit
+    ? `<a href="${GITHUB_EDIT}/${file}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-sm transition-all">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+        Edit on GitHub
       </a>`
     : '';
 
-  return `<div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
+  return `<div class="flex items-center justify-between border-b-2 border-slate-200 dark:border-slate-800 pb-5 mb-8">
     <div>
-      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">${title}</h1>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">${title}</h1>
     </div>
     ${editLink}
   </div>`;
@@ -96,9 +96,9 @@ export function renderWikiHeader(id, title, file) {
  * Render wiki page table of contents (auto-generated from headings).
  */
 export function renderWikiTOC() {
-  return `<div class="hidden xl:block w-48 shrink-0 sticky top-20 h-fit">
-    <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 px-3">On this page</div>
-    <nav class="wiki-toc space-y-1 px-3" id="wiki-toc"></nav>
+  return `<div class="hidden xl:block w-52 shrink-0 sticky top-20 h-fit">
+    <div class="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-4 px-3">On this page</div>
+    <nav class="wiki-toc space-y-1 px-3 border-l border-slate-200 dark:border-slate-800 ml-1" id="wiki-toc"></nav>
   </div>`;
 }
 
@@ -140,10 +140,22 @@ export function renderWikiPageLayout({ pageId, title, file, content, lang, dict,
     if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     var a = document.createElement('a');
     a.href = '#' + h.id;
-    a.className = 'block py-1 text-xs ' + (h.tagName === 'H3' ? 'pl-4 ' : '') + 'text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors truncate';
+    a.className = 'block py-1 text-xs ' + (h.tagName === 'H3' ? 'pl-6 ' : '') + 'text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors truncate rounded';
     a.textContent = h.textContent;
     toc.appendChild(a);
   });
+  /* ScrollSpy */
+  var links = toc.querySelectorAll('a');
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        links.forEach(function(l) { l.classList.remove('active'); });
+        var active = toc.querySelector('a[href="' + '#' + entry.target.id + '"]');
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-80px 0px -80% 0px' });
+  headings.forEach(function(h) { observer.observe(h); });
 })();
 </script>`;
 
@@ -170,6 +182,22 @@ export function renderWikiPageLayout({ pageId, title, file, content, lang, dict,
     scriptSrc: null,
     withIconLinks: true,
     currentPath,
-    extraScripts: tocScript
+    extraScripts: tocScript + (lang !== 'en' ? `
+<div id="gt-container" style="position:fixed;bottom:20px;right:20px;z-index:999;"></div>
+<script>
+(function(){
+  var s = document.createElement('script');
+  s.src = 'https://translate.google.com/translate_a/element.js?cb=gtInit';
+  document.body.appendChild(s);
+  window.gtInit = function() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      includedLanguages: 'it,fr,es',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'gt-container');
+  };
+})();
+</script>` : '')
   });
 }

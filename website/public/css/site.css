@@ -527,109 +527,209 @@ details summary::-webkit-details-marker { display: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   WIKI CONTENT — Enhanced Classic Wiki Design
+   WIKI CONTENT — Beautiful Documentation Design
    ═══════════════════════════════════════════════════════════════ */
 .prose-wiki {
   animation: fadeIn 0.4s ease-out both;
 }
+
+/* ── Headings ──────────────────────────────────────────────── */
 .prose-wiki h1 {
-  font-size: 2rem;
+  font-size: 2.25rem;
   font-weight: 800;
-  line-height: 1.15;
-  margin-bottom: 1.25rem;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
   color: var(--text-primary);
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, var(--text-primary), var(--orange-600));
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--orange-600) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid var(--orange-500);
 }
 .dark .prose-wiki h1 {
-  background: linear-gradient(135deg, #f1f5f9, var(--orange-400));
+  background: linear-gradient(135deg, #f1f5f9 0%, var(--orange-400) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  border-bottom-color: var(--orange-600);
 }
+
 .prose-wiki h2 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  line-height: 1.35;
-  margin-top: 2.75rem;
-  margin-bottom: 0.875rem;
+  font-size: 1.5rem;
+  font-weight: 750;
+  line-height: 1.3;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid transparent;
-  border-image: linear-gradient(90deg, var(--orange-500), transparent) 1;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  border-bottom: 2px solid var(--border);
+  position: relative;
 }
+.prose-wiki h2::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 80px;
+  height: 2px;
+  background: var(--orange-500);
+}
+
 .prose-wiki h3 {
-  font-size: 1.0625rem;
-  font-weight: 650;
-  line-height: 1.45;
-  margin-top: 1.75rem;
-  margin-bottom: 0.625rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
   color: var(--text-primary);
-  padding-left: 0.75rem;
-  border-left: 3px solid var(--orange-400);
+  padding-left: 1rem;
+  border-left: 4px solid var(--orange-500);
+  background: linear-gradient(90deg, rgba(249,115,22,0.03), transparent);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-radius: 0 8px 8px 0;
 }
+
 .prose-wiki h4 {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  line-height: 1.5;
-  margin-top: 1.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-top: 1.5rem;
   margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
+
+/* ── Text ──────────────────────────────────────────────────── */
 .prose-wiki p {
   font-size: 0.9375rem;
   line-height: 1.85;
   color: var(--text-secondary);
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
-.prose-wiki strong { color: var(--text-primary); font-weight: 650; }
-.prose-wiki em { color: var(--text-secondary); }
+.prose-wiki strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.prose-wiki em {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* ── Links ─────────────────────────────────────────────────── */
 .prose-wiki a {
   color: var(--orange-600);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
-  text-decoration-color: rgba(234, 88, 12, 0.3);
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(234, 88, 12, 0.3);
+  transition: all 0.15s ease;
+  padding-bottom: 1px;
 }
-.dark .prose-wiki a { color: var(--orange-400); text-decoration-color: rgba(251, 146, 60, 0.3); }
-.prose-wiki a:hover { color: var(--orange-500); text-decoration-thickness: 2px; text-decoration-color: var(--orange-500); }
-.prose-wiki ul, .prose-wiki ol { padding-left: 1.75rem; margin-bottom: 1.125rem; }
-.prose-wiki li {
+.dark .prose-wiki a { color: var(--orange-400); border-bottom-color: rgba(251, 146, 60, 0.3); }
+.prose-wiki a:hover {
+  color: var(--orange-500);
+  border-bottom-color: var(--orange-500);
+  background: rgba(249,115,22,0.05);
+  border-radius: 2px;
+}
+
+/* ── Lists ─────────────────────────────────────────────────── */
+.prose-wiki ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 1.5rem;
+}
+.prose-wiki ul > li {
+  position: relative;
+  padding-left: 1.75rem;
   font-size: 0.9375rem;
   line-height: 1.8;
   color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-  padding-left: 0.375rem;
+  margin-bottom: 0.75rem;
 }
-.prose-wiki li::marker { color: var(--orange-500); }
+.prose-wiki ul > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6rem;
+  width: 6px;
+  height: 6px;
+  background: var(--orange-500);
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
+.prose-wiki ol {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 1.5rem;
+  counter-reset: wiki-counter;
+}
+.prose-wiki ol > li {
+  position: relative;
+  padding-left: 2.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  counter-increment: wiki-counter;
+}
+.prose-wiki ol > li::before {
+  content: counter(wiki-counter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: linear-gradient(135deg, var(--orange-50), var(--orange-100));
+  color: var(--orange-700);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--orange-200);
+}
+.dark .prose-wiki ol > li::before {
+  background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(249,115,22,0.1));
+  color: var(--orange-400);
+  border-color: rgba(249,115,22,0.3);
+}
+.prose-wiki li strong {
+  color: var(--text-primary);
+}
+.prose-wiki li code {
+  font-size: 0.8125rem;
+}
+
+/* ── Inline Code ───────────────────────────────────────────── */
 .prose-wiki code {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8125rem;
-  background: linear-gradient(135deg, var(--border-subtle), rgba(249,115,22,0.04));
+  background: linear-gradient(135deg, rgba(249,115,22,0.06), rgba(249,115,22,0.02));
   padding: 0.2rem 0.5rem;
   border-radius: 6px;
   color: var(--orange-700);
   font-weight: 500;
-  border: 1px solid rgba(249,115,22,0.08);
+  border: 1px solid rgba(249,115,22,0.1);
 }
-.dark .prose-wiki code { background: rgba(30,41,59,0.9); color: var(--orange-400); border-color: rgba(249,115,22,0.12); }
+.dark .prose-wiki code {
+  background: rgba(30,41,59,0.9);
+  color: var(--orange-400);
+  border-color: rgba(249,115,22,0.15);
+}
+
+/* ── Code Blocks ───────────────────────────────────────────── */
 .prose-wiki pre {
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 1.25rem 1.5rem;
+  padding: 1.5rem;
   overflow-x: auto;
   margin: 1.5rem 0;
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.02);
+  box-shadow: var(--shadow-md);
   position: relative;
-}
-.dark .prose-wiki pre {
-  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.02);
 }
 .prose-wiki pre::before {
   content: '';
@@ -637,8 +737,9 @@ details summary::-webkit-details-marker { display: none; }
   top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(249,115,22,0.2), transparent);
+  height: 3px;
+  background: linear-gradient(90deg, var(--orange-500), var(--orange-300), var(--orange-500));
+  border-radius: 12px 12px 0 0;
 }
 .prose-wiki pre code {
   background: none;
@@ -647,16 +748,36 @@ details summary::-webkit-details-marker { display: none; }
   color: var(--text-primary);
   line-height: 1.75;
   border: none;
+  font-weight: 400;
 }
+
+/* ── Blockquotes ───────────────────────────────────────────── */
 .prose-wiki blockquote {
   border-left: 4px solid var(--orange-500);
-  padding: 1rem 1.25rem;
+  padding: 1.25rem 1.5rem;
   margin: 1.5rem 0;
-  background: linear-gradient(135deg, var(--border-subtle), rgba(249,115,22,0.02));
+  background: linear-gradient(135deg, rgba(249,115,22,0.04), rgba(249,115,22,0.01));
   border-radius: 0 12px 12px 0;
   font-style: italic;
+  position: relative;
 }
-.prose-wiki blockquote p { margin-bottom: 0; color: var(--text-secondary); }
+.prose-wiki blockquote::before {
+  content: '\201C';
+  position: absolute;
+  top: -0.5rem;
+  left: 1rem;
+  font-size: 3rem;
+  color: var(--orange-300);
+  font-style: normal;
+  line-height: 1;
+}
+.prose-wiki blockquote p {
+  margin-bottom: 0;
+  color: var(--text-secondary);
+  padding-left: 0.5rem;
+}
+
+/* ── Tables ────────────────────────────────────────────────── */
 .prose-wiki table {
   width: 100%;
   border-collapse: collapse;
@@ -667,55 +788,66 @@ details summary::-webkit-details-marker { display: none; }
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
 }
+.prose-wiki thead {
+  background: linear-gradient(135deg, var(--orange-50), rgba(249,115,22,0.05));
+}
 .prose-wiki th {
-  background: linear-gradient(135deg, var(--orange-50), rgba(249,115,22,0.03));
   font-weight: 700;
   text-align: left;
-  padding: 0.875rem 1rem;
+  padding: 1rem 1.25rem;
   border-bottom: 2px solid var(--orange-200);
   color: var(--orange-800);
   font-size: 0.8125rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 .dark .prose-wiki th {
   background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(249,115,22,0.03));
-  border-bottom-color: rgba(249,115,22,0.25);
+  border-bottom-color: rgba(249,115,22,0.3);
   color: var(--orange-400);
 }
 .prose-wiki td {
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1.25rem;
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text-secondary);
-  transition: background-color 0.15s ease;
+  transition: all 0.15s ease;
 }
-.prose-wiki tr:last-child td { border-bottom: none; }
-.prose-wiki tr:hover td {
-  background: linear-gradient(135deg, rgba(249,115,22,0.02), transparent);
+.prose-wiki tr:last-child td {
+  border-bottom: none;
 }
-.dark .prose-wiki tr:hover td {
-  background: linear-gradient(135deg, rgba(249,115,22,0.05), transparent);
+.prose-wiki tbody tr:hover td {
+  background: linear-gradient(135deg, rgba(249,115,22,0.03), transparent);
 }
+.dark .prose-wiki tbody tr:hover td {
+  background: linear-gradient(135deg, rgba(249,115,22,0.06), transparent);
+}
+
+/* ── Horizontal Rules ──────────────────────────────────────── */
 .prose-wiki hr {
   border: none;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border), transparent);
-  margin: 2.5rem 0;
-}
-.prose-wiki img {
-  max-width: 100%;
-  border-radius: 10px;
-  margin: 1.25rem 0;
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(90deg, transparent, var(--orange-300), transparent);
+  margin: 3rem 0;
 }
 
-/* Wiki Alerts — Enhanced */
+/* ── Images ────────────────────────────────────────────────── */
+.prose-wiki img {
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WIKI ALERTS — Beautiful Callouts
+   ═══════════════════════════════════════════════════════════════ */
 .wiki-alert {
-  padding: 1rem 1.25rem;
-  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
   margin: 1.5rem 0;
   font-size: 0.875rem;
-  line-height: 1.65;
+  line-height: 1.7;
   border-left: 5px solid;
   position: relative;
   overflow: hidden;
@@ -725,85 +857,128 @@ details summary::-webkit-details-marker { display: none; }
   position: absolute;
   top: 0;
   right: 0;
-  width: 100px;
+  width: 120px;
   height: 100%;
   background: radial-gradient(circle at top right, currentColor, transparent 70%);
-  opacity: 0.03;
+  opacity: 0.04;
   pointer-events: none;
 }
-.wiki-alert strong { font-weight: 700; display: block; margin-bottom: 0.25rem; }
+.wiki-alert strong {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.9rem;
+}
+.wiki-alert p {
+  margin-bottom: 0;
+}
 .wiki-alert-warning {
   background: linear-gradient(135deg, #fef2f2, #fff5f5);
-  border-color: #ef4444;
+  border-color: #dc2626;
   color: #991b1b;
 }
 .dark .wiki-alert-warning {
-  background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));
+  background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.06));
   color: #fca5a5;
 }
 .wiki-alert-note {
-  background: linear-gradient(135deg, #eff6ff, #f5f9ff);
-  border-color: #3b82f6;
+  background: linear-gradient(135deg, #eff6ff, #f0f7ff);
+  border-color: #2563eb;
   color: #1e40af;
 }
 .dark .wiki-alert-note {
-  background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.05));
+  background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(59,130,246,0.06));
   color: #93c5fd;
 }
 .wiki-alert-tip {
-  background: linear-gradient(135deg, #f0fdf4, #f5fef8);
-  border-color: #22c55e;
+  background: linear-gradient(135deg, #f0fdf4, #f2fef6);
+  border-color: #16a34a;
   color: #166534;
 }
 .dark .wiki-alert-tip {
-  background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.05));
+  background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.06));
   color: #86efac;
 }
 .wiki-alert-important {
-  background: linear-gradient(135deg, #fffbeb, #fffcf5);
-  border-color: #f59e0b;
+  background: linear-gradient(135deg, #fffbeb, #fffcf0);
+  border-color: #d97706;
   color: #92400e;
 }
 .dark .wiki-alert-important {
-  background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+  background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.06));
   color: #fcd34d;
 }
 .wiki-alert-info {
   background: linear-gradient(135deg, #f8fafc, #fafbfc);
-  border-color: #64748b;
+  border-color: #475569;
   color: #334155;
 }
 .dark .wiki-alert-info {
-  background: linear-gradient(135deg, rgba(100,116,139,0.1), rgba(100,116,139,0.05));
+  background: linear-gradient(135deg, rgba(100,116,139,0.12), rgba(100,116,139,0.06));
   color: #cbd5e1;
 }
 
-/* Wiki TOC — Enhanced */
+/* ═══════════════════════════════════════════════════════════════
+   WIKI TOC — ScrollSpy Table of Contents
+   ═══════════════════════════════════════════════════════════════ */
 .wiki-toc a {
   display: block;
-  padding: 0.3rem 0.5rem;
-  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
   border-left: 2px solid transparent;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  font-size: 0.8125rem;
 }
 .wiki-toc a:hover {
   background: var(--border-subtle);
   color: var(--orange-600);
+  border-left-color: var(--orange-300);
 }
 .wiki-toc a.active {
   color: var(--orange-600);
   font-weight: 600;
-  background: rgba(249,115,22,0.05);
+  background: linear-gradient(90deg, rgba(249,115,22,0.08), transparent);
   border-left-color: var(--orange-500);
 }
-.dark .wiki-toc a.active { color: var(--orange-400); background: rgba(249,115,22,0.08); }
+.dark .wiki-toc a.active {
+  color: var(--orange-400);
+  background: linear-gradient(90deg, rgba(249,115,22,0.1), transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WIKI SIDEBAR — Navigation
+   ═══════════════════════════════════════════════════════════════ */
+.wiki-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.8125rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+.wiki-sidebar-link:hover {
+  background: var(--border-subtle);
+  border-left-color: var(--orange-300);
+}
+.wiki-sidebar-link.active {
+  background: linear-gradient(90deg, rgba(249,115,22,0.1), transparent);
+  border-left-color: var(--orange-500);
+  font-weight: 600;
+  color: var(--orange-600);
+}
+.dark .wiki-sidebar-link.active {
+  color: var(--orange-400);
+  background: linear-gradient(90deg, rgba(249,115,22,0.12), transparent);
+}
 
 /* Wiki Scroll Progress Bar */
 .wiki-scroll-progress {
   position: fixed;
   top: 64px;
   left: 0;
-  height: 2px;
+  height: 3px;
   background: linear-gradient(90deg, var(--orange-500), var(--orange-300));
   z-index: 49;
   transition: width 0.1s ease-out;
@@ -811,7 +986,45 @@ details summary::-webkit-details-marker { display: none; }
 
 /* ── Main Content Spacing ────────────────────────────────────── */
 main {
-  padding-bottom: 2rem;
+  padding-bottom: 3rem;
+}
+
+/* ── Wiki Page Container ─────────────────────────────────────── */
+.wiki-page-container {
+  min-height: calc(100vh - 200px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GOOGLE TRANSLATE WIDGET — Styled for Wiki Pages
+   ═══════════════════════════════════════════════════════════════ */
+#gt-container .goog-te-gadget {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+}
+#gt-container .goog-te-gadget-simple {
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  padding: 6px 12px !important;
+  background: var(--surface-alt) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+#gt-container .goog-te-gadget-simple:hover {
+  border-color: var(--orange-400) !important;
+}
+.dark #gt-container .goog-te-gadget-simple {
+  background: var(--surface-raised) !important;
+  border-color: rgba(51,65,85,0.6) !important;
+}
+#gt-container .goog-te-gadget-simple a {
+  font-size: 10px !important;
+  color: var(--text-secondary) !important;
+}
+.goog-te-banner-frame { display: none !important; }
+body { top: 0 !important; }
+
+@media (max-width: 768px) {
+  #gt-container { bottom: 10px !important; right: 10px !important; }
+  #gt-container .goog-te-gadget-simple { padding: 4px 8px !important; }
 }
 
 /* ── Print ─────────────────────────────────────────────────────── */
@@ -819,4 +1032,6 @@ main {
   .theme-switch, .hero-orb, nav { display: none !important; }
   body { background: white; color: black; }
   .wiki-scroll-progress { display: none !important; }
+  .prose-wiki h1 { border-bottom-color: black; }
+  .prose-wiki h2::after { background: black; }
 }
