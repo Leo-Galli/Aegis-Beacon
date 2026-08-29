@@ -182,22 +182,6 @@ export function renderWikiPageLayout({ pageId, title, file, content, lang, dict,
     scriptSrc: null,
     withIconLinks: true,
     currentPath,
-    extraScripts: tocScript + (lang !== 'en' ? `
-<div id="gt-container" style="position:fixed;bottom:20px;right:20px;z-index:999;"></div>
-<script>
-(function(){
-  var s = document.createElement('script');
-  s.src = 'https://translate.google.com/translate_a/element.js?cb=gtInit';
-  document.body.appendChild(s);
-  window.gtInit = function() {
-    new google.translate.TranslateElement({
-      pageLanguage: 'en',
-      includedLanguages: 'it,fr,es',
-      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-      autoDisplay: false
-    }, 'gt-container');
-  };
-})();
-</script>` : '')
+    extraScripts: tocScript
   });
 }

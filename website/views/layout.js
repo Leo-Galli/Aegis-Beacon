@@ -324,22 +324,6 @@ ${renderFooter({ ...footer, currentLang: lang, currentPath })}
 </main>
 ${scriptSrc ? `<script type="module" src="${scriptSrc}"></script>` : ''}
 ${extraScripts}
-<script>
-/* Auto-translate elements with data-key attributes */
-(function(){
-  var lang = '${lang}';
-  if (lang === 'en') return;
-  fetch('/i18n/' + lang + '.json')
-    .then(function(r) { return r.json(); })
-    .then(function(dict) {
-      document.querySelectorAll('[data-key]').forEach(function(el) {
-        var key = el.getAttribute('data-key');
-        if (dict[key]) el.innerHTML = dict[key];
-      });
-    })
-    .catch(function() {});
-})();
-</script>
 </body>
 </html>`;
 }
