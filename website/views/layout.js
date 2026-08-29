@@ -187,20 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
-  /* Google Translate auto-init for wiki pages */
-  if (document.getElementById('google-translate-init')) {
-    var gtScript = document.createElement('script');
-    gtScript.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-    document.body.appendChild(gtScript);
-    window.googleTranslateElementInit = function() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'en',
-        includedLanguages: 'it,fr,es,de,pt,ru,ja,zh-CN,ko',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-        autoDisplay: false
-      }, 'google-translate-element');
-    };
-  }
 });
 </script>`;
 }
@@ -223,21 +209,75 @@ export function renderTabs() {
 </div>`;
 }
 
-/** Footer with language links. */
-export function renderFooter({ tagline, legalNote = '', languageSelector = true, currentLang = 'en', currentPath = '/' } = {}) {
-  const langs = ['en', 'it', 'fr', 'es'];
-  const selector = languageSelector
-    ? `<div class="flex flex-wrap items-center justify-center gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-    <span class="text-[9px] uppercase tracking-widest">Language:</span>
-    <div class="inline-flex items-center gap-2">
-      ${langs.map((l) => `<a href="/set-lang?lang=${l}&redirect=${encodeURIComponent(currentPath)}" class="text-[10px] font-mono ${l === currentLang ? 'text-orange-600 dark:text-orange-400 font-bold' : 'text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400'} transition-colors">${l.toUpperCase()}</a>`).join('')}
+/** Global footer with links, copyright, and language selector. */
+export function renderFooter({ currentLang = 'en', currentPath = '/' } = {}) {
+  const langs = [
+    { code: 'en', label: 'English' },
+    { code: 'it', label: 'Italiano' },
+    { code: 'fr', label: 'Francais' },
+    { code: 'es', label: 'Espanol' }
+  ];
+
+  return `<footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0d1322]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <!-- Brand -->
+      <div class="sm:col-span-2 lg:col-span-1">
+        <div class="flex items-center gap-2.5 mb-3">
+          <div class="w-2.5 h-2.5 bg-orange-600 rounded-full"></div>
+          <span class="font-mono font-bold text-xs tracking-wider text-slate-900 dark:text-white uppercase notranslate" translate="no">Aegis-Beacon</span>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-500 leading-relaxed max-w-xs">
+          Open Source Emergency Rescue Beacon. Built for alpine search-and-rescue operations.
+        </p>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h4 class="font-mono font-bold text-[10px] uppercase tracking-wider text-slate-900 dark:text-white mb-3">Quick Links</h4>
+        <ul class="space-y-2">
+          <li><a href="/" class="text-xs text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">Home</a></li>
+          <li><a href="/wiki" class="text-xs text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">Documentation</a></li>
+          <li><a href="/demo" class="text-xs text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">Demo</a></li>
+          <li><a href="/builder" class="text-xs text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">Builder</a></li>
+        </ul>
+      </div>
+
+      <!-- Resources -->
+      <div>
+        <h4 class="font-mono font-bold text-[10px] uppercase tracking-wider text-slate-900 dark:text-white mb-3">Resources</h4>
+        <ul class="space-y-2">
+          <li><a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="text-xs text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">GitHub Repository</a></li>
+          <li><a href="https://github.com/Leo-Galli/Aegis-Beacon/blob/main/LICENSE" target="_blank" rel="noopener" class="text-xs text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">MIT License</a></li>
+          <li><a href="/wiki/faq" class="text-xs text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">FAQ</a></li>
+          <li><a href="/status" class="text-xs text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">Project Status</a></li>
+        </ul>
+      </div>
+
+      <!-- Language -->
+      <div>
+        <h4 class="font-mono font-bold text-[10px] uppercase tracking-wider text-slate-900 dark:text-white mb-3">Language</h4>
+        <div class="flex flex-wrap gap-2">
+          ${langs.map((l) => `<a href="/set-lang?lang=${l.code}&redirect=${encodeURIComponent(currentPath)}" class="px-3 py-1.5 text-[10px] font-mono font-bold rounded-md border transition-all ${l.code === currentLang ? 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50' : 'text-slate-500 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-orange-300 dark:hover:border-orange-700 hover:text-orange-600 dark:hover:text-orange-400'}">${l.label}</a>`).join('')}
+        </div>
+      </div>
     </div>
-  </div>`
-    : '';
-  return `<footer class="border-t border-slate-200 dark:border-slate-800 pt-4 px-2 text-[10px] font-mono text-slate-400 dark:text-slate-600 space-y-3">
-  <p class="text-center">${tagline}</p>
-  ${legalNote ? `<p class="text-center">${legalNote}</p>` : ''}
-  ${selector}
+
+    <!-- Bottom bar -->
+    <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-[10px] font-mono text-slate-400 dark:text-slate-600">
+          &copy; AEGIS-BEACON - Open Source Emergency Rescue Beacon
+        </p>
+        <p class="text-[10px] font-mono text-slate-400 dark:text-slate-600">
+          MIT License &middot; Leonardo Galli 2026
+        </p>
+      </div>
+      <p class="text-[9px] font-mono text-slate-400 dark:text-slate-700 text-center mt-3">
+        This project is provided as-is for educational and emergency preparedness purposes. Always verify local radio regulations before operation.
+      </p>
+    </div>
+  </div>
 </footer>`;
 }
 
@@ -258,10 +298,8 @@ export function renderPage({
   scriptSrc,
   withIconLinks = false,
   currentPath = '/',
-  extraScripts = '',
-  enableTranslate = false
+  extraScripts = ''
 }) {
-  const translateInit = enableTranslate ? `<div id="google-translate-init"></div><div id="google-translate-element" style="position:fixed;bottom:80px;right:20px;z-index:999;"></div>` : '';
   return `<!DOCTYPE html>
 <html lang="${lang}" class="scroll-smooth">
 <head>
@@ -284,7 +322,6 @@ ${tabs ? renderTabs() : ''}
 ${content}
 ${renderFooter({ ...footer, currentLang: lang, currentPath })}
 </main>
-${translateInit}
 ${scriptSrc ? `<script type="module" src="${scriptSrc}"></script>` : ''}
 ${extraScripts}
 </body>

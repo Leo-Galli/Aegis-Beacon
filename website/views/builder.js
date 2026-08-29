@@ -395,9 +395,7 @@ export function renderBuilderPage(lang, dict, currentPath = '/') {
     header: { logoHref: '/', action: 'Wiki', actionHref: '/wiki', subtitle: 'BOM Builder v5.4' },
     tabs: false,
     content,
-    footer: {
-      tagline: 'Aegis Open Source Engineering Network -- BOM Builder v5.4'
-    },
+    footer: {},
     scriptSrc: null,
     withIconLinks: true,
     currentPath,

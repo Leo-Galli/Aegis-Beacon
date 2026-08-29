@@ -798,28 +798,6 @@ details summary::-webkit-details-marker { display: none; }
 }
 .dark .wiki-toc a.active { color: var(--orange-400); background: rgba(249,115,22,0.08); }
 
-/* Google Translate Widget Override */
-#google-translate-element .goog-te-gadget {
-  font-family: 'JetBrains Mono', monospace !important;
-  font-size: 11px !important;
-}
-#google-translate-element .goog-te-gadget-simple {
-  border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
-  padding: 4px 8px !important;
-  background: var(--surface-alt) !important;
-}
-.dark #google-translate-element .goog-te-gadget-simple {
-  background: var(--surface-raised) !important;
-  border-color: rgba(51,65,85,0.6) !important;
-}
-#google-translate-element .goog-te-gadget-simple a {
-  font-size: 10px !important;
-  color: var(--text-secondary) !important;
-}
-.goog-te-banner-frame { display: none !important; }
-body { top: 0 !important; }
-
 /* Wiki Scroll Progress Bar */
 .wiki-scroll-progress {
   position: fixed;
@@ -831,13 +809,14 @@ body { top: 0 !important; }
   transition: width 0.1s ease-out;
 }
 
+/* ── Main Content Spacing ────────────────────────────────────── */
+main {
+  padding-bottom: 2rem;
+}
+
 /* ── Print ─────────────────────────────────────────────────────── */
 @media print {
-  .theme-switch, .hero-orb, nav, #google-translate-element { display: none !important; }
+  .theme-switch, .hero-orb, nav { display: none !important; }
   body { background: white; color: black; }
   .wiki-scroll-progress { display: none !important; }
-}
-@media (max-width: 768px) {
-  #google-translate-element { bottom: 10px !important; right: 10px !important; }
-  #google-translate-element .goog-te-gadget-simple { padding: 2px 6px !important; }
 }
