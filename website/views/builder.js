@@ -395,7 +395,6 @@ export function renderBuilderPage() {
     header: { logoHref: '/', action: 'Wiki', actionHref: '/wiki', subtitle: 'BOM Builder v5.4' },
     tabs: false,
     content,
-    footer: {},
     scriptSrc: null,
     withIconLinks: true,
     
