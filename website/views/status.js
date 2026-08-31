@@ -191,7 +191,7 @@ const JSON_LD = `{
   "url": "https://aegis-beacon.vercel.app/status"
 }`;
 
-export function renderStatusPage(lang, dict, currentPath = '/') {
+export function renderStatusPage() {
   const content = [
     renderWorkflows(),
     renderCheckResults(),
@@ -200,8 +200,8 @@ export function renderStatusPage(lang, dict, currentPath = '/') {
   ].join('\n\n');
 
   return renderPage({
-    lang,
-    dict,
+    
+    
     title: 'Aegis-Beacon v5.4 | Project Status',
     description: 'CI/CD pipeline status, automated quality checks, security audit results, and project health metrics for Aegis-Beacon.',
     canonical: `${SITE_URL}/status`,

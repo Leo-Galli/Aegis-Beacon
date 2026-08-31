@@ -130,7 +130,7 @@ export function renderWikiNav(currentPage) {
 /**
  * Render a full wiki page with classic Wikipedia-style layout.
  */
-export function renderWikiPageLayout({ pageId, title, file, content, lang, dict, currentPath = '/' }) {
+export function renderWikiPageLayout({ pageId, title, file, content }) {
   const tocScript = `<script>
 (function(){
   var toc = document.getElementById('wiki-toc');
@@ -170,18 +170,14 @@ export function renderWikiPageLayout({ pageId, title, file, content, lang, dict,
   </div>`;
 
   return renderPage({
-    lang,
-    dict,
     title: `Aegis-Beacon Wiki | ${title}`,
     description: `Technical documentation: ${title} for the Aegis-Beacon emergency radio system.`,
     canonical: `${SITE_URL}/wiki/${pageId}`,
     header: { logoHref: '/', action: 'Builder', actionHref: '/builder', subtitle: `Wiki: ${title}` },
     tabs: false,
     content: body,
-    footer: {},
     scriptSrc: null,
     withIconLinks: true,
-    currentPath,
     extraScripts: tocScript
   });
 }

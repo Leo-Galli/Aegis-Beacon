@@ -6,15 +6,12 @@
 import { renderWikiPageLayout } from './layout.js';
 import { loadWikiMarkdown } from './md-loader.js';
 
-export async function renderFrequenciesPage(lang, dict, currentPath = '/') {
+export async function renderPage() {
   const content = await loadWikiMarkdown('frequency-compatibility.md');
   return renderWikiPageLayout({
     pageId: 'frequencies',
     title: 'Frequency Compatibility',
     file: 'website/wiki/frequency-compatibility.md',
     content,
-    lang,
-    dict,
-    currentPath
   });
 }

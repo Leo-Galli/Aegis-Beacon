@@ -6,15 +6,12 @@
 import { renderWikiPageLayout } from './layout.js';
 import { loadWikiMarkdown } from './md-loader.js';
 
-export async function renderOverviewPage(lang, dict, currentPath = '/') {
+export async function renderPage() {
   const content = await loadWikiMarkdown('project-overview.md');
   return renderWikiPageLayout({
     pageId: 'overview',
     title: 'Project Overview',
     file: 'website/wiki/project-overview.md',
     content,
-    lang,
-    dict,
-    currentPath
   });
 }

@@ -671,7 +671,7 @@ const JSON_LD = `{
 }`;
 
 /** Render the full manual (wiki) page for the requested language. */
-export function renderManualPage(lang, dict, currentPath = '/') {
+export function renderManualPage() {
   const content = [
     renderOverviewTab(),
     renderHardwareTab(),
@@ -685,8 +685,8 @@ export function renderManualPage(lang, dict, currentPath = '/') {
   ].join('\n\n');
 
   return renderPage({
-    lang,
-    dict,
+    
+    
     title: 'Aegis-Beacon v5.4: Technical Manual and SAR Build Wiki',
     description: 'Official Aegis-Beacon v5.4 manual. Step-by-step guide to SMD hardware assembly, ESP32 firmware flashing with PlatformIO, and SAR radio frequency management.',
     canonical: `${SITE_URL}/`,

@@ -251,7 +251,7 @@ function renderCTA() {
 
 /* ── Export ────────────────────────────────────────────────────────── */
 
-export function renderLandingPage(lang, dict, currentPath = '/') {
+export function renderLandingPage() {
   const content = [
     renderHero(),
     renderFeatures(),
@@ -260,8 +260,8 @@ export function renderLandingPage(lang, dict, currentPath = '/') {
   ].join('\n\n');
 
   return renderPage({
-    lang,
-    dict,
+    
+    
     title: 'Aegis-Beacon v5.4 | Open Source Emergency Radio System',
     description: 'Low-cost emergency radio-location system based on LoRa for mountain rescue and SAR operations. ESP32 + SX1262 + GPS.',
     canonical: `${SITE_URL}/`,
