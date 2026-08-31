@@ -7,7 +7,7 @@ import { renderPage, SITE_URL } from './layout.js';
 
 const GITHUB_REPO = 'https://github.com/Leo-Galli/Aegis-Beacon';
 
-export function renderWikiPage(lang, dict, currentPath = '/') {
+export function renderWikiPage() {
   const content = `
   <div class="text-center py-16 space-y-6">
     <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-950/20">
@@ -63,8 +63,8 @@ export function renderWikiPage(lang, dict, currentPath = '/') {
   </div>`;
 
   return renderPage({
-    lang,
-    dict,
+    
+    
     title: 'Aegis-Beacon Wiki | Documentation',
     description: 'Comprehensive technical documentation for the Aegis-Beacon emergency radio system.',
     canonical: `${SITE_URL}/wiki`,

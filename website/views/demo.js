@@ -94,7 +94,7 @@ function renderSerialActions() {
 }
 
 /** Render the full demo page for the requested language. */
-export function renderDemoPage(lang, dict, currentPath = '/') {
+export function renderDemoPage() {
   const content = `
     <!-- HERO -->
     <section class="bg-white dark:bg-[#0f1626] border border-slate-200 dark:border-slate-800 rounded-lg p-5 sm:p-6 space-y-3">
@@ -269,8 +269,8 @@ ${renderSerialActions()}
     </section>`;
 
   return renderPage({
-    lang,
-    dict,
+    
+    
     title: 'Aegis-Beacon v5.4 — Live Firmware Demo',
     description: 'Interactive demonstration of the Aegis-Beacon v5.4 firmware: BEACON / SEARCH / CONFIG / EMERGENCY modes, Morse engine, frequency planner, GPS payload builder, battery monitor, RSSI scan and serial console.',
     canonical: `${SITE_URL}/demo`,

@@ -375,7 +375,7 @@ const JSON_LD = `{
   "url": "https://aegis-beacon.vercel.app/builder"
 }`;
 
-export function renderBuilderPage(lang, dict, currentPath = '/') {
+export function renderBuilderPage() {
   const content = [
     renderBuilderHeader(),
     renderBudgetSlider(),
@@ -386,8 +386,8 @@ export function renderBuilderPage(lang, dict, currentPath = '/') {
   ].join('\n\n');
 
   return renderPage({
-    lang,
-    dict,
+    
+    
     title: 'Aegis-Beacon v5.4 | BOM Builder',
     description: 'Interactive bill of materials calculator for the Aegis-Beacon emergency radio. Calculate costs, source components, and plan your build.',
     canonical: `${SITE_URL}/builder`,
@@ -398,7 +398,7 @@ export function renderBuilderPage(lang, dict, currentPath = '/') {
     footer: {},
     scriptSrc: null,
     withIconLinks: true,
-    currentPath,
+    
     extraScripts: renderBuilderScript()
   });
 }

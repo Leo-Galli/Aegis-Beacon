@@ -6,15 +6,12 @@
 import { renderWikiPageLayout } from './layout.js';
 import { loadWikiMarkdown } from './md-loader.js';
 
-export async function renderAntennaPage(lang, dict, currentPath = '/') {
+export async function renderPage() {
   const content = await loadWikiMarkdown('antenna-design.md');
   return renderWikiPageLayout({
     pageId: 'antenna',
     title: 'Antenna Design',
     file: 'website/wiki/antenna-design.md',
     content,
-    lang,
-    dict,
-    currentPath
   });
 }
