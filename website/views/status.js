@@ -209,9 +209,7 @@ export function renderStatusPage() {
     header: { logoHref: '/', action: 'Wiki', actionHref: '/wiki', subtitle: 'Project Status' },
     tabs: false,
     content,
-    footer: {},
     scriptSrc: null,
     withIconLinks: true,
-    currentPath
   });
 }

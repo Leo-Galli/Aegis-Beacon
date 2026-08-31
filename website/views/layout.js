@@ -83,7 +83,7 @@ const THEME_TOGGLE = `<button id="theme-toggle" class="theme-switch" role="switc
 /**
  * Top bar with navigation.
  */
-export function renderHeader({ logoHref = null, action = 'Demo', actionHref = '/demo', subtitle = 'Tech and Build Wiki v5.4', currentPath = '/' } = {}) {
+export function renderHeader({ logoHref = null, action = 'Demo', actionHref = '/demo', subtitle = 'Tech and Build Wiki v5.4' } = {}) {
   const logo = logoHref
     ? `<a href="${logoHref}" class="flex items-center gap-2.5 min-w-0 group">
         <div class="w-2.5 h-2.5 bg-orange-600 rounded-full shrink-0 group-hover:scale-125 transition-transform"></div>
@@ -242,6 +242,20 @@ ${renderFooter()}
 </main>
 ${scriptSrc ? `<script type="module" src="${scriptSrc}"></script>` : ''}
 ${extraScripts}
+<button id="scroll-top" aria-label="Scroll to top" title="Back to top">
+  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+</button>
+<script>
+(function(){
+  var btn = document.getElementById('scroll-top');
+  if (!btn) return;
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 400) { btn.classList.add('visible'); }
+    else { btn.classList.remove('visible'); }
+  });
+  btn.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+})();
+</script>
 </body>
 </html>`;
 }

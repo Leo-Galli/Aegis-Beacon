@@ -71,9 +71,7 @@ export function renderWikiPage() {
     header: { logoHref: '/', action: 'Builder', actionHref: '/builder', subtitle: 'Documentation' },
     tabs: false,
     content,
-    footer: {},
     scriptSrc: null,
     withIconLinks: true,
-    currentPath
   });
 }

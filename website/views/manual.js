@@ -694,9 +694,7 @@ export function renderManualPage() {
     header: { action: 'Demo', actionHref: '/demo' },
     tabs: true,
     content,
-    footer: {},
     scriptSrc: '/js/main.js',
     withIconLinks: true,
-    currentPath
   });
 }

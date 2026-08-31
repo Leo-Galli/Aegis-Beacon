@@ -277,8 +277,6 @@ ${renderSerialActions()}
     header: { logoHref: '/', action: 'Manual', actionHref: '/manual', subtitle: 'Live Firmware Demo v5.4' },
     tabs: false,
     content,
-    footer: {},
     scriptSrc: '/js/demo.js',
-    currentPath
   });
 }
