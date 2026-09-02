@@ -454,6 +454,79 @@ details summary::-webkit-details-marker { display: none; }
   }
 }
 
+/* ─── 25. Enhanced Feature Icons ─── */
+.feature-icon {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  margin-bottom: 1rem;
+  transition: transform 0.3s, background 0.3s;
+}
+.feature-card:hover .feature-icon {
+  transform: scale(1.1) rotate(-5deg);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+/* ─── 26. Banner Showcase ─── */
+.banner-showcase {
+  position: relative; border-radius: var(--radius-2xl); overflow: hidden;
+  box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+}
+.banner-image {
+  width: 100%; height: auto; display: block; object-fit: cover;
+  max-height: 500px;
+}
+.banner-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 2rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  color: white;
+}
+.banner-caption {
+  font-size: 1.125rem; font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* ─── 27. Stat Counter Animation ─── */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.stat-value {
+  animation: countUp 0.6s ease-out both;
+}
+.stat:nth-child(1) .stat-value { animation-delay: 0.4s; }
+.stat:nth-child(2) .stat-value { animation-delay: 0.5s; }
+.stat:nth-child(3) .stat-value { animation-delay: 0.6s; }
+.stat:nth-child(4) .stat-value { animation-delay: 0.7s; }
+.stat:nth-child(5) .stat-value { animation-delay: 0.8s; }
+.stat:nth-child(6) .stat-value { animation-delay: 0.9s; }
+
+/* ─── 28. Wiki Page Animations ─── */
+.wiki-layout .prose-wiki h1 { animation: slideInLeft 0.5s ease-out both; }
+.wiki-layout .prose-wiki h2 {
+  opacity: 0; animation: fadeInUp 0.4s ease-out both;
+}
+@supports (animation-timeline: view()) {
+  .wiki-layout .prose-wiki h2 {
+    animation: fadeInUp linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 20%;
+  }
+}
+
+/* ─── 29. Mobile Nav Enhancement ─── */
+@media (max-width: 640px) {
+  .hero__headline { font-size: 2rem; }
+  .hero__actions { flex-direction: column; align-items: center; }
+  .hero__actions .btn { width: 100%; max-width: 280px; }
+  .stats-bar { gap: 1rem; }
+  .stat-value { font-size: 1.125rem; }
+  .modes-grid { grid-template-columns: 1fr; }
+  .feature-card { padding: 1.25rem; }
+}
+
 /* ─── 21. Scroll to Top ─── */
 #scroll-top {
   position: fixed; bottom: 24px; right: 24px; width: 40px; height: 40px;

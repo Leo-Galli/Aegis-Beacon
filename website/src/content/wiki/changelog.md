@@ -1,0 +1,146 @@
+---
+title: "Changelog"
+description: "Version history and release notes for Aegis-Beacon firmware and hardware"
+order: 20
+---
+
+# Changelog
+
+All notable changes to the Aegis-Beacon project are documented here. This covers firmware, hardware, and documentation changes.
+
+## Version 5.4 (Current)
+
+### Firmware
+
+- Fixed GPS NMEA parsing timeout handling
+- Improved Morse code timing accuracy to within 2% of specified WPM
+- Added configurable TX power levels (5, 10, 14, 17, 20, 22 dBm)
+- Optimized deep sleep current to 10 uA (was 12 uA)
+- Added battery voltage averaging (10-sample window) for stable readings
+- Fixed WiFi captive portal crash on prolonged Config mode usage
+
+### Hardware
+
+- Updated BOM with current AliExpress pricing
+- Added SMA bulkhead connector variant to assembly guide
+- Revised GPIO pin mapping documentation for clarity
+
+### Website
+
+- Migrated to Astro framework
+- Added interactive firmware demo
+- Added BOM builder tool
+- Expanded wiki to 25+ pages
+
+## Version 5.3
+
+### Firmware
+
+- Added OTA (Over-The-Air) firmware update capability
+- Implemented WiFi provisioning for initial network setup
+- Added support for NEO-M9N GPS module (in addition to NEO-6M)
+- Fixed watchdog timer reset during WiFi operations
+- Added GPS cold start optimization (faster first fix)
+
+### Hardware
+
+- Added NEO-M9N as alternative GPS module option
+- Updated schematic for improved ESD protection on USB port
+- Added test points for production quality control
+
+## Version 5.2
+
+### Firmware
+
+- Implemented PMR446 frequency presets for EU compliance
+- Added configurable frequency list (up to 8 frequencies)
+- Improved RSSI measurement accuracy in Search mode
+- Added audio tone frequency scaling in Search mode (pitch proportional to RSSI)
+- Fixed LED blinking pattern in Emergency mode
+
+### Hardware
+
+- Removed unused components from BOM (cost reduction)
+- Updated antenna recommendation to wider-band model
+- Added enclosure mounting holes for DIN rail clip
+
+## Version 5.1
+
+### Firmware
+
+- Added GPS position averaging for improved accuracy
+- Implemented Morse code configurable WPM (5-25)
+- Added SOS pattern with position encoding
+- Fixed power management during WiFi operations
+- Added device serial number display in Config mode
+
+### Hardware
+
+- Updated TP4056 charger to USB-C variant
+- Added reverse polarity protection on battery input
+- Improved SMA connector mounting reliability
+
+## Version 5.0
+
+### Firmware
+
+- Complete rewrite of firmware architecture
+- Implemented state machine for mode management
+- Added WiFi captive portal for configuration
+- Implemented OTA update capability (disabled by default)
+- Added power management with hardware watchdog
+- Full RadioLib integration for SX1262 control
+
+### Hardware
+
+- Migrated from SX1276 to SX1262 transceiver
+- Added SSD1309 OLED display (replaced manual-only interface)
+- Integrated NEO-6M GPS module on main PCB
+- Added TP4056 charging circuit
+- Redesigned enclosure for 3D printing
+
+## Version 4.x
+
+Legacy versions. These are archived and no longer maintained.
+
+### Key Features of v4
+
+- SX1276 LoRa transceiver
+- Arduino-based firmware (pre-PlatformIO)
+- 4 operating modes (basic implementation)
+- No GPS integration
+- No WiFi configuration
+- Manual frequency selection via button presses
+
+## Version 3.x
+
+### Key Features of v3
+
+- Initial SX1262 support
+- Basic Morse beacon functionality
+- No OLED display
+- No GPS
+- Single frequency operation
+
+## Upgrading
+
+### From v5.x to v5.4
+
+1. Connect the device via USB.
+2. Open PlatformIO in VS Code.
+3. Select the correct serial port.
+4. Upload the new firmware.
+5. Settings are preserved in non-volatile storage.
+
+> [!WARNING]
+> Major version upgrades (v4 to v5) may reset stored settings to defaults. Record your configuration before upgrading.
+
+### OTA Updates
+
+If OTA updates are enabled in the firmware:
+
+1. Connect to the AEGIS-SETUP WiFi network.
+2. Open 192.168.4.1 in a browser.
+3. Navigate to the Firmware tab.
+4. Select the .bin file and upload.
+5. The device will reboot automatically.
