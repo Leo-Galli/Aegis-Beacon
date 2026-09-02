@@ -1,0 +1,102 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Terms of Service | Aegis-Beacon" description="Terms of Service for the Aegis-Beacon open-source emergency radio system">
+  <div class="legal-page container">
+    <header class="section-head" style="padding-top: clamp(2rem, 4vw, 3rem);">
+      <p class="section-head__eyebrow">Legal</p>
+      <h1 class="section-head__title">Terms of Service</h1>
+      <p class="section-head__lead">Last updated: September 2, 2026</p>
+    </header>
+
+    <div class="legal-content prose-wiki">
+      <h2>1. Acceptance of Terms</h2>
+      <p>By accessing and using the Aegis-Beacon website and associated resources, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use this website.</p>
+
+      <h2>2. Description of Service</h2>
+      <p>Aegis-Beacon is an open-source emergency radio-location system. This website provides documentation, interactive demos, bill-of-materials tools, and wiki resources related to the Aegis-Beacon project. The project is provided "as is" under the MIT License.</p>
+
+      <h2>3. Open Source License</h2>
+      <p>All source code, hardware schematics, and documentation for Aegis-Beacon are released under the <strong>MIT License</strong>. You are free to use, modify, and distribute the project in accordance with the MIT License terms. The full license text is available in the project repository.</p>
+
+      <h2>4. User Responsibilities</h2>
+      <p>When using Aegis-Beacon hardware or software, you are responsible for:</p>
+      <ul>
+        <li>Complying with all applicable local, national, and international radio frequency regulations</li>
+        <li>Ensuring proper operation of the device within permitted frequency bands and power limits</li>
+        <li>Understanding that emergency radio devices may be subject to legal restrictions in your jurisdiction</li>
+        <li>Using the device responsibly and ethically in emergency and rescue scenarios</li>
+      </ul>
+
+      <h2>5. Disclaimer of Warranties</h2>
+      <p>The Aegis-Beacon project, including all software, hardware designs, and documentation, is provided <strong>"as is"</strong> without warranty of any kind, either express or implied. The developers and contributors make no warranties regarding:</p>
+      <ul>
+        <li>The accuracy or reliability of the documentation</li>
+        <li>The fitness of the hardware or software for any particular purpose</li>
+        <li>The uninterrupted or error-free operation of the firmware</li>
+        <li>The effectiveness of emergency communications in any specific scenario</li>
+      </ul>
+
+      <h2>6. Limitation of Liability</h2>
+      <p>In no event shall the developers, contributors, or maintainers of Aegis-Beacon be liable for any indirect, incidental, special, consequential, or punitive damages arising out of your use of or inability to use the project, including but not limited to loss of data, loss of functionality, or any damages resulting from the use of emergency communication equipment.</p>
+
+      <h2>7. Safety Warning</h2>
+      <p>Aegis-Beacon is a supplementary emergency communication device and is <strong>not a replacement</strong> for professional rescue equipment, satellite communicators, or calling emergency services. In a life-threatening emergency, always contact professional rescue services first.</p>
+      <div class="wiki-alert wiki-alert-warning">
+        <strong>⚠️ Important</strong>
+        <p>Radio transmission regulations vary by country. It is your responsibility to ensure compliance with local laws before operating any radio equipment.</p>
+      </div>
+
+      <h2>8. Third-Party Components</h2>
+      <p>Aegis-Beacon utilizes third-party components and libraries including but not limited to RadioLib, TinyGPS++, and PlatformIO. These components are subject to their own licenses and terms. We encourage users to review the licenses of all dependencies.</p>
+
+      <h2>9. Modifications to Terms</h2>
+      <p>We reserve the right to modify these Terms of Service at any time. Changes will be reflected on this page with an updated revision date. Continued use of the website after changes constitutes acceptance of the modified terms.</p>
+
+      <h2>10. Contact</h2>
+      <p>For questions about these Terms of Service, please open an issue on the <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank">GitHub repository</a>.</p>
+    </div>
+  </div>
+
+<style>
+  .legal-page { padding-bottom: 4rem; }
+  .legal-content {
+    max-width: 700px;
+    margin: 2.5rem auto 0;
+  }
+  .legal-content h2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--foreground);
+    padding-bottom: 0.375rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .legal-content p {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: var(--muted-foreground);
+    margin-bottom: 0.875rem;
+  }
+  .legal-content strong { color: var(--foreground); }
+  .legal-content ul {
+    padding-left: 1.5rem;
+    margin-bottom: 0.875rem;
+    list-style-type: disc;
+  }
+  .legal-content li {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--muted-foreground);
+    margin-bottom: 0.25rem;
+  }
+  .legal-content a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--primary) 30%, transparent);
+    text-underline-offset: 2px;
+  }
+  .legal-content a:hover { text-decoration-color: currentColor; }
+</style>

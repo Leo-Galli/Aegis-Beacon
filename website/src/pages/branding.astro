@@ -1,0 +1,408 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Branding & Assets | Aegis-Beacon" description="Download official Aegis-Beacon logos, icons, and brand assets for media and documentation use">
+  <div class="branding-page container">
+    <header class="section-head" style="padding-top: clamp(2rem, 4vw, 3rem);">
+      <p class="section-head__eyebrow">Resources</p>
+      <h1 class="section-head__title">Branding & Assets</h1>
+      <p class="section-head__lead">
+        Official logos, brand colors, and usage guidelines for Aegis-Beacon.
+        Use these assets when referencing the project in articles, presentations, or documentation.
+      </p>
+    </header>
+
+    <!-- Logo Showcase -->
+    <section class="brand-section" data-animate>
+      <h2 class="brand-section__title">Logo</h2>
+      <p class="brand-section__desc">The Aegis-Beacon logo represents the project's mission: a beacon of safety powered by open-source technology.</p>
+
+      <div class="logo-grid">
+        <div class="logo-card">
+          <div class="logo-card__preview logo-card__preview--dark">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="18" fill="#F97316" opacity="0.15"/>
+              <circle cx="24" cy="24" r="12" fill="#F97316" opacity="0.3"/>
+              <circle cx="24" cy="24" r="6" fill="#F97316"/>
+              <circle cx="24" cy="24" r="3" fill="#FFF"/>
+            </svg>
+            <span class="logo-card__name">Aegis-Beacon</span>
+          </div>
+          <div class="logo-card__info">
+            <strong>Primary Logo</strong>
+            <span>Dark background variant</span>
+          </div>
+        </div>
+
+        <div class="logo-card">
+          <div class="logo-card__preview logo-card__preview--light">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="18" fill="#F97316" opacity="0.1"/>
+              <circle cx="24" cy="24" r="12" fill="#F97316" opacity="0.2"/>
+              <circle cx="24" cy="24" r="6" fill="#F97316"/>
+              <circle cx="24" cy="24" r="3" fill="#FFF"/>
+            </svg>
+            <span class="logo-card__name" style="color: oklch(0.15 0 0deg);">Aegis-Beacon</span>
+          </div>
+          <div class="logo-card__info">
+            <strong>Primary Logo</strong>
+            <span>Light background variant</span>
+          </div>
+        </div>
+
+        <div class="logo-card">
+          <div class="logo-card__preview logo-card__preview--dark">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="14" stroke="#F97316" stroke-width="2" fill="none"/>
+              <circle cx="24" cy="24" r="7" fill="#F97316"/>
+              <circle cx="24" cy="24" r="3" fill="#FFF"/>
+            </svg>
+          </div>
+          <div class="logo-card__info">
+            <strong>Icon Only</strong>
+            <span>For favicons and app icons</span>
+          </div>
+        </div>
+
+        <div class="logo-card">
+          <div class="logo-card__preview logo-card__preview--dark">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect x="10" y="8" width="28" height="32" rx="4" stroke="#F97316" stroke-width="1.5" fill="none"/>
+              <line x1="16" y1="16" x2="32" y2="16" stroke="#F97316" stroke-width="1.5" opacity="0.5"/>
+              <line x1="16" y1="22" x2="28" y2="22" stroke="#F97316" stroke-width="1.5" opacity="0.5"/>
+              <line x1="16" y1="28" x2="30" y2="28" stroke="#F97316" stroke-width="1.5" opacity="0.5"/>
+              <circle cx="24" cy="36" r="1.5" fill="#F97316" opacity="0.5"/>
+            </svg>
+          </div>
+          <div class="logo-card__info">
+            <strong>Documentation Badge</strong>
+            <span>For README and docs</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand-alert">
+        <p><strong>Usage guideline:</strong> Always maintain clear space around the logo. Do not modify, distort, recolor, or add effects to the logo assets.</p>
+      </div>
+    </section>
+
+    <!-- Brand Colors -->
+    <section class="brand-section" data-animate>
+      <h2 class="brand-section__title">Brand Colors</h2>
+      <p class="brand-section__desc">The Aegis-Beacon color palette uses warm orange as the primary accent, complemented by neutral grays for clarity.</p>
+
+      <div class="color-grid">
+        <div class="color-card">
+          <div class="color-swatch" style="background: #F97316;"></div>
+          <div class="color-info">
+            <strong>Beacon Orange</strong>
+            <code>#F97316</code>
+            <span>Primary accent — signals emergency and alert</span>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #171717;"></div>
+          <div class="color-info">
+            <strong>Dark Surface</strong>
+            <code>#171717</code>
+            <span>Terminal backgrounds and dark mode base</span>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #FAFAFA;"></div>
+          <div class="color-info">
+            <strong>Light Surface</strong>
+            <code>#FAFAFA</code>
+            <span>Page backgrounds and cards</span>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #22C55E;"></div>
+          <div class="color-info">
+            <strong>OLED Green</strong>
+            <code>#22C55E</code>
+            <span>Display text and positive status</span>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #1E293B;"></div>
+          <div class="color-info">
+            <strong>Mid Gray</strong>
+            <code>#1E293B</code>
+            <span>Borders and muted elements</span>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #6B7280;"></div>
+          <div class="color-info">
+            <strong>Secondary Gray</strong>
+            <code>#6B7280</code>
+            <span>Body text and secondary labels</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Typography -->
+    <section class="brand-section" data-animate>
+      <h2 class="brand-section__title">Typography</h2>
+      <div class="type-grid">
+        <div class="type-card">
+          <span class="type-sample" style="font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.5rem;">Inter</span>
+          <div class="type-info">
+            <strong>Headings & Body</strong>
+            <span>Inter — Clean, modern sans-serif for all primary text</span>
+          </div>
+        </div>
+        <div class="type-card">
+          <span class="type-sample" style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 1.25rem;">JetBrains Mono</span>
+          <div class="type-info">
+            <strong>Code & Terminal</strong>
+            <span>JetBrains Mono — Monospace for code blocks, terminal displays, and technical data</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Usage Rules -->
+    <section class="brand-section" data-animate>
+      <h2 class="brand-section__title">Usage Guidelines</h2>
+      <div class="rules-grid">
+        <div class="rule-card rule-card--do">
+          <h3>✓ Do</h3>
+          <ul>
+            <li>Use official assets from this page</li>
+            <li>Maintain the logo's proportions and clear space</li>
+            <li>Use the logo on backgrounds that provide sufficient contrast</li>
+            <li>Reference the project as "Aegis-Beacon" (with hyphen)</li>
+          </ul>
+        </div>
+        <div class="rule-card rule-card--dont">
+          <h3>✗ Don't</h3>
+          <ul>
+            <li>Modify, stretch, or distort the logo</li>
+            <li>Change the logo colors or add effects</li>
+            <li>Use the logo in a way that implies endorsement</li>
+            <li>Remove the logo's key elements (concentric circles)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Download -->
+    <section class="brand-section" data-animate>
+      <h2 class="brand-section__title">Download Assets</h2>
+      <p class="brand-section__desc">All assets are available in the project repository under the MIT License.</p>
+      <div class="download-actions">
+        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Repository Assets
+        </a>
+        <a href="https://github.com/Leo-Galli/Aegis-Beacon/raw/main/website/public/favicon.svg" target="_blank" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+          Favicon SVG
+        </a>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .branding-page { padding-bottom: 4rem; }
+
+  .brand-section {
+    max-width: 900px;
+    margin: 3rem auto 0;
+  }
+  .brand-section__title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--foreground);
+    margin-bottom: 0.5rem;
+  }
+  .brand-section__desc {
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Logo Grid */
+  .logo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  @media (min-width: 768px) { .logo-grid { grid-template-columns: repeat(4, 1fr); } }
+  .logo-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+  .logo-card:hover {
+    border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .logo-card__preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem 1rem;
+    min-height: 120px;
+  }
+  .logo-card__preview--dark { background: #171717; }
+  .logo-card__preview--light { background: #FAFAFA; border-bottom: 1px solid var(--border); }
+  .logo-card__name {
+    font-weight: 700;
+    font-size: 0.8125rem;
+    color: oklch(0.93 0 0deg);
+    letter-spacing: -0.02em;
+  }
+  .logo-card__info {
+    padding: 0.75rem 1rem;
+  }
+  .logo-card__info strong {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--foreground);
+  }
+  .logo-card__info span {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+
+  .brand-alert {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: color-mix(in srgb, var(--warning) 6%, var(--background));
+    border: 1px solid color-mix(in srgb, var(--warning) 15%, var(--border));
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    color: var(--warning);
+  }
+  .brand-alert p { margin: 0; }
+
+  /* Colors */
+  .color-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  @media (min-width: 640px) { .color-grid { grid-template-columns: repeat(2, 1fr); } }
+  .color-card {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: border-color 0.2s;
+  }
+  .color-card:hover { border-color: color-mix(in srgb, var(--primary) 30%, var(--border)); }
+  .color-swatch {
+    width: 48px; height: 48px;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+    border: 1px solid color-mix(in srgb, var(--foreground) 10%, var(--border));
+  }
+  .color-info strong {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--foreground);
+  }
+  .color-info code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--primary);
+    background: var(--muted);
+    padding: 0.1rem 0.375rem;
+    border-radius: var(--radius-sm);
+  }
+  .color-info span {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    margin-top: 0.125rem;
+  }
+
+  /* Typography */
+  .type-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 640px) { .type-grid { grid-template-columns: repeat(2, 1fr); } }
+  .type-card {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+  }
+  .type-sample { color: var(--foreground); white-space: nowrap; }
+  .type-info strong {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--foreground);
+  }
+  .type-info span {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+
+  /* Rules */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 640px) { .rules-grid { grid-template-columns: 1fr 1fr; } }
+  .rule-card {
+    padding: 1.25rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+  }
+  .rule-card h3 {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+  .rule-card ul {
+    padding-left: 1.25rem;
+    list-style-type: disc;
+  }
+  .rule-card li {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    margin-bottom: 0.25rem;
+  }
+  .rule-card--do {
+    background: color-mix(in srgb, var(--success) 4%, var(--background));
+    border-color: color-mix(in srgb, var(--success) 15%, var(--border));
+  }
+  .rule-card--do h3 { color: var(--success); }
+  .rule-card--dont {
+    background: color-mix(in srgb, var(--destructive) 4%, var(--background));
+    border-color: color-mix(in srgb, var(--destructive) 15%, var(--border));
+  }
+  .rule-card--dont h3 { color: var(--destructive); }
+
+  /* Download */
+  .download-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .btn svg { flex-shrink: 0; }
+</style>

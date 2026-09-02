@@ -1,0 +1,91 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Privacy Policy | Aegis-Beacon" description="Privacy Policy for the Aegis-Beacon website">
+  <div class="legal-page container">
+    <header class="section-head" style="padding-top: clamp(2rem, 4vw, 3rem);">
+      <p class="section-head__eyebrow">Legal</p>
+      <h1 class="section-head__title">Privacy Policy</h1>
+      <p class="section-head__lead">Last updated: September 2, 2026</p>
+    </header>
+
+    <div class="legal-content prose-wiki">
+      <h2>1. Overview</h2>
+      <p>Aegis-Beacon is an open-source project. We are committed to protecting your privacy. This policy explains what data we collect, if any, and how we handle it.</p>
+
+      <h2>2. Information We Do Not Collect</h2>
+      <p>This website does <strong>not</strong> collect any personal information. We do not use:</p>
+      <ul>
+        <li>Analytics tracking (no Google Analytics, Plausible, or similar)</li>
+        <li>Advertising cookies or tracking pixels</li>
+        <li>Third-party tracking scripts</li>
+        <li>Account registration or login systems</li>
+        <li>Contact forms that store personal data</li>
+      </ul>
+
+      <h2>3. Local Storage</h2>
+      <p>This website uses <strong>localStorage</strong> solely to remember your preferred theme (light or dark mode). This data stays entirely on your device and is never transmitted to any server.</p>
+
+      <h2>4. GitHub Links</h2>
+      <p>This site links to the Aegis-Beacon GitHub repository. When you click these links, you leave our site. GitHub's own privacy policy applies to any data they collect during your visit.</p>
+
+      <h2>5. Static Hosting</h2>
+      <p>This website is hosted as a static site on Vercel. Vercel may collect standard server log information (IP addresses, user agent, request timestamps) as part of normal web hosting operations. This data is managed by Vercel according to their <a href="https://vercel.com/legal/privacy-policy" target="_blank">Privacy Policy</a>.</p>
+
+      <h2>6. Open Source</h2>
+      <p>The source code of this website is publicly available on <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank">GitHub</a>. You can verify exactly what code runs on this site at any time.</p>
+
+      <h2>7. Children's Privacy</h2>
+      <p>This website does not knowingly collect any information from children under 13 years of age.</p>
+
+      <h2>8. Changes to This Policy</h2>
+      <p>If this privacy policy changes, the update date at the top of this page will be revised. Since we do not collect personal data, changes are unlikely to affect you.</p>
+
+      <h2>9. Contact</h2>
+      <p>For privacy-related questions, please open an issue on the <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank">GitHub repository</a>.</p>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .legal-page { padding-bottom: 4rem; }
+  .legal-content {
+    max-width: 700px;
+    margin: 2.5rem auto 0;
+  }
+  .legal-content h2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--foreground);
+    padding-bottom: 0.375rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .legal-content p {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: var(--muted-foreground);
+    margin-bottom: 0.875rem;
+  }
+  .legal-content strong { color: var(--foreground); }
+  .legal-content ul {
+    padding-left: 1.5rem;
+    margin-bottom: 0.875rem;
+    list-style-type: disc;
+  }
+  .legal-content li {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--muted-foreground);
+    margin-bottom: 0.25rem;
+  }
+  .legal-content a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--primary) 30%, transparent);
+    text-underline-offset: 2px;
+  }
+  .legal-content a:hover { text-decoration-color: currentColor; }
+</style>
