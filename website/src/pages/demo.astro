@@ -1,0 +1,314 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Live Demo | Aegis-Beacon" description="Interactive firmware simulation of the Aegis-Beacon OLED display">
+  <div class="demo-page">
+    <div class="demo-header">
+      <h1>Firmware Demo</h1>
+      <p>Interactive simulation of the Aegis-Beacon OLED display and firmware behavior.</p>
+    </div>
+
+    <div class="demo-container">
+      <!-- Device Frame -->
+      <div class="device-frame">
+        <div class="device-label">Aegis-Beacon v5.4</div>
+        <div class="oled-screen" id="oled">
+          <div class="oled-line">SOS -- --- ...</div>
+          <div class="oled-line dim">N45 53.12 E09 12.45</div>
+          <div class="oled-line accent">433.500 MHz</div>
+          <div class="oled-line">TX: +17 dBm</div>
+          <div class="oled-line dim">BAT: 87% 4.12V</div>
+        </div>
+        <div class="device-buttons">
+          <button class="key-btn" data-key="mode">MODE</button>
+          <button class="key-btn" data-key="sel">SEL</button>
+          <button class="key-btn" data-key="up">UP</button>
+          <button class="key-btn" data-key="dn">DN</button>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <div class="control-group">
+          <label>Operating Mode</label>
+          <div class="mode-buttons">
+            <button class="mode-btn active" data-mode="beacon">BEACON</button>
+            <button class="mode-btn" data-mode="search">SEARCH</button>
+            <button class="mode-btn" data-mode="config">CONFIG</button>
+            <button class="mode-btn" data-mode="emergency">EMERGENCY</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>Frequency</label>
+          <select id="freq-select" class="select-input">
+            <option value="433.500">433.500 MHz</option>
+            <option value="433.775">433.775 MHz</option>
+            <option value="434.050">434.050 MHz</option>
+            <option value="434.325">434.325 MHz</option>
+            <option value="434.600">434.600 MHz</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label>WPM (Morse Speed)</label>
+          <input type="range" id="wpm-slider" min="5" max="25" value="12" class="range-input">
+          <span id="wpm-value" class="range-value">12 WPM</span>
+        </div>
+
+        <div class="control-group">
+          <label>TX Power</label>
+          <input type="range" id="power-slider" min="0" max="22" value="17" class="range-input">
+          <span id="power-value" class="range-value">+17 dBm</span>
+        </div>
+
+        <div class="control-group">
+          <label>Battery Level</label>
+          <input type="range" id="battery-slider" min="0" max="100" value="87" class="range-input">
+          <span id="battery-value" class="range-value">87%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const oled = document.getElementById('oled');
+    const modes = document.querySelectorAll('.mode-btn');
+    const freqSelect = document.getElementById('freq-select') as HTMLSelectElement;
+    const wpmSlider = document.getElementById('wpm-slider') as HTMLInputElement;
+    const powerSlider = document.getElementById('power-slider') as HTMLInputElement;
+    const batterySlider = document.getElementById('battery-slider') as HTMLInputElement;
+
+    let currentMode = 'beacon';
+    let currentFreq = '433.500';
+    let wpm = 12;
+    let power = 17;
+    let battery = 87;
+
+    function updateDisplay() {
+      if (!oled) return;
+      
+      const voltage = (3.0 + (battery / 100) * 1.2).toFixed(2);
+      
+      if (currentMode === 'beacon') {
+        oled.innerHTML = `
+          <div class="oled-line">SOS -- --- ...</div>
+          <div class="oled-line dim">N45 53.12 E09 12.45</div>
+          <div class="oled-line accent">${currentFreq} MHz</div>
+          <div class="oled-line">TX: +${power} dBm</div>
+          <div class="oled-line dim">BAT: ${battery}% ${voltage}V</div>
+        `;
+      } else if (currentMode === 'search') {
+        oled.innerHTML = `
+          <div class="oled-line">SEARCH MODE</div>
+          <div class="oled-line dim">Scanning ${currentFreq} MHz</div>
+          <div class="oled-line accent">RSSI: -67 dBm</div>
+          <div class="oled-line">SIGNAL DETECTED</div>
+          <div class="oled-line dim">BAT: ${battery}% ${voltage}V</div>
+        `;
+      } else if (currentMode === 'config') {
+        oled.innerHTML = `
+          <div class="oled-line">CONFIG MODE</div>
+          <div class="oled-line accent">WiFi AP: AEGIS-SETUP</div>
+          <div class="oled-line dim">192.168.4.1</div>
+          <div class="oled-line">WPM: ${wpm} | PWR: +${power}</div>
+          <div class="oled-line dim">BAT: ${battery}% ${voltage}V</div>
+        `;
+      } else if (currentMode === 'emergency') {
+        oled.innerHTML = `
+          <div class="oled-line">EMERGENCY MODE</div>
+          <div class="oled-line accent">MAX POWER TX</div>
+          <div class="oled-line">+22 dBm CONTINUOUS</div>
+          <div class="oled-line dim">1760 Hz TONE</div>
+          <div class="oled-line">BAT: ${battery}% ${voltage}V</div>
+        `;
+      }
+    }
+
+    modes.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modes.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode || 'beacon';
+        updateDisplay();
+      });
+    });
+
+    freqSelect?.addEventListener('change', () => {
+      currentFreq = freqSelect.value;
+      updateDisplay();
+    });
+
+    wpmSlider?.addEventListener('input', () => {
+      wpm = parseInt(wpmSlider.value);
+      document.getElementById('wpm-value').textContent = wpm + ' WPM';
+      updateDisplay();
+    });
+
+    powerSlider?.addEventListener('input', () => {
+      power = parseInt(powerSlider.value);
+      document.getElementById('power-value').textContent = '+' + power + ' dBm';
+      updateDisplay();
+    });
+
+    batterySlider?.addEventListener('input', () => {
+      battery = parseInt(batterySlider.value);
+      document.getElementById('battery-value').textContent = battery + '%';
+      updateDisplay();
+    });
+  </script>
+</Layout>
+
+<style>
+  .demo-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+  .demo-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+  .demo-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .demo-header p {
+    color: var(--text-secondary);
+  }
+  .demo-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  @media (min-width: 768px) {
+    .demo-container { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* Device */
+  .device-frame {
+    background: #111;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px solid #333;
+  }
+  .device-label {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.625rem;
+    color: #666;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .oled-screen {
+    background: #030712;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    padding: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  .oled-line {
+    font-size: 0.75rem;
+    color: #22c55e;
+    line-height: 1.4;
+  }
+  .oled-line.dim { color: #15803d; }
+  .oled-line.accent { color: #f97316; }
+  .device-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    justify-content: center;
+  }
+  .key-btn {
+    padding: 0.5rem 1rem;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    color: #94a3b8;
+    font-size: 0.6875rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+  .key-btn:hover { background: #334155; color: white; }
+  .key-btn:active { transform: translateY(1px); background: #475569; }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .control-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.375rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .mode-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.375rem;
+  }
+  .mode-btn {
+    padding: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+  .mode-btn:hover { border-color: var(--text-muted); color: var(--text); }
+  .mode-btn.active {
+    background: #f97316;
+    border-color: #f97316;
+    color: white;
+  }
+  .select-input, .range-input {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.8125rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+  }
+  .range-input {
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    padding: 0;
+  }
+  .range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #f97316;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .range-value {
+    display: block;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+</style>
