@@ -399,9 +399,60 @@ details summary::-webkit-details-marker { display: none; }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes glowPulse { 0%, 100% { box-shadow: 0 0 8px color-mix(in srgb, var(--primary) 20%, transparent); } 50% { box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 35%, transparent); } }
+@keyframes borderGlow { 0%, 100% { border-color: var(--border); } 50% { border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); } }
+
 .animate-fade-in-up { animation: fadeInUp 0.6s ease-out both; }
 .animate-fade-in { animation: fadeIn 0.4s ease-out both; }
 .animate-scale-in { animation: scaleIn 0.4s ease-out both; }
+.animate-slide-left { animation: slideInLeft 0.5s ease-out both; }
+.animate-slide-right { animation: slideInRight 0.5s ease-out both; }
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-glow { animation: glowPulse 3s ease-in-out infinite; }
+
+/* Staggered children animation */
+.stagger > *:nth-child(1) { animation-delay: 0s; }
+.stagger > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger > *:nth-child(3) { animation-delay: 0.16s; }
+.stagger > *:nth-child(4) { animation-delay: 0.24s; }
+.stagger > *:nth-child(5) { animation-delay: 0.32s; }
+.stagger > *:nth-child(6) { animation-delay: 0.4s; }
+
+/* Hover glow for cards */
+.hover-glow { transition: box-shadow 0.3s, border-color 0.3s, transform 0.3s; }
+.hover-glow:hover {
+  box-shadow: 0 0 0 1px var(--primary), 0 8px 32px color-mix(in srgb, var(--primary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 50%, var(--border));
+  transform: translateY(-3px);
+}
+
+/* Gradient text shimmer */
+.shimmer-text {
+  background: linear-gradient(90deg, var(--foreground) 40%, var(--primary) 50%, var(--foreground) 60%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .shimmer-text { animation: shimmer 4s linear infinite; }
+}
+
+/* Cursor spotlight effect (set via JS) */
+.spotlight {
+  --mx: 50%; --my: 50%;
+  background: radial-gradient(circle 400px at var(--mx) var(--my),
+    color-mix(in srgb, var(--primary) 6%, transparent), transparent 70%);
+}
+
+/* Page enter animation */
+@media (prefers-reduced-motion: no-preference) {
+  main#main-content > * {
+    animation: fadeInUp 0.5s ease-out both;
+  }
+}
 
 /* ─── 21. Scroll to Top ─── */
 #scroll-top {

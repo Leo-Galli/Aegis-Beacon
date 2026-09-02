@@ -70,6 +70,11 @@ const currentPath = Astro.url.pathname;
         <a href="/builder">Builder</a>
         <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank">GitHub</a>
       </div>
+      <div class="site-footer__legal">
+        <a href="/terms">Terms of Service</a>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/branding">Branding & Assets</a>
+      </div>
       <p class="site-footer__copy">MIT License — Leonardo Galli 2026</p>
     </div>
   </footer>
@@ -150,6 +155,16 @@ const currentPath = Astro.url.pathname;
       transition: color 0.15s;
     }
     .site-footer__links a:hover { color: var(--primary); }
+    .site-footer__legal {
+      display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center;
+    }
+    .site-footer__legal a {
+      font-size: 0.75rem; color: var(--muted-foreground);
+      transition: color 0.15s; text-decoration: underline;
+      text-decoration-color: color-mix(in srgb, var(--muted-foreground) 20%, transparent);
+      text-underline-offset: 2px;
+    }
+    .site-footer__legal a:hover { color: var(--primary); text-decoration-color: currentColor; }
     .site-footer__copy { font-size: 0.75rem; color: var(--muted-foreground); }
 
     @media (max-width: 640px) {
@@ -174,6 +189,18 @@ const currentPath = Astro.url.pathname;
       });
       scrollBtn.addEventListener('click', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    // Cursor spotlight effect on hero
+    if (window.matchMedia('(pointer: fine)').matches) {
+      document.addEventListener('mousemove', (e) => {
+        const hero = document.querySelector('.hero-wrap') as HTMLElement | null;
+        if (hero) {
+          const rect = hero.getBoundingClientRect();
+          hero.style.setProperty('--mx', ((e.clientX - rect.left) / rect.width * 100) + '%');
+          hero.style.setProperty('--my', ((e.clientY - rect.top) / rect.height * 100) + '%');
+        }
       });
     }
   </script>
