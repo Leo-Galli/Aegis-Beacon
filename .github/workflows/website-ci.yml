@@ -37,19 +37,12 @@ jobs:
       - name: Run syntax checks
         run: npm run check
 
-      - name: Check for console errors
+      - name: Check for common issues
         run: |
           echo "=== Checking for common issues ==="
-          # Check for .html references in routes
-          echo "Checking for .html in route files..."
-          if grep -rn '\.html' views/ server.js --include='*.js' | grep -v node_modules | grep -v '// ' | grep -v 'href=.*http' | grep -v 'external'; then
-            echo "WARNING: Found .html references in route files"
-          else
-            echo "OK: No internal .html references"
-          fi
-          # Check for hardcoded URLs
+          # Check for hardcoded localhost
           echo "Checking for hardcoded localhost..."
-          if grep -rn 'localhost' views/ --include='*.js' | grep -v SITE_URL; then
+          if grep -rn 'localhost' src/ --include='*.astro' --include='*.ts' --include='*.js' | grep -v node_modules | grep -v SITE_URL; then
             echo "WARNING: Found hardcoded localhost references"
           else
             echo "OK: No hardcoded localhost"
@@ -75,45 +68,30 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify all routes respond
+      - name: Verify routes exist
         run: |
           echo "=== Route verification ==="
-          node -e "
-            import { createServer } from 'node:http';
-            import { handleRequest } from './server.js';
-            const server = createServer(handleRequest);
-            server.listen(0, async () => {
-              const port = server.address().port;
-              const routes = ['/', '/wiki', '/manual', '/demo', '/builder', '/status', '/health', '/version'];
-              let failed = false;
-              for (const r of routes) {
-                const res = await fetch('http://localhost:' + port + r);
-                if (res.status !== 200) {
-                  console.error('FAIL: ' + r + ' returned ' + res.status);
-                  failed = true;
-                } else {
-                  console.log('OK: ' + r + ' -> ' + res.status);
-                }
-              }
-              server.close();
-              if (failed) process.exit(1);
-              console.log('All routes OK');
-            });
-          "
+          ROUTES=("index.astro" "demo.astro" "builder.astro" "wiki/[...slug].astro")
+          for route in "${ROUTES[@]}"; do
+            if [ -f "src/pages/$route" ]; then
+              echo "OK: src/pages/$route exists"
+            else
+              echo "FAIL: src/pages/$route not found"
+              exit 1
+            fi
+          done
+          echo "All routes verified"
 
-      - name: Verify i18n dictionaries
+      - name: Verify wiki content
         run: |
-          node -e "
-            import('./translations.js').then(m => {
-              const missing = m.validateDictionaries();
-              const bad = Object.entries(missing).filter(([, v]) => v.length);
-              if (bad.length) {
-                console.error('Missing translation keys:', JSON.stringify(bad));
-                process.exit(1);
-              }
-              console.log('i18n OK: ' + m.SUPPORTED_LANGS.join(', '));
-            });
-          "
+          echo "=== Wiki content verification ==="
+          CONTENT_COUNT=$(ls src/content/wiki/*.md 2>/dev/null | wc -l)
+          echo "Found $CONTENT_COUNT wiki content files"
+          if [ "$CONTENT_COUNT" -lt 5 ]; then
+            echo "FAIL: Expected at least 5 wiki content files"
+            exit 1
+          fi
+          echo "Wiki content OK"
 
   security:
     name: Security Audit
@@ -133,49 +111,23 @@ jobs:
       - name: Run npm audit
         run: npm audit --audit-level=moderate || true
 
-      - name: Check for path traversal protection
+      - name: Check for security patterns
         run: |
           echo "=== Checking security patterns ==="
-          if grep -q 'filePath.startsWith(rootPrefix)' server.js; then
-            echo "OK: Path traversal protection found"
-          else
-            echo "WARNING: Path traversal protection not found in server.js"
-          fi
-          if grep -q 'normalize.*join' server.js; then
-            echo "OK: Path normalization found"
-          else
-            echo "WARNING: Path normalization not found"
-          fi
           # Check for eval usage
-          if grep -q 'eval(' views/*.js 2>/dev/null; then
-            echo "WARNING: eval() found in views"
+          if grep -r 'eval(' src/ --include='*.astro' --include='*.ts' --include='*.js' 2>/dev/null | grep -v node_modules; then
+            echo "WARNING: eval() found in source"
+            exit 1
           else
-            echo "OK: No eval() in views"
+            echo "OK: No eval() in source"
           fi
-          # Check for innerHTML without sanitization
-          INNER_COUNT=$(grep -c 'innerHTML' views/*.js 2>/dev/null || echo 0)
+          # Check for dangerous innerHTML usage
+          INNER_COUNT=$(grep -rc 'innerHTML' src/ --include='*.astro' --include='*.ts' --include='*.js' 2>/dev/null | awk -F: '{s+=$2}END{print s+0}')
           echo "innerHTML usage count: $INNER_COUNT"
-          # Check for proper error handling
-          TRY_COUNT=$(grep -c 'try {' server.js 2>/dev/null || echo 0)
-          echo "try/catch blocks in server.js: $TRY_COUNT"
-          # Check for input validation
-          if grep -q 'parseInt\|parseFloat\|Number(' server.js 2>/dev/null; then
-            echo "OK: Input validation found"
-          else
-            echo "INFO: No numeric parsing in server.js"
-          fi
-          # Check for proper HTTP headers
-          if grep -q 'content-type' server.js; then
-            echo "OK: Content-Type headers set"
-          else
-            echo "WARNING: No Content-Type headers found"
-          fi
-          # Check for CORS headers
-          if grep -q 'Access-Control' server.js 2>/dev/null; then
-            echo "INFO: CORS headers found"
-          else
-            echo "OK: No CORS headers (not needed for same-origin)"
-          fi
+          # Check for hardcoded secrets
+          SECRET_COUNT=$(grep -rn 'password\|secret\|api_key\|token' src/ --include='*.astro' --include='*.ts' --include='*.js' 2>/dev/null | grep -v node_modules | grep -vi 'no password\|no secret\|without\|optional\|missing\|none\|null\|undefined\|placeholder\|example\|test' | wc -l)
+          echo "Potential hardcoded secrets: $SECRET_COUNT"
+          echo "Security check passed"
 
   assign-reviewer:
     name: Assign Reviewer

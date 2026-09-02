@@ -130,7 +130,7 @@ import Layout from '../layouts/Layout.astro';
       btn.addEventListener('click', () => {
         modes.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        currentMode = btn.dataset.mode || 'beacon';
+        currentMode = (btn as HTMLElement).dataset.mode || 'beacon';
         updateDisplay();
       });
     });

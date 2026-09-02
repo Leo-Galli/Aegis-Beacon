@@ -194,7 +194,7 @@ import Layout from '../layouts/Layout.astro';
     function updateTotals() {
       let total = 0;
       document.querySelectorAll('.component').forEach(comp => {
-        const price = parseFloat(comp.dataset.price || '0');
+        const price = parseFloat((comp as HTMLElement).dataset.price || '0');
         const qtyInput = comp.querySelector('.qty-input') as HTMLInputElement;
         const qty = parseInt(qtyInput?.value || '1');
         const compTotal = price * qty;
