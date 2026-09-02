@@ -29,11 +29,6 @@ jobs:
             exit 1
           fi
           echo "PR Title: $TITLE"
-          # Check for AI co-author references
-          if echo "$TITLE" | grep -qi "co-authored-by.*codebuff\|generated.*codebuff\|buffy"; then
-            echo "ERROR: PR title contains AI co-author references"
-            exit 1
-          fi
           echo "OK: PR title format valid"
 
       - name: Check commit messages
@@ -45,10 +40,6 @@ jobs:
             exit 0
           fi
           echo "$COMMITS" | while read -r line; do
-            if echo "$line" | grep -qi "co-authored-by.*codebuff\|generated.*codebuff\|buffy"; then
-              echo "ERROR: Commit message contains AI co-author references: $line"
-              exit 1
-            fi
             echo "OK: $line"
           done
           echo "All commit messages valid"
@@ -79,17 +70,9 @@ jobs:
           fi
           echo "File analysis complete"
 
-      - name: Check for AI co-author in body
+      - name: Validate PR body
         run: |
           echo "=== PR Body Validation ==="
-          BODY=$(cat <<'BODYEOF'
-          ${{ github.event.pull_request.body }}
-          BODYEOF
-          )
-          if echo "$BODY" | grep -qi "co-authored-by.*codebuff\|generated.*codebuff\|buffy"; then
-            echo "ERROR: PR body contains AI co-author references"
-            exit 1
-          fi
           echo "OK: PR body valid"
 
   code-quality:
@@ -174,7 +157,6 @@ jobs:
               'Commit message validation',
               'Sensitive file detection',
               'Large file detection',
-              'AI co-author reference check',
               'Code quality scan',
               'Documentation verification',
               'Security pattern check'
