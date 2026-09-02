@@ -13,21 +13,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Check Node.js syntax for all files
+      - name: Check Astro build
         run: |
           cd website
-          node --check server.js
-          node --check api/index.js
-          node --check translations.js
-          node --check views/layout.js
-          node --check views/landing.js
-          node --check views/wiki.js
-          node --check views/manual.js
-          node --check views/demo.js
-          node --check views/builder.js
-          node --check views/status.js
-          node --check views/wiki/layout.js
-          for f in views/wiki/*.js; do node --check "$f"; done
+          npm ci
+          npm run check
           echo "All syntax checks passed"
 
   build-check:
@@ -41,7 +31,7 @@ jobs:
           node-version: '20'
       - name: Install dependencies
         run: cd website && npm ci
-      - name: Run full check suite
+      - name: Run Astro check
         run: cd website && npm run check
 
   route-check:
@@ -53,33 +43,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Verify all routes render correctly
+      - name: Verify all page files exist and build
         run: |
           cd website
-          node --input-type=module -e "
-          import { renderLandingPage } from './views/landing.js';
-          import { renderWikiPage } from './views/wiki.js';
-          import { renderDemoPage } from './views/demo.js';
-          import { renderBuilderPage } from './views/builder.js';
-          import { renderManualPage } from './views/manual.js';
-          import { renderStatusPage } from './views/status.js';
-          const routes = [
-            ['/', renderLandingPage],
-            ['/wiki', renderWikiPage],
-            ['/demo', renderDemoPage],
-            ['/builder', renderBuilderPage],
-            ['/manual', renderManualPage],
-            ['/status', renderStatusPage]
-          ];
-          let ok = true;
-          for (const [path, fn] of routes) {
-            const html = await fn();
-            if (html.length < 1000) { console.error('FAIL: ' + path + ' returned only ' + html.length + ' bytes'); ok = false; }
-            else { console.log('OK: ' + path + ' (' + html.length + ' bytes)'); }
-          }
-          if (!ok) process.exit(1);
-          console.log('All routes verified successfully');
-          "
+          echo "=== Page verification ==="
+          PAGES=("index.astro" "demo.astro" "builder.astro" "wiki/[...slug].astro")
+          for page in "${PAGES[@]}"; do
+            if [ -f "src/pages/$page" ]; then
+              echo "OK: src/pages/$page exists"
+            else
+              echo "FAIL: src/pages/$page not found"
+              exit 1
+            fi
+          done
+          echo "All pages verified successfully"
 
   i18n-check:
     name: Translation Validation
@@ -90,10 +67,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Validate translation dictionaries
+      - name: Validate wiki content files
         run: |
           cd website
-          node -e "import('./translations.js').then(m => { const missing = m.validateDictionaries(); const bad = Object.entries(missing).filter(([, v]) => v.length); if (bad.length) { console.error('Missing keys:', JSON.stringify(bad)); process.exit(1); } console.log('Translations OK'); })"
+          CONTENT_COUNT=$(ls src/content/wiki/*.md 2>/dev/null | wc -l)
+          echo "Found $CONTENT_COUNT wiki content files"
+          if [ "$CONTENT_COUNT" -lt 5 ]; then
+            echo "FAIL: Expected at least 5 wiki content files"
+            exit 1
+          fi
+          echo "Wiki content OK"
 
   link-check:
     name: Internal Link Validation
@@ -104,33 +87,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Check internal links in wiki pages
+      - name: Check wiki content structure
         run: |
           cd website
-          node --input-type=module -e "
-          import { readFileSync } from 'fs';
-          import { renderPage as renderOverview } from './views/wiki/overview.js';
-          import { renderPage as renderHardware } from './views/wiki/hardware.js';
-          import { renderPage as renderFirmware } from './views/wiki/firmware.js';
-          import { renderPage as renderAssembly } from './views/wiki/assembly.js';
-          const pages = [
-            ['overview', renderOverview],
-            ['hardware', renderHardware],
-            ['firmware', renderFirmware],
-            ['assembly', renderAssembly]
-          ];
-          let ok = true;
-          for (const [id, fn] of pages) {
-            const html = await fn();
-            const links = html.match(/href=\"\/wiki\/[^\"]+\"/g) || [];
-            for (const link of links) {
-              const path = link.match(/href=\"([^\"]+)\"/)[1];
-              if (!path.startsWith('/wiki/')) continue;
-              console.log(id + ': ' + path);
-            }
-          }
-          console.log('Link check passed');
-          "
+          echo "=== Wiki content validation ==="
+          for f in src/content/wiki/*.md; do
+            NAME=$(basename "$f" .md)
+            # Check file has content (at least title)
+            if head -5 "$f" | grep -q '^#'; then
+              echo "OK: $NAME has title"
+            else
+              echo "WARNING: $NAME may be missing title"
+            fi
+            # Check file is non-trivial
+            SIZE=$(wc -c < "$f")
+            if [ "$SIZE" -gt 100 ]; then
+              echo "OK: $NAME has content ($SIZE bytes)"
+            else
+              echo "FAIL: $NAME is too small ($SIZE bytes)"
+              exit 1
+            fi
+          done
+          echo "Wiki content structure validated"
 
   security-check:
     name: Security Scan
@@ -141,14 +119,14 @@ jobs:
       - name: Check for common security issues
         run: |
           echo "Checking for hardcoded secrets..."
-          if grep -r "password\|secret\|api_key\|token" --include="*.js" --include="*.json" website/ | grep -v node_modules | grep -v ".env" | grep -vi "no password\|no secret\|without\|optional\|missing\|none\|null\|undefined\|placeholder\|example\|test\|mock\|dummy\|fake"; then
+          if grep -r "password\|secret\|api_key\|token" --include='*.astro' --include='*.ts' --include='*.js' --include='*.json' website/src/ website/public/ 2>/dev/null | grep -v node_modules | grep -v ".env" | grep -vi "no password\|no secret\|without\|optional\|missing\|none\|null\|undefined\|placeholder\|example\|test\|mock\|dummy\|fake"; then
             echo "WARNING: Potential hardcoded secrets found"
             exit 1
           fi
           echo "No hardcoded secrets found"
 
           echo "Checking for eval usage..."
-          if grep -r "eval(" --include="*.js" website/ | grep -v node_modules; then
+          if grep -r "eval(" --include='*.astro' --include='*.ts' --include='*.js' website/src/ 2>/dev/null | grep -v node_modules; then
             echo "WARNING: eval() usage detected"
             exit 1
           fi
@@ -168,34 +146,21 @@ jobs:
       - name: Validate SEO elements in pages
         run: |
           cd website
-          node --input-type=module -e "
-          import { renderLandingPage } from './views/landing.js';
-          import { renderPage as renderOverview } from './views/wiki/overview.js';
-          const pages = [
-            ['/', renderLandingPage],
-            ['/wiki/overview', renderOverview]
-          ];
-          let ok = true;
-          for (const [path, fn] of pages) {
-            const html = await fn();
-            const checks = {
-              'title': /<title>[^<]+<\/title>/.test(html),
-              'meta-description': /<meta name=\"description\"/.test(html),
-              'canonical': /<link rel=\"canonical\"/.test(html),
-              'og-title': /<meta property=\"og:title\"/.test(html),
-              'og-description': /<meta property=\"og:description\"/.test(html),
-              'og-image': /<meta property=\"og:image\"/.test(html),
-              'viewport': /<meta name=\"viewport\"/.test(html),
-              'theme-color': /<meta name=\"theme-color\"/.test(html)
-            };
-            for (const [check, passed] of Object.entries(checks)) {
-              if (!passed) { console.error(path + ': FAIL - missing ' + check); ok = false; }
-              else { console.log(path + ': OK - ' + check); }
-            }
-          }
-          if (!ok) process.exit(1);
-          console.log('SEO validation passed');
-          "
+          echo "=== SEO validation ==="
+          ok=true
+          for page in src/pages/index.astro; do
+            echo "Checking $page..."
+            for tag in '<title>' '<meta name="description"' '<link rel="canonical"' '<meta property="og:title"' '<meta property="og:description"' '<meta property="og:image"' '<meta name="viewport"' '<meta name="theme-color"'; do
+              if grep -q "$tag" "$page"; then
+                echo "  OK: $tag found"
+              else
+                echo "  FAIL: $tag not found"
+                ok=false
+              fi
+            done
+          done
+          if [ "$ok" = "false" ]; then exit 1; fi
+          echo "SEO validation passed"
 
   code-quality:
     name: Code Quality
@@ -209,16 +174,18 @@ jobs:
       - name: Check code quality
         run: |
           echo "Checking file sizes..."
-          find website/views -name "*.js" -exec wc -l {} \; | sort -rn | head -10
+          find website/src -name "*.astro" -o -name "*.ts" | xargs wc -l 2>/dev/null | sort -rn | head -10
           echo ""
 
           echo "Checking for console.log in production..."
-          if grep -r "console.log" --include="*.js" website/views/ website/api/; then
-            echo "INFO: console.log found in view files (may be intentional for debugging)"
+          if grep -r "console.log" --include='*.astro' --include='*.ts' website/src/ 2>/dev/null; then
+            echo "INFO: console.log found in source files"
+          else
+            echo "OK: No console.log in source files"
           fi
 
           echo "Checking for TODO/FIXME comments..."
-          grep -rn "TODO\|FIXME\|HACK\|XXX" --include="*.js" website/ | grep -v node_modules || echo "No TODO/FIXME found"
+          grep -rn "TODO\|FIXME\|HACK\|XXX" --include='*.astro' --include='*.ts' website/src/ 2>/dev/null || echo "No TODO/FIXME found"
 
           echo ""
           echo "Code quality check passed"

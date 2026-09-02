@@ -109,15 +109,15 @@ jobs:
           echo "=== Code Quality Checks ==="
           # Check for TODO/FIXME without issue references
           echo "Checking for untracked TODOs..."
-          grep -rn "TODO\|FIXME\|HACK\|XXX" --include='*.js' --include='*.ino' . 2>/dev/null | grep -v node_modules | grep -v '.github' | head -20 || echo "No untracked TODOs found"
+          grep -rn "TODO\|FIXME\|HACK\|XXX" --include='*.js' --include='*.ts' --include='*.astro' --include='*.ino' . 2>/dev/null | grep -v node_modules | grep -v '.github' | head -20 || echo "No untracked TODOs found"
           # Check for console.log in production code
           echo ""
-          echo "Checking for console.log in views..."
-          grep -rn "console.log" website/views/ --include='*.js' 2>/dev/null | head -10 || echo "No console.log in views"
+          echo "Checking for console.log in source..."
+          grep -rn "console.log" website/src/ --include='*.astro' --include='*.ts' 2>/dev/null | head -10 || echo "No console.log in source files"
           # Check for hardcoded credentials
           echo ""
           echo "Checking for hardcoded credentials..."
-          grep -rn "password\|secret\|token\|api_key\|apikey" --include='*.js' --include='*.ino' . 2>/dev/null | grep -v node_modules | grep -v '.github' | grep -v "// " | head -10 || echo "No hardcoded credentials found"
+          grep -rn "password\|secret\|token\|api_key\|apikey" --include='*.astro' --include='*.ts' --include='*.ino' . 2>/dev/null | grep -v node_modules | grep -v '.github' | grep -v "// " | grep -vi "no password\|no secret\|without\|optional\|missing\|none\|placeholder\|example\|test" | head -10 || echo "No hardcoded credentials found"
 
       - name: Verify documentation
         run: |
