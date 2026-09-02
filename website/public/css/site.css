@@ -1,8 +1,7 @@
-/* ════════════════════════════════════════════════════════════════
+/* ============================================================
    Aegis-Beacon — Complete Site Stylesheet
    Orange-themed emergency beacon project site.
-   Light theme default; `.dark` on <html> switches to dark.
-   ════════════════════════════════════════════════════════════════ */
+   ============================================================ */
 
 /* ── CSS Variables ───────────────────────────────────────────── */
 :root {
@@ -78,27 +77,17 @@
 /* ── Scrollbar ───────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: rgba(148,163,184,0.3);
-  border-radius: 99px;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(51,65,85,0.5);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(148,163,184,0.5);
-}
-
+::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.3); border-radius: 99px; }
+.dark ::-webkit-scrollbar-thumb { background: rgba(51,65,85,0.5); }
+::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.5); }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ── Scroll Behavior ─────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-h) + 16px);
 }
 
-/* ── Body ────────────────────────────────────────────────────── */
 body {
   background: var(--surface);
   color: var(--text-primary);
@@ -108,20 +97,11 @@ body {
 }
 
 /* ── Details/Summary ─────────────────────────────────────────── */
-details summary {
-  list-style: none;
-  cursor: pointer;
-}
+details summary { list-style: none; cursor: pointer; }
 details summary::-webkit-details-marker { display: none; }
 
-/* ── Wiki Content Responsive Tables ──────────────────────────── */
-.wiki-content table {
-  display: table;
-  width: 100%;
-}
-
 /* ═══════════════════════════════════════════════════════════════
-   THEME SWITCH — Animated Sun/Moon Toggle
+   THEME SWITCH
    ═══════════════════════════════════════════════════════════════ */
 .theme-switch {
   --switch-w: 52px;
@@ -152,7 +132,6 @@ details summary::-webkit-details-marker { display: none; }
   border-color: rgba(100,116,139,0.8);
   box-shadow: 0 2px 10px rgba(56,189,248,0.15);
 }
-
 .theme-switch-knob {
   position: relative;
   display: flex;
@@ -169,14 +148,12 @@ details summary::-webkit-details-marker { display: none; }
   transform: translateX(calc(var(--switch-w) - var(--switch-knob) - 8px));
   background: #1e293b;
 }
-
 .theme-switch-knob svg {
   position: absolute;
   width: 14px;
   height: 14px;
   transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .theme-switch-sun {
   color: var(--orange-500);
   opacity: 1;
@@ -187,26 +164,12 @@ details summary::-webkit-details-marker { display: none; }
   opacity: 0;
   transform: rotate(-90deg) scale(0.5);
 }
-.dark .theme-switch-sun {
-  opacity: 0;
-  transform: rotate(90deg) scale(0.5);
-}
-.dark .theme-switch-moon {
-  opacity: 1;
-  transform: rotate(0deg) scale(1);
-}
+.dark .theme-switch-sun { opacity: 0; transform: rotate(90deg) scale(0.5); }
+.dark .theme-switch-moon { opacity: 1; transform: rotate(0deg) scale(1); }
 
-/* ── Responsive Theme Switch ─────────────────────────────────── */
 @media (max-width: 640px) {
-  .theme-switch {
-    --switch-w: 44px;
-    --switch-h: 24px;
-    --switch-knob: 18px;
-  }
-  .theme-switch-knob svg {
-    width: 11px;
-    height: 11px;
-  }
+  .theme-switch { --switch-w: 44px; --switch-h: 24px; --switch-knob: 18px; }
+  .theme-switch-knob svg { width: 11px; height: 11px; }
   main { padding-left: 1rem; padding-right: 1rem; }
 }
 
@@ -216,11 +179,7 @@ details summary::-webkit-details-marker { display: none; }
 .oled-screen {
   background: #030712;
   border: 1px solid #1e293b;
-  box-shadow:
-    inset 0 0 30px rgba(0,0,0,0.9),
-    0 0 0 4px #0f172a,
-    0 0 0 5px #1e293b,
-    0 12px 40px rgba(0,0,0,0.4);
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.9), 0 0 0 4px #0f172a, 0 0 0 5px #1e293b, 0 12px 40px rgba(0,0,0,0.4);
   font-family: 'JetBrains Mono', monospace;
   position: relative;
   overflow: hidden;
@@ -230,89 +189,56 @@ details summary::-webkit-details-marker { display: none; }
   content: "";
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(255,255,255,0.015) 0 1px,
-    transparent 1px 3px
-  );
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0 1px, transparent 1px 3px);
   pointer-events: none;
 }
 .oled-invert { background: #0ea5e9; color: #030712; }
 .oled-blink { animation: oledBlink 1s steps(2, start) infinite; }
 @keyframes oledBlink { 50% { opacity: 0; } }
 
-/* ── Key Buttons ─────────────────────────────────────────────── */
-.key-btn {
-  user-select: none;
-  touch-action: manipulation;
-}
+.key-btn { user-select: none; touch-action: manipulation; }
 .key-btn:active { transform: translateY(2px) !important; }
 
 /* ═══════════════════════════════════════════════════════════════
    ANIMATIONS
    ═══════════════════════════════════════════════════════════════ */
-
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-
 @keyframes slideInLeft {
   from { opacity: 0; transform: translateX(-30px); }
   to { opacity: 1; transform: translateX(0); }
 }
-
 @keyframes slideInRight {
   from { opacity: 0; transform: translateX(30px); }
   to { opacity: 1; transform: translateX(0); }
 }
-
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
 }
-
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 20px rgba(249,115,22,0.15), 0 0 60px rgba(249,115,22,0.05); }
   50% { box-shadow: 0 0 30px rgba(249,115,22,0.25), 0 0 80px rgba(249,115,22,0.1); }
 }
-
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
 }
-
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
-
 @keyframes gradientShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-
-@keyframes spinSlow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes ping {
-  0% { transform: scale(1); opacity: 1; }
-  75%, 100% { transform: scale(2); opacity: 0; }
-}
-
-@keyframes dashDraw {
-  from { stroke-dashoffset: 1000; }
-  to { stroke-dashoffset: 0; }
-}
-
 @keyframes orbFloat1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
   33% { transform: translate(30px, -20px) scale(1.05); }
@@ -324,7 +250,6 @@ details summary::-webkit-details-marker { display: none; }
   66% { transform: translate(15px, -30px) scale(1.05); }
 }
 
-/* ── Animation Utility Classes ───────────────────────────────── */
 .animate-fade-in-up { animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .animate-fade-in { animation: fadeIn 0.5s ease-out both; }
 .animate-slide-left { animation: slideInLeft 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
@@ -332,13 +257,9 @@ details summary::-webkit-details-marker { display: none; }
 .animate-scale-in { animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .animate-pulse-glow { animation: pulseGlow 4s ease-in-out infinite; }
 .animate-float { animation: float 4s ease-in-out infinite; }
-.animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
-}
 .animate-gradient { animation: gradientShift 6s ease infinite; background-size: 200% 200%; }
 .animate-spin-slow { animation: spinSlow 12s linear infinite; }
+@keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 .delay-100 { animation-delay: 0.1s; }
 .delay-200 { animation-delay: 0.2s; }
@@ -349,35 +270,30 @@ details summary::-webkit-details-marker { display: none; }
 .delay-700 { animation-delay: 0.7s; }
 .delay-800 { animation-delay: 0.8s; }
 
-/* ── Hover Lift Effect ────────────────────────────────────── */
 .hover-lift {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease;
 }
 .hover-lift:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px);
   box-shadow: var(--shadow-xl);
 }
+.dark .hover-lift:hover {
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5), var(--shadow-glow);
+}
 
-/* ── Glow Pulse on Hover ──────────────────────────────────── */
 .hover-glow:hover {
   box-shadow: 0 0 30px rgba(249,115,22,0.2), 0 0 60px rgba(249,115,22,0.1);
 }
 
-/* ── Text Shimmer Animation ───────────────────────────────── */
 .text-shimmer {
   background: linear-gradient(90deg, var(--text-primary) 0%, var(--orange-500) 50%, var(--text-primary) 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: shimmerText 3s linear infinite;
-}
-@keyframes shimmerText {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
+  animation: shimmer 3s linear infinite;
 }
 
-/* ── Card Glow Border ─────────────────────────────────────── */
 .glow-border {
   position: relative;
 }
@@ -385,28 +301,19 @@ details summary::-webkit-details-marker { display: none; }
   content: '';
   position: absolute;
   inset: -1px;
-  background: linear-gradient(135deg, var(--orange-500), transparent, var(--orange-500));
   border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  background: linear-gradient(135deg, var(--orange-500), var(--orange-300), var(--orange-500));
   z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
-.glow-border:hover::before {
-  opacity: 0.5;
-}
+.glow-border:hover::before { opacity: 1; }
 
 /* ═══════════════════════════════════════════════════════════════
    VISUAL COMPONENTS
    ═══════════════════════════════════════════════════════════════ */
-
 .gradient-text {
   background: linear-gradient(135deg, #f97316, #fbbf24, #f97316);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.gradient-text-white {
-  background: linear-gradient(135deg, #fff, #e2e8f0, #fff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -422,7 +329,6 @@ details summary::-webkit-details-marker { display: none; }
 .dark .glass-card {
   background: rgba(15,22,38,0.7);
   border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: var(--shadow-lg);
 }
 
 .stat-value {
@@ -440,7 +346,6 @@ details summary::-webkit-details-marker { display: none; }
   pointer-events: none;
 }
 .dark .hero-orb { opacity: 0.18; }
-
 .hero-orb-1 {
   width: 400px; height: 400px;
   background: radial-gradient(circle, #f97316, transparent 70%);
@@ -460,36 +365,6 @@ details summary::-webkit-details-marker { display: none; }
   animation: orbFloat1 14s ease-in-out infinite reverse;
 }
 
-.hover-lift {
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.35s ease;
-}
-.hover-lift:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-xl);
-}
-.dark .hover-lift:hover {
-  box-shadow: 0 20px 40px rgba(0,0,0,0.5), var(--shadow-glow);
-}
-
-.glow-border {
-  position: relative;
-}
-.glow-border::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, var(--orange-500), var(--orange-300), var(--orange-500));
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-.glow-border:hover::before {
-  opacity: 1;
-}
-
 .noise-overlay::after {
   content: '';
   position: absolute;
@@ -497,14 +372,6 @@ details summary::-webkit-details-marker { display: none; }
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   pointer-events: none;
   border-radius: inherit;
-}
-
-.divider-gradient {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--orange-300), transparent);
-}
-.dark .divider-gradient {
-  background: linear-gradient(90deg, transparent, var(--orange-700), transparent);
 }
 
 .section-separator {
@@ -525,24 +392,6 @@ details summary::-webkit-details-marker { display: none; }
   border-radius: 99px;
 }
 
-.language-link {
-  transition: color 0.2s ease, transform 0.2s ease;
-  opacity: 0.75;
-}
-.language-link:hover {
-  opacity: 1;
-  transform: translateY(-1px);
-  color: var(--orange-500);
-}
-.language-link-active {
-  opacity: 1;
-  color: var(--orange-600);
-  font-weight: 700;
-}
-.dark .language-link-active {
-  color: var(--orange-400);
-}
-
 .badge-pill {
   display: inline-flex;
   align-items: center;
@@ -561,89 +410,423 @@ details summary::-webkit-details-marker { display: none; }
 
 .notranslate { }
 
-/* ═══════════════════════════════════════════════════════════════
-   RESPONSIVE UTILITIES
-   ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .hero-orb-1, .hero-orb-2, .hero-orb-3 {
-    width: 200px;
-    height: 200px;
-    filter: blur(60px);
+    width: 200px; height: 200px; filter: blur(60px);
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   WIKI CONTENT — Beautiful Documentation Design
+   MAIN CONTENT SPACING
+   ═══════════════════════════════════════════════════════════════ */
+main {
+  padding-bottom: 3rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WIKI LAYOUT — Professional Documentation
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Three-column layout */
+.wiki-layout {
+  display: flex;
+  gap: 0;
+  max-width: 100%;
+  position: relative;
+}
+
+/* ── Left Sidebar ─────────────────────────────────────────── */
+.wiki-sidebar {
+  display: none;
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: var(--header-h);
+  height: calc(100vh - var(--header-h));
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  padding: 1.5rem 0;
+  z-index: 20;
+}
+@media (min-width: 1024px) {
+  .wiki-sidebar { display: block; }
+}
+
+.wiki-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.25rem 1rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+}
+
+.wiki-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.wiki-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  border-left: 3px solid transparent;
+}
+.wiki-nav-link:hover {
+  color: var(--text-primary);
+  background: var(--border-subtle);
+}
+.wiki-nav-active {
+  color: var(--orange-600) !important;
+  font-weight: 600;
+  background: rgba(249, 115, 22, 0.06);
+  border-left-color: var(--orange-500);
+}
+.dark .wiki-nav-active {
+  color: var(--orange-400) !important;
+  background: rgba(249, 115, 22, 0.08);
+}
+
+.wiki-nav-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.wiki-nav-active .wiki-nav-icon {
+  opacity: 1;
+  color: var(--orange-500);
+}
+
+.wiki-sidebar-footer {
+  margin-top: auto;
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--border);
+  margin-left: 1.25rem;
+  margin-right: 1.25rem;
+}
+
+/* ── Mobile Navigation ────────────────────────────────────── */
+.wiki-mobile-nav {
+  display: block;
+  position: sticky;
+  top: var(--header-h);
+  z-index: 20;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 1024px) {
+  .wiki-mobile-nav { display: none; }
+}
+
+.wiki-mobile-scroll {
+  display: flex;
+  gap: 0.375rem;
+  width: max-content;
+}
+
+.wiki-mobile-link {
+  flex-shrink: 0;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.wiki-mobile-link:hover {
+  color: var(--text-primary);
+  background: var(--border-subtle);
+}
+.wiki-mobile-active {
+  color: var(--orange-600) !important;
+  font-weight: 600;
+  background: rgba(249, 115, 22, 0.08);
+}
+.dark .wiki-mobile-active {
+  color: var(--orange-400) !important;
+  background: rgba(249, 115, 22, 0.1);
+}
+
+/* ── Main Content Area ────────────────────────────────────── */
+.wiki-main {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem 1.5rem 3rem;
+  max-width: 100%;
+}
+@media (min-width: 768px) {
+  .wiki-main { padding: 2rem 2.5rem 3rem; }
+}
+@media (min-width: 1280px) {
+  .wiki-main { padding: 2rem 3rem 3rem; }
+}
+
+/* ── Scroll Progress Bar ──────────────────────────────────── */
+.wiki-scroll-progress-bar {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  height: 2px;
+  background: var(--orange-500);
+  z-index: 49;
+  transition: width 0.1s linear;
+  width: 0;
+}
+
+/* ── Page Header ──────────────────────────────────────────── */
+.wiki-page-header {
+  margin-bottom: 2rem;
+}
+
+.wiki-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+.wiki-breadcrumb a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.wiki-breadcrumb a:hover {
+  color: var(--orange-500);
+}
+.wiki-breadcrumb-current {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.wiki-page-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.wiki-page-title {
+  font-size: 1.875rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.wiki-edit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.wiki-edit-link:hover {
+  color: var(--orange-600);
+  border-color: var(--orange-300);
+  background: rgba(249, 115, 22, 0.04);
+}
+.dark .wiki-edit-link:hover {
+  color: var(--orange-400);
+  border-color: rgba(249, 115, 22, 0.3);
+  background: rgba(249, 115, 22, 0.06);
+}
+
+/* ── Right TOC ────────────────────────────────────────────── */
+.wiki-toc-container {
+  display: none;
+  width: 220px;
+  flex-shrink: 0;
+  position: sticky;
+  top: var(--header-h);
+  height: fit-content;
+  max-height: calc(100vh - var(--header-h) - 2rem);
+  overflow-y: auto;
+  padding: 2rem 0 2rem 1.5rem;
+}
+@media (min-width: 1280px) {
+  .wiki-toc-container { display: block; }
+}
+
+.wiki-toc-header {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  padding-left: 0.75rem;
+}
+
+.wiki-toc-list {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border);
+}
+
+.wiki-toc-item {
+  display: block;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  margin-left: -1px;
+  transition: all 0.15s ease;
+  line-height: 1.4;
+}
+.wiki-toc-item:hover {
+  color: var(--text-primary);
+}
+.wiki-toc-item.active {
+  color: var(--orange-600);
+  font-weight: 600;
+  border-left-color: var(--orange-500);
+}
+.dark .wiki-toc-item.active {
+  color: var(--orange-400);
+}
+.wiki-toc-indent {
+  padding-left: 1.5rem;
+}
+
+/* ── Prev/Next Navigation ─────────────────────────────────── */
+.wiki-prev-next {
+  display: flex;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.wiki-nav-prev,
+.wiki-nav-next {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 0;
+}
+.wiki-nav-next {
+  justify-content: flex-end;
+  text-align: right;
+}
+.wiki-nav-prev:hover,
+.wiki-nav-next:hover {
+  border-color: var(--orange-300);
+  box-shadow: var(--shadow-md);
+}
+.dark .wiki-nav-prev:hover,
+.dark .wiki-nav-next:hover {
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+.wiki-nav-arrow {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+.wiki-nav-prev:hover .wiki-nav-arrow,
+.wiki-nav-next:hover .wiki-nav-arrow {
+  color: var(--orange-500);
+}
+
+.wiki-nav-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.125rem;
+}
+
+.wiki-nav-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WIKI PROSE CONTENT
    ═══════════════════════════════════════════════════════════════ */
 .prose-wiki {
-  animation: fadeIn 0.4s ease-out both;
+  max-width: 720px;
 }
 
 /* ── Headings ──────────────────────────────────────────────── */
 .prose-wiki h1 {
-  font-size: 2.25rem;
+  font-size: 2rem;
   font-weight: 800;
-  line-height: 1.1;
-  margin-bottom: 1.5rem;
+  line-height: 1.15;
+  margin-bottom: 1.25rem;
   color: var(--text-primary);
-  letter-spacing: -0.04em;
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--orange-600) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  padding-bottom: 1rem;
-  border-bottom: 3px solid var(--orange-500);
-}
-.dark .prose-wiki h1 {
-  background: linear-gradient(135deg, #f1f5f9 0%, var(--orange-400) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  border-bottom-color: var(--orange-600);
+  letter-spacing: -0.03em;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border);
 }
 
 .prose-wiki h2 {
-  font-size: 1.5rem;
-  font-weight: 750;
+  font-size: 1.375rem;
+  font-weight: 700;
   line-height: 1.3;
-  margin-top: 3rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
   color: var(--text-primary);
   letter-spacing: -0.02em;
-  border-bottom: 2px solid var(--border);
-  position: relative;
-}
-.prose-wiki h2::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 80px;
-  height: 2px;
-  background: var(--orange-500);
+  border-bottom: 1px solid var(--border);
 }
 
 .prose-wiki h3 {
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 1.0625rem;
+  font-weight: 650;
   line-height: 1.4;
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
   color: var(--text-primary);
-  padding-left: 1rem;
-  border-left: 4px solid var(--orange-500);
-  background: linear-gradient(90deg, rgba(249,115,22,0.03), transparent);
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-radius: 0 8px 8px 0;
 }
 
 .prose-wiki h4 {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.9375rem;
+  font-weight: 650;
   line-height: 1.4;
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
   margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
@@ -651,100 +834,63 @@ details summary::-webkit-details-marker { display: none; }
 /* ── Text ──────────────────────────────────────────────────── */
 .prose-wiki p {
   font-size: 0.9375rem;
-  line-height: 1.85;
+  line-height: 1.8;
   color: var(--text-secondary);
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
+
 .prose-wiki strong {
   color: var(--text-primary);
-  font-weight: 700;
+  font-weight: 600;
 }
+
 .prose-wiki em {
-  color: var(--text-secondary);
   font-style: italic;
 }
 
 /* ── Links ─────────────────────────────────────────────────── */
 .prose-wiki a {
   color: var(--orange-600);
-  text-decoration: none;
-  border-bottom: 1px solid rgba(234, 88, 12, 0.3);
+  text-decoration: underline;
+  text-decoration-color: rgba(234, 88, 12, 0.3);
+  text-underline-offset: 2px;
   transition: all 0.15s ease;
-  padding-bottom: 1px;
 }
-.dark .prose-wiki a { color: var(--orange-400); border-bottom-color: rgba(251, 146, 60, 0.3); }
+.dark .prose-wiki a {
+  color: var(--orange-400);
+  text-decoration-color: rgba(251, 146, 60, 0.3);
+}
 .prose-wiki a:hover {
   color: var(--orange-500);
-  border-bottom-color: var(--orange-500);
-  background: rgba(249,115,22,0.05);
-  border-radius: 2px;
+  text-decoration-color: var(--orange-500);
 }
 
 /* ── Lists ─────────────────────────────────────────────────── */
-.prose-wiki ul {
-  list-style: none;
-  padding-left: 0;
-  margin-bottom: 1.5rem;
-}
-.prose-wiki ul > li {
-  position: relative;
-  padding-left: 1.75rem;
-  font-size: 0.9375rem;
-  line-height: 1.8;
-  color: var(--text-secondary);
-  margin-bottom: 0.75rem;
-}
-.prose-wiki ul > li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.6rem;
-  width: 6px;
-  height: 6px;
-  background: var(--orange-500);
-  border-radius: 2px;
-  transform: rotate(45deg);
-}
+.prose-wiki ul,
 .prose-wiki ol {
-  list-style: none;
-  padding-left: 0;
-  margin-bottom: 1.5rem;
-  counter-reset: wiki-counter;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
 }
-.prose-wiki ol > li {
-  position: relative;
-  padding-left: 2.5rem;
+
+.prose-wiki ul {
+  list-style-type: disc;
+}
+
+.prose-wiki ol {
+  list-style-type: decimal;
+}
+
+.prose-wiki li {
   font-size: 0.9375rem;
-  line-height: 1.8;
+  line-height: 1.75;
   color: var(--text-secondary);
-  margin-bottom: 0.75rem;
-  counter-increment: wiki-counter;
+  margin-bottom: 0.375rem;
 }
-.prose-wiki ol > li::before {
-  content: counter(wiki-counter);
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 1.75rem;
-  height: 1.75rem;
-  background: linear-gradient(135deg, var(--orange-50), var(--orange-100));
-  color: var(--orange-700);
-  font-size: 0.75rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  border: 1px solid var(--orange-200);
-}
-.dark .prose-wiki ol > li::before {
-  background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(249,115,22,0.1));
-  color: var(--orange-400);
-  border-color: rgba(249,115,22,0.3);
-}
+
 .prose-wiki li strong {
   color: var(--text-primary);
 }
+
 .prose-wiki li code {
   font-size: 0.8125rem;
 }
@@ -753,295 +899,173 @@ details summary::-webkit-details-marker { display: none; }
 .prose-wiki code {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8125rem;
-  background: linear-gradient(135deg, rgba(249,115,22,0.06), rgba(249,115,22,0.02));
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
+  background: var(--border-subtle);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
   color: var(--orange-700);
   font-weight: 500;
-  border: 1px solid rgba(249,115,22,0.1);
+  border: 1px solid var(--border);
 }
 .dark .prose-wiki code {
-  background: rgba(30,41,59,0.9);
+  background: rgba(30,41,59,0.8);
   color: var(--orange-400);
-  border-color: rgba(249,115,22,0.15);
+  border-color: var(--border);
 }
 
 /* ── Code Blocks ───────────────────────────────────────────── */
 .prose-wiki pre {
   background: var(--surface-raised);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 10px;
+  padding: 1.25rem;
   overflow-x: auto;
-  margin: 1.5rem 0;
-  box-shadow: var(--shadow-md);
-  position: relative;
-}
-.prose-wiki pre::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--orange-500), var(--orange-300), var(--orange-500));
-  border-radius: 12px 12px 0 0;
+  margin: 1.25rem 0;
+  box-shadow: var(--shadow-sm);
 }
 .prose-wiki pre code {
   background: none;
   padding: 0;
   font-size: 0.8125rem;
   color: var(--text-primary);
-  line-height: 1.75;
+  line-height: 1.7;
   border: none;
   font-weight: 400;
 }
 
 /* ── Blockquotes ───────────────────────────────────────────── */
 .prose-wiki blockquote {
-  border-left: 4px solid var(--orange-500);
-  padding: 1.25rem 1.5rem;
-  margin: 1.5rem 0;
-  background: linear-gradient(135deg, rgba(249,115,22,0.04), rgba(249,115,22,0.01));
-  border-radius: 0 12px 12px 0;
-  font-style: italic;
-  position: relative;
-}
-.prose-wiki blockquote::before {
-  content: '\201C';
-  position: absolute;
-  top: -0.5rem;
-  left: 1rem;
-  font-size: 3rem;
-  color: var(--orange-300);
-  font-style: normal;
-  line-height: 1;
+  border-left: 3px solid var(--orange-300);
+  padding: 0.75rem 1rem;
+  margin: 1.25rem 0;
+  background: var(--border-subtle);
+  border-radius: 0 8px 8px 0;
 }
 .prose-wiki blockquote p {
   margin-bottom: 0;
-  color: var(--text-secondary);
-  padding-left: 0.5rem;
+  font-style: italic;
 }
 
 /* ── Tables ────────────────────────────────────────────────── */
 .prose-wiki table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1.5rem 0;
+  margin: 1.25rem 0;
   font-size: 0.875rem;
-  border-radius: 12px;
-  overflow: hidden;
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  border-radius: 10px;
+  overflow: hidden;
 }
 .prose-wiki thead {
-  background: linear-gradient(135deg, var(--orange-50), rgba(249,115,22,0.05));
+  background: var(--border-subtle);
 }
 .prose-wiki th {
-  font-weight: 700;
+  font-weight: 600;
   text-align: left;
-  padding: 1rem 1.25rem;
-  border-bottom: 2px solid var(--orange-200);
-  color: var(--orange-800);
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-primary);
   font-size: 0.8125rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.dark .prose-wiki th {
-  background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(249,115,22,0.03));
-  border-bottom-color: rgba(249,115,22,0.3);
-  color: var(--orange-400);
 }
 .prose-wiki td {
-  padding: 0.875rem 1.25rem;
+  padding: 0.625rem 1rem;
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text-secondary);
-  transition: all 0.15s ease;
 }
 .prose-wiki tr:last-child td {
   border-bottom: none;
 }
 .prose-wiki tbody tr:hover td {
-  background: linear-gradient(135deg, rgba(249,115,22,0.03), transparent);
-}
-.dark .prose-wiki tbody tr:hover td {
-  background: linear-gradient(135deg, rgba(249,115,22,0.06), transparent);
+  background: rgba(249, 115, 22, 0.02);
 }
 
 /* ── Horizontal Rules ──────────────────────────────────────── */
 .prose-wiki hr {
   border: none;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--orange-300), transparent);
-  margin: 3rem 0;
+  background: var(--border);
+  margin: 2rem 0;
 }
 
 /* ── Images ────────────────────────────────────────────────── */
 .prose-wiki img {
   max-width: 100%;
-  border-radius: 12px;
-  margin: 1.5rem 0;
-  box-shadow: var(--shadow-lg);
+  border-radius: 10px;
+  margin: 1.25rem 0;
   border: 1px solid var(--border);
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   WIKI ALERTS — Beautiful Callouts
+   WIKI ALERTS
    ═══════════════════════════════════════════════════════════════ */
 .wiki-alert {
-  padding: 1.25rem 1.5rem;
-  border-radius: 12px;
-  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  margin: 1.25rem 0;
   font-size: 0.875rem;
-  line-height: 1.7;
-  border-left: 5px solid;
-  position: relative;
-  overflow: hidden;
-}
-.wiki-alert::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 120px;
-  height: 100%;
-  background: radial-gradient(circle at top right, currentColor, transparent 70%);
-  opacity: 0.04;
-  pointer-events: none;
+  line-height: 1.65;
+  border-left: 4px solid;
 }
 .wiki-alert strong {
-  font-weight: 700;
+  font-weight: 600;
   display: block;
-  margin-bottom: 0.375rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
 }
 .wiki-alert p {
   margin-bottom: 0;
 }
+
 .wiki-alert-warning {
-  background: linear-gradient(135deg, #fef2f2, #fff5f5);
+  background: #fef2f2;
   border-color: #dc2626;
   color: #991b1b;
 }
 .dark .wiki-alert-warning {
-  background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.06));
+  background: rgba(239,68,68,0.08);
   color: #fca5a5;
 }
+
 .wiki-alert-note {
-  background: linear-gradient(135deg, #eff6ff, #f0f7ff);
+  background: #eff6ff;
   border-color: #2563eb;
   color: #1e40af;
 }
 .dark .wiki-alert-note {
-  background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(59,130,246,0.06));
+  background: rgba(59,130,246,0.08);
   color: #93c5fd;
 }
+
 .wiki-alert-tip {
-  background: linear-gradient(135deg, #f0fdf4, #f2fef6);
+  background: #f0fdf4;
   border-color: #16a34a;
   color: #166534;
 }
 .dark .wiki-alert-tip {
-  background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.06));
+  background: rgba(34,197,94,0.08);
   color: #86efac;
 }
+
 .wiki-alert-important {
-  background: linear-gradient(135deg, #fffbeb, #fffcf0);
+  background: #fffbeb;
   border-color: #d97706;
   color: #92400e;
 }
 .dark .wiki-alert-important {
-  background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.06));
+  background: rgba(245,158,11,0.08);
   color: #fcd34d;
 }
+
 .wiki-alert-info {
-  background: linear-gradient(135deg, #f8fafc, #fafbfc);
-  border-color: #475569;
-  color: #334155;
+  background: var(--border-subtle);
+  border-color: var(--text-muted);
+  color: var(--text-secondary);
 }
 .dark .wiki-alert-info {
-  background: linear-gradient(135deg, rgba(100,116,139,0.12), rgba(100,116,139,0.06));
+  background: rgba(100,116,139,0.08);
   color: #cbd5e1;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   WIKI TOC — ScrollSpy Table of Contents
-   ═══════════════════════════════════════════════════════════════ */
-.wiki-toc a {
-  display: block;
-  padding: 0.4rem 0.75rem;
-  border-radius: 8px;
-  border-left: 2px solid transparent;
-  transition: all 0.2s ease;
-  font-size: 0.8125rem;
-}
-.wiki-toc a:hover {
-  background: var(--border-subtle);
-  color: var(--orange-600);
-  border-left-color: var(--orange-300);
-}
-.wiki-toc a.active {
-  color: var(--orange-600);
-  font-weight: 600;
-  background: linear-gradient(90deg, rgba(249,115,22,0.08), transparent);
-  border-left-color: var(--orange-500);
-}
-.dark .wiki-toc a.active {
-  color: var(--orange-400);
-  background: linear-gradient(90deg, rgba(249,115,22,0.1), transparent);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   WIKI SIDEBAR — Navigation
-   ═══════════════════════════════════════════════════════════════ */
-.wiki-sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 0.75rem;
-  font-size: 0.8125rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  border-left: 3px solid transparent;
-}
-.wiki-sidebar-link:hover {
-  background: var(--border-subtle);
-  border-left-color: var(--orange-300);
-}
-.wiki-sidebar-link.active {
-  background: linear-gradient(90deg, rgba(249,115,22,0.1), transparent);
-  border-left-color: var(--orange-500);
-  font-weight: 600;
-  color: var(--orange-600);
-}
-.dark .wiki-sidebar-link.active {
-  color: var(--orange-400);
-  background: linear-gradient(90deg, rgba(249,115,22,0.12), transparent);
-}
-
-/* Wiki Scroll Progress Bar */
-.wiki-scroll-progress {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--orange-500), var(--orange-300));
-  z-index: 49;
-  transition: width 0.1s ease-out;
-}
-
-/* ── Main Content Spacing ────────────────────────────────────── */
-main {
-  padding-bottom: 3rem;
-}
-
-/* ── Wiki Page Container ─────────────────────────────────────── */
-.wiki-page-container {
-  min-height: calc(100vh - 200px);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   SCROLL TO TOP BUTTON
+   SCROLL TO TOP
    ═══════════════════════════════════════════════════════════════ */
 #scroll-top {
   position: fixed;
@@ -1049,7 +1073,7 @@ main {
   right: 24px;
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--surface-alt);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-md);
@@ -1074,23 +1098,16 @@ main {
   color: white;
   box-shadow: var(--shadow-lg), 0 0 20px rgba(249,115,22,0.2);
 }
-.dark #scroll-top {
-  background: var(--surface-raised);
-  border-color: rgba(51,65,85,0.6);
-}
-.dark #scroll-top:hover {
-  background: var(--orange-600);
-  border-color: var(--orange-600);
-}
+.dark #scroll-top { background: var(--surface-raised); border-color: rgba(51,65,85,0.6); }
+.dark #scroll-top:hover { background: var(--orange-600); border-color: var(--orange-600); }
 @media (max-width: 768px) {
-  #scroll-top { bottom: 16px; right: 16px; width: 40px; height: 40px; border-radius: 10px; }
+  #scroll-top { bottom: 16px; right: 16px; width: 40px; height: 40px; }
 }
 
-/* ── Print ─────────────────────────────────────────────────────── */
+/* ── Print ─────────────────────────────────────────────────── */
 @media print {
-  .theme-switch, .hero-orb, nav { display: none !important; }
+  .theme-switch, .hero-orb, nav, .wiki-sidebar, .wiki-toc-container, .wiki-mobile-nav, #scroll-top { display: none !important; }
   body { background: white; color: black; }
-  .wiki-scroll-progress { display: none !important; }
-  .prose-wiki h1 { border-bottom-color: black; }
-  .prose-wiki h2::after { background: black; }
+  .wiki-scroll-progress-bar { display: none !important; }
+  .wiki-main { padding: 1rem; max-width: 100%; }
 }

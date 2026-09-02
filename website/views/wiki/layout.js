@@ -1,8 +1,8 @@
 /**
- * Aegis-Beacon Wiki -- Classic Wiki Layout
+ * Aegis-Beacon Wiki -- Professional Classic Documentation Layout
  *
- * Wikipedia-inspired layout with sidebar TOC, edit links,
- * classic wiki typography, and prev/next navigation.
+ * Inspired by MDN, Stripe Docs, and GitHub Docs.
+ * Clean sidebar, breadcrumbs, TOC, and prev/next navigation.
  */
 
 import { renderPage, SITE_URL } from '../layout.js';
@@ -32,73 +32,79 @@ export const WIKI_PAGES = [
 ];
 
 /**
- * Render classic wiki sidebar navigation.
+ * Render wiki sidebar navigation.
  */
 export function renderWikiSidebar(currentPage) {
   const links = WIKI_PAGES.map((p) => {
     const active = p.id === currentPage;
-    return `
-    <a href="/wiki/${p.id}" class="wiki-sidebar-link ${active ? 'active' : 'text-slate-600 dark:text-slate-400'}">
-      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${p.icon}"/></svg>
-      <span>${p.title}</span>
-    </a>`;
+    return `<li>
+      <a href="/wiki/${p.id}" class="wiki-nav-link ${active ? 'wiki-nav-active' : ''}">
+        <svg class="wiki-nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="${p.icon}"/></svg>
+        <span>${p.title}</span>
+      </a>
+    </li>`;
   }).join('');
 
-  return `
-  <!-- Desktop sidebar -->
-  <aside class="hidden lg:block w-56 shrink-0 sticky top-20 h-fit">
-    <div class="bg-white dark:bg-[var(--surface-alt)] border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-1 max-h-[calc(100vh-6rem)] overflow-y-auto shadow-sm">
-      <div class="flex items-center gap-2.5 px-3 py-2.5 mb-3 border-b border-slate-100 dark:border-slate-800">
-        <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
-        <span class="text-xs font-bold text-slate-900 dark:text-white tracking-wide">Documentation</span>
-      </div>
-      ${links}
-      <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="wiki-sidebar-link text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-          <span>View on GitHub</span>
-        </a>
-      </div>
+  return `<aside class="wiki-sidebar" aria-label="Documentation navigation">
+    <div class="wiki-sidebar-header">
+      <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+      <span>Documentation</span>
     </div>
-  </aside>
-
-  <!-- Mobile navigation -->
-  <div class="lg:hidden sticky top-16 z-30 bg-white dark:bg-[var(--surface-alt)] border-b border-slate-200 dark:border-slate-800 px-4 py-3">
-    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
-      ${WIKI_PAGES.map((p) => {
-        const active = p.id === currentPage;
-        return `<a href="/wiki/${p.id}" class="shrink-0 px-4 py-2 text-[10px] font-bold rounded-lg border transition-all ${active ? 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50' : 'text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-700'}">${p.title}</a>`;
-      }).join('')}
+    <ul class="wiki-nav-list">${links}</ul>
+    <div class="wiki-sidebar-footer">
+      <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="wiki-nav-link">
+        <svg class="wiki-nav-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        <span>View on GitHub</span>
+      </a>
     </div>
-  </div>`;
+  </aside>`;
 }
 
 /**
- * Render wiki page header with edit button (Wikipedia-style).
+ * Render mobile wiki navigation.
+ */
+export function renderMobileNav(currentPage) {
+  const items = WIKI_PAGES.map((p) => {
+    const active = p.id === currentPage;
+    return `<a href="/wiki/${p.id}" class="wiki-mobile-link ${active ? 'wiki-mobile-active' : ''}">${p.title}</a>`;
+  }).join('');
+
+  return `<nav class="wiki-mobile-nav" aria-label="Page navigation">
+    <div class="wiki-mobile-scroll">${items}</div>
+  </nav>`;
+}
+
+/**
+ * Render wiki page header with breadcrumb and edit button.
  */
 export function renderWikiHeader(id, title, file) {
   const editLink = file
-    ? `<a href="${GITHUB_EDIT}/${file}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-sm transition-all">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
-        Edit on GitHub
+    ? `<a href="${GITHUB_EDIT}/${file}" target="_blank" rel="noopener" class="wiki-edit-link">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+        Edit this page
       </a>`
     : '';
 
-  return `<div class="flex items-center justify-between border-b-2 border-slate-200 dark:border-slate-800 pb-5 mb-8">
-    <div>
-      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">${title}</h1>
+  return `<div class="wiki-page-header">
+    <nav class="wiki-breadcrumb" aria-label="Breadcrumb">
+      <a href="/wiki">Documentation</a>
+      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+      <span class="wiki-breadcrumb-current">${title}</span>
+    </nav>
+    <div class="wiki-page-title-row">
+      <h1 class="wiki-page-title">${title}</h1>
+      ${editLink}
     </div>
-    ${editLink}
   </div>`;
 }
 
 /**
- * Render wiki page table of contents (auto-generated from headings).
+ * Render wiki table of contents (auto-generated from headings).
  */
 export function renderWikiTOC() {
-  return `<div class="hidden xl:block w-52 shrink-0 sticky top-20 h-fit">
-    <div class="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-4 px-3">On this page</div>
-    <nav class="wiki-toc space-y-1 px-3 border-l border-slate-200 dark:border-slate-800 ml-1" id="wiki-toc"></nav>
+  return `<div class="wiki-toc-container" id="wiki-toc-container">
+    <div class="wiki-toc-header">On this page</div>
+    <nav class="wiki-toc-list" id="wiki-toc"></nav>
   </div>`;
 }
 
@@ -111,24 +117,30 @@ export function renderWikiNav(currentPage) {
   const next = idx < WIKI_PAGES.length - 1 ? WIKI_PAGES[idx + 1] : null;
 
   const prevLink = prev
-    ? `<a href="/wiki/${prev.id}" class="flex items-center gap-3 px-5 py-4 bg-white dark:bg-[var(--surface-alt)] border border-slate-200 dark:border-slate-800 rounded-xl hover:border-orange-500/50 hover:shadow-md transition-all flex-1 min-w-0 group">
-        <svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-        <div class="min-w-0"><div class="text-[10px] font-mono text-slate-500 dark:text-slate-500 uppercase tracking-wider">Previous</div><div class="text-sm font-bold text-slate-900 dark:text-white truncate">${prev.title}</div></div>
+    ? `<a href="/wiki/${prev.id}" class="wiki-nav-prev">
+        <svg class="wiki-nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+        <div>
+          <div class="wiki-nav-label">Previous</div>
+          <div class="wiki-nav-title">${prev.title}</div>
+        </div>
       </a>`
     : '<div class="flex-1"></div>';
 
   const nextLink = next
-    ? `<a href="/wiki/${next.id}" class="flex items-center gap-3 px-5 py-4 bg-white dark:bg-[var(--surface-alt)] border border-slate-200 dark:border-slate-800 rounded-xl hover:border-orange-500/50 hover:shadow-md transition-all flex-1 min-w-0 text-right justify-end group">
-        <div class="min-w-0"><div class="text-[10px] font-mono text-slate-500 dark:text-slate-500 uppercase tracking-wider">Next</div><div class="text-sm font-bold text-slate-900 dark:text-white truncate">${next.title}</div></div>
-        <svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+    ? `<a href="/wiki/${next.id}" class="wiki-nav-next">
+        <div>
+          <div class="wiki-nav-label">Next</div>
+          <div class="wiki-nav-title">${next.title}</div>
+        </div>
+        <svg class="wiki-nav-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
       </a>`
     : '<div class="flex-1"></div>';
 
-  return `<div class="flex flex-col sm:flex-row gap-3 pt-8 mt-8 border-t border-slate-200 dark:border-slate-800">${prevLink}${nextLink}</div>`;
+  return `<div class="wiki-prev-next">${prevLink}${nextLink}</div>`;
 }
 
 /**
- * Render a full wiki page with classic Wikipedia-style layout.
+ * Render a full wiki page with professional documentation layout.
  */
 export function renderWikiPageLayout({ pageId, title, file, content }) {
   const tocScript = `<script>
@@ -140,32 +152,44 @@ export function renderWikiPageLayout({ pageId, title, file, content }) {
     if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     var a = document.createElement('a');
     a.href = '#' + h.id;
-    a.className = 'block py-1 text-xs ' + (h.tagName === 'H3' ? 'pl-6 ' : '') + 'text-slate-500 dark:text-slate-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors truncate rounded';
+    a.className = 'wiki-toc-item' + (h.tagName === 'H3' ? ' wiki-toc-indent' : '');
     a.textContent = h.textContent;
     toc.appendChild(a);
   });
-  /* ScrollSpy */
-  var links = toc.querySelectorAll('a');
+  var items = toc.querySelectorAll('a');
   var observer = new IntersectionObserver(function(entries) {
     entries.forEach(function(entry) {
       if (entry.isIntersecting) {
-        links.forEach(function(l) { l.classList.remove('active'); });
-        var active = toc.querySelector('a[href="' + '#' + entry.target.id + '"]');
+        items.forEach(function(l) { l.classList.remove('active'); });
+        var active = toc.querySelector('a[href="#' + entry.target.id + '"]');
         if (active) active.classList.add('active');
       }
     });
   }, { rootMargin: '-80px 0px -80% 0px' });
   headings.forEach(function(h) { observer.observe(h); });
+
+  /* Scroll progress bar */
+  var bar = document.getElementById('wiki-progress');
+  if (bar) {
+    window.addEventListener('scroll', function() {
+      var scrollTop = window.scrollY;
+      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      var progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      bar.style.width = progress + '%';
+    });
+  }
 })();
 </script>`;
 
-  const body = `<div class="flex gap-0 lg:gap-8">
+  const body = `<div class="wiki-layout">
     ${renderWikiSidebar(pageId)}
-    <div class="flex-1 min-w-0">
+    ${renderMobileNav(pageId)}
+    <main class="wiki-main">
+      <div class="wiki-scroll-progress-bar" id="wiki-progress"></div>
       ${renderWikiHeader(pageId, title, file)}
-      <div class="wiki-content prose-wiki space-y-6">${content}</div>
+      <div class="wiki-content prose-wiki">${content}</div>
       ${renderWikiNav(pageId)}
-    </div>
+    </main>
     ${renderWikiTOC()}
   </div>`;
 
@@ -173,7 +197,7 @@ export function renderWikiPageLayout({ pageId, title, file, content }) {
     title: `Aegis-Beacon Wiki | ${title}`,
     description: `Technical documentation: ${title} for the Aegis-Beacon emergency radio system.`,
     canonical: `${SITE_URL}/wiki/${pageId}`,
-    header: { logoHref: '/', action: 'Builder', actionHref: '/builder', subtitle: `Wiki: ${title}` },
+    header: { logoHref: '/', action: 'Builder', actionHref: '/builder', subtitle: 'Documentation' },
     tabs: false,
     content: body,
     scriptSrc: null,
