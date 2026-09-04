@@ -1,6 +1,7 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
 import Layout from './Layout.astro';
+import WikiSearch from '../components/WikiSearch.astro';
 import { WIKI_NAV, WIKI_FLAT, groupForPage, labelForPage } from '../lib/wiki-nav';
 
 interface Props {
@@ -113,6 +114,9 @@ const currentGroupLabel = currentGroup?.label ?? '';
     <!-- Main Content -->
     <article class="wiki-main">
       <div class="wiki-page-header">
+        <div class="wiki-article-search" style="margin-bottom: 1.25rem;">
+          <WikiSearch entries={entries} placeholder="Search all documentation..." />
+        </div>
         <div class="wiki-breadcrumb">
           <a href="/wiki">Docs</a>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
