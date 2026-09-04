@@ -15,7 +15,7 @@ import Layout from '../layouts/Layout.astro';
 
     <div class="builder-layout">
       <!-- Budget Card -->
-      <div class="budget-card" data-glow data-rv>
+      <div class="budget-card" data-rv>
         <div class="budget-label">Target Budget</div>
         <div class="budget-value" id="budget-display">$30</div>
         <input type="range" id="budget-slider" min="15" max="60" value="30" class="range-input">
@@ -26,7 +26,7 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <!-- Components Table -->
-      <div class="components-card" data-glow data-rv style="--rv-delay: 120ms">
+      <div class="components-card" data-rv style="--rv-delay: 120ms">
         <div class="components-header">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           Components
@@ -172,7 +172,7 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <!-- Total Card -->
-      <div class="total-card" data-glow data-rv style="--rv-delay: 60ms">
+      <div class="total-card" data-rv style="--rv-delay: 60ms">
         <div class="total-row">
           <span>Components Total</span>
           <span id="components-total">$26.20</span>

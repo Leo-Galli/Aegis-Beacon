@@ -17,17 +17,17 @@ import Layout from '../layouts/Layout.astro';
 
   <div class="demo-layout">
     <!-- ═══ Terminal Window ═══ -->
-    <div class="terminal-window" data-glow data-glow data-rv style="--rv-delay: 0ms">
+    <div class="terminal-window" data-rv style="--rv-delay: 0ms">
       <div class="terminal-bar">
         <span class="terminal-dot terminal-dot--red"></span>
         <span class="terminal-dot terminal-dot--yellow"></span>
         <span class="terminal-dot terminal-dot--green"></span>
-        <span class="terminal-title">aegis-beacon — firmware v5.4</span>
+        <span class="terminal-title">aegis-beacon, firmware v5.4</span>
       </div>
       <div class="terminal-body">
         <!-- OLED Screen -->
         <div class="oled-screen" id="oled" style="padding: 1.25rem; min-height: 160px; display: flex; flex-direction: column; gap: 0.375rem;">
-          <div class="oled-line">SOS -- --- ...</div>
+          <div class="oled-line">SOS ... --- ...</div>
           <div class="oled-line dim">N45 53.12 E09 12.45</div>
           <div class="oled-line accent">433.500 MHz</div>
           <div class="oled-line">TX: +17 dBm</div>
@@ -45,7 +45,7 @@ import Layout from '../layouts/Layout.astro';
     </div>
 
     <!-- ═══ Controls Panel ═══ -->
-    <div class="controls-panel" data-glow data-glow data-rv style="--rv-delay: 120ms">
+    <div class="controls-panel" data-rv style="--rv-delay: 120ms">
       <div class="controls-panel__header">
         <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.06em;">$ config --interactive</span>
       </div>
@@ -111,7 +111,7 @@ import Layout from '../layouts/Layout.astro';
     const voltage = (3.0 + (battery / 100) * 1.2).toFixed(2);
     const lines: Record<string, string[]> = {
       beacon: [
-        'SOS -- --- ...',
+        'SOS ... --- ...',
         `N45 53.12 E09 12.45`,
         `${currentFreq} MHz`,
         `TX: +${power} dBm`,

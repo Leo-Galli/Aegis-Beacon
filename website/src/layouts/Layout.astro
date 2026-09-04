@@ -81,7 +81,6 @@ const currentPath = Astro.url.pathname;
   <footer class="site-footer">
     <div class="site-footer__inner">
       <div class="site-footer__brand">
-        <span class="site-logo__dot"></span>
         <span>Aegis-Beacon</span>
       </div>
       <div class="site-footer__links">
@@ -96,7 +95,7 @@ const currentPath = Astro.url.pathname;
         <a href="/privacy">Privacy Policy</a>
         <a href="/branding">Branding & Assets</a>
       </div>
-      <p class="site-footer__copy">MIT License — Leonardo Galli 2026</p>
+      <p class="site-footer__copy">MIT License, Leonardo Galli 2026</p>
     </div>
   </footer>
 
@@ -141,10 +140,6 @@ const currentPath = Astro.url.pathname;
     }
     .site-logo__text { letter-spacing: 0; }
     .site-logo__accent { color: var(--primary); }
-    .site-logo__dot {
-      width: 8px; height: 8px; background: var(--primary); border-radius: 50%;
-      box-shadow: 0 0 8px color-mix(in srgb, var(--primary) 40%, transparent);
-    }
     .site-nav { display: flex; gap: 0.25rem; }
     .site-nav__link {
       padding: 0.375rem 0.75rem; font-size: 0.8125rem; font-weight: 500;
@@ -165,9 +160,8 @@ const currentPath = Astro.url.pathname;
     html.theme-crossfade body,
     html.theme-crossfade .site-header,
     html.theme-crossfade .site-footer,
-    html.theme-crossfade .feature-card,
-    html.theme-crossfade .mode-card,
-    html.theme-crossfade .tech-chip,
+    html.theme-crossfade .design-card,
+    html.theme-crossfade .mode-row,
     html.theme-crossfade .budget-card,
     html.theme-crossfade .components-card,
     html.theme-crossfade .total-card,
@@ -300,17 +294,6 @@ const currentPath = Astro.url.pathname;
       });
     }
 
-    // Cursor spotlight effect on hero
-    if (window.matchMedia('(pointer: fine)').matches) {
-      document.addEventListener('mousemove', (e) => {
-        const hero = document.querySelector('.hero-wrap') as HTMLElement | null;
-        if (hero) {
-          const rect = hero.getBoundingClientRect();
-          hero.style.setProperty('--mx', ((e.clientX - rect.left) / rect.width * 100) + '%');
-          hero.style.setProperty('--my', ((e.clientY - rect.top) / rect.height * 100) + '%');
-        }
-      });
-    }
   </script>
 
   <script>

@@ -3,223 +3,164 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout
-  title="Aegis-Beacon v5.4 -- Open Source Emergency Radio System"
+  title="Aegis-Beacon | Open Source Emergency Radio System"
   description="Low-cost emergency radio-location system based on LoRa for mountain rescue and SAR operations."
 >
 
 <!-- ═══════════════════════════════════════════════════════════
-     HERO
+     HERO - asymmetric split: editorial copy + real device
      ═══════════════════════════════════════════════════════════ -->
-<div class="hero-wrap spotlight">
-  <span class="bg-grid" aria-hidden="true"></span>
-  <span class="bg-glow" aria-hidden="true"></span>
-  <span class="atmo-orb atmo-orb--1" aria-hidden="true"></span>
-  <span class="atmo-orb atmo-orb--2" aria-hidden="true"></span>
-  <span class="hero-pulses" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+<div class="hero-wrap">
   <section class="hero-section container">
-    <div class="hero__content">
-      <p class="hero__eyebrow animate-fade-in">
-        <span class="hero__eyebrow-dot"></span>
-        Open Source Emergency Radio
-      </p>
-      <h1 class="hero__headline shimmer-text animate-fade-in-up">Aegis-Beacon</h1>
-      <p class="hero__sub animate-fade-in-up" style="animation-delay: 0.1s">v5.4 // LoRa Emergency System</p>
-      <p class="hero__desc animate-fade-in-up" style="animation-delay: 0.2s">
-        Low-cost emergency radio-location system based on LoRa. Designed for mountain rescue,
-        land operations, and critical civilian scenarios when cellular infrastructure is unavailable.
-      </p>
-      <div class="hero__actions animate-fade-in-up" style="animation-delay: 0.3s">
-        <a href="/wiki" class="btn btn-primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          Explore Wiki
-        </a>
-        <a href="/demo" class="btn btn-secondary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          Live Demo
-        </a>
-        <a href="/builder" class="btn btn-secondary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-          BOM Builder
-        </a>
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <p class="hero-kicker">Open-source LoRa emergency radio</p>
+        <h1 class="hero-title">A rescue beacon that broadcasts your position when every network is gone.</h1>
+        <p class="hero-sub">
+          Open-source radio-location system for mountain rescue and SAR teams.
+          Built from off-the-shelf parts. No GSM, no WiFi, no subscriptions.
+        </p>
+        <div class="hero-actions">
+          <a href="/wiki" class="btn btn-primary">Read the docs</a>
+          <a href="/demo" class="btn btn-secondary">Try the live demo</a>
+        </div>
       </div>
-      <div class="stats-bar animate-fade-in-up" style="animation-delay: 0.4s">
-        <div class="stat">
-          <span class="stat-value">$23-28</span>
-          <span class="stat-label">Total BOM</span>
+
+      <div class="hero-device" data-rv="scale">
+        <div class="device-frame">
+          <div class="device-frame__bar">
+            <span class="device-frame__title">AEGIS-BEACON</span>
+            <span class="device-frame__status">TX ACTIVE</span>
+          </div>
+          <img src="/banner.png" alt="Aegis-Beacon emergency radio device" class="device-image" loading="eager" width="1200" height="600" />
         </div>
-        <div class="stat">
-          <span class="stat-value">410-525</span>
-          <span class="stat-label">MHz Band</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value">65h+</span>
-          <span class="stat-label">Runtime</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value">15 km</span>
-          <span class="stat-label">Max Range</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value">10 uA</span>
-          <span class="stat-label">Deep Sleep</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value">4</span>
-          <span class="stat-label">Modes</span>
-        </div>
+        <dl class="spec-rail">
+          <div class="spec-rail__item"><dt>BOM</dt><dd>$23-28</dd></div>
+          <div class="spec-rail__item"><dt>Band</dt><dd>410-525 MHz</dd></div>
+          <div class="spec-rail__item"><dt>Runtime</dt><dd>65h+</dd></div>
+          <div class="spec-rail__item"><dt>Range</dt><dd>15 km</dd></div>
+          <div class="spec-rail__item"><dt>Deep sleep</dt><dd>10 uA</dd></div>
+          <div class="spec-rail__item"><dt>Modes</dt><dd>4</dd></div>
+        </dl>
       </div>
     </div>
   </section>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
-     BANNER IMAGE SHOWCASE
+     FIELD - the device in context
      ═══════════════════════════════════════════════════════════ -->
-<section class="section container" data-rv="scale">
+<section class="section container" data-rv>
   <div class="banner-showcase">
     <div class="banner-img-wrap" data-parallax="0.14">
-      <img src="/banner.png" alt="Aegis-Beacon emergency radio device" class="banner-image" loading="eager" />
+      <img src="/banner.png" alt="Aegis-Beacon emergency radio device in the field" class="banner-image" loading="lazy" />
     </div>
     <div class="banner-overlay">
-      <p class="banner-caption">Aegis-Beacon v5.4 -- Built for those who save lives</p>
+      <p class="banner-caption">Aegis-Beacon v5.4, built for those who save lives</p>
     </div>
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════
-     FEATURES
+     DESIGN - why it is built this way (asymmetric)
      ═══════════════════════════════════════════════════════════ -->
 <section class="section container">
-  <header class="section-head" data-rv>
-    <p class="section-head__eyebrow">Core Capabilities</p>
-    <h2 class="section-head__title">Every component selected for reliability</h2>
-    <p class="section-head__lead">When lives depend on it, there is no room for compromise.</p>
+  <header class="section-head section-head--left" data-rv>
+    <h2 class="section-head__title">Designed around one job: being found</h2>
+    <p class="section-head__lead">Every component and every line of firmware exists to get your position to a rescuer, with nothing left to fail.</p>
   </header>
-  <div class="features-grid">
-    <div class="feature-card hover-glow" data-rv style="--rv-delay: 0ms">
-      <div class="feature-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>
+
+  <div class="design-grid" data-rv>
+    <article class="design-card design-card--wide">
+      <h3>Long-range radio link</h3>
+      <p>SX1262 transceiver with a +30 dBm power amplifier reaches up to 15 km line-of-sight across the 410-525 MHz band. The firmware sweeps a preloaded frequency list, so a rescuer with a cheap SDR will hear the beacon.</p>
+      <div class="design-card__code" aria-hidden="true">
+        <span class="dim">TX 433.500 MHz</span>
+        <span class="accent">SOS ··· --- ···</span>
+        <span class="dim">+17 dBm · CW</span>
       </div>
-      <h3>Long-Range Emergency Radio</h3>
-      <p>SX1262 transceiver with +30 dBm PA delivers emergency beacon transmissions up to 15 km line-of-sight across the 410-525 MHz band.</p>
-    </div>
-    <div class="feature-card hover-glow" data-rv style="--rv-delay: 80ms">
-      <div class="feature-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><rect x="6" y="7" width="12" height="14" rx="2"/><path d="M10 7V5a2 2 0 0 1 4 0v2"/><line x1="12" y1="11" x2="12" y2="15"/></svg>
-      </div>
-      <h3>Ultra-Low Power Design</h3>
-      <p>Deep sleep at 10 uA with 30-second hardware watchdog. WiFi and Bluetooth disabled in beacon mode for maximum battery life.</p>
-    </div>
-    <div class="feature-card hover-glow" data-rv style="--rv-delay: 160ms">
-      <div class="feature-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M18 10h-4V6"/><path d="M20 14v-4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4"/><path d="M14 4h6v6"/></svg>
-      </div>
-      <h3>No Infrastructure Required</h3>
-      <p>No GSM, WiFi, or commercial satellite needed. Direct peer-to-peer radio communication works anywhere in the wilderness.</p>
-    </div>
-    <div class="feature-card hover-glow" data-rv style="--rv-delay: 240ms">
-      <div class="feature-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      <h3>MIT Licensed Open Source</h3>
-      <p>Full source code, hardware schematics, and BOM under MIT license. Community-driven development with PlatformIO support.</p>
-    </div>
-    <div class="feature-card hover-glow" data-rv style="--rv-delay: 320ms">
-      <div class="feature-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      </div>
-      <h3>CW Morse Beacon with GPS</h3>
-      <p>Continuous-wave beacon transmitting SOS and GPS coordinates for search-and-rescue operations. Compliant with PMR446 protocols.</p>
-    </div>
-    <div class="feature-card hover-glow" data-rv style="--rv-delay: 400ms">
-      <div class="feature-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-      </div>
-      <h3>WiFi Config Portal</h3>
-      <p>Captive portal at 192.168.4.1 for field configuration. Adjust frequencies, WPM, power output, and GPS settings without reflashing.</p>
-    </div>
+    </article>
+
+    <article class="design-card">
+      <h3>Ultra-low power</h3>
+      <p>Deep sleep at 10 uA with a 30-second hardware watchdog. WiFi and Bluetooth are disabled in beacon mode, pushing runtime past 65 hours on a single 18650 cell.</p>
+    </article>
+
+    <article class="design-card">
+      <h3>No infrastructure</h3>
+      <p>Direct peer-to-peer radio. No GSM, WiFi, or satellite link is required, so the beacon works in canyons, forests, and anywhere cellular coverage ends.</p>
+    </article>
+
+    <article class="design-card">
+      <h3>Open source, MIT</h3>
+      <p>Firmware, schematics, and the full bill of materials are MIT licensed and built with PlatformIO. Anyone can inspect, modify, and verify the rescue logic.</p>
+    </article>
+
+    <article class="design-card">
+      <h3>GPS-aware beaconing</h3>
+      <p>The NEO-6M GPS module encodes coordinates directly into the Morse payload, so search teams receive a position without any proprietary protocol.</p>
+    </article>
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════
-     OPERATING MODES
+     MODES - console-style rows (no numbered cards)
      ═══════════════════════════════════════════════════════════ -->
 <section class="section section-alt">
   <div class="container">
-    <header class="section-head" data-rv>
-      <p class="section-head__eyebrow">Operating Modes</p>
-      <h2 class="section-head__title">From passive beacon to emergency high-power output</h2>
-      <p class="section-head__lead">Four distinct modes for every field scenario.</p>
+    <header class="section-head section-head--left" data-rv>
+      <h2 class="section-head__title">Four operating modes</h2>
+      <p class="section-head__lead">A single button cycles the device between beacon, search, configuration, and emergency transmission.</p>
     </header>
-    <div class="modes-grid">
-      <div class="mode-card hover-glow" data-rv style="--rv-delay: 0ms">
-        <div class="mode-header">
-          <span class="mode-dot"></span>
-          <span class="mode-name">BEACON</span>
-          <span class="mode-tag">01</span>
-        </div>
-        <p>Transmits Morse SOS with GPS coordinates on all configured frequencies, then enters deep sleep cycle for maximum runtime.</p>
-        <div class="mode-meta">
-          <span>TX: +17 dBm</span>
-          <span>LED: Red</span>
-        </div>
+
+    <div class="modes-console" data-rv>
+      <div class="mode-row">
+        <div class="mode-row__name">BEACON</div>
+        <p class="mode-row__desc">Transmits Morse SOS with GPS coordinates on all configured frequencies, then enters a deep-sleep cycle for maximum runtime.</p>
+        <dl class="mode-row__meta">
+          <div><dt>TX</dt><dd>+17 dBm</dd></div>
+          <div><dt>LED</dt><dd>Red</dd></div>
+        </dl>
       </div>
-      <div class="mode-card hover-glow" data-rv style="--rv-delay: 100ms">
-        <div class="mode-header">
-          <span class="mode-dot"></span>
-          <span class="mode-name">SEARCH</span>
-          <span class="mode-tag">02</span>
-        </div>
-        <p>Scans all frequencies sequentially, measuring RSSI on each. Rising-pitch audio alert when signal is detected.</p>
-        <div class="mode-meta">
-          <span>Rx only</span>
-          <span>LED: Blue</span>
-        </div>
+      <div class="mode-row">
+        <div class="mode-row__name">SEARCH</div>
+        <p class="mode-row__desc">Scans every frequency sequentially and measures RSSI on each, with a rising-pitch audio alert when a signal is detected.</p>
+        <dl class="mode-row__meta">
+          <div><dt>RX</dt><dd>Scan</dd></div>
+          <div><dt>LED</dt><dd>Blue</dd></div>
+        </dl>
       </div>
-      <div class="mode-card hover-glow" data-rv style="--rv-delay: 200ms">
-        <div class="mode-header">
-          <span class="mode-dot"></span>
-          <span class="mode-name">CONFIG</span>
-          <span class="mode-tag">03</span>
-        </div>
-        <p>WiFi AP mode with captive portal dashboard. Adjust all settings via browser without reflashing the firmware.</p>
-        <div class="mode-meta">
-          <span>WiFi AP</span>
-          <span>LED: Both</span>
-        </div>
+      <div class="mode-row">
+        <div class="mode-row__name">CONFIG</div>
+        <p class="mode-row__desc">WiFi access point with a captive-portal dashboard. Adjust frequency, WPM, power, and GPS settings from a browser, no reflash.</p>
+        <dl class="mode-row__meta">
+          <div><dt>Net</dt><dd>WiFi AP</dd></div>
+          <div><dt>LED</dt><dd>Both</dd></div>
+        </dl>
       </div>
-      <div class="mode-card hover-glow" data-rv style="--rv-delay: 300ms">
-        <div class="mode-header">
-          <span class="mode-dot"></span>
-          <span class="mode-name">EMERGENCY</span>
-          <span class="mode-tag">04</span>
-        </div>
-        <p>Maximum power continuous TX with full payload. No deep sleep. 1760 Hz audible tone for critical rescue situations.</p>
-        <div class="mode-meta">
-          <span>TX: +22 dBm</span>
-          <span>LED: Fast</span>
-        </div>
+      <div class="mode-row">
+        <div class="mode-row__name">EMERGENCY</div>
+        <p class="mode-row__desc">Maximum power, continuous transmission, full payload. No deep sleep. A 1760 Hz audible tone for critical rescue situations.</p>
+        <dl class="mode-row__meta">
+          <div><dt>TX</dt><dd>+22 dBm</dd></div>
+          <div><dt>LED</dt><dd>Fast</dd></div>
+        </dl>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════
-     TECH STACK
+     STACK - single mono rail, no chips
      ═══════════════════════════════════════════════════════════ -->
 <section class="section container">
-  <header class="section-head" data-rv>
-    <p class="section-head__eyebrow">Technology Stack</p>
-    <h2 class="section-head__title">Powered by industry-standard components</h2>
+  <header class="section-head section-head--left" data-rv>
+    <h2 class="section-head__title">Industry-standard components</h2>
   </header>
-  <div class="tech-grid">
-    <div class="tech-chip hover-glow" data-rv style="--rv-delay: 0ms"><strong>ESP32</strong> Dual-Core MCU</div>
-    <div class="tech-chip hover-glow" data-rv style="--rv-delay: 60ms"><strong>SX1262</strong> LoRa Transceiver</div>
-    <div class="tech-chip hover-glow" data-rv style="--rv-delay: 120ms"><strong>SSD1309</strong> OLED Display</div>
-    <div class="tech-chip hover-glow" data-rv style="--rv-delay: 180ms"><strong>NEO-6M</strong> GPS Module</div>
-    <div class="tech-chip hover-glow" data-rv style="--rv-delay: 240ms"><strong>RadioLib</strong> RF Library</div>
-    <div class="tech-chip hover-glow" data-rv style="--rv-delay: 300ms"><strong>PlatformIO</strong> Build System</div>
+  <div class="stack-rail" data-rv>
+    <span>ESP32</span><span>SX1262</span><span>SSD1309</span><span>NEO-6M</span><span>RadioLib</span><span>PlatformIO</span>
   </div>
+  <p class="stack-note">Six parts. Every one chosen for availability and long production lifetime.</p>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -227,8 +168,8 @@ import Layout from '../layouts/Layout.astro';
      ═══════════════════════════════════════════════════════════ -->
 <section class="section section-alt">
   <div class="container">
-    <header class="section-head" data-rv>
-      <h2 class="section-head__title">Frequently Asked Questions</h2>
+    <header class="section-head section-head--left" data-rv>
+      <h2 class="section-head__title">Frequently asked questions</h2>
     </header>
     <div class="faq">
       <details class="faq__item" name="faq" data-rv="fade">
@@ -243,7 +184,7 @@ import Layout from '../layouts/Layout.astro';
           <span>Does it require any cellular or internet connection?</span>
           <svg class="faq__chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 7L10 10L13 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </summary>
-        <p class="faq__answer">No. Aegis-Beacon uses direct peer-to-peer LoRa radio communication. It works entirely offline -- no GSM, WiFi, or satellite subscription is needed for emergency beacon operation. WiFi is only used in Config mode for local settings adjustment.</p>
+        <p class="faq__answer">No. Aegis-Beacon uses direct peer-to-peer LoRa radio communication. It works entirely offline. No GSM, WiFi, or satellite subscription is needed for emergency beacon operation. WiFi is only used in Config mode for local settings adjustment.</p>
       </details>
       <details class="faq__item" name="faq" data-rv="fade">
         <summary class="faq__question">
@@ -281,15 +222,13 @@ import Layout from '../layouts/Layout.astro';
      CTA
      ═══════════════════════════════════════════════════════════ -->
 <section class="cta-section" data-rv>
-  <span class="bg-grid" aria-hidden="true"></span>
-  <span class="cta-flare" aria-hidden="true"></span>
   <div class="cta-inner container">
     <h2>Built in the open, for the field</h2>
-    <p>Explore the documentation, try the interactive demo, and follow the build guide to assemble your own rescue beacon.</p>
+    <p>Follow the build guide, plan your bill of materials, and assemble your own rescue beacon.</p>
     <div class="cta-buttons">
-      <a href="/wiki" class="btn btn-white">Read the docs</a>
-      <a href="/builder" class="btn btn-outline-white">Plan your build</a>
+      <a href="/builder" class="btn btn-cta">Plan your build</a>
+      <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="btn btn-cta-ghost">Star on GitHub</a>
     </div>
   </div>
 </section>
-</Layout>
+</Layout>
