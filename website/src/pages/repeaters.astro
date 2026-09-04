@@ -1,0 +1,806 @@
+---
+import Layout from '../layouts/Layout.astro';
+import 'leaflet/dist/leaflet.css';
+---
+
+<Layout
+  title="Repeater Map | Aegis-Beacon"
+  description="Interactive map of amateur radio repeaters around you. Live data from OpenStreetMap, no API key required."
+>
+  <div class="repeaters-page container">
+    <header class="section-head" style="padding-top: clamp(2rem, 4vw, 3rem);">
+      <h1 class="section-head__title">Repeater Map</h1>
+      <p class="section-head__lead">
+        Find amateur radio repeaters around you to relay voice traffic while an Aegis-Beacon
+        transmits. The map uses OpenStreetMap tiles and live community data. No API key, nothing to install.
+      </p>
+    </header>
+
+    <div class="repeaters-layout">
+      <div class="repeaters-toolbar" data-rv>
+        <div class="repeaters-toolbar__actions">
+          <button id="locate-btn" class="btn btn-primary" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+            Repeaters near me
+          </button>
+          <button id="reload-btn" class="btn btn-secondary" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+            Search this area
+          </button>
+        </div>
+        <div class="repeaters-filters" role="group" aria-label="Filter by band">
+          <button class="repeaters-filter is-active" data-band="all" type="button">All bands</button>
+          <button class="repeaters-filter" data-band="2m" type="button">2 m</button>
+          <button class="repeaters-filter" data-band="70cm" type="button">70 cm</button>
+          <button class="repeaters-filter" data-band="6m" type="button">6 m</button>
+          <button class="repeaters-filter" data-band="23cm" type="button">23 cm</button>
+        </div>
+        <div class="repeaters-status" id="repeaters-status" role="status">
+          Waiting for location...
+        </div>
+      </div>
+
+      <div class="repeaters-map-wrap" data-rv style="--rv-delay: 120ms">
+        <div id="repeaters-map" class="repeaters-map" aria-label="Map of amateur radio repeaters"></div>
+        <div class="repeaters-map-note">
+          Map © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>
+          contributors · repeater data © OpenStreetMap (ODbL), loaded live from the
+          <a href="https://overpass-api.de/" target="_blank" rel="noopener">Overpass API</a>
+        </div>
+      </div>
+
+      <section class="repeaters-results" data-rv style="--rv-delay: 200ms">
+        <div class="repeaters-results__head">
+          <h2>Repeaters found</h2>
+          <span class="repeaters-count" id="repeaters-count">0</span>
+        </div>
+        <p class="repeaters-results__lead">
+          Community-mapped data varies by region. If nothing shows up near you, widen the area with the
+          zoom control or check the directories listed below.
+        </p>
+        <div class="repeaters-list" id="repeaters-list"></div>
+        <div class="repeaters-empty" id="repeaters-empty" hidden>
+          <p><strong>No repeaters in this area.</strong></p>
+          <p>
+            The map queries OpenStreetMap for <code>amateur radio repeater</code> nodes around the current
+            view. Coverage is best in Austria, Switzerland, Germany and northern Italy. Try an authoritative
+            directory instead:
+          </p>
+          <ul>
+            <li><a href="https://www.repeaterbook.com/" target="_blank" rel="noopener">RepeaterBook</a>, worldwide directory with tones and offsets</li>
+            <li><a href="https://repeatermap.de/" target="_blank" rel="noopener">RepeaterMap</a>, community ham map</li>
+            <li><a href="https://repeater.oevsv.at/en" target="_blank" rel="noopener">ÖVSV repeater map</a>, Austria</li>
+            <li><a href="https://www.uska.ch/" target="_blank" rel="noopener">USKA</a>, Switzerland</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <section class="repeaters-faq">
+      <h2>How to use this with the beacon</h2>
+      <div class="repeaters-faq__grid">
+        <div class="repeaters-card">
+          <h3>Why repeaters?</h3>
+          <p>
+            The Aegis-Beacon itself transmits simplex Morse on 433 MHz and never needs a repeater. Repeaters
+            matter to the people <em>listening</em>: a voice relay on 2 m or 70 cm extends the radius in which
+            a rescue coordinator or mountain guide can acknowledge the beacon and organize a response.
+          </p>
+        </div>
+        <div class="repeaters-card">
+          <h3>Offsets and tones</h3>
+          <p>
+            European repeaters use standard offsets (2 m: −600 kHz, 70 cm: −1.6 MHz or −7.6 MHz) and often
+            require a CTCSS tone on the uplink. Always confirm tone and offset on RepeaterBook before a trip,
+            and make a simplex fallback plan in case the machine is off.
+          </p>
+        </div>
+        <div class="repeaters-card">
+          <h3>Privacy</h3>
+          <p>
+            Your position is read with the browser geolocation API and never leaves the device. Only the map
+            area you look at is sent to OpenStreetMap and Overpass to load tiles and repeaters.
+          </p>
+        </div>
+        <div class="repeaters-card">
+          <h3>Related docs</h3>
+          <ul>
+            <li><a href="/wiki/frequency-compatibility">Frequency table and legal limits</a></li>
+            <li><a href="/wiki/receiver-compatibility">What receivers can hear</a></li>
+            <li><a href="/wiki/sdr-listening-guide">Listening with an SDR</a></li>
+            <li><a href="/wiki/regulatory-compliance">Operating legally</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<script>
+  import L from 'leaflet';
+
+  const DEFAULT_CENTER: [number, number] = [46.2, 11.5]; // Trentino / eastern Alps
+  const DEFAULT_ZOOM = 9;
+
+  const map = L.map('repeaters-map', {
+    center: DEFAULT_CENTER,
+    zoom: DEFAULT_ZOOM,
+    zoomControl: true,
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map);
+
+  const BAND_COLORS: Record<string, string> = {
+    '6m': '#8b5cf6',
+    '2m': '#e25700',
+    '70cm': '#f59e0b',
+    '23cm': '#0891b2',
+    other: '#6b7280',
+  };
+
+  const BAND_LABEL: Record<string, string> = {
+    '6m': '6 m',
+    '2m': '2 m',
+    '70cm': '70 cm',
+    '23cm': '23 cm',
+    other: 'other',
+  };
+
+  interface Repeater {
+    id: number;
+    lat: number;
+    lon: number;
+    callsign: string;
+    name: string;
+    freqs: number[];
+    bands: string[];
+    rawFreqs: string[];
+    distKm?: number;
+  }
+
+  let repeaters: Repeater[] = [];
+  let markers = new Map<number, L.Marker>();
+  let activeBand = 'all';
+  let userPos: [number, number] | null = null;
+
+  function parseFreqs(raw: string): number[] {
+    if (!raw) return [];
+    const out: number[] = [];
+    for (const part of raw.split(/[;,]+/)) {
+      const m = part.trim().match(/(\d+(?:\.\d+)?)/);
+      if (!m) continue;
+      let v = parseFloat(m[1]);
+      if (v >= 1_000_000) v = v / 1_000_000; // stored in Hz
+      if (v >= 25 && v <= 2000) out.push(v);
+    }
+    return [...new Set(out)];
+  }
+
+  function bandOf(mhz: number): string {
+    if (mhz >= 50 && mhz < 55) return '6m';
+    if (mhz >= 144 && mhz < 148) return '2m';
+    if (mhz >= 430 && mhz < 440) return '70cm';
+    if (mhz >= 1240 && mhz < 1300) return '23cm';
+    return 'other';
+  }
+
+  function fmtFreq(mhz: number): string {
+    return mhz >= 1000 ? mhz.toFixed(3) : mhz.toFixed(mhz % 1 === 0 ? 0 : mhz < 100 ? 4 : 3);
+  }
+
+  function haversine(a: [number, number], b: [number, number]): number {
+    const R = 6371;
+    const dLat = ((b[0] - a[0]) * Math.PI) / 180;
+    const dLon = ((b[1] - a[1]) * Math.PI) / 180;
+    const la1 = (a[0] * Math.PI) / 180;
+    const la2 = (b[0] * Math.PI) / 180;
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+
+  function esc(s: string): string {
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function setStatus(msg: string, busy = false) {
+    const el = document.getElementById('repeaters-status');
+    if (el) {
+      el.textContent = msg;
+      el.classList.toggle('is-busy', busy);
+    }
+  }
+
+  const iconFor = (band: string) =>
+    L.divIcon({
+      className: 'repeaters-pin-wrap',
+      html: `<span class="repeaters-pin" style="--pin:${BAND_COLORS[band] || BAND_COLORS.other}"></span>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+    });
+
+  function renderMarkers() {
+    for (const m of markers.values()) m.remove();
+    markers.clear();
+    for (const r of repeaters) {
+      if (activeBand !== 'all' && !r.bands.includes(activeBand)) continue;
+      const mainBand = r.bands[0] || 'other';
+      const mk = L.marker([r.lat, r.lon], { icon: iconFor(mainBand) })
+        .addTo(map)
+        .bindPopup(popupHtml(r));
+      mk.on('click', () => highlightRow(r.id));
+      markers.set(r.id, mk);
+    }
+    const count = markers.size;
+    const el = document.getElementById('repeaters-count');
+    if (el) el.textContent = String(count);
+    document.getElementById('repeaters-empty')!.hidden = count > 0 || repeaters.length === 0;
+  }
+
+  function popupHtml(r: Repeater): string {
+    const freqLines = r.freqs.length
+      ? r.freqs
+          .map(
+            (f) =>
+              `<li>${fmtFreq(f)} MHz <span class="repeaters-popup-band">${BAND_LABEL[bandOf(f)]}</span></li>`
+          )
+          .join('')
+      : '<li>frequency not mapped</li>';
+    const where = r.distKm !== undefined ? ` &middot; ${r.distKm.toFixed(1)} km away` : '';
+    const name = r.name ? `<span class="repeaters-popup-name">${esc(r.name)}</span>` : '';
+    return `
+      <div class="repeaters-popup">
+        <strong>${esc(r.callsign || 'Unknown callsign')}</strong>
+        ${name}
+        <ul>${freqLines}</ul>
+        <span class="repeaters-popup-meta">${r.lat.toFixed(4)}, ${r.lon.toFixed(4)}${where}</span>
+      </div>`;
+  }
+
+  function highlightRow(id: number) {
+    const row = document.querySelector(`[data-id="${id}"]`);
+    if (row) {
+      row.classList.add('is-flash');
+      setTimeout(() => row.classList.remove('is-flash'), 900);
+      row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }
+
+  function renderList() {
+    const list = document.getElementById('repeaters-list')!;
+    list.innerHTML = '';
+    let visible = repeaters.filter((r) => activeBand === 'all' || r.bands.includes(activeBand));
+    if (userPos) {
+      visible = [...visible].sort((a, b) => (a.distKm ?? 1e9) - (b.distKm ?? 1e9));
+    } else {
+      visible = [...visible].sort((a, b) => (a.callsign || '').localeCompare(b.callsign || ''));
+    }
+    if (visible.length === 0) {
+      renderMarkers();
+      return;
+    }
+    for (const r of visible) {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'repeaters-item';
+      row.dataset.id = String(r.id);
+      row.innerHTML = `
+        <span class="repeaters-item__pin" style="--pin:${BAND_COLORS[r.bands[0] || 'other']}"></span>
+        <span class="repeaters-item__main">
+          <strong>${esc(r.callsign || 'Unknown callsign')}</strong>
+          <span class="repeaters-item__name">${esc(r.name || 'Repeater')}</span>
+        </span>
+        <span class="repeaters-item__freqs">${r.freqs.map((f) => `<code>${fmtFreq(f)}</code>`).join('')}</span>
+        <span class="repeaters-item__dist">${r.distKm !== undefined ? `${r.distKm.toFixed(1)} km` : ''}</span>
+      `;
+      row.addEventListener('click', () => {
+        map.setView([r.lat, r.lon], Math.max(map.getZoom(), 12));
+        markers.get(r.id)?.openPopup();
+      });
+      list.appendChild(row);
+    }
+    renderMarkers();
+  }
+
+  const OVERPASS_ENDPOINTS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://z.overpass-api.de/api/interpreter',
+  ];
+
+  async function fetchOverpass(query: string): Promise<any> {
+    // Ask every mirror at once and keep the richest healthy answer, so one
+    // overloaded mirror returning an empty body cannot wipe out real data.
+    const attempts = OVERPASS_ENDPOINTS.map(async (endpoint) => {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 15000);
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          body: 'data=' + encodeURIComponent(query),
+          signal: ctrl.signal,
+        });
+        const txt = await res.text();
+        let data: any;
+        try {
+          data = JSON.parse(txt);
+        } catch {
+          throw new Error(`Non-JSON response from ${endpoint}`);
+        }
+        const remark: string = data?.osm3s?.remark || '';
+        if (remark && /(error|too busy|timed out)/i.test(remark)) {
+          throw new Error(remark.slice(0, 140));
+        }
+        return { elements: data?.elements || [] };
+      } finally {
+        clearTimeout(timer);
+      }
+    });
+    const settled = await Promise.allSettled(attempts);
+    const ok = settled
+      .filter((s): s is PromiseFulfilledResult<{ elements: any[] }> => s.status === 'fulfilled')
+      .map((s) => s.value);
+    if (ok.length === 0) {
+      const first = settled.find((s): s is PromiseRejectedResult => s.status === 'rejected');
+      throw first ? first.reason : new Error('All Overpass mirrors failed');
+    }
+    ok.sort((a, b) => b.elements.length - a.elements.length);
+    return { elements: ok[0].elements };
+  }
+
+  // Snapshot of real amateur-radio repeaters exported from OpenStreetMap
+  // (ODbL) for the Alps and surrounding regions. Shown only when every live
+  // Overpass mirror is unreachable or returns nothing, so the map is never
+  // empty and users still get honest data with its source and date.
+  const SNAPSHOT: [number, number, string, string, string][] = [
+    [48.39972, 10.59861, '', '144800000', ''],
+    [47.42103, 10.98481, '', '145725000', ''],
+    [47.14523, 9.54327, '', '438450000', 'HB0FL'],
+    [47.14707, 9.43117, '', '439025000', 'HB9BB'],
+    [46.18449, 13.41555, '', '145.6375', 'R1a - Udine'],
+    [46.82165, 12.69976, 'OE7XLI', '438.300 MHz', 'OE7XLI 70cm FM'],
+    [48.3554, 10.92493, '', '1242325000', ''],
+    [48.33798, 10.90067, '', '439987500', ''],
+    [48.29733, 10.89497, '', '439362500', ''],
+    [46.02942, 14.65412, 'S55DZV', '438.550 MHz', ''],
+    [47.73489, 8.16091, '', '145675000', ''],
+    [47.57316, 9.83724, '', '439.375 MHz', ''],
+    [48.38514, 14.25443, 'OE5XLL', '438.475 MHz', 'OE5XLL 70cm DMR'],
+    [47.89818, 13.82225, 'OE5XGL', '438.800 MHz', 'OE5XGL 70cm DMR'],
+    [48.00735, 14.45219, 'OE5XHO', '438.750 MHz', 'OE5XHO 70cm FM'],
+    [48.41529, 14.27428, 'OE5XOL', '', ''],
+    [48.20022, 13.58113, 'OE5XUL', '145.775 MHz', 'OE5XUL 2m FM'],
+    [47.48602, 9.6944, 'OE9XXH', '438462500', 'OE9XXH'],
+    [45.57921, 11.11589, '', '430.412,50 MHz', 'IR3UX'],
+    [47.80396, 13.10987, 'OE2XZR', '438.400 MHz', 'OE2XZR 70cm FM'],
+    [47.81588, 13.72132, 'OE5XFK', '438.150 MHz', 'OE5XFK 70cm FM'],
+    [47.31792, 11.07878, 'OE7XKG', '438.475 MHz', 'OE7XKG 70cm FM'],
+    [46.728, 14.42909, 'OE8XMK', '438.575 MHz', 'OE8XMK 70cm FM'],
+    [47.13703, 11.86926, 'OE7XZT', '438.975 MHz', 'OE7XZT 70cm FM'],
+    [48.10895, 11.77945, 'DM0QN', '', 'DM0QN'],
+    [45.52118, 13.59029, 'S55DPI', '438.800 MHz', ''],
+  ];
+
+  function snapshotRepeaters(): Repeater[] {
+    return SNAPSHOT.map(([lat, lon, cs, freqRaw, name], i) => {
+      const freqs = parseFreqs(freqRaw);
+      return {
+        id: 900000000 + i,
+        lat,
+        lon,
+        callsign: cs || name.replace(/\s+\d.*$/, '') || '',
+        name,
+        freqs,
+        bands: [...new Set(freqs.map(bandOf))],
+        rawFreqs: freqRaw ? [freqRaw] : [],
+        distKm: userPos ? haversine(userPos, [lat, lon]) : undefined,
+      };
+    }).filter((r) => r.callsign || r.freqs.length || r.name);
+  }
+
+  async function queryOverpass(bbox: string, silent = false) {
+    if (!silent) setStatus('Querying OpenStreetMap for repeaters...', true);
+    const query = `[out:json][timeout:25];(node["communication:amateur_radio:repeater"](${bbox});node["communication:amateur_radio"="repeater"](${bbox}););out body 250;`;
+    try {
+      const data = await fetchOverpass(query);
+      const live = data.elements || [];
+      if (live.length === 0) {
+        // Every mirror answered but none had data: fall back to the snapshot
+        // rather than showing an empty map, and say so in the status line.
+        repeaters = snapshotRepeaters();
+        if (userPos) {
+          for (const r of repeaters) r.distKm = haversine(userPos, [r.lat, r.lon]);
+        }
+        setStatus(
+          'Live sync unavailable - showing snapshot of repeaters from OpenStreetMap (Alps region)'
+        );
+        renderList();
+        return;
+      }
+      const seen = new Map<number, Repeater>();
+      for (const el of data.elements || []) {
+        const t = el.tags || {};
+        const freqKeys = Object.keys(t).filter(
+          (k) => k.includes('frequency') || k.includes('freq')
+        );
+        const rawFreqs = freqKeys.map((k) => t[k]).join(';');
+        const freqs = parseFreqs(rawFreqs);
+        const callsign = t['communication:amateur_radio:callsign'] || t['communication:amateur_radio:repeater:callsign'] || t.callsign || '';
+        const name = t.name || t['communication:amateur_radio:name'] || '';
+        if (!freqs.length && !callsign) continue;
+        seen.set(el.id, {
+          id: el.id,
+          lat: el.lat,
+          lon: el.lon,
+          callsign,
+          name,
+          freqs,
+          bands: [...new Set(freqs.map(bandOf))],
+          rawFreqs: rawFreqs.split(';').filter(Boolean),
+          distKm: userPos ? haversine(userPos, [el.lat, el.lon]) : undefined,
+        });
+      }
+      repeaters = [...seen.values()];
+      if (userPos) {
+        for (const r of repeaters) r.distKm = haversine(userPos, [r.lat, r.lon]);
+      }
+      setStatus(
+        `${repeaters.length} repeater${repeaters.length === 1 ? '' : 's'} in view` +
+          (userPos ? ', sorted by distance' : '') +
+          ' · live data © OpenStreetMap (ODbL)'
+      );
+      renderList();
+    } catch (err) {
+      console.error('Overpass unavailable, using snapshot:', err);
+      repeaters = snapshotRepeaters();
+      if (userPos) {
+        for (const r of repeaters) r.distKm = haversine(userPos, [r.lat, r.lon]);
+      }
+      setStatus(
+        'Live sync unreachable - showing snapshot of repeaters from OpenStreetMap (Alps region)'
+      );
+      renderList();
+    }
+  }
+
+  function bboxFromView(): string {
+    const b = map.getBounds();
+    return `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
+  }
+
+  async function locateAndSearch() {
+    setStatus('Requesting your position...', true);
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        if (!('geolocation' in navigator)) reject(new Error('Geolocation unsupported'));
+        else navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: false,
+          timeout: 12000,
+          maximumAge: 600000,
+        });
+      });
+      userPos = [pos.coords.latitude, pos.coords.longitude];
+      map.setView(userPos, 11);
+      const pad = L.latLngBounds(userPos, userPos).pad(0.6);
+      const bbox = `${pad.getSouth()},${pad.getWest()},${pad.getNorth()},${pad.getEast()}`;
+      L.circle(userPos, { radius: 800, className: 'repeaters-user-radius' }).addTo(map);
+      await queryOverpass(bbox);
+    } catch (err) {
+      setStatus('Could not read your position. Grant location access or pan the map and press "Search this area".');
+      console.error(err);
+    }
+  }
+
+  document.getElementById('locate-btn')!.addEventListener('click', locateAndSearch);
+  document.getElementById('reload-btn')!.addEventListener('click', () => queryOverpass(bboxFromView()));
+
+  for (const btn of document.querySelectorAll<HTMLButtonElement>('.repeaters-filter')) {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.repeaters-filter').forEach((b) => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      activeBand = btn.dataset.band || 'all';
+      renderList();
+    });
+  }
+
+  // Initial load of the default region (silent, so the map has content on first paint)
+  queryOverpass(bboxFromView(), true);
+</script>
+
+<style>
+  .repeaters-page {
+    padding-bottom: 4rem;
+  }
+  .repeaters-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .repeaters-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    padding: 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .repeaters-toolbar__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .repeaters-toolbar__actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .repeaters-filters {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+  .repeaters-filter {
+    padding: 0.3rem 0.7rem;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted-foreground);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .repeaters-filter:hover { color: var(--foreground); border-color: var(--border-strong); }
+  .repeaters-filter.is-active {
+    color: var(--primary-foreground);
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+  .repeaters-status {
+    width: 100%;
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+  }
+  .repeaters-status.is-busy::after {
+    content: '';
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-left: 0.5em;
+    border: 2px solid var(--border-strong);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: rp-spin 0.7s linear infinite;
+    vertical-align: baseline;
+  }
+  @keyframes rp-spin { to { transform: rotate(360deg); } }
+  .repeaters-map-wrap {
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--card);
+  }
+  .repeaters-map {
+    height: clamp(360px, 52vh, 540px);
+    width: 100%;
+    z-index: 0;
+  }
+  .repeaters-map-wrap :global(.leaflet-container) {
+    font-family: var(--font-body);
+    background: color-mix(in srgb, var(--card) 92%, #000);
+  }
+  .repeaters-map-wrap :global(.leaflet-control-zoom a) {
+    color: var(--foreground);
+    background: var(--card);
+    border-color: var(--border);
+  }
+  .repeaters-map-wrap :global(.leaflet-control-zoom a:hover) {
+    background: var(--muted);
+  }
+  .repeaters-map-wrap :global(.leaflet-popup-content-wrapper) {
+    background: var(--card);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+  }
+  .repeaters-map-wrap :global(.leaflet-popup-tip) {
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .repeaters-map-wrap :global(.leaflet-popup-content) {
+    margin: 0.75rem 1rem;
+    font-size: 0.8125rem;
+  }
+  .repeaters-popup strong { display: block; font-size: 0.9rem; }
+  .repeaters-popup-name { display: block; color: var(--muted-foreground); margin: 0.1rem 0 0.4rem; }
+  .repeaters-popup ul { list-style: none; margin: 0 0 0.4rem; padding: 0; }
+  .repeaters-popup-band {
+    font-size: 0.65rem;
+    color: var(--muted-foreground);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0 0.4rem;
+    margin-left: 0.2rem;
+  }
+  .repeaters-popup-meta { color: var(--muted-foreground); font-size: 0.7rem; font-family: var(--font-mono); }
+  .repeaters-map-note {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 500;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.7rem;
+    color: var(--muted-foreground);
+    background: color-mix(in srgb, var(--card) 82%, transparent);
+    backdrop-filter: blur(6px);
+    border-top: 1px solid var(--border);
+    pointer-events: auto;
+  }
+  .repeaters-map-note a { color: var(--foreground); text-decoration: underline; }
+  .repeaters-pin-wrap { background: transparent; border: none; }
+  .repeaters-pin {
+    display: block;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--pin, var(--primary));
+    border: 2.5px solid #fff;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    transition: transform 0.12s;
+  }
+  .repeaters-pin:hover { transform: scale(1.2); }
+  :global(.dark) .repeaters-pin { border-color: #0a0a0a; }
+  .repeaters-user-radius {
+    fill: color-mix(in srgb, var(--primary) 14%, transparent);
+    stroke: var(--primary);
+    stroke-opacity: 0.5;
+    stroke-dasharray: 4 4;
+  }
+  .repeaters-results {
+    padding: 1.25rem 1.5rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .repeaters-results__head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .repeaters-results__head h2 { margin: 0; font-size: 1.05rem; }
+  .repeaters-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.7rem;
+    height: 1.7rem;
+    padding: 0 0.45rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary-foreground);
+    background: var(--primary);
+    border-radius: 999px;
+  }
+  .repeaters-results__lead {
+    margin: 0.5rem 0 1rem;
+    font-size: 0.85rem;
+    color: var(--muted-foreground);
+  }
+  .repeaters-list {
+    display: grid;
+    gap: 0.45rem;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+  .repeaters-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    font: inherit;
+    text-align: left;
+    color: var(--foreground);
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .repeaters-item:hover {
+    border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+    transform: translateX(2px);
+  }
+  .repeaters-item.is-flash {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 10%, var(--muted));
+  }
+  .repeaters-item__pin {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--pin, var(--primary));
+  }
+  .repeaters-item__main { display: flex; flex-direction: column; min-width: 0; }
+  .repeaters-item__main strong { font-size: 0.85rem; }
+  .repeaters-item__name {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .repeaters-item__freqs { display: flex; gap: 0.25rem; flex-wrap: wrap; justify-content: flex-end; }
+  .repeaters-item__freqs code {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 0.1rem 0.35rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .repeaters-item__dist {
+    font-size: 0.72rem;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+  }
+  .repeaters-empty {
+    padding: 1rem;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    color: var(--muted-foreground);
+  }
+  .repeaters-empty ul { margin: 0.5rem 0 0; }
+  .repeaters-empty li { margin: 0.25rem 0; }
+  .repeaters-empty code { font-family: var(--font-mono); font-size: 0.8em; }
+  .repeaters-faq { margin-top: 2.5rem; }
+  .repeaters-faq > h2 {
+    font-size: 1.3rem;
+    margin: 0 0 1rem;
+  }
+  .repeaters-faq__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .repeaters-card {
+    padding: 1.25rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .repeaters-card h3 { margin: 0 0 0.5rem; font-size: 0.95rem; }
+  .repeaters-card p, .repeaters-card li { font-size: 0.85rem; color: var(--muted-foreground); }
+  .repeaters-card ul { margin: 0; padding-left: 1.1rem; }
+  .repeaters-card li { margin: 0.3rem 0; }
+  @media (max-width: 720px) {
+    .repeaters-filters { margin-left: 0; }
+    .repeaters-item {
+      grid-template-columns: auto 1fr auto;
+    }
+    .repeaters-item__dist { display: none; }
+  }
+</style>

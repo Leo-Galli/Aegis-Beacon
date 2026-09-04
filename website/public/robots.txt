@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aegis-beacon.vercel.app/sitemap-index.xml
