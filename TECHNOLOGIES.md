@@ -6,7 +6,7 @@
 
 This document is the complete technology reference for the project. It covers
 the **embedded firmware** (Arduino / PlatformIO on ESP32), the **hardware
-platform**, the **Node.js website** and the **deployment toolchain**, with the
+platform**, the **Astro website** and the **deployment toolchain**, with the
 exact libraries, versions and build commands used.
 
 ---
@@ -18,7 +18,7 @@ The project is split into two independent, clearly separated areas:
 | Area            | Technology class   | Lives in                  | Runs on                      |
 |:----------------|:-------------------|:--------------------------|:-----------------------------|
 | Embedded beacon | C++ / Arduino      | repository root           | ESP32 DevKit V1 (on device)  |
-| Website         | Node.js            | `website/` folder         | Vercel serverless + localhost |
+| Website         | Astro (static)     | `website/` folder         | Vercel static hosting + localhost |
 
 The beacon is a self-contained radio-location device; the website is the
 technical manual, build wiki and interactive firmware simulation that documents
@@ -81,47 +81,46 @@ specifications and the exact GPIO map.
 
 ---
 
-## 4. Node.js Website
+## 4. Astro Website
 
 ### 4.1 Runtime and architecture
 
-| Technology            | Version  | Role                                                  |
-|:----------------------|:---------|:------------------------------------------------------|
-| Node.js               | ≥ 18     | Runtime (`engines` field, Vercel resolves Node 24)    |
-| Plain Node HTTP       | `http`   | Zero-dependency server (`server.js`)                  |
-| ES modules            | `type: module` | Imports/exports across `server.js`, `translations.js`, browser JS |
-| Vercel serverless     | `api/index.js` | Re-exports the same handler as a serverless function  |
+| Technology          | Version | Role                                                  |
+|:--------------------|:--------|:------------------------------------------------------|
+| Astro               | 5.x     | Static site generator (`.astro` components + Markdown)|
+| TypeScript          | 5.x     | Typed frontmatter and content collections             |
+| Astro Content Col.  | built-in| `src/content/wiki/*.md` collection with `zod` schema  |
+| Output mode         | `static`| Prerendered HTML, no server runtime                   |
 
-The website is a **genuine Node.js application**, not a static host:
-
-- `server.js` renders HTML templates with the active language injected
-  (`?lang=` → `aegis-lang` cookie → `Accept-Language` header).
-- `/i18n/:lang.json` serves the client-side dictionaries for instant switching
-  without a reload.
-- Every route (pages, static assets, `/health`, `/version`) is handled by the
-  same request handler, with path-traversal protection.
+Pages are `.astro` components under `src/pages/`: the landing page (`index.astro`),
+the wiki hub (`wiki/index.astro`) with a dynamic article renderer
+(`wiki/[...slug].astro`), the interactive demo (`demo.astro`), the BOM builder
+(`builder.astro`) and the legal/brand pages (`terms.astro`, `privacy.astro`,
+`branding.astro`). Build output goes to `website/dist/`.
 
 ### 4.2 Front-end
 
 | Technology            | Role                                                          |
 |:----------------------|:--------------------------------------------------------------|
-| HTML5 + semantic tags | Template markup                                               |
-| Tailwind CSS (CDN)    | Utility-first styling with `darkMode: 'class'`                |
-| CSS custom properties | Animated sun/moon theme switch (`css/site.css`)               |
-| Vanilla ES modules    | `js/theme.js`, `js/i18n.js`, `js/tabs.js`, `js/terminal.js`, `js/demo.js`, `js/main.js` |
-| WebAudio API          | RSSI pitch emulation (440–2200 Hz) in the firmware demo       |
-| Google Fonts          | Inter (UI) + JetBrains Mono (code/terminal)                  |
+| Astro components      | Layouts (`Layout.astro`, `WikiLayout.astro`) + page markup    |
+| Markdown + callouts   | Wiki articles with an Obsidian-style `> [!NOTE]` callout plugin |
+| CSS custom properties | Design tokens: `--primary`, `--background`, dark/light themes  |
+| Self-hosted fonts     | Fontsource: Chakra Petch (display), Manrope (body), JetBrains Mono (code) |
+| Vanilla JS modules    | `lib/motion.ts` (reveal-on-scroll), inline theme toggle        |
+| WebAudio API          | RSSI pitch emulation (440-2200 Hz) in the firmware demo        |
 
-### 4.3 Internationalization
+Fonts are self-hosted via the `@fontsource` packages - no Google Fonts request
+leaves the page. All wiki navigation and grouping lives in `lib/wiki-nav.ts`,
+kept in sync with the content collection.
 
-- Dictionary-driven i18n: 65+ translatable strings across **EN / IT / FR / ES**.
-- `website/translations.js` exposes `DICTIONARIES`, `SUPPORTED_LANGS`,
-  `DEFAULT_LANG` and `validateDictionaries()` — the `npm run check` script fails
-  the build if any language misses a key.
-- Technical terms are **never translated**: hardware acronyms (SX1262,
-  E22-400M30S, ESP32, GPIO), frequencies, protocol names and the product name
-  are kept identical in every language and additionally marked
-  `translate="no"` / `notranslate` against automatic translators.
+### 4.3 Content
+
+- 41 wiki articles in `src/content/wiki/` across 7 groups (Getting Started,
+  Hardware & Assembly, Radio & RF, Firmware, Power, Field Ops, Reference).
+- Each article is plain Markdown with `title`/`description` frontmatter,
+  validated by the content-collection schema.
+- `npm run check` runs the Astro type checker across pages and content; any
+  missing schema field or broken import fails it.
 
 ---
 
@@ -132,23 +131,22 @@ The website is a **genuine Node.js application**, not a static host:
 | Git + GitHub     | —          | Version control, remote `origin/main`            |
 | Visual Studio Code + PlatformIO IDE | ≥ 6.x | Firmware build & upload                |
 | Arduino IDE      | 2.x        | Alternative firmware flashing path               |
-| Node.js          | ≥ 18       | Local website runtime                            |
+| Node.js          | ≥ 20       | Astro CLI runtime (`npm run dev/build/check`)   |
 | Vercel CLI       | ≥ 34       | Local `vercel build` validation, project linking |
 | Vercel (Git)     | —          | Production hosting, Root Directory = `website`   |
 
 ### 5.1 Build commands
 
 ```bash
-# Website — dependency-free install & checks
+# Website - Astro
 cd website
-npm install            # no runtime dependencies required
-npm run check          # syntax check + i18n dictionary parity across EN/IT/FR/ES
+npm install
+npm run check          # astro check: pages + content collections
+npm run build          # static build -> website/dist/
+npm run dev            # local dev server
 
-# Local website
-npm start              # http://localhost:3000
-
-# Vercel production build (must run inside website/)
-vercel build --yes --project aegis-beacon
+# Vercel production build (from repository root)
+vercel build
 
 # Firmware (PlatformIO env: esp32devkitv1, see README Installation section)
 # Open the repository root in VS Code with PlatformIO, then:
@@ -158,13 +156,13 @@ vercel build --yes --project aegis-beacon
 
 ### 5.2 Deployment pipeline (Vercel)
 
-1. Push to `main` — the Vercel Git integration builds from the **Root
+1. Push to `main` - the Vercel Git integration builds from the **Root
    Directory `website/`** (a project setting, see README "Vercel deployment").
-2. `website/vercel.json` defines the serverless function
-   `api/index.js` with `functions.includeFiles: public/**` so the renderer can
-   read its templates at runtime, plus a catch-all route to the function.
-3. Result: language-aware pages, `/demo.html`, static assets and the
-   `/i18n/:lang.json` endpoint all served from a single serverless function.
+2. `website/vercel.json` declares `framework: astro`,
+   `buildCommand: npm run build` and `outputDirectory: dist`.
+3. Result: a fully static site served from Vercel's edge - `/`,
+   `/wiki` (41 articles), `/demo`, `/builder`, `/branding`, `/terms`,
+   `/privacy`. No serverless function or runtime is involved.
 
 ---
 
@@ -172,18 +170,25 @@ vercel build --yes --project aegis-beacon
 
 ```text
 Aegis-Beacon/
-├── website/             # Node.js website
-│   ├── public/          # Views, styles, browser ES modules
-│   ├── api/index.js     # Vercel serverless entry point
-│   ├── server.js        # Language-aware Node HTTP server
-│   ├── translations.js  # EN/IT/FR/ES dictionaries + validation
-│   ├── vercel.json      # Vercel build + routing config
-│   └── package.json     # Scripts (start, dev, check)
+├── website/             # Astro website
+│   ├── src/
+│   │   ├── pages/       # index, wiki/index + wiki/[...slug], demo, builder,
+│   │   │                #   branding, terms, privacy
+│   │   ├── content/wiki/# 41 Markdown articles (7 groups)
+│   │   ├── layouts/     # Layout.astro + WikiLayout.astro
+│   │   ├── lib/         # wiki-nav.ts, motion.ts, obsidian-callouts.mjs
+│   │   └── content.config.ts
+│   ├── public/css/site.css  # Design system (tokens + components)
+│   ├── public/favicon.svg   # Brand mark
+│   ├── public/banner.png    # Social banner
+│   ├── astro.config.mjs     # Static output, callout rehype plugin
+│   ├── vercel.json          # framework astro, output dist
+│   └── package.json         # Scripts: dev, build, preview, check
 ├── AegisBeacon.ino      # ESP32 firmware (Arduino source)
 ├── README.md            # Project overview and quick start
 ├── DATASHEET.md         # Hardware / electrical specifications
 ├── FREQUENCIES.md       # SAR frequency reference manual
-├── TECHNOLOGIES.md      # This document — technology stack
+├── TECHNOLOGIES.md      # This document - technology stack
 └── LICENSE              # MIT
 ```
 
@@ -191,11 +196,11 @@ Aegis-Beacon/
 
 ## 7. Verification Checklist
 
-- [ ] `website/npm run check` passes (syntax + dictionary parity).
-- [ ] `website/npm start` serves `/`, `/demo.html`, `/health`, `/version`.
-- [ ] `vercel build --yes --project aegis-beacon` (from `website/`) succeeds.
-- [ ] Live site returns 200 on `/`, `/demo.html`, `/js/theme.js`, `/css/site.css`,
-      `/i18n/es.json`.
+- [ ] `website/npm run check` passes (astro check, 0 errors).
+- [ ] `website/npm run build` emits a static site to `website/dist/`.
+- [ ] `website/npm run dev` serves `/`, `/wiki`, `/demo`, `/builder` locally.
+- [ ] Live site returns 200 on `/`, `/wiki`, `/demo`, `/builder`, `/css/site.css`.
+- [ ] All 41 wiki pages listed in `src/lib/wiki-nav.ts` exist in `src/content/wiki/`.
 - [ ] Firmware compiles with PlatformIO (`pio run --target upload`, env
       `esp32devkitv1`; RadioLib ≥ 6.x, U8g2 ≥ 2.34, TinyGPS++ ≥ 1.0.3,
       ArduinoJson ≥ 7.x).

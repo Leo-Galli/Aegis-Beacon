@@ -2,142 +2,178 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Branding & Assets | Aegis-Beacon" description="Download official Aegis-Beacon logos, icons, and brand assets for media and documentation use">
+<Layout title="Branding & Assets | Aegis-Beacon" description="Official Aegis-Beacon logos, colors, typography and usage guidelines for media and documentation">
   <div class="branding-page container">
     <header class="section-head" style="padding-top: clamp(2rem, 4vw, 3rem);">
       <h1 class="section-head__title">Branding & Assets</h1>
       <p class="section-head__lead">
-        Official logos, brand colors, and usage guidelines for Aegis-Beacon.
-        Use these assets when referencing the project in articles, presentations, or documentation.
+        Official assets and guidelines for referencing Aegis-Beacon. Use these
+        when writing about the project, presenting it, or building on the code.
       </p>
     </header>
 
-    <!-- Logo Showcase -->
+    <!-- Social banner -->
     <section class="brand-section" data-rv>
-      <h2 class="brand-section__title">Logo</h2>
-      <p class="brand-section__desc">The Aegis-Beacon logo represents the project's mission: a beacon of safety powered by open-source technology.</p>
+      <h2 class="brand-section__title">Social Banner</h2>
+      <p class="brand-section__desc">
+        The primary banner, used on the repository README, Open Graph cards and
+        social sharing. 1376 x 768 px, also available in the repo at
+        <code>website/public/banner.png</code>.
+      </p>
+      <div class="banner-card">
+        <img src="/banner.png" width="1376" height="768" alt="Aegis-Beacon banner on a dark graphite background with the beacon mark and signal orange accents" loading="lazy" />
+      </div>
+      <div class="brand-downloads">
+        <a class="btn btn-secondary" href="https://github.com/Leo-Galli/Aegis-Beacon/raw/main/website/public/banner.png" download>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          Download banner.png
+        </a>
+        <a class="btn btn-secondary" href="https://github.com/Leo-Galli/Aegis-Beacon/raw/main/website/public/favicon.svg" download>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          Download favicon.svg
+        </a>
+      </div>
+    </section>
 
-      <div class="logo-grid">
-        <div class="logo-card">
-          <div class="logo-card__preview logo-card__preview--dark">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="18" fill="#F97316" opacity="0.15"/>
-              <circle cx="24" cy="24" r="12" fill="#F97316" opacity="0.3"/>
-              <circle cx="24" cy="24" r="6" fill="#F97316"/>
-              <circle cx="24" cy="24" r="3" fill="#FFF"/>
+    <!-- Mark -->
+    <section class="brand-section" data-rv>
+      <h2 class="brand-section__title">Brand Mark</h2>
+      <p class="brand-section__desc">
+        The mark is a radio beacon mast with an outgoing signal ping. It stands
+        for the device's purpose: transmitting a locator signal when no network
+        remains. The mark is always drawn in signal orange on the surface it
+        sits on; it is never recolored, outlined or rotated.
+      </p>
+
+      <div class="mark-grid">
+        <div class="mark-card">
+          <div class="mark-card__preview mark-card__preview--graphite">
+            <svg width="64" height="64" viewBox="0 0 32 32" aria-hidden="true">
+              <circle cx="16" cy="12" r="4" fill="currentColor"/>
+              <path d="M16 8 L20 14 L12 14 Z" fill="currentColor" opacity="0.6"/>
+              <rect x="14.5" y="16" width="3" height="8" rx="1.5" fill="currentColor"/>
+              <circle cx="16" cy="12" r="1.5" fill="#0f172a"/>
             </svg>
-            <span class="logo-card__name">Aegis-Beacon</span>
           </div>
-          <div class="logo-card__info">
-            <strong>Primary Logo</strong>
-            <span>Dark background variant</span>
+          <div class="mark-card__meta">
+            <strong>Primary mark</strong>
+            <span>On graphite or dark surfaces</span>
           </div>
         </div>
 
-        <div class="logo-card">
-          <div class="logo-card__preview logo-card__preview--light">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="18" fill="#F97316" opacity="0.1"/>
-              <circle cx="24" cy="24" r="12" fill="#F97316" opacity="0.2"/>
-              <circle cx="24" cy="24" r="6" fill="#F97316"/>
-              <circle cx="24" cy="24" r="3" fill="#FFF"/>
+        <div class="mark-card">
+          <div class="mark-card__preview mark-card__preview--signal">
+            <svg width="64" height="64" viewBox="0 0 32 32" aria-hidden="true">
+              <circle cx="16" cy="12" r="4" fill="#fff"/>
+              <path d="M16 8 L20 14 L12 14 Z" fill="#fff" opacity="0.7"/>
+              <rect x="14.5" y="16" width="3" height="8" rx="1.5" fill="#fff"/>
+              <circle cx="16" cy="12" r="1.5" fill="#e25700"/>
             </svg>
-            <span class="logo-card__name" style="color: oklch(0.15 0 0deg);">Aegis-Beacon</span>
           </div>
-          <div class="logo-card__info">
-            <strong>Primary Logo</strong>
-            <span>Light background variant</span>
+          <div class="mark-card__meta">
+            <strong>Reversed mark</strong>
+            <span>On signal orange or light surfaces</span>
           </div>
         </div>
 
-        <div class="logo-card">
-          <div class="logo-card__preview logo-card__preview--dark">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="14" stroke="#F97316" stroke-width="2" fill="none"/>
-              <circle cx="24" cy="24" r="7" fill="#F97316"/>
-              <circle cx="24" cy="24" r="3" fill="#FFF"/>
+        <div class="mark-card">
+          <div class="mark-card__preview mark-card__preview--light">
+            <svg width="64" height="64" viewBox="0 0 32 32" aria-hidden="true">
+              <circle cx="16" cy="12" r="4" fill="#e25700"/>
+              <path d="M16 8 L20 14 L12 14 Z" fill="#e25700" opacity="0.6"/>
+              <rect x="14.5" y="16" width="3" height="8" rx="1.5" fill="#e25700"/>
+              <circle cx="16" cy="12" r="1.5" fill="#ffffff"/>
             </svg>
           </div>
-          <div class="logo-card__info">
-            <strong>Icon Only</strong>
-            <span>For favicons and app icons</span>
+          <div class="mark-card__meta">
+            <strong>Lockup on light</strong>
+            <span>Signal orange on near-white</span>
           </div>
         </div>
 
-        <div class="logo-card">
-          <div class="logo-card__preview logo-card__preview--dark">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <rect x="10" y="8" width="28" height="32" rx="4" stroke="#F97316" stroke-width="1.5" fill="none"/>
-              <line x1="16" y1="16" x2="32" y2="16" stroke="#F97316" stroke-width="1.5" opacity="0.5"/>
-              <line x1="16" y1="22" x2="28" y2="22" stroke="#F97316" stroke-width="1.5" opacity="0.5"/>
-              <line x1="16" y1="28" x2="30" y2="28" stroke="#F97316" stroke-width="1.5" opacity="0.5"/>
-              <circle cx="24" cy="36" r="1.5" fill="#F97316" opacity="0.5"/>
+        <div class="mark-card">
+          <div class="mark-card__preview mark-card__preview--graphite mark-card__preview--word">
+            <svg class="mark-card__lockup" viewBox="0 0 120 32" aria-hidden="true">
+              <circle cx="16" cy="12" r="4" fill="#fb7500"/>
+              <path d="M16 8 L20 14 L12 14 Z" fill="#fb7500" opacity="0.6"/>
+              <rect x="14.5" y="16" width="3" height="8" rx="1.5" fill="#fb7500"/>
+              <circle cx="16" cy="12" r="1.5" fill="#0c0a09"/>
+              <text x="30" y="22" fill="#fafafa" font-family="'Chakra Petch', sans-serif" font-weight="700" font-size="15">Aegis-Beacon</text>
             </svg>
           </div>
-          <div class="logo-card__info">
-            <strong>Documentation Badge</strong>
-            <span>For README and docs</span>
+          <div class="mark-card__meta">
+            <strong>Wordmark lockup</strong>
+            <span>Mark + Chakra Petch wordmark</span>
           </div>
         </div>
       </div>
 
       <div class="brand-alert">
-        <p><strong>Usage guideline:</strong> Always maintain clear space around the logo. Do not modify, distort, recolor, or add effects to the logo assets.</p>
+        <p><strong>Usage:</strong> keep clear space around the mark equal to the height of the signal ping. Do not modify, distort, recolor, add shadows to, or place the mark on busy photography.</p>
       </div>
     </section>
 
-    <!-- Brand Colors -->
+    <!-- Colors -->
     <section class="brand-section" data-rv>
-      <h2 class="brand-section__title">Brand Colors</h2>
-      <p class="brand-section__desc">The Aegis-Beacon color palette uses warm orange as the primary accent, complemented by neutral grays for clarity.</p>
+      <h2 class="brand-section__title">Color</h2>
+      <p class="brand-section__desc">
+        The palette is one signal orange plus neutral surfaces. The orange is
+        defined in OKLCH in <code>public/css/site.css</code>; the hex values
+        below are its sRGB equivalents for use in documents that cannot express
+        OKLCH.
+      </p>
 
       <div class="color-grid">
         <div class="color-card">
-          <div class="color-swatch" style="background: #F97316;"></div>
+          <div class="color-swatch" style="background: #e25700;"></div>
           <div class="color-info">
-            <strong>Beacon Orange</strong>
-            <code>#F97316</code>
-            <span>Primary accent, signals emergency and alert</span>
+            <strong>Signal orange</strong>
+            <code>#E25700</code>
+            <code>oklch(0.63 0.2 50)</code>
+            <span>Primary accent. Light theme. Buttons, links, active states.</span>
           </div>
         </div>
         <div class="color-card">
-          <div class="color-swatch" style="background: #171717;"></div>
+          <div class="color-swatch" style="background: #FB7500;"></div>
           <div class="color-info">
-            <strong>Dark Surface</strong>
-            <code>#171717</code>
-            <span>Terminal backgrounds and dark mode base</span>
+            <strong>Signal orange (dark)</strong>
+            <code>#FB7500</code>
+            <code>oklch(0.71 0.19 50)</code>
+            <span>Brightened for dark surfaces. Meets AA on graphite.</span>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-swatch" style="background: #0C0A09;"></div>
+          <div class="color-info">
+            <strong>Graphite</strong>
+            <code>#0C0A09</code>
+            <code>oklch(0.145 0.004 50)</code>
+            <span>Dark theme background. Mission-console surfaces.</span>
           </div>
         </div>
         <div class="color-card">
           <div class="color-swatch" style="background: #FAFAFA;"></div>
           <div class="color-info">
-            <strong>Light Surface</strong>
+            <strong>Near-white</strong>
             <code>#FAFAFA</code>
-            <span>Page backgrounds and cards</span>
+            <code>oklch(0.985 0 0)</code>
+            <span>Light theme background. Page and card surfaces.</span>
           </div>
         </div>
         <div class="color-card">
-          <div class="color-swatch" style="background: #22C55E;"></div>
+          <div class="color-swatch" style="background: #007938;"></div>
           <div class="color-info">
-            <strong>OLED Green</strong>
-            <code>#22C55E</code>
-            <span>Display text and positive status</span>
+            <strong>Status green</strong>
+            <code>#007938</code>
+            <span>Success: TX done, fix acquired, OK log lines.</span>
           </div>
         </div>
         <div class="color-card">
-          <div class="color-swatch" style="background: #1E293B;"></div>
+          <div class="color-swatch" style="background: #CC2827;"></div>
           <div class="color-info">
-            <strong>Mid Gray</strong>
-            <code>#1E293B</code>
-            <span>Borders and muted elements</span>
-          </div>
-        </div>
-        <div class="color-card">
-          <div class="color-swatch" style="background: #6B7280;"></div>
-          <div class="color-info">
-            <strong>Secondary Gray</strong>
-            <code>#6B7280</code>
-            <span>Body text and secondary labels</span>
+            <strong>Status red</strong>
+            <code>#CC2827</code>
+            <span>Danger: EMERGENCY state, errors, destructive actions.</span>
           </div>
         </div>
       </div>
@@ -146,68 +182,80 @@ import Layout from '../layouts/Layout.astro';
     <!-- Typography -->
     <section class="brand-section" data-rv>
       <h2 class="brand-section__title">Typography</h2>
+      <p class="brand-section__desc">
+        Three self-hosted faces, each with one job. They ship with the site via
+        Fontsource, so no external font request is made.
+      </p>
       <div class="type-grid">
         <div class="type-card">
-          <span class="type-sample" style="font-family: 'Chakra Petch', 'Manrope Variable', sans-serif; font-weight: 700; font-size: 1.5rem;">Chakra Petch</span>
+          <span class="type-sample type-sample--display">Chakra Petch</span>
           <div class="type-info">
-            <strong>Display Headings</strong>
-            <span>Technical display face for headings and interface labels</span>
+            <strong>Display</strong>
+            <span>Headings, brand wordmark, technical UI labels</span>
           </div>
         </div>
         <div class="type-card">
-          <span class="type-sample" style="font-family: 'Manrope Variable', sans-serif; font-weight: 500; font-size: 1.5rem;">Manrope</span>
+          <span class="type-sample type-sample--body">Manrope</span>
           <div class="type-info">
-            <strong>Body Text</strong>
-            <span>Legible sans for paragraphs and supporting copy</span>
+            <strong>Body</strong>
+            <span>Paragraphs, navigation, supporting copy</span>
           </div>
         </div>
         <div class="type-card">
-          <span class="type-sample" style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 1.25rem;">JetBrains Mono</span>
+          <span class="type-sample type-sample--mono">JetBrains Mono</span>
           <div class="type-info">
-            <strong>Code & Terminal</strong>
-            <span>Monospace for code blocks, terminal displays, and technical data</span>
+            <strong>Code & data</strong>
+            <span>Code blocks, terminal output, frequencies, specs</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Usage Rules -->
+    <!-- Voice -->
     <section class="brand-section" data-rv>
-      <h2 class="brand-section__title">Usage Guidelines</h2>
+      <h2 class="brand-section__title">Voice</h2>
+      <p class="brand-section__desc">
+        Write plainly about a serious tool. The beacon is safety equipment for
+        mountain and backcountry use; the copy reflects that: direct, specific,
+        no hype.
+      </p>
       <div class="rules-grid">
         <div class="rule-card rule-card--do">
           <h3>Do</h3>
           <ul>
-            <li>Use official assets from this page</li>
-            <li>Maintain the logo's proportions and clear space</li>
-            <li>Use the logo on backgrounds that provide sufficient contrast</li>
-            <li>Reference the project as "Aegis-Beacon" (with hyphen)</li>
+            <li>Write "Aegis-Beacon" with the hyphen on first reference</li>
+            <li>Say what the device does: transmits Morse SOS with position</li>
+            <li>Call the firmware a beacon, not a gadget</li>
+            <li>Recommend certified PLB/EPIRB gear for life-threatening use</li>
           </ul>
         </div>
         <div class="rule-card rule-card--dont">
           <h3>Do not</h3>
           <ul>
-            <li>Modify, stretch, or distort the logo</li>
-            <li>Change the logo colors or add effects</li>
-            <li>Use the logo in a way that implies endorsement</li>
-            <li>Remove the logo's key elements (concentric circles)</li>
+            <li>Shorten to "Aegis" or "Beacon" in prose</li>
+            <li>Claim it replaces certified distress beacons</li>
+            <li>Use marketing superlatives or emoji</li>
+            <li>Imply an endorsement by any SAR organization</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- Download -->
+    <!-- Source -->
     <section class="brand-section" data-rv>
-      <h2 class="brand-section__title">Download Assets</h2>
-      <p class="brand-section__desc">All assets are available in the project repository under the MIT License.</p>
-      <div class="download-actions">
-        <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" class="btn btn-primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          Repository Assets
+      <h2 class="brand-section__title">Source</h2>
+      <p class="brand-section__desc">
+        Everything is open source under the MIT license. The banner and mark
+        live in the repository; the design tokens live in
+        <code>website/public/css/site.css</code>.
+      </p>
+      <div class="brand-downloads">
+        <a class="btn btn-primary" href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          View the repository
         </a>
-        <a href="https://github.com/Leo-Galli/Aegis-Beacon/raw/main/website/public/favicon.svg" target="_blank" class="btn btn-secondary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
-          Favicon SVG
+        <a class="btn btn-secondary" href="/terms">
+          Terms of Service
         </a>
       </div>
     </section>
@@ -218,7 +266,7 @@ import Layout from '../layouts/Layout.astro';
   .branding-page { padding-bottom: 4rem; }
 
   .brand-section {
-    max-width: 900px;
+    max-width: 920px;
     margin: 3rem auto 0;
   }
   .brand-section__title {
@@ -230,55 +278,73 @@ import Layout from '../layouts/Layout.astro';
   .brand-section__desc {
     color: var(--muted-foreground);
     font-size: 0.9375rem;
-    line-height: 1.6;
+    line-height: 1.65;
     margin-bottom: 1.5rem;
   }
-
-  /* Logo Grid */
-  .logo-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+  .brand-section__desc code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--primary);
+    background: var(--muted);
+    padding: 0.1rem 0.375rem;
+    border-radius: var(--radius-sm);
   }
-  @media (min-width: 768px) { .logo-grid { grid-template-columns: repeat(4, 1fr); } }
-  .logo-card {
+
+  /* Banner */
+  .banner-card {
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     overflow: hidden;
-    transition: all 0.2s;
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
   }
-  .logo-card:hover {
-    border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+  .banner-card img {
+    display: block;
+    width: 100%;
+    height: auto;
   }
-  .logo-card__preview {
+  .brand-downloads {
     display: flex;
-    flex-direction: column;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+  }
+  .btn svg { flex-shrink: 0; }
+
+  /* Mark grid */
+  .mark-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 640px) { .mark-grid { grid-template-columns: repeat(2, 1fr); } }
+  .mark-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .mark-card:hover { border-color: color-mix(in srgb, var(--primary) 35%, var(--border)); box-shadow: var(--shadow-md); }
+  .mark-card__preview {
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    padding: 2rem 1rem;
-    min-height: 120px;
+    min-height: 150px;
+    padding: 1.5rem;
+    color: #fb7500;
   }
-  .logo-card__preview--dark { background: #171717; }
-  .logo-card__preview--light { background: #FAFAFA; border-bottom: 1px solid var(--border); }
-  .logo-card__name {
-    font-weight: 700;
-    font-size: 0.8125rem;
-    color: oklch(0.93 0 0deg);
-    letter-spacing: -0.02em;
-  }
-  .logo-card__info {
-    padding: 0.75rem 1rem;
-  }
-  .logo-card__info strong {
+  .mark-card__preview--graphite { background: #0c0a09; }
+  .mark-card__preview--signal { background: #e25700; }
+  .mark-card__preview--light { background: #fafafa; border-bottom: 1px solid var(--border); }
+  .mark-card__lockup { width: 150px; height: auto; }
+  .mark-card__meta { padding: 0.75rem 1rem; }
+  .mark-card__meta strong {
     display: block;
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--foreground);
   }
-  .logo-card__info span {
+  .mark-card__meta span {
     font-size: 0.75rem;
     color: var(--muted-foreground);
   }
@@ -312,7 +378,7 @@ import Layout from '../layouts/Layout.astro';
   }
   .color-card:hover { border-color: color-mix(in srgb, var(--primary) 30%, var(--border)); }
   .color-swatch {
-    width: 48px; height: 48px;
+    width: 56px; height: 56px;
     border-radius: var(--radius-md);
     flex-shrink: 0;
     border: 1px solid color-mix(in srgb, var(--foreground) 10%, var(--border));
@@ -324,12 +390,15 @@ import Layout from '../layouts/Layout.astro';
     color: var(--foreground);
   }
   .color-info code {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--primary);
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--foreground);
     background: var(--muted);
     padding: 0.1rem 0.375rem;
     border-radius: var(--radius-sm);
+    margin-top: 0.125rem;
+    margin-right: 0.25rem;
   }
   .color-info span {
     display: block;
@@ -344,17 +413,20 @@ import Layout from '../layouts/Layout.astro';
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  @media (min-width: 640px) { .type-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 640px) { .type-grid { grid-template-columns: repeat(3, 1fr); } }
   .type-card {
     display: flex;
-    gap: 1rem;
-    align-items: center;
-    padding: 1.25rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem;
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     background: var(--card);
   }
   .type-sample { color: var(--foreground); white-space: nowrap; }
+  .type-sample--display { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; letter-spacing: 0.01em; }
+  .type-sample--body { font-family: var(--font-body); font-weight: 600; font-size: 1.5rem; }
+  .type-sample--mono { font-family: var(--font-mono); font-weight: 500; font-size: 1.1rem; }
   .type-info strong {
     display: block;
     font-size: 0.8125rem;
@@ -364,6 +436,7 @@ import Layout from '../layouts/Layout.astro';
   .type-info span {
     font-size: 0.75rem;
     color: var(--muted-foreground);
+    line-height: 1.5;
   }
 
   /* Rules */
@@ -403,12 +476,4 @@ import Layout from '../layouts/Layout.astro';
     border-color: color-mix(in srgb, var(--destructive) 15%, var(--border));
   }
   .rule-card--dont h3 { color: var(--destructive); }
-
-  /* Download */
-  .download-actions {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-  }
-  .btn svg { flex-shrink: 0; }
 </style>

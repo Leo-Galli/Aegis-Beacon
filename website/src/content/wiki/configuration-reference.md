@@ -68,22 +68,38 @@ All configuration is stored in NVS (Non-Volatile Storage) and survives power cyc
 
 ## NVS Keys
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `mode` | uint8 | 0 | Operating mode (0=BEACON, 1=SEARCH) |
-| `freq` | float | 433.500 | Primary frequency (MHz) |
-| `freqCount` | uint8 | 1 | Number of configured frequencies |
-| `power` | int8 | 17 | TX power (dBm) |
-| `wpm` | uint8 | 13 | Morse speed |
-| `vol` | uint8 | 180 | Audio volume |
-| `sleep` | uint16 | 10 | Sleep interval (seconds) |
-| `repeat` | uint8 | 3 | Repeat count |
-| `name` | string | "" | Operator name |
-| `gpsEnabled` | bool | true | GPS module enabled |
-| `gpsInBeacon` | bool | true | Include GPS in beacon |
-| `oledEnabled` | bool | true | OLED enabled |
-| `oledInvert` | bool | false | OLED invert colors |
-| `audioEnabled` | bool | true | Audio enabled |
+All settings live in the ESP32 Non-Volatile Storage under the namespace `aegis`. The exact keys below match the firmware `Preferences` reads/writes.
+
+| Key | Type | Default | Range / Notes |
+|-----|------|---------|---------------|
+| `fcount` | uint8 | 1 | 1-10 frequencies |
+| `freq0`..`freq9` | float | 433.500 | MHz, one key per frequency slot |
+| `msg` | string | "SOS" | Max 64 chars, A-Z 0-9 space |
+| `wpm` | uint8 | 13 | 5-40 |
+| `pwr` | int8 | 17 | -9 to +22 dBm |
+| `sleep` | ulong | 10 | Deep sleep seconds between TX cycles |
+| `dwell` | uint16 | 400 | 50-2000 ms scan dwell time |
+| `rssi` | int8 | -90 | -120 to -40 dBm detection threshold |
+| `mode` | uint8 | 0 | 0=BEACON 1=SEARCH 2=CONFIG 3=EMERGENCY |
+| `aswitch` | bool | false | Auto-switch to BEACON on low battery |
+| `rep` | uint8 | 1 | 1-10 message repetitions per frequency |
+| `avol` | uint8 | 180 | 0-255 DAC volume |
+| `aen` | bool | true | Master audio enable |
+| `olen` | bool | true | OLED enable |
+| `olinv` | bool | false | OLED invert mode |
+| `gpsen` | bool | false | GPS module enable |
+| `gpsbeac` | bool | false | Include GPS coords in Morse payload |
+| `gpstmo` | uint8 | 30 | GPS fix wait timeout (10-120 s) |
+| `namen` | bool | false | Include name in Morse payload |
+| `fname` | string | "" | First name (max 32 chars) |
+| `lname` | string | "" | Last name (max 32 chars) |
+| `poten` | bool | false | SW_UP/DN volume adjust enable |
+| `potwpm` | bool | false | SW_UP/DN WPM adjust enable |
+
+> [!NOTE]
+> Key names are intentionally short (NVS has per-key overhead). `freq0`..`freq9` are separate keys, not an array.
+
+**Fail-safe:** if NVS is empty, corrupt, or missing any key, the firmware falls back to the hardcoded defaults in the section above. The device is always functional after a factory reset or first flash.
 
 ## Button Reference
 
