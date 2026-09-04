@@ -1,6 +1,7 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import WikiSearch from '../../components/WikiSearch.astro';
 import { WIKI_NAV } from '../../lib/wiki-nav';
 
 const entries: CollectionEntry<'wiki'>[] = await getCollection('wiki');
@@ -43,6 +44,9 @@ const totalPages = entries.length;
         setting and every field scenario, from first power-up to full-scale
         search and rescue operation.
       </p>
+      <div class="wiki-home__search" style="margin-top: 1.75rem;">
+        <WikiSearch entries={entries} size="lg" />
+      </div>
       <div class="wiki-home__actions">
         <a href="/wiki/project-overview" class="btn btn-primary">Start with the overview</a>
         <a href="/wiki/quick-start-guide" class="btn btn-secondary">Go to the quick start</a>

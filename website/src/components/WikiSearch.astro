@@ -1,0 +1,242 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  entries: CollectionEntry<'wiki'>[];
+  placeholder?: string;
+  size?: 'md' | 'lg';
+}
+
+const { entries, placeholder = 'Search all documentation...', size = 'md' } = Astro.props;
+
+const index = entries.map((e) => ({
+  id: e.id,
+  title: e.data.title,
+  description: (e.data.description || '').replace(/\s+/g, ' ').trim(),
+}));
+---
+
+<div class:list={['wiki-search', size === 'lg' ? 'wiki-search--lg' : '']} data-wiki-search>
+  <svg class="wiki-search__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.35-4.35" />
+  </svg>
+  <input
+    class="wiki-search__input"
+    type="search"
+    role="combobox"
+    aria-expanded="false"
+    aria-controls="wiki-search-results"
+    aria-label="Search the wiki"
+    placeholder={placeholder}
+    autocomplete="off"
+    spellcheck="false"
+  />
+  <span class="wiki-search__kbd" aria-hidden="true">/</span>
+  <div class="wiki-search__results" id="wiki-search-results" role="listbox" hidden></div>
+  <script type="application/json" is:inline set:html={JSON.stringify(index)}></script>
+</div>
+
+<script>
+  const boxes = document.querySelectorAll<HTMLElement>('[data-wiki-search]');
+  if (boxes.length) {
+    boxes.forEach((box) => {
+      const dataScript = box.querySelector<HTMLScriptElement>('script[type="application/json"]');
+      let items: { id: string; title: string; description: string }[] = [];
+      try {
+        items = JSON.parse(dataScript?.textContent || '[]');
+      } catch {
+        items = [];
+      }
+
+      const input = box.querySelector<HTMLInputElement>('input');
+      const results = box.querySelector<HTMLElement>('.wiki-search__results');
+      const kbd = box.querySelector<HTMLElement>('.wiki-search__kbd');
+      if (!input || !results) return;
+
+      function score(q: string, item: { title: string; description: string }) {
+        const t = item.title.toLowerCase();
+        const d = item.description.toLowerCase();
+        const ql = q.toLowerCase();
+        if (t.startsWith(ql)) return 100;
+        if (t.includes(ql)) return 60;
+        const words = ql.split(/\s+/).filter(Boolean);
+        if (words.every((w) => t.includes(w))) return 40;
+        if (words.some((w) => t.includes(w))) return 25;
+        if (d.includes(ql)) return 12;
+        if (words.every((w) => d.includes(w))) return 10;
+        return 0;
+      }
+
+      function render(q: string) {
+        const ql = q.trim().toLowerCase();
+        if (!ql) {
+          results.hidden = true;
+          results.innerHTML = '';
+          input.setAttribute('aria-expanded', 'false');
+          return;
+        }
+        const matches = items
+          .map((it) => ({ ...it, s: score(ql, it) }))
+          .filter((it) => it.s > 0)
+          .sort((a, b) => b.s - a.s || a.title.localeCompare(b.title))
+          .slice(0, 12);
+
+        if (!matches.length) {
+          results.hidden = false;
+          results.innerHTML =
+            '<div class="wiki-search__empty">No page matches <strong></strong>. Try a different term.</div>';
+          results.querySelector('strong')!.textContent = q.trim();
+          input.setAttribute('aria-expanded', 'true');
+          return;
+        }
+
+        const frag = document.createDocumentFragment();
+        for (const m of matches) {
+          const a = document.createElement('a');
+          a.href = `/wiki/${m.id}`;
+          a.className = 'wiki-search__result';
+          a.setAttribute('role', 'option');
+          const title = document.createElement('span');
+          title.className = 'wiki-search__title';
+          const desc = document.createElement('span');
+          desc.className = 'wiki-search__desc';
+          const hl = (text: string) => {
+            const low = text.toLowerCase();
+            let i = low.indexOf(ql);
+            if (i < 0) return document.createTextNode(text);
+            const frag2 = document.createDocumentFragment();
+            frag2.appendChild(document.createTextNode(text.slice(0, i)));
+            const mark = document.createElement('mark');
+            mark.textContent = text.slice(i, i + ql.length);
+            frag2.appendChild(mark);
+            frag2.appendChild(document.createTextNode(text.slice(i + ql.length)));
+            return frag2;
+          };
+          title.appendChild(hl(m.title));
+          desc.textContent = m.description.length > 90 ? m.description.slice(0, 90).replace(/\s+\S*$/, '') + '…' : m.description;
+          a.appendChild(title);
+          a.appendChild(desc);
+          frag.appendChild(a);
+        }
+        results.innerHTML = '';
+        results.appendChild(frag);
+        results.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+      }
+
+      function move(dir: number) {
+        const opts = [...results.querySelectorAll<HTMLElement>('.wiki-search__result')];
+        if (!opts.length) return;
+        const cur = results.querySelector<HTMLElement>('.is-selected');
+        let idx = cur ? opts.indexOf(cur) : -1;
+        idx = (idx + dir + opts.length) % opts.length;
+        opts.forEach((o) => o.classList.remove('is-selected'));
+        opts[idx].classList.add('is-selected');
+        opts[idx].scrollIntoView({ block: 'nearest' });
+      }
+
+      function go() {
+        const sel = results.querySelector<HTMLElement>('.is-selected');
+        const target = sel || results.querySelector<HTMLElement>('.wiki-search__result');
+        if (target) window.location.href = target.getAttribute('href') || '/wiki';
+      }
+
+      input.addEventListener('input', () => render(input.value));
+      input.addEventListener('focus', () => input.value && render(input.value));
+      input.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape') {
+          results.hidden = true;
+          input.setAttribute('aria-expanded', 'false');
+          input.blur();
+        } else if (ev.key === 'ArrowDown') {
+          ev.preventDefault();
+          move(1);
+        } else if (ev.key === 'ArrowUp') {
+          ev.preventDefault();
+          move(-1);
+        } else if (ev.key === 'Enter') {
+          ev.preventDefault();
+          go();
+        }
+      });
+
+      document.addEventListener('click', (ev) => {
+        if (!box.contains(ev.target as Node)) {
+          results.hidden = true;
+          input.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      // Global "/" shortcut focuses the search, unless typing in another field.
+      document.addEventListener('keydown', (ev) => {
+        const tag = (ev.target as HTMLElement)?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || (ev.target as HTMLElement)?.isContentEditable) return;
+        if (ev.key === '/') {
+          ev.preventDefault();
+          input.focus();
+          input.select();
+        }
+      });
+
+      if (kbd) kbd.textContent = '/';
+    });
+  }
+</script>
+
+<style>
+  .wiki-search {
+    position: relative;
+    width: 100%;
+    max-width: 30rem;
+  }
+  .wiki-search--lg { max-width: 40rem; margin-inline: auto; }
+  .wiki-search__icon {
+    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+    color: var(--muted-foreground); pointer-events: none;
+  }
+  .wiki-search__input {
+    width: 100%; padding: 0.72rem 2.75rem 0.72rem 2.5rem;
+    font: inherit; font-size: 0.9rem; color: var(--foreground);
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); transition: all 0.15s;
+  }
+  .wiki-search__input::placeholder { color: var(--muted-foreground); }
+  .wiki-search__input:focus {
+    outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+  .wiki-search__kbd {
+    position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%);
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted-foreground);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 0.1rem 0.45rem; background: var(--muted); pointer-events: none;
+  }
+  .wiki-search__results {
+    position: absolute; top: calc(100% + 0.4rem); left: 0; right: 0; z-index: 60;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+    overflow-y: auto; max-height: min(420px, 60vh);
+    padding: 0.35rem;
+  }
+  .wiki-search__result {
+    display: flex; flex-direction: column; gap: 0.1rem;
+    padding: 0.55rem 0.75rem; border-radius: var(--radius-md);
+    color: var(--foreground); text-decoration: none;
+  }
+  .wiki-search__result:hover,
+  .wiki-search__result.is-selected {
+    background: var(--muted);
+  }
+  .wiki-search__title { font-size: 0.85rem; font-weight: 600; }
+  .wiki-search__title mark {
+    background: color-mix(in srgb, var(--primary) 30%, transparent);
+    color: inherit; border-radius: 2px; padding: 0 1px;
+  }
+  .wiki-search__desc {
+    font-size: 0.75rem; color: var(--muted-foreground); line-height: 1.4;
+  }
+  .wiki-search__empty {
+    padding: 0.75rem; font-size: 0.82rem; color: var(--muted-foreground);
+  }
+</style>

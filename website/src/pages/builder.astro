@@ -1,30 +1,57 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+interface Part {
+  id: string;
+  name: string;
+  desc: string;
+  price: number;
+  qty: number;
+  max: number;
+  essential: boolean;
+  source: string;
+  query: string;
+}
+
+const parts: Part[] = [
+  { id: 'esp32', name: 'ESP32-WROOM-32', desc: 'Dual-core MCU with WiFi and BT', price: 8.5, qty: 1, max: 3, essential: true, source: 'AliExpress', query: 'ESP32 WROOM-32 devkit' },
+  { id: 'radio', name: 'E22-400M30S', desc: 'SX1262 LoRa module, +30 dBm', price: 5.2, qty: 1, max: 3, essential: true, source: 'AliExpress', query: 'E22-400M30S SX1262 433MHz' },
+  { id: 'oled', name: 'SSD1309 OLED 2.42"', desc: '7-pin SPI 128 x 64 display', price: 3.8, qty: 1, max: 2, essential: true, source: 'AliExpress', query: 'SSD1309 OLED 2.42 SPI' },
+  { id: 'gps', name: 'NEO-6M GPS', desc: 'UART GPS module with antenna', price: 2.9, qty: 1, max: 2, essential: true, source: 'AliExpress', query: 'NEO-6M GPS module UART' },
+  { id: 'charger', name: 'TP4056 Charger', desc: 'Li-Ion USB-C charging board', price: 0.8, qty: 1, max: 3, essential: true, source: 'AliExpress', query: 'TP4056 USB-C charger 18650' },
+  { id: 'cell', name: '18650 Battery', desc: '3.7 V 3000 mAh protected cell', price: 2.5, qty: 1, max: 4, essential: true, source: 'Local Store', query: '18650 3000mAh protected battery' },
+  { id: 'antenna', name: 'SMA Connector + Antenna', desc: '433 MHz quarter-wave whip', price: 1.2, qty: 1, max: 2, essential: true, source: 'AliExpress', query: '433MHz SMA antenna whip' },
+  { id: 'switches', name: 'Tactile Switches', desc: '6 x 6 mm momentary push buttons', price: 0.15, qty: 4, max: 20, essential: true, source: 'AliExpress', query: '6x6mm tactile push button' },
+  { id: 'buzzer', name: 'Passive Buzzer', desc: 'Piezo for Morse audio feedback', price: 0.4, qty: 1, max: 3, essential: false, source: 'AliExpress', query: 'passive piezo buzzer 3V' },
+  { id: 'passives', name: 'Resistors & Capacitors', desc: 'Pull-ups, decoupling and bias kit', price: 0.3, qty: 1, max: 5, essential: true, source: 'Local Store', query: 'resistor capacitor assortment kit' },
+  { id: 'case', name: '3D-Printed Enclosure', desc: 'Optional rugged case (printed locally)', price: 2.0, qty: 1, max: 2, essential: false, source: '3D Print', query: 'ESP32 OLED 18650 enclosure STL' },
+];
 ---
 
-<Layout title="BOM Builder | Aegis-Beacon" description="Interactive Bill of Materials calculator for Aegis-Beacon">
+<Layout
+  title="BOM Builder | Aegis-Beacon"
+  description="Interactive bill of materials calculator for Aegis-Beacon with live pricing, budget fitting and direct links to compare prices across stores."
+>
   <div class="builder-page container">
-    <!-- Section Head -->
     <header class="section-head" style="padding-top: clamp(2rem, 4vw, 3rem);">
       <h1 class="section-head__title">BOM Builder</h1>
       <p class="section-head__lead">
-        Calculate the total cost of your Aegis-Beacon build. Adjust quantities and see real-time pricing.
+        Adjust quantities, compare prices across stores, and fit the build to your budget.
+        Essential parts are kept, non-essential extras are dropped automatically when needed.
       </p>
     </header>
 
     <div class="builder-layout">
-      <!-- Budget Card -->
       <div class="budget-card" data-rv>
         <div class="budget-label">Target Budget</div>
         <div class="budget-value" id="budget-display">$30</div>
-        <input type="range" id="budget-slider" min="15" max="60" value="30" class="range-input">
+        <input type="range" id="budget-slider" min="15" max="60" value="30" class="range-input" aria-label="Target budget in dollars">
         <div class="budget-range">
           <span>$15</span>
           <span>$60</span>
         </div>
       </div>
 
-      <!-- Components Table -->
       <div class="components-card" data-rv style="--rv-delay: 120ms">
         <div class="components-header">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
@@ -33,153 +60,78 @@ import Layout from '../layouts/Layout.astro';
 
         <div class="component-row component-header-row">
           <span>Component</span>
-          <span>Source</span>
+          <span>Best sources</span>
           <span>Price</span>
           <span>Qty</span>
           <span>Total</span>
         </div>
 
-        <div class="component-row" data-price="8.50">
-          <div class="comp-info">
-            <strong>ESP32-WROOM-32</strong>
-            <span>Dual-Core MCU with WiFi/BT</span>
-          </div>
-          <div class="comp-meta">AliExpress</div>
-          <div class="comp-price">$8.50</div>
-          <div class="comp-qty">
-            <input type="number" value="1" min="0" max="10" class="qty-input">
-          </div>
-          <div class="comp-total">$8.50</div>
-        </div>
-
-        <div class="component-row" data-price="5.20">
-          <div class="comp-info">
-            <strong>E22-400M30S</strong>
-            <span>SX1262 LoRa Module +30dBm</span>
-          </div>
-          <div class="comp-meta">AliExpress</div>
-          <div class="comp-price">$5.20</div>
-          <div class="comp-qty">
-            <input type="number" value="1" min="0" max="10" class="qty-input">
-          </div>
-          <div class="comp-total">$5.20</div>
-        </div>
-
-        <div class="component-row" data-price="3.80">
-          <div class="comp-info">
-            <strong>SSD1309 OLED 2.42"</strong>
-            <span>I2C 128x64 Display</span>
-          </div>
-          <div class="comp-meta">AliExpress</div>
-          <div class="comp-price">$3.80</div>
-          <div class="comp-qty">
-            <input type="number" value="1" min="0" max="10" class="qty-input">
-          </div>
-          <div class="comp-total">$3.80</div>
-        </div>
-
-        <div class="component-row" data-price="2.90">
-          <div class="comp-info">
-            <strong>NEO-6M GPS</strong>
-            <span>UART GPS Module</span>
-          </div>
-          <div class="comp-meta">AliExpress</div>
-          <div class="comp-price">$2.90</div>
-          <div class="comp-qty">
-            <input type="number" value="1" min="0" max="10" class="qty-input">
-          </div>
-          <div class="comp-total">$2.90</div>
-        </div>
-
-        <div class="component-row" data-price="0.80">
-          <div class="comp-info">
-            <strong>TP4056 Charger</strong>
-            <span>Li-Ion USB-C Charging Board</span>
-          </div>
-          <div class="comp-meta">AliExpress</div>
-          <div class="comp-price">$0.80</div>
-          <div class="comp-qty">
-            <input type="number" value="1" min="0" max="10" class="qty-input">
-          </div>
-          <div class="comp-total">$0.80</div>
-        </div>
-
-        <div class="component-row" data-price="2.50">
-          <div class="comp-info">
-            <strong>18650 Battery</strong>
-            <span>3.7V 3000mAh Li-Ion Cell</span>
-          </div>
-          <div class="comp-meta">Local Store</div>
-          <div class="comp-price">$2.50</div>
-          <div class="comp-qty">
-            <input type="number" value="1" min="0" max="10" class="qty-input">
-          </div>
-          <div class="comp-total">$2.50</div>
-        </div>
-
-        <div class="component-row" data-price="1.20">
-          <div class="comp-info">
-            <strong>SMA Connector + Antenna</strong>
-            <span>433MHz Rubber Duck Antenna</span>
-          </div>
-          <div class="comp-meta">AliExpress</div>
-          <div class="comp-price">$1.20</div>
-          <div class="comp-qty">
-            <input type="number" value="1" min="0" max="10" class="qty-input">
-          </div>
-          <div class="comp-total">$1.20</div>
-        </div>
-
-        <div class="component-row" data-price="0.60">
-          <div class="comp-info">
-            <strong>Tactile Switches</strong>
-            <span>6x6mm Momentary Push Button</span>
-          </div>
-          <div class="comp-meta">AliExpress</div>
-          <div class="comp-price">$0.15</div>
-          <div class="comp-qty">
-            <input type="number" value="4" min="0" max="20" class="qty-input">
-          </div>
-          <div class="comp-total">$0.60</div>
-        </div>
-
-        <div class="component-row" data-price="0.40">
-          <div class="comp-info">
-            <strong>Passive Buzzer</strong>
-            <span>3V Piezo Buzzer</span>
-          </div>
-          <div class="comp-meta">AliExpress</div>
-          <div class="comp-price">$0.40</div>
-          <div class="comp-qty">
-            <input type="number" value="1" min="0" max="10" class="qty-input">
-          </div>
-          <div class="comp-total">$0.40</div>
-        </div>
-
-        <div class="component-row" data-price="0.30">
-          <div class="comp-info">
-            <strong>Resistors & Capacitors</strong>
-            <span>Passive Components Kit</span>
-          </div>
-          <div class="comp-meta">Local Store</div>
-          <div class="comp-price">$0.30</div>
-          <div class="comp-qty">
-            <input type="number" value="1" min="0" max="10" class="qty-input">
-          </div>
-          <div class="comp-total">$0.30</div>
-        </div>
+        {
+          parts.map((part, i) => (
+            <div
+              class="component-row"
+              data-price={part.price}
+              data-essential={part.essential}
+              data-qty={part.qty}
+              id={`part-${part.id}`}
+              style={`--rv-delay: ${i * 30}ms`}
+            >
+              <div class="comp-info">
+                <strong>
+                  {part.name}
+                  {!part.essential && <span class="comp-optional-badge" title="Non-essential, can be dropped to fit the budget">optional</span>}
+                </strong>
+                <span>{part.desc}</span>
+                <div class="comp-compare">
+                  <span>Compare:</span>
+                  <a href={`https://www.trovaprezzi.it/ricerca.aspx?li=${encodeURIComponent(part.query)}`} target="_blank" rel="noopener" title="Search Trovaprezzi">Trovaprezzi</a>
+                  <a href={`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(part.query)}`} target="_blank" rel="noopener" title="Search Google Shopping">Google</a>
+                  <a href={`https://www.ebay.it/sch/i.html?_nkw=${encodeURIComponent(part.query)}`} target="_blank" rel="noopener" title="Search eBay.it">eBay</a>
+                  <a href={`https://www.aliexpress.com/wholesale?SearchText=${encodeURIComponent(part.query)}`} target="_blank" rel="noopener" title="Search AliExpress">AliExpress</a>
+                  <a href={`https://www.amazon.it/s?k=${encodeURIComponent(part.query)}`} target="_blank" rel="noopener" title="Search Amazon.it">Amazon</a>
+                </div>
+              </div>
+              <div class="comp-meta">
+                <span class="comp-source">{part.source}</span>
+                {!part.essential && (
+                  <label class="comp-toggle">
+                    <input type="checkbox" class="include-toggle" checked aria-label={`Include ${part.name}`}>
+                    <span>keep</span>
+                  </label>
+                )}
+              </div>
+              <div class="comp-price">${part.price.toFixed(2)}</div>
+              <div class="comp-qty">
+                <input type="number" value={part.qty} min="0" max={part.max} class="qty-input" aria-label={`Quantity of ${part.name}`}>
+              </div>
+              <div class="comp-total">${(part.price * part.qty).toFixed(2)}</div>
+            </div>
+          ))
+        }
       </div>
 
-      <!-- Total Card -->
-      <div class="total-card" data-rv style="--rv-delay: 60ms">
+      <div class="budget-fit" id="budget-fit" hidden data-rv style="--rv-delay: 160ms">
+        <div class="budget-fit__head">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
+          <strong>Fit to budget</strong>
+        </div>
+        <p id="budget-fit-text">
+          Over budget by <strong>$0.00</strong>. Drop the optional extras below to stay inside it.
+        </p>
+        <ul class="budget-fit__list" id="budget-fit-list"></ul>
+        <button id="auto-fit-btn" class="btn btn-secondary" type="button">Drop optional extras to fit</button>
+      </div>
+
+      <div class="total-card" data-rv>
         <div class="total-row">
           <span>Components Total</span>
-          <span id="components-total">$26.20</span>
+          <span id="components-total">$28.20</span>
         </div>
-        <div class="total-row">
-          <span>Enclosure (3D Print)</span>
-          <span>$2.00</span>
+        <div class="total-row total-essentials">
+          <span>Essential minimum (always kept)</span>
+          <span id="essential-total">$25.80</span>
         </div>
+        <div id="aria-live" class="aria-live" aria-live="polite"></div>
         <div class="total-row total-grand">
           <span>Grand Total</span>
           <span id="grand-total">$28.20</span>
@@ -187,161 +139,340 @@ import Layout from '../layouts/Layout.astro';
         <div class="budget-status budget-ok" id="budget-status">
           Within budget
         </div>
+        <p class="total-note">
+          Street prices are typical, not quotes. Open the Compare links next to each part to find the
+          current best offer across stores and price comparators.
+        </p>
       </div>
     </div>
   </div>
+</Layout>
 
-  <script>
-    const slider = document.getElementById('budget-slider') as HTMLInputElement;
-    const budgetDisplay = document.getElementById('budget-display');
-    const componentsTotal = document.getElementById('components-total');
-    const grandTotal = document.getElementById('grand-total');
-    const budgetStatus = document.getElementById('budget-status');
-    const qtyInputs = document.querySelectorAll('.qty-input');
+<script>
+  interface PartRow {
+    id: string;
+    name: string;
+    price: number;
+    essential: boolean;
+  }
 
-    function updateTotals() {
-      let total = 0;
-      document.querySelectorAll('.component-row[data-price]').forEach(comp => {
-        const price = parseFloat((comp as HTMLElement).dataset.price || '0');
-        const qtyInput = comp.querySelector('.qty-input') as HTMLInputElement;
-        const qty = parseInt(qtyInput?.value || '1');
-        const compTotal = price * qty;
-        total += compTotal;
-        const totalEl = comp.querySelector('.comp-total');
-        if (totalEl) totalEl.textContent = '$' + compTotal.toFixed(2);
-      });
+  const slider = document.getElementById('budget-slider') as HTMLInputElement;
+  const budgetDisplay = document.getElementById('budget-display');
+  const componentsTotal = document.getElementById('components-total');
+  const essentialTotalEl = document.getElementById('essential-total');
+  const grandTotal = document.getElementById('grand-total');
+  const budgetStatus = document.getElementById('budget-status');
+  const fitPanel = document.getElementById('budget-fit');
+  const fitText = document.getElementById('budget-fit-text');
+  const fitList = document.getElementById('budget-fit-list');
+  const autoFitBtn = document.getElementById('auto-fit-btn');
 
-      const grand = total + 2.00;
-      if (componentsTotal) componentsTotal.textContent = '$' + total.toFixed(2);
-      if (grandTotal) grandTotal.textContent = '$' + grand.toFixed(2);
-      if (budgetDisplay) budgetDisplay.textContent = '$' + (slider?.value || '30');
+  const rows: PartRow[] = [...document.querySelectorAll<HTMLElement>('.component-row[data-price]')].map((row) => ({
+    id: row.id || '',
+    name: row.querySelector('.comp-info strong')?.textContent?.replace(/optional/g, '').trim() || '',
+    price: parseFloat(row.dataset.price || '0'),
+    essential: row.dataset.essential === 'true',
+  }));
 
-      if (budgetStatus) {
-        const budget = parseInt(slider?.value || '30');
-        if (grand <= budget) {
-          budgetStatus.textContent = 'Within budget';
-          budgetStatus.className = 'budget-status budget-ok';
-        } else {
-          budgetStatus.textContent = 'Over budget by $' + (grand - budget).toFixed(2);
-          budgetStatus.className = 'budget-status budget-over';
-        }
+  function rowEnabled(row: HTMLElement): boolean {
+    const toggle = row.querySelector<HTMLInputElement>('.include-toggle');
+    if (toggle) return toggle.checked;
+    return true;
+  }
+
+  function qtyOf(row: HTMLElement): number {
+    const input = row.querySelector<HTMLInputElement>('.qty-input');
+    return Math.max(0, parseInt(input?.value || '1', 10) || 0);
+  }
+
+  function updateTotals(announce = false) {
+    let total = 0;
+    let essentials = 0;
+    rows.forEach((r) => {
+      const row = document.getElementById(r.id) as HTMLElement | null;
+      if (!row) return;
+      const enabled = rowEnabled(row);
+      const qty = qtyOf(row);
+      const line = r.price * qty;
+      total += enabled ? line : 0;
+      if (r.essential) essentials += line;
+      const totalEl = row.querySelector('.comp-total');
+      if (totalEl) totalEl.textContent = '$' + line.toFixed(2);
+      row.classList.toggle('is-dropped', !enabled || qty === 0);
+    });
+
+    if (componentsTotal) componentsTotal.textContent = '$' + total.toFixed(2);
+    if (essentialTotalEl) essentialTotalEl.textContent = '$' + essentials.toFixed(2);
+    if (grandTotal) grandTotal.textContent = '$' + total.toFixed(2);
+    if (budgetDisplay) budgetDisplay.textContent = '$' + (slider?.value || '30');
+
+    if (budgetStatus) {
+      const budget = parseInt(slider?.value || '30', 10);
+      const over = total - budget;
+      if (total <= budget) {
+        budgetStatus.textContent = 'Within budget';
+        budgetStatus.className = 'budget-status budget-ok';
+      } else {
+        budgetStatus.textContent = 'Over budget by $' + over.toFixed(2);
+        budgetStatus.className = 'budget-status budget-over';
       }
     }
 
-    slider?.addEventListener('input', updateTotals);
-    qtyInputs.forEach(input => input.addEventListener('change', updateTotals));
-    updateTotals();
-  </script>
+    renderFitPanel();
+    if (announce) {
+      const total = (grandTotal?.textContent || '').replace('$', '');
+      const live = document.getElementById('aria-live');
+      if (live) live.textContent = 'New total: $' + total;
+    }
+  }
 
-  <style>
-    .builder-page { padding-bottom: 4rem; }
-    .builder-layout {
-      max-width: 900px; margin: 2.5rem auto 0;
-      display: flex; flex-direction: column; gap: 1.5rem;
-    }
+  function renderFitPanel() {
+    const budget = parseInt(slider?.value || '30', 10);
+    const total = rows.reduce((sum, r) => {
+      const row = document.getElementById(r.id) as HTMLElement | null;
+      if (!row || !rowEnabled(row)) return sum;
+      return sum + r.price * qtyOf(row);
+    }, 0);
+    const over = total - budget;
+    const optional = rows.filter((r) => !r.essential);
+    const optionalTotal = optional.reduce((s, r) => {
+      const row = document.getElementById(r.id) as HTMLElement | null;
+      if (!row || !rowEnabled(row)) return s;
+      return s + r.price * qtyOf(row);
+    }, 0);
 
-    /* Budget Card */
-    .budget-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius-xl); padding: 2rem;
-      text-align: center; box-shadow: var(--shadow-sm);
+    if (!fitPanel || !fitText || !fitList) return;
+    if (over <= 0) {
+      fitPanel.hidden = true;
+      fitList.innerHTML = '';
+      return;
     }
-    .budget-label {
-      font-size: 0.75rem; font-weight: 600; color: var(--muted-foreground);
-      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
-    }
-    .budget-value {
-      font-size: 2.5rem; font-weight: 700;
-      font-family: 'JetBrains Mono', monospace; color: var(--foreground);
-      margin-bottom: 1.25rem;
-      background: linear-gradient(135deg, var(--primary), oklch(0.78 0.15 80deg));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .range-input {
-      width: 100%; -webkit-appearance: none; height: 6px;
-      border-radius: 3px; background: var(--border); padding: 0; cursor: pointer;
-    }
-    .range-input::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 20px; height: 20px;
-      background: var(--primary); border-radius: 50%; cursor: pointer;
-      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 15%, transparent);
-    }
-    .budget-range {
-      display: flex; justify-content: space-between;
-      font-size: 0.75rem; color: var(--muted-foreground); margin-top: 0.5rem;
-      font-family: 'JetBrains Mono', monospace;
-    }
+    fitPanel.hidden = false;
+    fitText.innerHTML = '';
 
-    /* Components Card */
-    .components-card {
-      border: 1px solid var(--border); border-radius: var(--radius-xl);
-      background: var(--card); overflow: hidden; box-shadow: var(--shadow-sm);
-    }
-    .components-header {
-      display: flex; align-items: center; gap: 0.5rem;
-      padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border);
-      background: var(--muted); font-size: 0.8125rem; font-weight: 600;
-      color: var(--foreground);
-    }
-    .component-row {
-      display: grid; grid-template-columns: 2fr 1fr 0.7fr 0.5fr 0.7fr;
-      gap: 0.5rem; padding: 0.75rem 1.25rem; align-items: center;
-      border-bottom: 1px solid color-mix(in srgb, var(--foreground) 5%, var(--background));
-      font-size: 0.8125rem; transition: background 0.1s;
-    }
-    .component-row:last-child { border-bottom: none; }
-    .component-row:not(.component-header-row):hover { background: var(--muted); }
-    .component-header-row {
-      background: var(--muted); font-size: 0.6875rem; font-weight: 600;
-      color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.04em;
-    }
-    .comp-info strong { display: block; font-weight: 600; color: var(--foreground); }
-    .comp-info span { font-size: 0.75rem; color: var(--muted-foreground); }
-    .comp-meta { font-size: 0.75rem; color: var(--muted-foreground); }
-    .comp-price { font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; }
-    .qty-input {
-      width: 100%; padding: 0.375rem; font-size: 0.8125rem;
-      border: 1px solid var(--border); border-radius: var(--radius-md);
-      background: var(--background); color: var(--foreground);
-      text-align: center; font-family: 'JetBrains Mono', monospace;
-    }
-    .qty-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
-    .comp-total {
-      font-family: 'JetBrains Mono', monospace; font-weight: 600;
-      text-align: right; color: var(--foreground);
-    }
+    const p1 = document.createElement('span');
+    p1.textContent = 'Over budget by ';
+    const b = document.createElement('strong');
+    b.textContent = '$' + over.toFixed(2);
+    fitText.appendChild(p1);
+    fitText.appendChild(b);
 
-    /* Total Card */
-    .total-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius-xl); padding: 1.5rem;
-      box-shadow: var(--shadow-sm);
+    if (optionalTotal >= over) {
+      const p2 = document.createElement('span');
+      p2.textContent = '. Drop the optional extras below to stay inside it.';
+      fitText.appendChild(p2);
+      const list = document.createElement('ul');
+      optional.forEach((r) => {
+        const row = document.getElementById(r.id) as HTMLElement | null;
+        if (!row || !rowEnabled(row)) return;
+        const li = document.createElement('li');
+        li.textContent = r.name + ' (saves $' + (r.price * qtyOf(row)).toFixed(2) + ')';
+        list.appendChild(li);
+      });
+      fitList.innerHTML = '';
+      fitList.appendChild(list);
+      if (autoFitBtn) autoFitBtn.hidden = false;
+    } else {
+      const p2 = document.createElement('span');
+      p2.textContent = '. Even after dropping every optional extra, essentials cost $'
+        + (total - optionalTotal).toFixed(2)
+        + '. Raise the budget or compare prices on the links below.';
+      fitText.appendChild(p2);
+      fitList.innerHTML = '';
+      if (autoFitBtn) autoFitBtn.hidden = true;
     }
-    .total-row {
-      display: flex; justify-content: space-between;
-      padding: 0.5rem 0; font-size: 0.875rem; color: var(--muted-foreground);
-    }
-    .total-grand {
-      border-top: 1px solid var(--border); margin-top: 0.5rem;
-      padding-top: 0.75rem; font-weight: 700; font-size: 1.125rem; color: var(--foreground);
-    }
-    .budget-status {
-      text-align: center; font-size: 0.8125rem; font-weight: 600;
-      margin-top: 1rem; padding: 0.625rem; border-radius: var(--radius-lg);
-    }
-    .budget-ok {
-      background: color-mix(in srgb, var(--success) 8%, var(--background));
-      color: var(--success);
-    }
-    .budget-over {
-      background: color-mix(in srgb, var(--destructive) 8%, var(--background));
-      color: var(--destructive);
-    }
+  }
 
-    @media (max-width: 640px) {
-      .component-header-row { display: none; }
-      .component-row { grid-template-columns: 1fr auto; gap: 0.75rem; }
-      .comp-meta, .comp-price { display: none; }
+  function autoFit() {
+    const budget = parseInt(slider?.value || '30', 10);
+    const dropOrder = rows
+      .filter((r) => !r.essential)
+      .sort((a, b) => {
+        const ra = document.getElementById(a.id) as HTMLElement | null;
+        const rb = document.getElementById(b.id) as HTMLElement | null;
+        const va = ra && rowEnabled(ra) ? a.price * qtyOf(ra) : 0;
+        const vb = rb && rowEnabled(rb) ? b.price * qtyOf(rb) : 0;
+        return vb - va;
+      });
+
+    for (const r of dropOrder) {
+      const row = document.getElementById(r.id) as HTMLElement | null;
+      if (!row) continue;
+      const total = rows.reduce((sum, rr) => {
+        const row2 = document.getElementById(rr.id) as HTMLElement | null;
+        if (!row2 || !rowEnabled(row2)) return sum;
+        return sum + rr.price * qtyOf(row2);
+      }, 0);
+      if (total <= budget) break;
+      const toggle = row.querySelector<HTMLInputElement>('.include-toggle');
+      if (toggle) toggle.checked = false;
     }
-  </style>
-</Layout>
+    updateTotals(true);
+  }
+
+  slider?.addEventListener('input', () => updateTotals());
+  document.querySelectorAll('.qty-input').forEach((input) =>
+    input.addEventListener('change', () => updateTotals(true))
+  );
+  document.querySelectorAll('.include-toggle').forEach((input) =>
+    input.addEventListener('change', () => updateTotals(true))
+  );
+  autoFitBtn?.addEventListener('click', autoFit);
+  updateTotals();
+</script>
+
+<style>
+  .builder-page { padding-bottom: 4rem; }
+  .builder-layout {
+    max-width: 900px; margin: 2.5rem auto 0;
+    display: flex; flex-direction: column; gap: 1.5rem;
+  }
+
+  .budget-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-xl); padding: 2rem;
+    text-align: center; box-shadow: var(--shadow-sm);
+  }
+  .budget-label {
+    font-size: 0.75rem; font-weight: 600; color: var(--muted-foreground);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  .budget-value {
+    font-size: 2.5rem; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace; color: var(--foreground);
+    margin-bottom: 1.25rem;
+    background: linear-gradient(135deg, var(--primary), oklch(0.78 0.15 80deg));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .range-input {
+    width: 100%; -webkit-appearance: none; height: 6px;
+    border-radius: 3px; background: var(--border); padding: 0; cursor: pointer;
+  }
+  .range-input::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px;
+    background: var(--primary); border-radius: 50%; cursor: pointer;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 15%, transparent);
+  }
+  .budget-range {
+    display: flex; justify-content: space-between;
+    font-size: 0.75rem; color: var(--muted-foreground); margin-top: 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .components-card {
+    border: 1px solid var(--border); border-radius: var(--radius-xl);
+    background: var(--card); overflow: hidden; box-shadow: var(--shadow-sm);
+  }
+  .components-header {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border);
+    background: var(--muted); font-size: 0.8125rem; font-weight: 600;
+    color: var(--foreground);
+  }
+  .component-row {
+    display: grid; grid-template-columns: 2fr 1fr 0.7fr 0.5fr 0.7fr;
+    gap: 0.5rem; padding: 0.9rem 1.25rem; align-items: center;
+    border-bottom: 1px solid color-mix(in srgb, var(--foreground) 5%, var(--background));
+    font-size: 0.8125rem; transition: opacity 0.15s, background 0.1s;
+  }
+  .component-row:last-child { border-bottom: none; }
+  .component-row:not(.component-header-row):hover { background: var(--muted); }
+  .component-row.is-dropped { opacity: 0.5; }
+  .component-header-row {
+    background: var(--muted); font-size: 0.6875rem; font-weight: 600;
+    color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .comp-info strong { display: block; font-weight: 600; color: var(--foreground); }
+  .comp-info > span { font-size: 0.75rem; color: var(--muted-foreground); }
+  .comp-optional-badge {
+    display: inline-block; margin-left: 0.4rem; padding: 0 0.4rem;
+    font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+    border-radius: 999px; vertical-align: 1px;
+  }
+  .comp-compare {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem 0.6rem;
+    margin-top: 0.4rem; font-size: 0.7rem; color: var(--muted-foreground);
+  }
+  .comp-compare a {
+    color: var(--foreground); text-decoration: underline;
+    text-underline-offset: 2px; text-decoration-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  }
+  .comp-compare a:hover { color: var(--primary); }
+  .comp-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+  .comp-source { font-size: 0.75rem; color: var(--muted-foreground); }
+  .comp-toggle {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.68rem; color: var(--muted-foreground); cursor: pointer;
+  }
+  .comp-toggle input { accent-color: var(--primary); cursor: pointer; }
+  .comp-price { font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; }
+  .qty-input {
+    width: 100%; padding: 0.375rem; font-size: 0.8125rem;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--background); color: var(--foreground);
+    text-align: center; font-family: 'JetBrains Mono', monospace;
+  }
+  .qty-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+  .comp-total {
+    font-family: 'JetBrains Mono', monospace; font-weight: 600;
+    text-align: right; color: var(--foreground);
+  }
+
+  .budget-fit {
+    border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border));
+    border-radius: var(--radius-xl); background: color-mix(in srgb, var(--primary) 6%, var(--card));
+    padding: 1.25rem 1.5rem;
+  }
+  .budget-fit__head {
+    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+    color: var(--primary);
+  }
+  .budget-fit__head strong { color: var(--foreground); font-size: 0.95rem; }
+  .budget-fit p { margin: 0 0 0.75rem; font-size: 0.875rem; color: var(--muted-foreground); }
+  .budget-fit p strong { color: var(--destructive); font-family: 'JetBrains Mono', monospace; }
+  .budget-fit__list { margin: 0 0 1rem; padding-left: 1.2rem; }
+  .budget-fit__list li { font-size: 0.8125rem; margin: 0.2rem 0; color: var(--muted-foreground); }
+  .budget-fit .btn { font-size: 0.8rem; }
+
+  .total-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-xl); padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .total-row {
+    display: flex; justify-content: space-between;
+    padding: 0.5rem 0; font-size: 0.875rem; color: var(--muted-foreground);
+  }
+  .total-essentials { font-size: 0.78rem; }
+  .total-grand {
+    border-top: 1px solid var(--border); margin-top: 0.5rem;
+    padding-top: 0.75rem; font-weight: 700; font-size: 1.125rem; color: var(--foreground);
+  }
+  .budget-status {
+    text-align: center; font-size: 0.8125rem; font-weight: 600;
+    margin-top: 1rem; padding: 0.625rem; border-radius: var(--radius-lg);
+  }
+  .budget-ok {
+    background: color-mix(in srgb, var(--success) 8%, var(--background));
+    color: var(--success);
+  }
+  .budget-over {
+    background: color-mix(in srgb, var(--destructive) 8%, var(--background));
+    color: var(--destructive);
+  }
+  .aria-live {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .total-note {
+    margin: 1rem 0 0; font-size: 0.75rem; color: var(--muted-foreground); line-height: 1.5;
+  }
+
+  @media (max-width: 640px) {
+    .component-header-row { display: none; }
+    .component-row { grid-template-columns: 1fr auto; gap: 0.75rem; }
+    .comp-meta, .comp-price { display: none; }
+    .comp-compare { grid-column: 1 / -1; }
+  }
+</style>
