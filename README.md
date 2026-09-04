@@ -21,7 +21,7 @@
 [![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square&labelColor=22c55e&color=16a34a)](LICENSE)
 [![CI](https://img.shields.io/badge/CI-Passing-22c55e?style=flat-square&logo=github-actions&logoColor=white&labelColor=22c55e&color=16a34a)](https://github.com/Leo-Galli/Aegis-Beacon/actions)
 [![Firmware](https://img.shields.io/badge/Firmware-ESP32-blue?style=flat-square&logo=platformio&logoColor=white&labelColor=3b82f6&color=2563eb)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/firmware-ci.yml)
-[![Website](https://img.shields.io/badge/Website-Node.js-22c55e?style=flat-square&logo=node.js&logoColor=white&labelColor=22c55e&color=16a34a)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/website-ci.yml)
+[![Website](https://img.shields.io/badge/Website-Astro-22c55e?style=flat-square&logo=astro&logoColor=white&labelColor=22c55e&color=16a34a)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/website-ci.yml)
 [![Security](https://img.shields.io/badge/Security-Audited-ef4444?style=flat-square&logo=shield&logoColor=white&labelColor=ef4444&color=dc2626)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/pr-checks.yml)
 
 [![Radio](https://img.shields.io/badge/Radio-SX1262-f97316?style=flat-square&logo=semtech&logoColor=white)](https://www.semtech.com/products/wireless-rf/lora-connect/sx1262)
@@ -83,21 +83,33 @@
 
 ## Repository Structure
 
-The project is split into two clearly separated areas: the **embedded firmware** (Arduino/PlatformIO, lives in the repository root) and the **Node.js website** (all web assets and server code live in the dedicated `website/` folder).
+The project is split into two clearly separated areas: the **embedded firmware** (Arduino/PlatformIO, lives in the repository root) and the **Astro website** (all web assets live in the dedicated `website/` folder).
 
 ```text
 Aegis-Beacon/
-├── website/             # Node.js website (everything web lives here)
-│   ├── public/          # Views and static assets
-│   │   ├── index.html   # Single-page technical manual and build wiki
-│   │   ├── demo.html    # Interactive firmware simulation page
-│   │   └── banner.png   # Open Graph / Twitter sharing banner
-│   ├── api/             # Vercel serverless function
-│   │   └── index.js     # Re-exports the Node.js request handler
-│   ├── translations.js  # i18n dictionaries (EN / IT / FR / ES)
-│   ├── server.js        # Node.js HTTP server (language-aware rendering)
-│   ├── vercel.json      # Vercel build + routing configuration
-│   ├── package.json     # Node.js project metadata and scripts
+├── website/             # Astro website (everything web lives here)
+│   ├── src/
+│   │   ├── pages/       # Route pages
+│   │   │   ├── index.astro        # Landing page
+│   │   │   ├── wiki/              # Documentation hub
+│   │   │   │   ├── index.astro    # Wiki home with grouped navigation
+│   │   │   │   └── [...slug].astro# Article renderer
+│   │   │   ├── demo.astro         # Interactive firmware simulation
+│   │   │   ├── builder.astro      # BOM cost builder
+│   │   │   ├── branding.astro     # Brand assets page
+│   │   │   ├── terms.astro        # Terms of Service
+│   │   │   └── privacy.astro      # Privacy Policy
+│   │   ├── content/wiki/  # Markdown articles (41 pages, grouped)
+│   │   ├── layouts/       # Layout.astro + WikiLayout.astro
+│   │   ├── lib/           # wiki-nav.ts, motion.ts, callout plugin
+│   │   └── content.config.ts
+│   ├── public/
+│   │   ├── css/site.css  # Design system (design tokens + components)
+│   │   ├── favicon.svg   # Brand mark
+│   │   └── banner.png    # Open Graph / social banner
+│   ├── astro.config.mjs  # Astro config (static output, callouts)
+│   ├── vercel.json       # Vercel build + output settings
+│   ├── package.json      # Scripts: dev, build, preview, check
 │   └── package-lock.json
 ├── AegisBeacon.ino      # ESP32 firmware (Arduino source)
 ├── README.md            # Project overview, quick start and guides
@@ -107,15 +119,13 @@ Aegis-Beacon/
 └── LICENSE
 ```
 
-**How the site is served:** `website/server.js` (or `website/api/index.js` on Vercel) handles every HTTP request. Pages are rendered by the Node.js runtime: each route reads its HTML template, applies the detected language (`?lang=` query, `aegis-lang` cookie or `Accept-Language` header) and injects the matching translation dictionary. The website is therefore a genuine Node.js application — the HTML files in `public/` are view templates, deliberately kept inside the dedicated `website/` folder.
+**How the site works:** Astro builds the site to **static HTML** (zero runtime server code). Pages are `.astro` components under `src/pages/`; the wiki articles are Markdown files in `src/content/wiki/` rendered by `src/pages/wiki/[...slug].astro`. Self-hosted fonts (Chakra Petch, Manrope, JetBrains Mono via Fontsource) replace any external font CDN, and a single hand-written `public/css/site.css` provides the design system with light/dark themes.
 
-**Vercel deployment (Root Directory = `website`):** the Vercel project must point its **Root Directory** at the `website/` folder, otherwise deployments compile an empty project and every route returns `404 NOT_FOUND`. `rootDirectory` cannot be set inside `vercel.json` — it is a project-level setting. Steps:
+**Local development:** `cd website && npm install && npm run dev`, then open http://localhost:4321 (Astro default). `npm run check` runs the Astro type checker; `npm run build` emits the static site to `website/dist/`.
 
-1. Open the Vercel dashboard → **aegis-beacon** project → **Settings → General → Root Directory**.
-2. Enter `website` and save. All paths in `website/vercel.json` are relative to that root.
-3. Redeploy (push to `main` or use "Redeploy" in the dashboard). The Git integration then builds from `website/` automatically.
+**Vercel deployment:** the `website/vercel.json` declares `framework: astro`, `buildCommand: npm run build` and `outputDirectory: dist`. Set the project **Root Directory** to `website` (a project-level setting, not configurable inside `vercel.json`).
 
-Equivalently, with the Vercel CLI from inside `website/`: `vercel link --yes --project aegis-beacon` then `vercel deploy --prod` (or `vercel build` followed by `vercel deploy --prebuilt --prod`). The `functions.includeFiles` entry bundles `public/**` into the serverless function so the language-aware page renderer can read its templates at runtime.
+Equivalently, with the Vercel CLI from the repository root: `vercel link --yes --project aegis-beacon` then `vercel deploy --prod`.
 
 ---
 
@@ -125,9 +135,8 @@ Equivalently, with the Vercel CLI from inside `website/`: `vercel link --yes --p
 |:--------------------|:----------------------------------------------------------------------------------------------------------|
 | **Firmware**        | C++ (Arduino framework) · PlatformIO · RadioLib ≥ 6.x (SX1262) · U8g2 ≥ 2.34 (SSD1309) · TinyGPS++ ≥ 1.0.3 · ArduinoJson ≥ 7.x |
 | **Hardware**        | ESP32 DevKit V1 · Ebyte E22-400M30S (SX1262/LLCC68) · SSD1309 2.42" OLED · NEO-6M GPS · TP4056 · 18650 Li-ion |
-| **Website**         | Node.js ≥ 18 (zero runtime dependencies) · ES modules · Vercel serverless · Tailwind CSS · Vanilla JS · WebAudio API |
-| **i18n**            | Dictionary-driven EN / IT / FR / ES with `notranslate` protection for technical terms                     |
-| **Tooling / Deploy**| Git + GitHub · PlatformIO · Arduino IDE · Vercel CLI · Vercel Git integration (Root Directory `website`)   |
+| **Website**         | Astro 5 (static output) · TypeScript · Astro Content Collections · self-hosted fonts (Fontsource) · vanilla CSS · vanilla JS |
+| **Tooling / Deploy**| Git + GitHub · PlatformIO · Arduino IDE · Astro CLI · Vercel (Root Directory `website`, framework astro)     |
 
 See **[TECHNOLOGIES.md](TECHNOLOGIES.md)** for the full stack reference: exact libraries, versions, build commands, architecture and verification checklist.
 
@@ -144,13 +153,13 @@ All project documentation is written in English and kept in the repository root.
 | [FREQUENCIES.md](FREQUENCIES.md) | Global SAR frequency reference and regional compatibility database        |
 | [TECHNOLOGIES.md](TECHNOLOGIES.md) | Technology stack, architecture and verification checklist               |
 
-**Interactive documentation:** the live website (`https://aegis-beacon.vercel.app`) renders the same manual with a language selector (EN/IT/FR/ES) and a complete browser simulation of the firmware at `/demo.html` (OLED, Morse engine, frequency planner, GPS payload, RSSI audio, battery monitor, serial console).
+**Live documentation:** the website (`https://aegis-beacon.vercel.app`) renders this content as an in-depth wiki: 41 articles across 7 groups at `/wiki`, an interactive firmware simulation at `/demo` (OLED, Morse engine, frequency planner, GPS payload, RSSI audio, battery monitor, serial console), a BOM cost calculator at `/builder`, and brand assets at `/branding`.
 
 ---
 
 ## Overview
 
-**Aegis-Beacon** is an open-source, ultra-low-cost emergency rescue beacon designed for avalanche survival, backcountry emergencies, and SAR (Search and Rescue) operations. It fits in a jacket pocket, costs around $23–28 to build, and can operate for **70+ hours** on a single 18650 cell in BEACON mode.
+**Aegis-Beacon** is an open-source, ultra-low-cost emergency rescue beacon designed for avalanche survival, backcountry emergencies, and SAR (Search and Rescue) operations. It fits in a jacket pocket, costs around $23-28 to build, and runs roughly **65 hours at the default 10 s beacon interval** on a single 18650 cell - up to **~175 hours** when the interval is stretched to 60 s.
 
 v5.4 is a significant hardware upgrade from the original v4.0. The microcontroller has been upgraded to an **ESP32 DevKit V1** (30-pin), the radio module to an **SX1262** (Ebyte E22-400M30S, up to +30 dBm with onboard PA), and the display to a larger **SSD1309 2.42" OLED**. New features include a **NEO-6M GPS module** that can append your coordinates to every Morse transmission, a **battery voltage monitor** driven by a simple resistor divider, and a **4-button physical control panel** for live volume and WPM adjustment.
 
@@ -994,28 +1003,28 @@ A: Yes, mandatory. Hardware is completely different (ESP32 DevKit V1 instead of 
 
 ## CI/CD Workflow
 
-The repository includes a GitHub Actions pipeline at `.github/workflows/aegis_suite.yml`.
+GitHub Actions pipelines in `.github/workflows/`:
 
-```
-push / PR / tag
-      │
-      ├── validate          ← YAML syntax, required files, platformio.ini
-      │
-      ├── build-arduino  ─── matrix: 240 MHz + 80 MHz
-      ├── build-pio       ─── esp32dev target
-      └── static-analysis ─── cppcheck + size report
-                │
-                ├── size-report  (PR only — posts flash/RAM comment)
-                ├── release      (tag v*.*.* only — creates GitHub Release)
-                └── notify       (always — writes CI summary)
-```
+| Workflow | File | What it runs |
+|----------|------|--------------|
+| Firmware CI | `firmware-ci.yml` | Builds the Arduino firmware (PlatformIO), lints, checks size, runs on push/PR |
+| Website CI | `website-ci.yml` | `astro check`, build, route + wiki-content verification, security audit |
+| PR Checks | `pr-check.yml` | Astro build, route verification, wiki/link validation, SEO and code-quality scans |
+| PR Quality Checks | `pr-checks.yml` | PR title/commit validation, sensitive-file scan, documentation checks |
+| Auto Assign | `auto-assign.yml` | Assigns @Leo-Galli as reviewer on every PR |
 
-Trigger a release:
+**Local verification:**
 
 ```bash
-git tag v5.4.0
-git push origin v5.4.0
+# Website: typecheck + build
+cd website && npm run check && npm run build
+
+# Firmware (PlatformIO env: esp32devkitv1)
+#   pio run --target upload
+#   pio device monitor --baud 115200
 ```
+
+> Release tags (`v*.*.*`) are handled by the repository owner; the firmware workflow validates the tag build before any release is published.
 
 ---
 
