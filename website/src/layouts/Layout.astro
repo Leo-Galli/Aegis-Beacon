@@ -11,10 +11,16 @@ import '@fontsource/jetbrains-mono/700.css';
 interface Props {
   title: string;
   description?: string;
+  image?: string;
 }
 
-const { title, description = 'Aegis-Beacon: Open Source Emergency Rescue Beacon' } = Astro.props;
+const SITE = 'https://aegis-beacon.vercel.app';
+const { title, description = 'Aegis-Beacon: Open Source Emergency Rescue Beacon', image = '/banner.png' } = Astro.props;
 const currentPath = Astro.url.pathname;
+const canonicalUrl = SITE + currentPath;
+const imageUrl = image.startsWith('http') ? image : SITE + image;
+const baseTitle = title.replace(/\s*\|\s*Aegis-Beacon.*$/, '');
+const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle} | Aegis-Beacon`;
 ---
 
 <!DOCTYPE html>
@@ -24,9 +30,45 @@ const currentPath = Astro.url.pathname;
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content={description}>
   <meta name="theme-color" content="#0a0a0a">
+  <meta name="robots" content="index, follow">
   <title>{title}</title>
+  <link rel="canonical" href={canonicalUrl}>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/css/site.css">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Aegis-Beacon">
+  <meta property="og:title" content={cleanTitle}>
+  <meta property="og:description" content={description}>
+  <meta property="og:url" content={canonicalUrl}>
+  <meta property="og:image" content={imageUrl}>
+  <meta property="og:image:width" content="1376">
+  <meta property="og:image:height" content="768">
+  <meta property="og:image:alt" content="Aegis-Beacon emergency rescue beacon">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content={cleanTitle}>
+  <meta name="twitter:description" content={description}>
+  <meta name="twitter:image" content={imageUrl}>
+
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Aegis-Beacon',
+    url: SITE,
+    description: 'Open source emergency rescue beacon built on an ESP32, an SX1262 radio and a NEO-6M GPS, transmitting coordinates in Morse on 433 MHz.',
+    inLanguage: 'en',
+    publisher: {
+      '@type': 'Organization',
+      name: 'Aegis-Beacon',
+      url: SITE,
+      logo: { '@type': 'ImageObject', url: SITE + '/favicon.svg' }
+    }
+  })} />
+
   <script is:inline>
     (function() {
       try {
@@ -53,6 +95,7 @@ const currentPath = Astro.url.pathname;
         <a href="/wiki" class:list={["site-nav__link", { active: currentPath.includes('/wiki') }]}>Docs</a>
         <a href="/demo" class:list={["site-nav__link", { active: currentPath === '/demo' }]}>Demo</a>
         <a href="/builder" class:list={["site-nav__link", { active: currentPath === '/builder' }]}>Builder</a>
+        <a href="/repeaters" class:list={["site-nav__link", { active: currentPath === '/repeaters' }]}>Repeaters</a>
         <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="site-nav__link site-nav__link--github">GitHub <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg></a>
       </nav>
       <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu">
@@ -70,6 +113,7 @@ const currentPath = Astro.url.pathname;
     <a href="/wiki" class:list={["mobile-menu__link", { active: currentPath.includes('/wiki') }]}>Docs</a>
     <a href="/demo" class:list={["mobile-menu__link", { active: currentPath === '/demo' }]}>Demo</a>
     <a href="/builder" class:list={["mobile-menu__link", { active: currentPath === '/builder' }]}>Builder</a>
+    <a href="/repeaters" class:list={["mobile-menu__link", { active: currentPath === '/repeaters' }]}>Repeaters</a>
     <a href="/branding" class:list={["mobile-menu__link", { active: currentPath === '/branding' }]}>Branding</a>
     <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener" class="mobile-menu__link">GitHub</a>
   </div>
@@ -88,6 +132,7 @@ const currentPath = Astro.url.pathname;
         <a href="/wiki">Documentation</a>
         <a href="/demo">Demo</a>
         <a href="/builder">Builder</a>
+        <a href="/repeaters">Repeaters</a>
         <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank">GitHub</a>
       </div>
       <div class="site-footer__legal">
