@@ -156,7 +156,7 @@ Hold both **MODE** and **SEL** buttons at boot for 5 seconds. Device reboots wit
 2. Create a feature branch
 3. Submit a pull request
 
-See [Security & Legal](/wiki/security) for contribution guidelines.
+See [Contributing to Aegis-Beacon](/wiki/contributing) for contribution guidelines.
 
 ### Where can I get help?
 
@@ -166,7 +166,7 @@ See [Security & Legal](/wiki/security) for contribution guidelines.
 
 ### Can I use this commercially?
 
-Yes, under MIT license. See [Security & Legal](/wiki/security) for details.
+Yes, under the MIT license. See [Contributing to Aegis-Beacon](/wiki/contributing) for licensing details.
 
 > [!NOTE]
 > If this project saves a life, please open a PR and let us know.

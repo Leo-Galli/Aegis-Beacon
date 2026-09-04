@@ -7,7 +7,6 @@ import Layout from '../layouts/Layout.astro';
 <div class="demo-page container">
   <!-- Section Head -->
   <header class="section-head" style="padding-top: clamp(2rem, 4vw, 3rem);">
-    <p class="section-head__eyebrow">Interactive Demo</p>
     <h1 class="section-head__title">Firmware Simulation</h1>
     <p class="section-head__lead">
       Terminal-style simulation of the Aegis-Beacon OLED display and firmware behavior.
@@ -36,11 +35,12 @@ import Layout from '../layouts/Layout.astro';
 
         <!-- Device Buttons -->
         <div style="display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: center;">
-          <button class="key-btn" data-key="mode">MODE</button>
-          <button class="key-btn" data-key="sel">SEL</button>
-          <button class="key-btn" data-key="up">UP</button>
-          <button class="key-btn" data-key="dn">DN</button>
+          <button class="key-btn" data-key="mode" type="button">MODE</button>
+          <button class="key-btn" data-key="sel" type="button">SEL</button>
+          <button class="key-btn" data-key="up" type="button">UP</button>
+          <button class="key-btn" data-key="dn" type="button">DN</button>
         </div>
+        <p class="key-hint">MODE cycles modes, SEL selects, UP/DN adjust</p>
       </div>
     </div>
 
@@ -105,30 +105,36 @@ import Layout from '../layouts/Layout.astro';
   let wpm = 12;
   let power = 17;
   let battery = 87;
+  let selTarget: 'wpm' | 'pwr' = 'wpm';
+  let txActive = true;
+
+  const MODES = ['beacon', 'search', 'config', 'emergency'];
+
 
   function updateDisplay() {
     if (!oled) return;
     const voltage = (3.0 + (battery / 100) * 1.2).toFixed(2);
+    const txLine = txActive ? `TX: +${power} dBm` : 'TX: STANDBY';
     const lines: Record<string, string[]> = {
       beacon: [
         'SOS ... --- ...',
         `N45 53.12 E09 12.45`,
         `${currentFreq} MHz`,
-        `TX: +${power} dBm`,
+        txLine,
         `BAT: ${battery}% ${voltage}V`,
       ],
       search: [
         'SEARCH MODE',
         `Scanning ${currentFreq} MHz`,
         'RSSI: -67 dBm',
-        'SIGNAL DETECTED',
+        txActive ? 'SIGNAL DETECTED' : 'PAUSED',
         `BAT: ${battery}% ${voltage}V`,
       ],
       config: [
         'CONFIG MODE',
         'WiFi AP: AEGIS-SETUP',
         '192.168.4.1',
-        `WPM: ${wpm} | PWR: +${power}`,
+        selTarget === 'wpm' ? `> WPM ${wpm}   PWR +${power}` : `  WPM ${wpm}   > PWR +${power}`,
         `BAT: ${battery}% ${voltage}V`,
       ],
       emergency: [
@@ -144,13 +150,59 @@ import Layout from '../layouts/Layout.astro';
     oled.innerHTML = data.map((text, i) => `<div class="${lineClasses[i] || 'oled-line'}">${text}</div>`).join('');
   }
 
+  function selectMode(mode: string) {
+    currentMode = mode;
+    modes.forEach((b) => b.classList.toggle('active', (b as HTMLElement).dataset.mode === mode));
+    updateDisplay();
+  }
+
   modes.forEach(btn => {
     btn.addEventListener('click', () => {
-      modes.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentMode = (btn as HTMLElement).dataset.mode || 'beacon';
-      updateDisplay();
+      selectMode((btn as HTMLElement).dataset.mode || 'beacon');
     });
+  });
+
+  // Physical keys: MODE cycles modes, SEL selects the CONFIG target or
+  // toggles TX, UP/DN adjust the selected parameter live.
+  const keyEls = {
+    mode: document.querySelector('.key-btn[data-key="mode"]'),
+    sel: document.querySelector('.key-btn[data-key="sel"]'),
+    up: document.querySelector('.key-btn[data-key="up"]'),
+    dn: document.querySelector('.key-btn[data-key="dn"]'),
+  };
+  keyEls.mode?.addEventListener('click', () => {
+    const idx = MODES.indexOf(currentMode);
+    selectMode(MODES[(idx + 1) % MODES.length]);
+  });
+  keyEls.sel?.addEventListener('click', () => {
+    if (currentMode === 'config') {
+      selTarget = selTarget === 'wpm' ? 'pwr' : 'wpm';
+      updateDisplay();
+    } else {
+      txActive = !txActive;
+      updateDisplay();
+    }
+  });
+  const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+  keyEls.up?.addEventListener('click', () => {
+    if (currentMode === 'config') {
+      if (selTarget === 'wpm') { wpm = clamp(wpm + 1, 5, 25); wpmSlider.value = String(wpm); }
+      else { power = clamp(power + 1, 0, 22); powerSlider.value = String(power); }
+    } else {
+      wpm = clamp(wpm + 1, 5, 25);
+      wpmSlider.value = String(wpm);
+    }
+    updateDisplay();
+  });
+  keyEls.dn?.addEventListener('click', () => {
+    if (currentMode === 'config') {
+      if (selTarget === 'wpm') { wpm = clamp(wpm - 1, 5, 25); wpmSlider.value = String(wpm); }
+      else { power = clamp(power - 1, 0, 22); powerSlider.value = String(power); }
+    } else {
+      wpm = clamp(wpm - 1, 5, 25);
+      wpmSlider.value = String(wpm);
+    }
+    updateDisplay();
   });
 
   freqSelect?.addEventListener('change', () => { currentFreq = freqSelect.value; updateDisplay(); });
@@ -224,6 +276,12 @@ import Layout from '../layouts/Layout.astro';
     display: block; font-size: 0.75rem;
     font-family: 'JetBrains Mono', monospace;
     color: var(--muted-foreground); margin-top: 0.375rem;
+  }
+
+  .key-hint {
+    margin: 0.75rem 0 0; text-align: center;
+    font-size: 0.7rem; color: var(--muted-foreground);
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em;
   }
 </style>
 </Layout>
