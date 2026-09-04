@@ -1,6 +1,6 @@
 ---
 title: "Power Management"
-description: "Technical documentation for Power Management"
+description: "Deep sleep, RTC RAM, battery monitoring and realistic runtime estimates per mode"
 ---
 
 # Power Management

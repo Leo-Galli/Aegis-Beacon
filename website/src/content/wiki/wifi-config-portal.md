@@ -1,6 +1,6 @@
 ---
 title: "WiFi Configuration Portal"
-description: "Technical documentation for WiFi Configuration Portal"
+description: "Connect to the captive portal and configure frequency, power, GPS, audio and OLED"
 ---
 
 # WiFi Configuration Portal

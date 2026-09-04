@@ -1,6 +1,6 @@
 ---
 title: "Project Overview"
-description: "Technical documentation for Project Overview"
+description: "What the Aegis-Beacon is, what it costs, how it works and where the project is heading"
 ---
 
 # Project Overview
@@ -58,10 +58,48 @@ Aegis-Beacon is a professional emergency radio-location system based on LoRa tec
 > [!WARNING]
 > EMERGENCY mode consumes maximum power. Use only in critical situations where immediate rescue communication is required.
 
+## Hardware Platform (v5.4)
+
+| Component | Part | Role |
+|-----------|------|------|
+| MCU | ESP32 DevKit V1 (30-pin) | Control, WiFi, deep sleep |
+| Radio | Ebyte E22-400M30S (SX1262) | CW/FSK TX + RSSI scan, up to +30 dBm PA |
+| Display | SSD1309 2.42" OLED (SPI) | Mode UI, battery, GPS state |
+| GPS | NEO-6M (UART2) | Coordinates in the Morse payload |
+| Battery | 18650 Li-ion + TP4056 | Power and USB-C charging |
+| Audio | GPIO 25 DAC1 + 3.5 mm jack | Morse clicks and RSSI audio alerts |
+| Controls | 4 tactile buttons | MODE / SEL / UP / DN |
+
+## What Changed in v5.x
+
+Aegis-Beacon v5.4 is a full hardware revision of the original v4.0 design:
+
+- **ESP32-C3 -> ESP32 DevKit V1** with native DAC1 audio (cleaner tone)
+- **SX1276 -> SX1262** (E22 module): CW keying, +30 dBm PA, and a mandatory BUSY pin
+- **0.96" I2C -> 2.42" SPI OLED** driven by U8g2 (flicker-free full-frame buffer)
+- **Added GPS** with compact DDM coordinates (`N4553 E01230`) sent in Morse
+- **Added a battery monitor** (ADC divider -> % + mV, live on every screen)
+- **Added 4 physical buttons** for live VOL/WPM adjustment without the dashboard
+
+> [!IMPORTANT]
+> GPIO assignments changed completely between v4.0 and v5.x. Do not run v5.x firmware on the old ESP32-C3 + RA-02 hardware without rewiring. See the [GPIO Pin Map](/wiki/gpio-pin-mapping).
+
+## Project Layout
+
+| Path | What lives there |
+|------|------------------|
+| `AegisBeacon.ino` | Full ESP32 firmware (single file) |
+| `README.md` | Project overview and quick start |
+| `DATASHEET.md` | Electrical specs and GPIO map |
+| `FREQUENCIES.md` | SAR frequency reference per region |
+| `TECHNOLOGIES.md` | Stack, build commands and verification checklist |
+| `website/` | This documentation site, demo and BOM builder |
+
 ## Quick Links
 
 - **[Quick Start Guide](/wiki/quick-start-guide)** -- Get started in 5 minutes
 - **[Hardware Components](/wiki/hardware-components)** -- Full BOM and wiring
 - **[Assembly Guide](/wiki/assembly-guide)** -- Step-by-step build instructions
 - **[Firmware Overview](/wiki/firmware-overview)** -- Code structure and dependencies
+- **[Operating Modes](/wiki/operating-modes)** -- BEACON, SEARCH, CONFIG, EMERGENCY
 - **[BOM Builder](/builder)** -- Interactive cost calculator

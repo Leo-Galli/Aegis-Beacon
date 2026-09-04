@@ -1,6 +1,6 @@
 ---
 title: "OLED Display"
-description: "Technical documentation for OLED Display"
+description: "SSD1309 layout reference: every screen, battery icon state and the U8g2 rendering path"
 ---
 
 # OLED Display

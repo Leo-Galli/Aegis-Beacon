@@ -1,6 +1,6 @@
 ---
 title: "Frequently Asked Questions"
-description: "Technical documentation for Frequently Asked Questions"
+description: "Answers to the most common questions about cost, legality, receivers, batteries and assembly"
 ---
 
 # Frequently Asked Questions

@@ -1,5 +1,7 @@
 ---
+import { getCollection, type CollectionEntry } from 'astro:content';
 import Layout from './Layout.astro';
+import { WIKI_NAV, WIKI_FLAT, groupForPage, labelForPage } from '../lib/wiki-nav';
 
 interface Props {
   title: string;
@@ -9,63 +11,101 @@ interface Props {
 
 const { title, description, slug } = Astro.props;
 
-const wikiPages = [
-  { id: 'project-overview', title: 'Overview' },
-  { id: 'hardware-components', title: 'Hardware' },
-  { id: 'gpio-pin-mapping', title: 'GPIO Pin Map' },
-  { id: 'rf-design-link-budget', title: 'RF Design' },
-  { id: 'antenna-design', title: 'Antenna Design' },
-  { id: 'firmware-overview', title: 'Firmware' },
-  { id: 'morse-code-engine', title: 'Morse Engine' },
-  { id: 'configuration-reference', title: 'Configuration' },
-  { id: 'oled-display', title: 'OLED Display' },
-  { id: 'gps-integration', title: 'GPS Integration' },
-  { id: 'power-management', title: 'Power Management' },
-  { id: 'assembly-guide', title: 'Assembly Guide' },
-  { id: 'frequency-compatibility', title: 'Frequency Table' },
-  { id: 'system-architecture', title: 'System Architecture' },
-  { id: 'software-build-process', title: 'Software Build' },
-  { id: 'wifi-config-portal', title: 'WiFi Config Portal' },
-  { id: 'troubleshooting', title: 'Troubleshooting' },
-  { id: 'faq', title: 'FAQ' },
-  { id: 'glossary', title: 'Glossary' },
-];
+const entries: CollectionEntry<'wiki'>[] = await getCollection('wiki');
+const meta = new Map(entries.map((e: CollectionEntry<'wiki'>) => [e.id, e.data]));
 
-const currentIndex = wikiPages.findIndex(p => p.id === slug);
-const prevPage = currentIndex > 0 ? wikiPages[currentIndex - 1] : null;
-const nextPage = currentIndex < wikiPages.length - 1 ? wikiPages[currentIndex + 1] : null;
+interface NavPage {
+  id: string;
+  title: string;
+}
+interface NavGroup {
+  label: string;
+  blurb: string;
+  pages: NavPage[];
+}
+
+const groups: NavGroup[] = WIKI_NAV.map((g) => ({
+  label: g.label,
+  blurb: g.blurb,
+  pages: g.pages.map((p) => ({
+    id: p.id,
+    title: meta.get(p.id)?.title ?? p.label,
+  })),
+}));
+
+const currentGroup = groupForPage(slug);
+const currentIndex = WIKI_FLAT.indexOf(slug);
+const prevId = currentIndex > 0 ? WIKI_FLAT[currentIndex - 1] : null;
+const nextId = currentIndex >= 0 && currentIndex < WIKI_FLAT.length - 1 ? WIKI_FLAT[currentIndex + 1] : null;
+const prevMeta = prevId ? meta.get(prevId) : null;
+const nextMeta = nextId ? meta.get(nextId) : null;
+const currentGroupLabel = currentGroup?.label ?? '';
 ---
 
 <Layout title={`${title} | Aegis-Beacon Wiki`} description={description}>
-  <!-- Mobile Nav -->
-  <div class="wiki-mobile-nav">
-    <div class="wiki-mobile-scroll">
-      {wikiPages.map(page => (
-        <a
-          href={`/wiki/${page.id}`}
-          class:list={['wiki-mobile-link', { 'wiki-mobile-active': page.id === slug }]}
-        >
-          {page.title}
-        </a>
-      ))}
+  <!-- Mobile nav: accordion -->
+  <details class="wiki-mobile-nav" id="wiki-mobile-nav">
+    <summary class="wiki-mobile-summary">
+      <span class="wiki-mobile-toggle-label">Documentation</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <div class="wiki-mobile-panel">
+      <div class="wiki-mobile-tree">
+        {groups.map((g) => (
+          <details class="wiki-mobile-group" open={g.label === currentGroupLabel}>
+            <summary class="wiki-mobile-group-summary">
+              <span>{g.label}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="wiki-mobile-group-pages">
+              {g.pages.map((p) => (
+                <a
+                  href={`/wiki/${p.id}`}
+                  class:list={['wiki-mobile-link', { 'wiki-mobile-active': p.id === slug }]}
+                >
+                  {p.title}
+                </a>
+              ))}
+            </div>
+          </details>
+        ))}
+      </div>
     </div>
-  </div>
+  </details>
 
   <div class="wiki-layout">
     <!-- Sidebar -->
     <aside class="wiki-sidebar">
       <div class="wiki-sidebar-header">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-        Documentation
+        <span>Documentation</span>
       </div>
-      <nav class="wiki-nav-list">
-        {wikiPages.map(page => (
-          <a
-            href={`/wiki/${page.id}`}
-            class:list={['wiki-nav-link', { 'wiki-nav-active': page.id === slug }]}
-          >
-            {page.title}
+      <nav class="wiki-nav" aria-label="Wiki sections">
+        <div class="wiki-nav-tools">
+          <a href="/wiki" class:list={['wiki-nav-home', { 'wiki-nav-home--active': slug === '' }]}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Wiki home
           </a>
+        </div>
+        {groups.map((g) => (
+          <details class="wiki-group" open={g.label === currentGroupLabel}>
+            <summary class="wiki-group-summary">
+              <span class="wiki-group-label">{g.label}</span>
+              <span class="wiki-group-count">{g.pages.length}</span>
+              <svg class="wiki-group-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="wiki-group-pages">
+              {g.pages.map((p) => (
+                <a
+                  href={`/wiki/${p.id}`}
+                  class:list={['wiki-nav-link', { 'wiki-nav-active': p.id === slug }]}
+                >
+                  <span class="wiki-nav-link-dot" aria-hidden="true"></span>
+                  <span>{p.title}</span>
+                </a>
+              ))}
+            </div>
+          </details>
         ))}
       </nav>
     </aside>
@@ -74,8 +114,12 @@ const nextPage = currentIndex < wikiPages.length - 1 ? wikiPages[currentIndex + 
     <article class="wiki-main">
       <div class="wiki-page-header">
         <div class="wiki-breadcrumb">
-          <a href="/wiki/project-overview">Docs</a>
+          <a href="/wiki">Docs</a>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          {currentGroupLabel && <a href={`/wiki#${currentGroupLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>{currentGroupLabel}</a>}
+          {currentGroupLabel && (
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          )}
           <span class="wiki-breadcrumb-current">{title}</span>
         </div>
         <div class="wiki-page-title-row">
@@ -90,6 +134,7 @@ const nextPage = currentIndex < wikiPages.length - 1 ? wikiPages[currentIndex + 
             Edit on GitHub
           </a>
         </div>
+        {description && <p class="wiki-page-desc">{description}</p>}
       </div>
 
       <div class="prose-wiki">
@@ -97,20 +142,20 @@ const nextPage = currentIndex < wikiPages.length - 1 ? wikiPages[currentIndex + 
       </div>
 
       <nav class="wiki-prev-next">
-        {prevPage && (
-          <a href={`/wiki/${prevPage.id}`} class="wiki-nav-prev">
+        {prevId && (
+          <a href={`/wiki/${prevId}`} class="wiki-nav-prev">
             <svg class="wiki-nav-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
             <div>
               <span class="wiki-nav-label">Previous</span>
-              <span class="wiki-nav-title">{prevPage.title}</span>
+              <span class="wiki-nav-title">{prevMeta?.title ?? labelForPage(prevId)}</span>
             </div>
           </a>
         )}
-        {nextPage && (
-          <a href={`/wiki/${nextPage.id}`} class="wiki-nav-next">
+        {nextId && (
+          <a href={`/wiki/${nextId}`} class="wiki-nav-next">
             <div>
               <span class="wiki-nav-label">Next</span>
-              <span class="wiki-nav-title">{nextPage.title}</span>
+              <span class="wiki-nav-title">{nextMeta?.title ?? labelForPage(nextId)}</span>
             </div>
             <svg class="wiki-nav-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
           </a>
@@ -133,7 +178,7 @@ const nextPage = currentIndex < wikiPages.length - 1 ? wikiPages[currentIndex + 
     const toc = document.getElementById('toc');
     if (toc) {
       const headings = document.querySelectorAll('.prose-wiki h2, .prose-wiki h3');
-      headings.forEach(h => {
+      headings.forEach((h) => {
         if (!h.id) h.id = h.textContent?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || '';
         const a = document.createElement('a');
         a.href = `#${h.id}`;
@@ -142,72 +187,150 @@ const nextPage = currentIndex < wikiPages.length - 1 ? wikiPages[currentIndex + 
         toc.appendChild(a);
       });
       const items = toc.querySelectorAll('a');
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            items.forEach(l => l.classList.remove('active'));
-            const active = toc.querySelector(`a[href="#${entry.target.id}"]`);
-            active?.classList.add('active');
-          }
-        });
-      }, { rootMargin: '-80px 0px -80% 0px' });
-      headings.forEach(h => observer.observe(h));
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              items.forEach((l) => l.classList.remove('active'));
+              const active = toc.querySelector(`a[href="#${entry.target.id}"]`);
+              active?.classList.add('active');
+            }
+          });
+        },
+        { rootMargin: '-80px 0px -80% 0px' }
+      );
+      headings.forEach((h) => observer.observe(h));
     }
 
     // Scroll progress
     const progressBar = document.getElementById('scroll-progress');
     if (progressBar) {
-      window.addEventListener('scroll', () => {
-        const scrollTop = window.scrollY;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-        progressBar.style.width = progress + '%';
-      });
+      window.addEventListener(
+        'scroll',
+        () => {
+          const scrollTop = window.scrollY;
+          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+          progressBar.style.width = progress + '%';
+        },
+        { passive: true }
+      );
     }
+
+    // Collapsible sidebar groups: remember manually toggled state
+    const groupEls = document.querySelectorAll<HTMLDetailsElement>('.wiki-group');
+    groupEls.forEach((group) => {
+      const key = 'wiki-open-' + (group.querySelector('.wiki-group-label')?.textContent || '');
+      group.addEventListener('toggle', () => {
+        try {
+          localStorage.setItem(key, group.open ? '1' : '0');
+        } catch (e) {}
+      });
+    });
   </script>
 
   <style is:global>
-    /* Wiki Layout */
+    /* Layout scaffold */
     .wiki-layout { display: flex; gap: 0; max-width: 100%; }
 
     /* Sidebar */
     .wiki-sidebar {
-      display: none; width: 250px; flex-shrink: 0;
+      display: none; width: 264px; flex-shrink: 0;
       position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h));
       overflow-y: auto; border-right: 1px solid var(--border);
-      background: var(--background); padding: 1.25rem 0; z-index: 20;
+      background: var(--background); padding: 1rem 0 2rem; z-index: 20;
     }
     @media (min-width: 1024px) { .wiki-sidebar { display: block; } }
     .wiki-sidebar-header {
       display: flex; align-items: center; gap: 0.5rem;
-      padding: 0 1rem 0.75rem; margin-bottom: 0.25rem;
+      padding: 0 1rem 0.75rem; margin-bottom: 0.5rem;
       border-bottom: 1px solid var(--border);
       font-size: 0.6875rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-foreground);
     }
-    .wiki-nav-list { list-style: none; padding: 0; margin: 0; }
+    .wiki-nav { display: flex; flex-direction: column; gap: 0.125rem; }
+
+    .wiki-nav-tools { padding: 0.25rem 0.5rem 0.5rem; }
+    .wiki-nav-home {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.75rem; font-weight: 600; color: var(--muted-foreground);
+      padding: 0.375rem 0.625rem; border-radius: var(--radius-md);
+      transition: all 0.15s;
+    }
+    .wiki-nav-home:hover { color: var(--primary); background: var(--muted); }
+
+    /* Group headers */
+    .wiki-group { border-bottom: 1px solid color-mix(in srgb, var(--foreground) 6%, transparent); }
+    .wiki-group-summary {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 1rem; cursor: pointer; user-select: none; list-style: none;
+      transition: background 0.15s;
+    }
+    .wiki-group-summary::-webkit-details-marker { display: none; }
+    .wiki-group-summary:hover { background: var(--muted); }
+    .wiki-group-label {
+      font-size: 0.6875rem; font-weight: 700; color: var(--muted-foreground);
+      text-transform: uppercase; letter-spacing: 0.07em; flex: 1;
+    }
+    .wiki-group-count {
+      font-size: 0.625rem; color: var(--muted-foreground);
+      background: var(--muted); border-radius: var(--radius-full);
+      padding: 0.0625rem 0.4375rem; font-family: 'JetBrains Mono', monospace;
+    }
+    .wiki-group-chevron { color: var(--muted-foreground); transition: transform 0.2s; }
+    .wiki-group[open] > .wiki-group-summary .wiki-group-chevron { transform: rotate(180deg); }
+    .wiki-group-pages { display: flex; flex-direction: column; padding: 0 0.5rem 0.375rem; }
+
     .wiki-nav-link {
       display: flex; align-items: center; gap: 0.5rem;
-      padding: 0.4rem 1rem; font-size: 0.8125rem;
+      padding: 0.375rem 0.625rem; font-size: 0.8125rem; line-height: 1.35;
       color: var(--muted-foreground); text-decoration: none;
-      border-left: 2px solid transparent;
-      transition: all 0.1s;
+      border-radius: var(--radius-md);
+      transition: all 0.12s;
     }
     .wiki-nav-link:hover { color: var(--foreground); background: var(--muted); }
-    .wiki-nav-active { color: var(--foreground); font-weight: 600; border-left-color: var(--primary); }
+    .wiki-nav-link-dot {
+      width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0;
+      background: color-mix(in srgb, var(--muted-foreground) 40%, transparent);
+      transition: all 0.12s;
+    }
+    .wiki-nav-link:hover .wiki-nav-link-dot { background: var(--muted-foreground); }
+    .wiki-nav-active { color: var(--foreground); font-weight: 600; background: var(--muted); }
+    .wiki-nav-active .wiki-nav-link-dot { background: var(--primary); box-shadow: 0 0 6px color-mix(in srgb, var(--primary) 60%, transparent); }
 
-    /* Mobile nav */
+    /* Mobile nav accordion */
     .wiki-mobile-nav {
-      display: block; position: sticky; top: var(--header-h); z-index: 20;
+      position: sticky; top: var(--header-h); z-index: 30;
       background: var(--background); border-bottom: 1px solid var(--border);
-      padding: 0.5rem 1rem; overflow-x: auto;
     }
     @media (min-width: 1024px) { .wiki-mobile-nav { display: none; } }
-    .wiki-mobile-scroll { display: flex; gap: 0.25rem; width: max-content; }
+    .wiki-mobile-summary {
+      display: flex; align-items: center; gap: 0.5rem; cursor: pointer;
+      padding: 0.75rem 1rem; font-size: 0.8125rem; font-weight: 600;
+      color: var(--foreground); list-style: none; user-select: none;
+    }
+    .wiki-mobile-summary::-webkit-details-marker { display: none; }
+    .wiki-mobile-toggle-label { flex: 1; }
+    .wiki-mobile-summary svg { transition: transform 0.2s; color: var(--muted-foreground); }
+    .wiki-mobile-nav[open] > .wiki-mobile-summary svg { transform: rotate(180deg); }
+    .wiki-mobile-panel {
+      max-height: 60vh; overflow-y: auto; border-top: 1px solid var(--border);
+      padding: 0.25rem 0 0.75rem;
+    }
+    .wiki-mobile-tree { padding: 0.25rem 1rem; display: flex; flex-direction: column; gap: 0.125rem; }
+    .wiki-mobile-group-summary {
+      display: flex; align-items: center; gap: 0.5rem; cursor: pointer;
+      padding: 0.5rem 0.25rem; font-size: 0.6875rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--muted-foreground); list-style: none;
+    }
+    .wiki-mobile-group-summary::-webkit-details-marker { display: none; }
+    .wiki-mobile-group-summary svg { margin-left: auto; transition: transform 0.2s; }
+    .wiki-mobile-group[open] > .wiki-mobile-group-summary svg { transform: rotate(180deg); }
+    .wiki-mobile-group-pages { display: flex; flex-direction: column; gap: 0.125rem; padding: 0.25rem 0 0.5rem 0.75rem; }
     .wiki-mobile-link {
-      flex-shrink: 0; padding: 0.3rem 0.625rem; font-size: 0.6875rem;
-      color: var(--muted-foreground); text-decoration: none; border-radius: var(--radius-sm);
-      white-space: nowrap; transition: all 0.1s;
+      padding: 0.375rem 0.625rem; font-size: 0.8125rem;
+      color: var(--muted-foreground); text-decoration: none; border-radius: var(--radius-md);
     }
     .wiki-mobile-link:hover { color: var(--foreground); background: var(--muted); }
     .wiki-mobile-active { color: var(--foreground); font-weight: 600; background: var(--muted); }
@@ -217,23 +340,27 @@ const nextPage = currentIndex < wikiPages.length - 1 ? wikiPages[currentIndex + 
     @media (min-width: 768px) { .wiki-main { padding: 2rem 2rem 3rem; } }
     @media (min-width: 1280px) { .wiki-main { padding: 2rem 2.5rem 3rem; } }
 
-    /* Scroll progress */
     .wiki-scroll-progress-bar {
       position: fixed; top: var(--header-h); left: 0; height: 2px;
-      background: var(--primary); z-index: 49; transition: width 0.1s linear; width: 0;
+      background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 40%, transparent));
+      z-index: 49; width: 0; transition: width 0.08s linear;
     }
 
     /* Page header */
     .wiki-page-header { margin-bottom: 1.5rem; }
     .wiki-breadcrumb {
-      display: flex; align-items: center; gap: 0.375rem;
+      display: flex; align-items: center; gap: 0.375rem; flex-wrap: wrap;
       font-size: 0.75rem; color: var(--muted-foreground); margin-bottom: 0.75rem;
     }
     .wiki-breadcrumb a { color: var(--muted-foreground); text-decoration: none; transition: color 0.15s; }
     .wiki-breadcrumb a:hover { color: var(--primary); }
     .wiki-breadcrumb-current { color: var(--foreground); font-weight: 500; }
     .wiki-page-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-    .wiki-page-title { font-size: 1.75rem; font-weight: 700; line-height: 1.2; color: var(--foreground); margin: 0; letter-spacing: -0.02em; }
+    .wiki-page-title {
+      font-size: clamp(1.5rem, 3vw, 1.875rem); font-weight: 800; line-height: 1.15;
+      color: var(--foreground); margin: 0; letter-spacing: -0.025em;
+    }
+    .wiki-page-desc { margin: 0.625rem 0 0; font-size: 0.9375rem; color: var(--muted-foreground); max-width: 56rem; line-height: 1.65; }
     .wiki-edit-link {
       display: inline-flex; align-items: center; gap: 0.375rem;
       padding: 0.375rem 0.75rem; font-size: 0.75rem;
@@ -245,9 +372,9 @@ const nextPage = currentIndex < wikiPages.length - 1 ? wikiPages[currentIndex + 
 
     /* Right TOC */
     .wiki-toc-container {
-      display: none; width: 200px; flex-shrink: 0;
+      display: none; width: 208px; flex-shrink: 0;
       position: sticky; top: var(--header-h);
-      height: fit-content; max-height: calc(100vh - var(--header-h) - 2rem);
+      height: fit-content; max-height: calc(100vh - var(--header-h) - 1rem);
       overflow-y: auto; padding: 2rem 0 2rem 1.25rem;
     }
     @media (min-width: 1280px) { .wiki-toc-container { display: block; } }
@@ -277,9 +404,53 @@ const nextPage = currentIndex < wikiPages.length - 1 ? wikiPages[currentIndex + 
       transition: all 0.15s; box-shadow: var(--shadow-sm);
     }
     .wiki-nav-next { justify-content: flex-end; text-align: right; }
-    .wiki-nav-prev:hover, .wiki-nav-next:hover { border-color: var(--primary); box-shadow: var(--shadow-md); }
+    .wiki-nav-prev:hover, .wiki-nav-next:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-1px); }
     .wiki-nav-arrow { width: 1rem; height: 1rem; flex-shrink: 0; color: var(--muted-foreground); }
     .wiki-nav-label { display: block; font-size: 0.625rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-foreground); }
     .wiki-nav-title { font-size: 0.8125rem; font-weight: 600; color: var(--foreground); }
+
+    /* Wiki alerts (from callout plugin) */
+    .wiki-alert {
+      position: relative; padding: 0.875rem 1.125rem 0.875rem 1.375rem;
+      border-radius: var(--radius-lg); margin: 1.25rem 0; font-size: 0.875rem;
+      line-height: 1.6; background: var(--muted);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--muted-foreground);
+    }
+    .wiki-alert .wiki-alert-title {
+      display: block; margin: 0 0 0.25rem; font-weight: 700; font-size: 0.6875rem;
+      text-transform: uppercase; letter-spacing: 0.08em; color: inherit;
+    }
+    .wiki-alert p { margin: 0.375rem 0 0; }
+    .wiki-alert p:first-of-type { margin-top: 0.25rem; }
+    .wiki-alert ul, .wiki-alert ol { margin: 0.375rem 0 0 1.25rem; }
+    .wiki-alert-warning {
+      background: color-mix(in srgb, var(--destructive) 6%, var(--background));
+      border-color: color-mix(in srgb, var(--destructive) 18%, var(--border));
+      border-left-color: var(--destructive);
+    }
+    .wiki-alert-warning .wiki-alert-title { color: var(--destructive); }
+    .wiki-alert-tip {
+      background: color-mix(in srgb, var(--success) 6%, var(--background));
+      border-color: color-mix(in srgb, var(--success) 18%, var(--border));
+      border-left-color: var(--success);
+    }
+    .wiki-alert-tip .wiki-alert-title { color: var(--success); }
+    .wiki-alert-important {
+      background: color-mix(in srgb, var(--warning) 6%, var(--background));
+      border-color: color-mix(in srgb, var(--warning) 18%, var(--border));
+      border-left-color: var(--warning);
+    }
+    .wiki-alert-important .wiki-alert-title { color: var(--warning); }
+    .wiki-alert-note, .wiki-alert-info {
+      background: color-mix(in srgb, var(--info) 5%, var(--background));
+      border-color: color-mix(in srgb, var(--info) 15%, var(--border));
+      border-left-color: var(--info);
+    }
+    .wiki-alert-note .wiki-alert-title, .wiki-alert-info .wiki-alert-title { color: var(--info); }
+    .wiki-alert > *:last-child { margin-bottom: 0; }
+
+    /* Hide duplicated markdown h1 (page header already shows the title) */
+    .prose-wiki h1:first-child { display: none; }
   </style>
 </Layout>

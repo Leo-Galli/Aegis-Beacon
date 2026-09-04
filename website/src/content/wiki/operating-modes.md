@@ -1,6 +1,6 @@
 ---
 title: "Operating Modes"
-description: "Technical documentation for Operating Modes"
+description: "BEACON, SEARCH, CONFIG and EMERGENCY: what each mode does, when to use it and how to switch"
 ---
 
 # Operating Modes

@@ -1,6 +1,6 @@
 ---
 title: "Troubleshooting"
-description: "Technical documentation for Troubleshooting"
+description: "Diagnose common failures: no boot, no radio, display glitches, GPS and power problems"
 ---
 
 # Troubleshooting

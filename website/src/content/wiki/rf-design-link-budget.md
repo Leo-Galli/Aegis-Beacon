@@ -1,6 +1,6 @@
 ---
 title: "RF Design & Link Budget"
-description: "Technical documentation for RF Design & Link Budget"
+description: "Free-space path loss, link budget math and realistic range expectations for 410-525 MHz"
 ---
 
 # RF Design & Link Budget

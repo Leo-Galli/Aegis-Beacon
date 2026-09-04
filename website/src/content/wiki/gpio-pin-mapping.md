@@ -1,6 +1,6 @@
 ---
 title: "GPIO Pin Mapping"
-description: "Technical documentation for GPIO Pin Mapping"
+description: "Complete v5.4 GPIO map: radio, OLED, GPS, audio, LEDs, buttons and ADC connections"
 ---
 
 # GPIO Pin Mapping

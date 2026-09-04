@@ -1,6 +1,6 @@
 ---
 title: "Hardware Components"
-description: "Technical documentation for Hardware Components"
+description: "Every part in the build: MCU, radio, display, GPS, battery and buttons, with the full BOM"
 ---
 
 # Hardware Components
@@ -82,3 +82,37 @@ GPS module for real-time coordinate acquisition. Connects to UART2 at 9600 baud.
 
 > [!TIP]
 > The GPS module is completely optional. The beacon works without GPS coordinates -- it just transmits `SOS` or `SOS DE [NAME]` as configured.
+
+## Sourcing Guide
+
+All components are commodity parts available worldwide. Typical sources:
+
+| Part | Primary source | Backup source | Typical lead time |
+|------|----------------|---------------|-------------------|
+| ESP32 DevKit V1 | AliExpress | Local electronics store | 2-4 weeks |
+| E22-400M30S | AliExpress | LCSC | 2-4 weeks |
+| SSD1309 2.42" OLED | AliExpress | Amazon | 2-4 weeks |
+| NEO-6M GPS | AliExpress | Amazon | 1-3 weeks |
+| TP4056 board | AliExpress | Local | 1-2 weeks |
+| 18650 cell | Local vape/electronics shop | Amazon | Same day |
+| Passives + LEDs | LCSC | Local | 1-2 weeks |
+| Hammond 1593L box | Mouser / DigiKey | Amazon | 2-5 days |
+
+> [!NOTE]
+> Prices in the BOM reflect AliExpress / LCSC 2025 pricing. Buying local is more expensive but faster and lets you verify parts before paying shipping.
+
+### Buying Checklist
+
+- Order two ESP32 boards -- one spare, they are cheap and occasionally DOA.
+- Buy the **7-pin SPI** SSD1309, not the 4-pin I2C version; wiring differs.
+- Prefer an E22-400M30S with an SMA connector so antenna upgrades are easy.
+- For alpine use, buy a LiFePO4 18650 (rated to -30 C) instead of standard Li-ion.
+- Add spare 6x6 mm tactile buttons and 330 Ohm resistors -- they are the most likely parts to lose while building.
+
+### Verifying Parts on Arrival
+
+1. Plug the ESP32 into USB: the onboard LED should blink or the serial monitor should respond at 115200 baud.
+2. Check the E22 module for the SX1262 marking and confirm the SMA connector is firmly soldered.
+3. Test the OLED by connecting it alone (3.3 V) -- a faint pattern or power-on line confirms it works.
+4. Measure each 18650 cell: a fresh cell should read 3.9-4.2 V with no load.
+5. Confirm the TP4056 charges: a drained cell plugged into USB-C should light the red charge LED.

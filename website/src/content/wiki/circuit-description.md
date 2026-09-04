@@ -1,6 +1,6 @@
 ---
 title: "Circuit Description"
-description: "Technical documentation for Circuit Description"
+description: "How every bus and rail is wired: SPI, UART, DAC audio, battery divider, LEDs and buttons"
 ---
 
 # Circuit Description

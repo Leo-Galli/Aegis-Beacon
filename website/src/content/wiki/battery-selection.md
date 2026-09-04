@@ -54,7 +54,7 @@ For extended runtime, a 21700 cell can be used with a modified battery holder:
 | 3.30V | 5% | Critical -- enter sleep |
 | 3.00V | 0% | Cutoff -- device shuts down |
 
-The firmware monitors battery voltage through a resistive voltage divider on ADC pin GPIO34 and displays the percentage on the OLED.
+The firmware monitors battery voltage through a resistive voltage divider on ADC pin GPIO 36 (ADC1_CH0, SVP) and displays the percentage on the OLED. The divider halves the voltage: a full 4.2 V cell reads about 2.1 V at the ADC input.
 
 ## Charging
 
