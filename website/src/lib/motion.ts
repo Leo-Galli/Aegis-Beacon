@@ -7,8 +7,6 @@
      Optional per-element stagger via the --rv-delay property.
    - Section focus: .prose-wiki headings get .is-in while they
      are the section being read (used by CSS emphasis).
-   - Mouse spotlight: [data-glow] cards get a soft radial glow
-     that tracks the cursor.
    - Parallax: [data-parallax] translates gently on scroll.
    - Count-up: [data-count] animates its numeric text once.
    Everything respects prefers-reduced-motion.
@@ -53,27 +51,7 @@ export function initReveal() {
   targets.forEach((t) => io.observe(t));
 }
 
-/* ── 2. Cursor spotlight on cards (data-glow / card classes) ─ */
-export function initGlowCards() {
-  if (prefersReduced || !window.matchMedia('(pointer: fine)').matches) return;
-
-  const cards = Array.from(
-    document.querySelectorAll<HTMLElement>(
-      '[data-glow], .feature-card, .mode-card, .tech-chip'
-    )
-  );
-  cards.forEach((card) => {
-    card.addEventListener('pointermove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      card.style.setProperty('--gx', `${x}px`);
-      card.style.setProperty('--gy', `${y}px`);
-    });
-  });
-}
-
-/* ── 3. Gentle parallax (data-parallax) ───────────────────── */
+/* ── 2. Gentle parallax (data-parallax) ───────────────────── */
 export function initParallax() {
   if (prefersReduced || !window.matchMedia('(pointer: fine)').matches) return;
 
@@ -124,7 +102,7 @@ export function initParallax() {
   );
 }
 
-/* ── 4. Number count-up (data-count) ──────────────────────── */
+/* ── 3. Number count-up (data-count) ──────────────────────── */
 export function initCounters() {
   if (prefersReduced) return;
   const els = Array.from(
@@ -176,7 +154,6 @@ export function initCounters() {
 /* ── Boot ─────────────────────────────────────────────────── */
 export function initMotion() {
   initReveal();
-  initGlowCards();
   initParallax();
   initCounters();
 }

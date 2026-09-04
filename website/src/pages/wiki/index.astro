@@ -35,20 +35,12 @@ const totalPages = entries.length;
   description="Complete, in-depth documentation for the Aegis-Beacon open-source emergency rescue beacon."
 >
   <div class="wiki-home">
-    <span class="bg-grid" aria-hidden="true"></span>
-    <span class="bg-glow" aria-hidden="true"></span>
-    <span class="atmo-orb atmo-orb--1" aria-hidden="true"></span>
-    <span class="atmo-orb atmo-orb--2" aria-hidden="true"></span>
-
     <header class="wiki-home__hero container" data-rv="fade">
-      <p class="hero__eyebrow">
-        <span class="hero__eyebrow-dot"></span>
-        Aegis-Beacon Documentation
-      </p>
-      <h1 class="wiki-home__title">Build, configure and operate<br />the beacon with confidence</h1>
+      <p class="hero-kicker">Aegis-Beacon Documentation</p>
+      <h1 class="wiki-home__title">Build, configure and operate the beacon with confidence</h1>
       <p class="wiki-home__lead">
         {totalPages} in-depth guides covering every component, every wire, every
-        setting and every field scenario — from first power-up to full-scale
+        setting and every field scenario, from first power-up to full-scale
         search and rescue operation.
       </p>
       <div class="wiki-home__actions">
@@ -74,7 +66,7 @@ const totalPages = entries.length;
           </div>
           <div class="wiki-group-card__grid">
             {group.pages.map((page) => (
-              <a class="wiki-tile" data-glow href={`/wiki/${page.id}`}>
+              <a class="wiki-tile" href={`/wiki/${page.id}`}>
                 <span class="wiki-tile__arrow" aria-hidden="true">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
                 </span>
@@ -92,13 +84,12 @@ const totalPages = entries.length;
     </main>
 
     <section class="cta-section">
-      <span class="bg-grid" aria-hidden="true"></span>
       <div class="cta-inner container">
         <h2>Prefer a hands-on approach?</h2>
         <p>Try the interactive firmware simulation or calculate the exact bill of materials for your build.</p>
         <div class="cta-buttons">
-          <a href="/demo" class="btn btn-white">Open the live demo</a>
-          <a href="/builder" class="btn btn-outline-white">BOM Builder</a>
+          <a href="/demo" class="btn btn-cta">Open the live demo</a>
+          <a href="/builder" class="btn btn-cta-ghost">BOM Builder</a>
         </div>
       </div>
     </section>
@@ -106,7 +97,6 @@ const totalPages = entries.length;
 
   <style>
     .wiki-home { position: relative; isolation: isolate; overflow: hidden; }
-    .wiki-home .bg-grid, .wiki-home .bg-glow { position: absolute; inset: 0; z-index: -1; }
 
     .wiki-home__hero { text-align: center; padding: clamp(3.5rem, 7vw, 5.5rem) var(--container-px) 2.5rem; }
     .wiki-home__title {
@@ -124,9 +114,8 @@ const totalPages = entries.length;
     }
     .wiki-home__stat { text-align: center; }
     .wiki-home__stat strong {
-      display: block; font-size: 1.75rem; font-weight: 800; font-family: 'JetBrains Mono', monospace;
-      background: linear-gradient(135deg, var(--primary), oklch(0.78 0.15 80deg));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      display: block; font-size: 1.6rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums; color: var(--primary);
     }
     .wiki-home__stat span {
       font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-foreground);
@@ -151,11 +140,6 @@ const totalPages = entries.length;
     }
     .wiki-group-card__head h2 {
       font-size: 1.125rem; font-weight: 700; margin: 0 0 0.25rem; letter-spacing: -0.01em;
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .wiki-group-card__head h2::before {
-      content: ""; width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0;
-      background: var(--primary); box-shadow: 0 0 8px color-mix(in srgb, var(--primary) 50%, transparent);
     }
     .wiki-group-card__head p { margin: 0; color: var(--muted-foreground); font-size: 0.875rem; max-width: 46rem; }
     .wiki-group-card__count {
