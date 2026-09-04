@@ -107,6 +107,30 @@ Above 3000m, no special considerations are needed for the electronics. However:
 5. **Valley-to-valley** communication works better with the device at the valley rim, not the bottom.
 6. **Multiple devices** in Beacon mode on different frequencies increase the chance of detection.
 
+## Coordination with Rescue Services
+
+The beacon is a **supplementary** tool. Always follow local rescue protocols and the instructions of the coordinating agency:
+
+1. **Inform the rescue coordinator** which frequency and Morse payload format you are using (`SOS DE [NAME] PSN [LAT] [LON]`).
+2. **State the cycle timing**: default is one full payload transmission every 30 s, so tell the search team what to expect and how to confirm they are copying your signal.
+3. **Do not transmit on frequencies reserved for active rescue channels** in your region without authorization -- check the [Frequency Compatibility](/wiki/frequency-compatibility) and [Regulatory Compliance](/wiki/regulatory-compliance) pages first.
+4. If a professional team establishes contact, **switch to their instructed mode or channel** immediately and, if told, power the beacon down to save battery for a potential second incident.
+
+> [!IMPORTANT]
+> In a life-threatening emergency always attempt to contact emergency services (112 / 911 / 999 or the local SAR number) first when any phone or radio channel is available. Aegis-Beacon supplements, never replaces, professional rescue systems.
+
+## Battery Management During Long Missions
+
+| Situation | Action |
+|-----------|--------|
+| Battery at 50-80% | Normal operation, keep beacon cycling |
+| Battery at 20-50% | Reduce repeat count or extend sleep interval via config |
+| Battery under 20% | Switch to low-power beacon profile, carry spare cell |
+| Spare cell available | Swap only in a dry, sheltered spot |
+| Emergency imminent | Use EMERGENCY mode regardless of battery level |
+
+Expected runtimes with a 3000 mAh cell: see [Battery Selection](/wiki/battery-selection#power-consumption-by-mode).
+
 ## Post-Mission
 
 After each deployment:
@@ -117,3 +141,10 @@ After each deployment:
 4. Clean any moisture from the enclosure.
 5. Log the mission duration and battery consumption for future planning.
 6. Update firmware if a new version is available.
+
+## Related Guides
+
+- **[Battery Selection](/wiki/battery-selection)** -- choosing cells for cold weather
+- **[Outdoor Testing](/wiki/outdoor-testing)** -- validating range before a real mission
+- **[Safety Guidelines](/wiki/safety-guidelines)** -- legal and electrical safety
+- **[Troubleshooting](/wiki/troubleshooting)** -- what to do when a device fails in the field

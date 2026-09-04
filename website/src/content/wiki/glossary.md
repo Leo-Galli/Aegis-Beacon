@@ -1,6 +1,6 @@
 ---
 title: "Glossary"
-description: "Technical documentation for Glossary"
+description: "Plain-English definitions of every technical term used across the Aegis-Beacon project"
 ---
 
 # Glossary

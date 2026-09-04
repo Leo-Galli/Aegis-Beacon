@@ -1,6 +1,6 @@
 ---
 title: "Assembly Guide"
-description: "Technical documentation for Assembly Guide"
+description: "Complete step-by-step build: soldering order, wiring, mounting and first power-up of the beacon"
 ---
 
 # Assembly Guide

@@ -1,6 +1,6 @@
 ---
 title: "Firmware Overview"
-description: "Technical documentation for Firmware Overview"
+description: "Architecture of the ESP32 firmware: code structure, main loop, radio init and Morse TX path"
 ---
 
 # Firmware Overview

@@ -1,6 +1,6 @@
 ---
 title: "Software Build Process"
-description: "Technical documentation for Software Build Process"
+description: "Compile and flash with Arduino IDE or PlatformIO, plus CI, testing and debug workflow"
 ---
 
 # Software Build Process

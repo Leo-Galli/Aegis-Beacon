@@ -1,6 +1,6 @@
 ---
 title: "Antenna Design"
-description: "Technical documentation for Antenna Design"
+description: "Antenna theory, quarter-wave lengths, antenna types and installation for maximum beacon range"
 ---
 
 # Antenna Design

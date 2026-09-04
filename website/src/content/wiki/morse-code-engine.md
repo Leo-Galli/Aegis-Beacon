@@ -1,6 +1,6 @@
 ---
 title: "Morse Code Engine"
-description: "Technical documentation for Morse Code Engine"
+description: "PARIS-standard timing, symbol encoding and the CW keying implementation on the SX1262"
 ---
 
 # Morse Code Engine

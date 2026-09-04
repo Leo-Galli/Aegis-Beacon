@@ -580,14 +580,50 @@ details summary::-webkit-details-marker { display: none; }
 .prose-wiki > :first-child { margin-top: 0; }
 .prose-wiki > :last-child { margin-bottom: 0; }
 
-/* ─── 23. Wiki Alerts ─── */
-.wiki-alert { padding: 0.75rem 1rem; border-radius: var(--radius-lg); margin: 1rem 0; font-size: 0.875rem; line-height: 1.6; background: var(--muted); border: 1px solid var(--border); }
-.wiki-alert strong { font-weight: 600; display: block; margin-bottom: 0.125rem; }
-.wiki-alert p { margin-bottom: 0; }
-.wiki-alert-warning { background: color-mix(in srgb, var(--destructive) 6%, var(--background)); border-color: color-mix(in srgb, var(--destructive) 15%, var(--border)); color: var(--destructive); }
-.wiki-alert-tip { background: color-mix(in srgb, var(--success) 6%, var(--background)); border-color: color-mix(in srgb, var(--success) 15%, var(--border)); color: var(--success); }
-.wiki-alert-important { background: color-mix(in srgb, var(--warning) 6%, var(--background)); border-color: color-mix(in srgb, var(--warning) 15%, var(--border)); color: var(--warning); }
-.wiki-alert-note, .wiki-alert-info { background: var(--muted); border-color: var(--border); color: var(--muted-foreground); }
+/* ─── 23. Wiki Alerts (rendered by the obsidian-callouts remark plugin) ─── */
+.wiki-alert {
+  position: relative; padding: 0.875rem 1.125rem 0.875rem 1.375rem;
+  border-radius: var(--radius-lg); margin: 1.25rem 0; font-size: 0.875rem;
+  line-height: 1.6; background: var(--muted); border: 1px solid var(--border);
+  border-left: 3px solid var(--muted-foreground);
+}
+.wiki-alert .wiki-alert-title {
+  display: block; margin: 0 0 0.25rem; font-weight: 700; font-size: 0.6875rem;
+  text-transform: uppercase; letter-spacing: 0.08em; color: inherit;
+}
+.wiki-alert strong { font-weight: 700; }
+.wiki-alert p { margin: 0.375rem 0 0; }
+.wiki-alert ul, .wiki-alert ol { margin: 0.375rem 0 0 1.25rem; }
+.wiki-alert > *:last-child { margin-bottom: 0; }
+.wiki-alert-warning {
+  background: color-mix(in srgb, var(--destructive) 6%, var(--background));
+  border-color: color-mix(in srgb, var(--destructive) 18%, var(--border));
+  border-left-color: var(--destructive);
+}
+.wiki-alert-warning .wiki-alert-title { color: var(--destructive); }
+.wiki-alert-tip {
+  background: color-mix(in srgb, var(--success) 6%, var(--background));
+  border-color: color-mix(in srgb, var(--success) 18%, var(--border));
+  border-left-color: var(--success);
+}
+.wiki-alert-tip .wiki-alert-title { color: var(--success); }
+.wiki-alert-important {
+  background: color-mix(in srgb, var(--warning) 6%, var(--background));
+  border-color: color-mix(in srgb, var(--warning) 18%, var(--border));
+  border-left-color: var(--warning);
+}
+.wiki-alert-important .wiki-alert-title { color: var(--warning); }
+.wiki-alert-note, .wiki-alert-info {
+  background: color-mix(in srgb, var(--info) 5%, var(--background));
+  border-color: color-mix(in srgb, var(--info) 15%, var(--border));
+  border-left-color: var(--info);
+}
+.wiki-alert-note .wiki-alert-title, .wiki-alert-info .wiki-alert-title { color: var(--info); }
+/* Legacy inline alerts used on static pages (strong as the first line) */
+.wiki-alert > strong:first-child {
+  display: block; margin-bottom: 0.125rem; text-transform: uppercase;
+  font-size: 0.6875rem; letter-spacing: 0.08em;
+}
 
 /* ─── 24. Print ─── */
 @media print {

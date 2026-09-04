@@ -1,6 +1,6 @@
 ---
 title: "GPS Integration"
-description: "Technical documentation for GPS Integration"
+description: "NEO-6M wiring, fix acquisition, DDM coordinate encoding and the Morse payload format"
 ---
 
 # GPS Integration

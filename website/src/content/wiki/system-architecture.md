@@ -1,6 +1,6 @@
 ---
 title: "System Architecture"
-description: "Technical documentation for System Architecture"
+description: "How firmware, hardware and the WiFi dashboard fit together into one rescue system"
 ---
 
 # System Architecture

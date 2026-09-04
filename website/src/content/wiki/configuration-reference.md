@@ -1,6 +1,6 @@
 ---
 title: "Configuration Reference"
-description: "Technical documentation for Configuration Reference"
+description: "Every firmware constant, NVS key, button binding and calibration procedure in one reference"
 ---
 
 # Configuration Reference

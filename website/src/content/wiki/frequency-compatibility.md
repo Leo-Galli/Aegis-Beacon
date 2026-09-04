@@ -1,6 +1,6 @@
 ---
 title: "Frequency Compatibility"
-description: "Technical documentation for Frequency Compatibility"
+description: "Regional frequency table and compatibility guidance for legal beacon operation worldwide"
 ---
 
 # Frequency Compatibility
