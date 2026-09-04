@@ -135,6 +135,26 @@ Legacy versions. These are archived and no longer maintained.
 > [!WARNING]
 > Major version upgrades (v4 to v5) may reset stored settings to defaults. Record your configuration before upgrading.
 
+### From v4.0 to v5.4 (Breaking Hardware Revision)
+
+Do not run v5.x firmware on the original ESP32-C3 board with the RA-02 module without complete rewiring.
+
+| Feature | v4.0 | v5.4 |
+|---------|------|------|
+| Microcontroller | ESP32-C3 SuperMini | ESP32 DevKit V1 (30-pin) |
+| Radio | SX1276 RA-02 (OOK, +17 dBm) | SX1262 E22-400M30S (CW/FSK, +22/+30 dBm) |
+| Display | SSD1306 0.96" I2C 128x64 | SSD1309 2.42" SPI 128x64 (U8g2) |
+| GPS | None | NEO-6M UART — coords + name in Morse payload |
+| Battery monitor | None | ADC voltage divider to % + mV, live on every screen |
+| Parameter adjustment | Dashboard only | 4 physical buttons: SW_MODE / SEL / UP / DN |
+| Morse payload | `SOS` | `SOS DE [NAME] PSN [LAT] [LON]` (configurable) |
+| Audio output pin | GPIO 18 (PWM only) | GPIO 25 (native DAC1 + LEDC) |
+| BUSY pin | N/A | GPIO 21 — mandatory on SX1262 |
+| Display libraries | Adafruit SSD1306 + GFX | U8g2 + TinyGPS++ |
+| BOM cost | ~$12-14 USD | ~$23-28 USD |
+
+**Migration steps:** factory-reset NVS, rewire all GPIO connections per the GPIO pin map, install the new library dependencies (U8g2, TinyGPS++), then reconfigure via the dashboard.
+
 ### OTA Updates
 
 If OTA updates are enabled in the firmware:

@@ -7,151 +7,205 @@ description: "Regional frequency table and compatibility guidance for legal beac
 
 ## Overview
 
-The Aegis-Beacon operates in the 410-525 MHz ISM band. Configuration supports up to 10 frequencies per cycle for maximum flexibility.
+The Aegis-Beacon v5.4 radio is an **Ebyte E22-400M30S** module (SX1262 / LLCC68 chip) that covers **410-525 MHz** only. Everything in this page is organized around that constraint: the 433 MHz ISM band is the native operating range, PMR446 and UHF GMRS/CB emergency channels fall inside the coverage window, and VHF mountain-rescue services require a separate radio.
 
-## Supported Frequencies
+| Band | SX1262 support | Notes |
+|:-----|:--------------:|:------|
+| 410-525 MHz | Native | UHF ISM / PMR446 / some land SAR — primary use |
+| VHF (118-174 MHz) | No | Requires separate VHF radio (aviation, marine, mountain SAR) |
+| 406 MHz | In range | Satellite PLB band — never TX here (see Global Distress) |
+| 462-477 MHz | In range | GMRS / UHF CB emergency channels — Americas / Oceania |
 
-### European (PMR446/LPD)
+> [!IMPORTANT]
+> The SX1262 transmits a **narrow CW carrier** via `transmitDirect()` / `standby()` keying. It is AM-detectable on any scanner or SDR, but it does **not** generate FM, CTCSS sub-tones, or digital modulation. Frequencies that require CTCSS (Canal E at 123.0 Hz, Radio Montana at 85.4 Hz) are useful for SEARCH-mode scanning of radios already on the channel, but transmissions will not open tone-squelched repeaters.
 
-| Frequency | License | Notes |
-|-----------|---------|-------|
-| 433.050 MHz | LPD433 | Low Power Device, max 10mW |
-| 433.075 MHz | PMR446 | Private Mobile Radio, 500mW |
-| 433.100 MHz | LPD433 | Low Power Device |
-| 434.750 MHz | ISM | General ISM band |
+## ISM 433 MHz Band — Native Range
 
-### USA (GMRS/FRS)
+The E22-400M30S is optimised for **433-434.8 MHz** (EU SRD60 band). This is the primary operating range for beacon CW transmissions.
 
-| Frequency | License | Notes |
-|-----------|---------|-------|
-| 462.5625 MHz | FRS/GMRS | Family Radio Service |
-| 462.5875 MHz | FRS/GMRS | Family Radio Service |
-| 462.6125 MHz | FRS/GMRS | Family Radio Service |
+### EU SRD Band — 433.050–434.790 MHz
 
-### Italy (PMR446)
-
-| Frequency | License | Notes |
-|-----------|---------|-------|
-| 433.075 MHz | PMR446 | Standard Italian PMR |
-| 434.075 MHz | PMR446 | Alternate channel |
-
-### Global (ISM Band)
-
-| Frequency | License | Notes |
-|-----------|---------|-------|
-| 410-525 MHz | ISM | General Industrial/Scientific |
-
-> [!INFO]
-> The 433 MHz band is available worldwide for low-power devices. Check local regulations for power limits.
-
-## Configuration
-
-### Adding Frequencies
-
-Via CONFIG portal:
-
-1. Open `http://192.168.4.1`
-2. Navigate to Frequency Manager
-3. Tap "+" to add new frequency
-4. Enter frequency in MHz (e.g., 433.500)
-5. Save configuration
-
-### Maximum Frequencies
-
-| Parameter | Value |
-|-----------|-------|
-| **Max per cycle** | 10 |
-| **Frequency steps** | 100 kHz |
-| **Range** | 410-525 MHz |
-
-### Frequency Hopping
-
-In BEACON mode, the device transmits on all configured frequencies sequentially:
-
-```
-Cycle 1: Freq1, Freq2, Freq3, ...
-Cycle 2: Freq1, Freq2, Freq3, ...
-...
-```
-
-> [!TIP]
-> More frequencies = longer cycle time but better chance of detection. Use 3-5 frequencies for optimal balance.
-
-## Regional Regulations
-
-### European Union
-
-| Regulation | Limit |
-|------------|-------|
-| **LPD433** | 10 mW (10 dBm) |
-| **PMR446** | 500 mW (27 dBm) |
-| **License** | No license required |
-
-### United States
-
-| Regulation | Limit |
-|------------|-------|
-| **FRS** | 2 W (33 dBm) |
-| **GMRS** | 5 W (37 dBm) |
-| **License** | GMRS requires FCC license |
-
-### Italy
-
-| Regulation | Limit |
-|------------|-------|
-| **PMR446** | 500 mW (27 dBm) |
-| **License** | No license required |
+| Frequency | Use | Power limit | Notes |
+|:----------|:----|:-----------:|:------|
+| 433.050 MHz | SRD lower edge | 10 mW ERP | Lower limit of licence-free ISM band (EU) |
+| **433.500 MHz** | **Default** | 10 mW ERP | Firmware default (`DEFAULT_FREQ_MHZ = 433.500f`) |
+| 433.700 MHz | Ham / ISM overlap | 10 mW ERP | Common simplex calling in EU ISM |
+| 434.075 MHz | Weather balloon | — | Avoid when passive scanning — high false positives |
+| 434.500 MHz | ISM devices / keyfobs | 10 mW ERP | High background noise — secondary hop only |
+| 434.790 MHz | SRD upper edge | 10 mW ERP | Upper limit of EU SRD60 band |
 
 > [!WARNING]
-> Check local regulations before operation. Power limits vary by country and frequency band.
+> The E22-400M30S PA outputs up to **+30 dBm**. In the EU SRD band the legal ERP limit is typically **10 mW (+10 dBm)** — set TX power to ≤ +10 dBm in the dashboard for SRD-compliant operation. Higher power requires an amateur licence (with callsign) or a genuine life-threatening emergency.
 
-## Link Budget by Frequency
+### Suggested Multi-Frequency Beacon Hop Sequence (EU)
 
-### 433 MHz
+A frequency-hopping cycle increases the chance that at least one hop is heard by a rescuer. Suggested 5-slot sequence:
 
-| Parameter | Value |
-|-----------|-------|
-| **Quarter-wave** | 17.3 cm |
-| **Penetration** | Excellent |
-| **Range (LOS)** | 15+ km |
-| **Best for** | Mountain rescue |
+```
+Slot 1: 433.500 MHz   (default, most monitored by hams / SAR volunteers)
+Slot 2: 433.700 MHz   (secondary ISM simplex)
+Slot 3: 434.500 MHz   (ISM, wider scanner coverage)
+Slot 4: 434.790 MHz   (upper SRD edge)
+Slot 5: 446.08125 MHz (Radio Montana — if local mountain rescue uses it)
+```
 
-### 462 MHz
+Enter the slots in Dashboard → Frequency Manager (up to `MAX_FREQUENCIES = 10`). The firmware cycles through them sequentially per TX cycle in BEACON mode, and scans each one with the configured dwell time in SEARCH mode.
 
-| Parameter | Value |
-|-----------|-------|
-| **Quarter-wave** | 16.2 cm |
-| **Penetration** | Good |
-| **Range (LOS)** | 12+ km |
-| **Best for** | Urban/suburban |
+## PMR446 Emergency Channels
 
-### 868 MHz (EU)
+PMR446 (446.0-446.2 MHz) is licence-free across the EU and falls inside the SX1262 native range. These are the channels used by hikers, mountain guides and SAR volunteers.
 
-| Parameter | Value |
-|-----------|-------|
-| **Quarter-wave** | 8.6 cm |
-| **Penetration** | Moderate |
-| **Range (LOS)** | 8+ km |
-| **Best for** | Compact antenna |
+| Channel | Frequency | CTCSS | Common use |
+|:-------:|:----------|:-----:|:-----------|
+| CH 1 | 446.00625 MHz | None | General calling |
+| CH 7 | 446.08125 MHz | 85.4 Hz | **Radio Montana** — primary alpine emergency |
+| CH 8 | 446.09375 MHz | 123.0 Hz | Alpine SAR protocol (CNSAS liaisons, Austria, Germany) |
+| CH 16 | 446.19375 MHz | None | OIRT secondary / free channel |
 
-## Testing Frequencies
+> [!NOTE]
+> CTCSS is a squelch filter on the *receiver* side, not a physical modulation. The CW carrier is heard on any scanner or SDR in open/scan mode regardless of CTCSS — a trained SAR operator scanning with an SDR will see the Morse SOS.
 
-### Verification Steps
+## Global Distress Channels
 
-1. Configure frequency in portal
-2. Flash firmware
-3. Power on device
-4. Verify transmission on oscilloscope or SDR
-5. Check with AM receiver at known distance
+Monitored globally by Cospas-Sarsat MEOSAR. Listed for awareness — most are outside the SX1262 range.
 
-### Common Issues
+| Frequency | Service | Mode | SX1262 | Notes |
+|:----------|:--------|:----:|:------:|:------|
+| 121.500 MHz | International Air Distress | AM | No | VHF Guard — civilian aviation worldwide |
+| 243.000 MHz | Military Air Distress | AM | No | UHF Guard — NATO military aviation |
+| 156.800 MHz | Marine Channel 16 | NFM | No | International maritime distress & calling |
+| 406.100 MHz | Satellite PLB / ELT | Digital | Limited | Cospas-Sarsat MEOSAR |
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| No transmission | Wrong frequency | Verify in CONFIG portal |
-| Weak signal | Antenna mismatch | Check antenna length for frequency |
-| Interference | Shared frequency | Try different frequency |
-| Out of range | Low power | Increase TX power in settings |
+> [!WARNING]
+> **Never transmit on 406.100 MHz** without a certified PLB. It interferes with satellite infrastructure and is illegal.
+
+## European Mountain Rescue Channels
+
+### Italy — Alpine Rescue / CNSAS
+
+| Frequency | Channel / Name | CTCSS | SX1262 | Description |
+|:----------|:---------------|:-----:|:------:|:------------|
+| 161.300 MHz | Canal E (Emergency) | 123.0 Hz | No | Primary alpine interoperability (VDA/Alps) — VHF only |
+| 446.08125 MHz | Radio Montana (PMR 7-7) | 85.4 Hz | Yes | Standard safety frequency for hikers and backcountry |
+| 446.09375 MHz | PMR446 CH 8 | 123.0 Hz | Yes | Alpine emergency protocol ch. 8 (CNSAS liaisons) |
+| 156.300 MHz | Marine CH 06 | None | No | Secondary SAR coordination — VHF marine |
+
+**Recommended config for Italy:** SEARCH scan `446.08125` + `446.09375` MHz; BEACON TX on `446.08125` MHz (Radio Montana) at reduced power — verify local regulations.
+
+### Switzerland — REGA / Alpine Rescue
+
+| Frequency | Channel / Name | CTCSS | SX1262 | Description |
+|:----------|:---------------|:-----:|:------:|:------------|
+| 161.300 MHz | Canal E (REGA) | 123.0 Hz | No | Primary Swiss rescue — nationwide, VHF only |
+| 161.350 MHz | K-Kanal | None | No | Swiss secondary coordination — VHF only |
+| 446.08125 MHz | Radio Montana | 85.4 Hz | Yes | Cross-border consistency with Italy |
+
+### France — PGHM / Civil Protection
+
+| Frequency | Network | CTCSS | SX1262 | Description |
+|:----------|:--------|:-----:|:------:|:------------|
+| 161.300 MHz | Canal E | 123.0 Hz | No | Haute-Savoie (SDIS 74 / PGHM) — VHF only |
+| 154.465 MHz | Grand Nord | None | No | Emergency coordination Alps/Pyrenees — VHF only |
+| 173.500 MHz | Radio Secours | None | No | National Gendarmerie SAR operations — VHF only |
+| 446.08125 MHz | Radio Montana | 85.4 Hz | Yes | Cross-border consistency with Italy/Switzerland |
+
+### Austria & Germany — Bergrettung / BRK
+
+| Frequency | Service | Mode | SX1262 | Description |
+|:----------|:--------|:----:|:------:|:------------|
+| 121.500 MHz | Bergrettung | AM | No | Primary aviation rescue contact — VHF only |
+| 149.025 MHz | Freenet CH 1 | NFM | No | Common hiker emergency (Germany) — VHF only |
+| 446.09375 MHz | PMR CH 8 | NFM | Yes | Alpine emergency protocol (123.0 Hz CTCSS) |
+| 446.08125 MHz | PMR CH 7 (7-7) | NFM | Yes | Cross-border Radio Montana compatibility |
+
+### Spain — Civil Protection / REMER
+
+| Frequency | Service | Mode | SX1262 | Description |
+|:----------|:--------|:----:|:------:|:------------|
+| 146.175 MHz | Civil Protection | NFM | No | REMER Emergency Network — VHF main |
+| 146.625 MHz | Civil Protection | NFM | No | REMER Emergency Network — secondary |
+| 446.09375 MHz | PMR CH 8 | NFM | Yes | European PMR emergency protocol |
+
+## Americas
+
+### USA & Canada — NASAR / FEMA
+
+| Frequency | Service | CTCSS / Mode | SX1262 | Description |
+|:----------|:--------|:------------:|:------:|:------------|
+| 155.160 MHz | National SAR | NFM | No | Primary land-based SAR — VHF only |
+| 155.800 MHz | State SAR | NFM | No | Local agency coordination — VHF only |
+| 462.675 MHz | GMRS CH 20 | 141.3 Hz | Yes | Wilderness Protocol Emergency Calling — ISM UHF |
+| 467.675 MHz | GMRS CH 20 (input) | 141.3 Hz | Yes | Repeater input pair for CH 20 |
+| 462.550 MHz | GMRS CH 1 | None | Yes | General GMRS simplex — secondary calling |
+
+**Recommended config for North America:** SEARCH scan `462.675` + `462.550` MHz; BEACON TX on `462.675` MHz (GMRS CH 20 Wilderness Protocol) — requires a GMRS licence in the USA.
+
+### Australia & New Zealand — AMSA / LandSAR
+
+| Frequency | Service | Channel | SX1262 | Description |
+|:----------|:--------|:-------:|:------:|:------------|
+| 476.525 MHz | UHF CB | CH 5 | Yes | Emergency repeater output (duplex output) |
+| 477.275 MHz | UHF CB | CH 35 | Yes | Emergency repeater input (duplex input) |
+| 477.0 MHz | UHF CB simplex | CH 40 | Yes | General calling / secondary |
+
+## Regional Quick Reference
+
+| Region | Primary (SX1262) | Secondary (SX1262) | Requires VHF radio |
+|:-------|:-----------------|:-------------------|:-------------------|
+| Italy | 446.08125 MHz | 446.09375 MHz | 161.300 MHz (Canal E) |
+| Switzerland | 446.08125 MHz | 433.500 MHz (ISM) | 161.300 MHz (Canal E/REGA) |
+| France | 446.08125 MHz | 446.09375 MHz | 161.300, 173.500 MHz |
+| Austria | 446.09375 MHz | 446.08125 MHz | 121.500, 149.025 MHz |
+| Germany | 446.09375 MHz | 446.08125 MHz | 149.025 MHz |
+| Spain | 446.09375 MHz | 433.500 MHz (ISM) | 146.175, 146.625 MHz |
+| USA / Canada | 462.675 MHz | 462.550 MHz | 155.160, 155.800 MHz |
+| Australia / NZ | 476.525 MHz | 477.275 MHz | — |
+| **Universal** | 433.500 MHz (ISM) | 434.500 MHz (ISM) | 121.500 MHz (air guard) |
+
+## SEARCH Scan Parameters
+
+| Parameter | Alpine SAR | Urban / lowland | Constant |
+|:----------|:----------:|:---------------:|:---------|
+| Dwell time | 400 ms | 200 ms | `scanDwellMs` |
+| RSSI threshold | -105 dBm | -90 dBm | `rssiThreshold` |
+| RX bandwidth | 9.7 kHz | 9.7 kHz | firmware fixed |
 
 > [!TIP]
-> Use SDR (Software Defined Radio) to verify transmission. RTL-SDR dongles cost ~$20 and provide visual confirmation.
+> At high altitude, atmospheric conditions reduce background noise. Lowering the threshold to **-105 dBm** significantly increases detection range at the cost of more false positives from local ISM devices.
+
+## Antenna Length by Frequency
+
+| Frequency band | 1/4-wave | 1/2-wave | Notes |
+|:---------------|:--------:|:--------:|:------|
+| 433-435 MHz | **17.3 cm** | 34.6 cm | Firmware default range |
+| 446 MHz (PMR) | **16.8 cm** | 33.6 cm | PMR446 / Radio Montana |
+| 462-477 MHz (GMRS/UHF CB) | **16.2 cm** | 32.4 cm | North America / Oceania |
+
+The E22-400M30S SMA connector accepts any 433 MHz SMA whip. For portable use, a 17.3 cm straight wire soldered to the ANT pad is adequate for the 433-477 MHz range (under 5% impedance mismatch at 477 MHz).
+
+## What Receivers Can Hear
+
+| Receiver type | Hears it? | Notes |
+|:--------------|:---------:|:------|
+| AM-mode scanner / ham radio | Yes | Standard AM mode picks up the CW carrier directly |
+| SDR + SDR# / GQRX / SDRangel | Yes | Set demodulator to AM or CW; Morse is clearly visible |
+| Baofeng UV-5R (AM mode on 433 MHz) | Yes | Requires AM mode or wider bandwidth |
+| FM-only handheld (PMR446 radio) | Partial | May hear buzzing on FM; not cleanly demodulated |
+| Certified PLB / EPIRB receivers | No | Digital protocol only on 406.1 MHz |
+| Another beacon in SEARCH mode | Yes | RSSI detection, not demodulation |
+
+## Legal & Regulatory Summary
+
+| Region | Relevant band | TX legal? | Conditions |
+|:-------|:--------------|:---------:|:-----------|
+| EU | 433-434.8 MHz SRD | Licence-free | ≤ 10 mW ERP, ≤ 10% duty cycle (EN 300 220) |
+| EU | PMR446 (446 MHz) | Licence-free | ≤ 500 mW ERP, no repeaters, no encryption |
+| Switzerland | 433 MHz SRD | Licence-free | OFCOM class licence |
+| USA / Canada | 462-467 MHz GMRS | Licence required | FCC GMRS licence ($35 / 10 yr, covers family) |
+| USA | 433 MHz ISM | Part 15 | ≤ 1 mW conducted; low power only |
+| Australia / NZ | UHF CB (476-477) | Licence-free | ACMA class licence, ≤ 5 W |
+| Global | 406.100 MHz | Prohibited | Certified PLBs only — illegal without certification |
+| Global | 121.5 / 156.8 MHz | Limited | Distress use only; misuse is a criminal offence |
+
+> [!IMPORTANT]
+> **Emergency exception:** in virtually all jurisdictions, using any available communication means to signal genuine life-threatening distress is legally protected. Outside of emergency use, observe all power and licensing restrictions above. Frequencies and limits change — always verify current regulations before operation. This document reflects the June 2026 reference manual.
