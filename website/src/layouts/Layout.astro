@@ -160,6 +160,21 @@ const currentPath = Astro.url.pathname;
       cursor: pointer; transition: all 0.15s;
     }
     .theme-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* smooth theme switch */
+    html.theme-crossfade body,
+    html.theme-crossfade .site-header,
+    html.theme-crossfade .site-footer,
+    html.theme-crossfade .feature-card,
+    html.theme-crossfade .mode-card,
+    html.theme-crossfade .tech-chip,
+    html.theme-crossfade .budget-card,
+    html.theme-crossfade .components-card,
+    html.theme-crossfade .total-card,
+    html.theme-crossfade .controls-panel,
+    html.theme-crossfade .wiki-sidebar {
+      transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+    }
     .moon-icon { display: none; }
     .dark .sun-icon { display: none; }
     .dark .moon-icon { display: block; }
@@ -244,11 +259,14 @@ const currentPath = Astro.url.pathname;
   </style>
 
   <script>
-    // Theme toggle
+    // Theme toggle (with a smooth color crossfade)
     document.getElementById('theme-toggle')?.addEventListener('click', () => {
-      document.documentElement.classList.toggle('dark');
-      const isDark = document.documentElement.classList.contains('dark');
+      const root = document.documentElement;
+      root.classList.add('theme-crossfade');
+      root.classList.toggle('dark');
+      const isDark = root.classList.contains('dark');
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      window.setTimeout(() => root.classList.remove('theme-crossfade'), 450);
     });
 
     // Mobile nav toggle
@@ -293,6 +311,11 @@ const currentPath = Astro.url.pathname;
         }
       });
     }
+  </script>
+
+  <script>
+    import { initMotion } from '../lib/motion';
+    initMotion();
   </script>
 </body>
 </html>

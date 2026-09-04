@@ -109,6 +109,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.65;
   font-size: 1rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
@@ -270,13 +271,7 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
   background: var(--card); box-shadow: var(--shadow-sm);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
-.feature-card::before {
-  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 55%, transparent), transparent);
-  opacity: 0; transition: opacity 0.2s;
-}
-.feature-card:hover { border-color: color-mix(in srgb, var(--primary) 35%, var(--border)); box-shadow: var(--shadow-md); transform: translateY(-3px); }
-.feature-card:hover::before { opacity: 1; }
+.feature-card:hover { border-color: color-mix(in srgb, var(--primary) 35%, var(--border)); box-shadow: var(--shadow-md), var(--shadow-glow); transform: translateY(-3px); }
 .feature-card h3 { margin-bottom: 0.6rem; font-size: 1.1rem; }
 .feature-card p { color: var(--muted-foreground); line-height: 1.65; font-size: 0.9rem; }
 .feature-icon {
@@ -297,12 +292,22 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
   background: var(--card); box-shadow: var(--shadow-sm);
   transition: all 0.2s; overflow: hidden;
 }
+.mode-card::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(
+    300px circle at var(--gx, 50%) var(--gy, 50%),
+    color-mix(in srgb, var(--primary) 10%, transparent),
+    transparent 70%
+  );
+  opacity: 0; transition: opacity 0.25s;
+}
+.mode-card:hover::before { opacity: 1; }
 .mode-card::after {
   content: ""; position: absolute; inset: auto 1.4rem 0; height: 2px; border-radius: 2px;
   background: linear-gradient(90deg, var(--primary), transparent 70%);
   opacity: 0.5;
 }
-.mode-card:hover { border-color: color-mix(in srgb, var(--primary) 35%, var(--border)); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+.mode-card:hover { border-color: color-mix(in srgb, var(--primary) 35%, var(--border)); box-shadow: var(--shadow-md), var(--shadow-glow); transform: translateY(-3px); }
 .mode-header { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.9rem; }
 .mode-dot { width: 7px; height: 7px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 8px color-mix(in srgb, var(--primary) 70%, transparent); }
 .mode-name { font-family: var(--font-display); font-weight: 600; font-size: 0.92rem; letter-spacing: 0.06em; color: var(--foreground); }
@@ -361,18 +366,106 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
   background-size: 54px 54px;
   mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 40%, transparent 100%);
 }
+/* light sweep drifting across the CTA panel */
+.cta-flare {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, color-mix(in srgb, #fff 13%, transparent) 45%, transparent 60%);
+  background-size: 260% 100%;
+  animation: cta-sheen 7s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+@keyframes cta-sheen {
+  0% { background-position: 120% 0; opacity: 0; }
+  18% { opacity: 1; }
+  38%, 100% { background-position: -160% 0; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .cta-flare { display: none; } }
 .cta-inner { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; text-align: center; }
 .cta-section h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 600; margin-bottom: 0.9rem; }
 .cta-section p { font-size: 1.02rem; opacity: 0.92; margin-bottom: 2rem; max-width: 520px; margin-inline: auto; }
 .cta-buttons { display: flex; justify-content: center; gap: 0.8rem; flex-wrap: wrap; }
 
-/* ─── 16. Scroll reveal (CSS-driven) ─── */
-@media (prefers-reduced-motion: no-preference) {
-  [data-animate] { animation: reveal-up linear both; animation-timeline: view(); animation-range: entry 0% cover 28%; }
-  [data-animate="fade"] { animation-name: reveal-fade; }
+/* ─── 16. Scroll reveal (JS-driven, cross-browser) ───
+   Elements opt in with [data-rv]. The motion module adds
+   html.motion-ok at boot; only then are they hidden, so content
+   stays visible with JS disabled or reduced-motion on. */html.motion-ok [data-rv] {
+  opacity: 0;
+  transform: translateY(1.5rem);
+  transition:
+    opacity 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition-delay: var(--rv-delay, 0ms);
+  will-change: opacity, transform;
 }
-@keyframes reveal-up { from { opacity: 0; transform: translateY(1.25rem); } to { opacity: 1; transform: none; } }
-@keyframes reveal-fade { from { opacity: 0; } to { opacity: 1; } }
+html.motion-ok [data-rv="fade"] { transform: none; }
+html.motion-ok [data-rv="left"] { transform: translateX(-2rem); }
+html.motion-ok [data-rv="right"] { transform: translateX(2rem); }
+html.motion-ok [data-rv="scale"] { transform: scale(0.94); }
+html.motion-ok [data-rv].is-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.motion-ok [data-rv] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ─── 16b. Mouse-tracked radial glow on hover (--gx/--gy set by
+   the motion module). feature-card/mode-card define the same
+   effect in sections 11-12, so only the remaining cards are
+   listed here — each using its free pseudo-element slot. */
+.tech-chip[data-glow], .wiki-tile[data-glow],
+.terminal-window[data-glow], .controls-panel[data-glow],
+.budget-card[data-glow], .components-card[data-glow], .total-card[data-glow] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.tech-chip[data-glow]::after, .wiki-tile[data-glow]::after,
+.terminal-window[data-glow]::after, .controls-panel[data-glow]::after,
+.budget-card[data-glow]::after, .components-card[data-glow]::after,
+.total-card[data-glow]::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  z-index: 0; border-radius: inherit;
+  background: radial-gradient(
+    240px circle at var(--gx, 50%) var(--gy, 50%),
+    color-mix(in srgb, var(--primary) 8%, transparent),
+    transparent 72%
+  );
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.tech-chip[data-glow]:hover::after, .wiki-tile[data-glow]:hover::after,
+.terminal-window[data-glow]:hover::after, .controls-panel[data-glow]:hover::after,
+.budget-card[data-glow]:hover::after, .components-card[data-glow]:hover::after,
+.total-card[data-glow]:hover::after {
+  opacity: 1;
+}
+.tech-chip[data-glow] > *, .wiki-tile[data-glow] > *,
+.terminal-window[data-glow] > *, .controls-panel[data-glow] > *,
+.budget-card[data-glow] > *, .components-card[data-glow] > *,
+.total-card[data-glow] > * { position: relative; z-index: 1; }
+/* remaining cards: subtle radial glow that follows the cursor */
+.tech-chip[data-glow]::after, .wiki-tile[data-glow]::after,
+.terminal-window[data-glow]::after, .controls-panel[data-glow]::after,
+.budget-card[data-glow]::after, .components-card[data-glow]::after,
+.total-card[data-glow]::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(
+    240px circle at var(--gx, 50%) var(--gy, 50%),
+    color-mix(in srgb, var(--primary) 8%, transparent),
+    transparent 72%
+  );
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.tech-chip[data-glow]:hover::after, .wiki-tile[data-glow]:hover::after,
+.terminal-window[data-glow]:hover::after, .controls-panel[data-glow]:hover::after,
+.budget-card[data-glow]:hover::after, .components-card[data-glow]:hover::after,
+.total-card[data-glow]:hover::after {
+  opacity: 1;
+}
 
 /* ─── 17. Utility animation classes ─── */
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -437,7 +530,11 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
   box-shadow: var(--shadow-lg); border: 1px solid var(--border-strong);
   background: linear-gradient(180deg, color-mix(in srgb, var(--card) 60%, transparent), var(--card));
 }
-.banner-image { width: 100%; height: auto; display: block; }
+.banner-img-wrap { position: relative; overflow: hidden; will-change: transform; }
+.banner-image {
+  width: 100%; height: auto; display: block;
+  transform: scale(1.1); /* headroom for the parallax shift */
+}
 .banner-overlay {
   position: absolute; inset: auto 0 0 0; padding: 1.6rem 2rem;
   background: linear-gradient(to top, oklch(0.12 0.01 50deg / 0.82), transparent);
@@ -450,6 +547,11 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
 .prose-wiki h2 {
   margin-top: 2.4rem; margin-bottom: 0.8rem; padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border); letter-spacing: -0.01em;
+  transition: border-color 0.5s ease, color 0.5s ease;
+}
+.prose-wiki h2.is-in {
+  border-bottom-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+  color: var(--foreground);
 }
 .prose-wiki h3 { margin-top: 1.8rem; margin-bottom: 0.55rem; }
 .prose-wiki h4 { margin-top: 1.4rem; margin-bottom: 0.5rem; font-family: var(--font-body); }
@@ -569,7 +671,70 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
   .feature-card { padding: 1.4rem; }
 }
 
-/* ─── 22. Misc components ─── */
+/* ─── 22. Atmosphere layers (animated, CSS-only) ─── */
+.hero-wrap, .wiki-home, .page-hero {
+  background-attachment: scroll;
+}
+/* drifting aurora orbs behind hero content */
+.atmo-orb {
+  position: absolute; border-radius: 50%; filter: blur(70px);
+  pointer-events: none; z-index: 0; opacity: 0.5;
+  background: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+.atmo-orb--1 {
+  width: 44vmax; height: 44vmax; top: -22vmax; left: -14vmax;
+  animation: orb-drift-1 22s ease-in-out infinite alternate;
+}
+.atmo-orb--2 {
+  width: 36vmax; height: 36vmax; top: -12vmax; right: -16vmax;
+  background: color-mix(in srgb, var(--info) 22%, transparent);
+  animation: orb-drift-2 27s ease-in-out infinite alternate;
+}
+.atmo-orb--3 {
+  width: 26vmax; height: 26vmax; bottom: -14vmax; left: 30%;
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  animation: orb-drift-3 19s ease-in-out infinite alternate;
+}
+@keyframes orb-drift-1 { to { transform: translate3d(8vmax, 5vmax, 0) scale(1.08); } }
+@keyframes orb-drift-2 { to { transform: translate3d(-6vmax, 7vmax, 0) scale(1.12); } }
+@keyframes orb-drift-3 { to { transform: translate3d(-4vmax, -5vmax, 0) scale(0.92); } }
+@media (prefers-reduced-motion: reduce) {
+  .atmo-orb { animation: none !important; }
+}
+
+/* radar / pulse rings - radio theme, pure CSS */
+.hero-pulses { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.hero-pulses span {
+  position: absolute; left: 50%; top: 34%; width: 26vmin; height: 26vmin;
+  margin: -13vmin 0 0 -13vmin; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+  opacity: 0;
+}
+.hero-pulses span:nth-child(1) { animation: pulse-ring 6.5s ease-out infinite; }
+.hero-pulses span:nth-child(2) { animation: pulse-ring 6.5s ease-out 1.6s infinite; }
+.hero-pulses span:nth-child(3) { animation: pulse-ring 6.5s ease-out 3.2s infinite; }
+.hero-pulses span:nth-child(4) { animation: pulse-ring 6.5s ease-out 4.8s infinite; }
+@keyframes pulse-ring {
+  0% { transform: scale(0.45); opacity: 0; }
+  12% { opacity: 0.5; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-pulses { display: none; }
+}
+
+/* sweeping radar line */
+.hero-radar {
+  position: absolute; inset: -55% -55%; z-index: 0; pointer-events: none;
+  opacity: 0.05;
+  background: conic-gradient(from 0deg, transparent 0 22deg, var(--primary) 45deg, transparent 68deg);
+  animation: radar-sweep 9s linear infinite;
+  mask-image: radial-gradient(circle at 50% 50%, transparent 30%, #000 60%);
+}
+@keyframes radar-sweep { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .hero-radar { animation: none; opacity: 0; } }
+
+/* ─── 23. Misc components ─── */
 #scroll-top {
   position: fixed; bottom: 24px; right: 24px; width: 42px; height: 42px;
   border-radius: var(--radius-lg); background: var(--card); border: 1px solid var(--border-strong);
@@ -592,13 +757,10 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
 /* footer link hover (used by Layout) */
 .site-footer__links a, .site-footer__legal a { text-underline-offset: 2px; }
 
-/* wiki page animations */
-.wiki-layout .prose-wiki h1 { animation: none; }
-@supports (animation-timeline: view()) {
-  .wiki-layout .prose-wiki h2 { animation: reveal-up linear both; animation-timeline: view(); animation-range: entry 0% cover 18%; }
-}
+/* wiki page headings: gentle reveal (runs on every browser) */
 
-/* ─── 23. Print ─── */
+
+/* ─── 24. Print ─── */
 @media print {
   nav, .theme-btn, #scroll-top, .wiki-sidebar, .wiki-toc-container, .wiki-mobile-nav, .wiki-scroll-progress-bar { display: none !important; }
   body { background: #fff; color: #000; }

@@ -37,8 +37,10 @@ const totalPages = entries.length;
   <div class="wiki-home">
     <span class="bg-grid" aria-hidden="true"></span>
     <span class="bg-glow" aria-hidden="true"></span>
+    <span class="atmo-orb atmo-orb--1" aria-hidden="true"></span>
+    <span class="atmo-orb atmo-orb--2" aria-hidden="true"></span>
 
-    <header class="wiki-home__hero container">
+    <header class="wiki-home__hero container" data-rv="fade">
       <p class="hero__eyebrow">
         <span class="hero__eyebrow-dot"></span>
         Aegis-Beacon Documentation
@@ -72,7 +74,7 @@ const totalPages = entries.length;
           </div>
           <div class="wiki-group-card__grid">
             {group.pages.map((page) => (
-              <a class="wiki-tile" href={`/wiki/${page.id}`}>
+              <a class="wiki-tile" data-glow href={`/wiki/${page.id}`}>
                 <span class="wiki-tile__arrow" aria-hidden="true">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
                 </span>
