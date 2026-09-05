@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { groupForPage } from '../lib/wiki-nav';
 
 interface Props {
   entries: CollectionEntry<'wiki'>[];
@@ -13,6 +14,7 @@ const index = entries.map((e) => ({
   id: e.id,
   title: e.data.title,
   description: (e.data.description || '').replace(/\s+/g, ' ').trim(),
+  group: groupForPage(e.id)?.label ?? '',
 }));
 ---
 
@@ -42,7 +44,7 @@ const index = entries.map((e) => ({
   if (boxes.length) {
     boxes.forEach((box) => {
       const dataScript = box.querySelector<HTMLScriptElement>('script[type="application/json"]');
-      let items: { id: string; title: string; description: string }[] = [];
+      let items: { id: string; title: string; description: string; group: string }[] = [];
       try {
         items = JSON.parse(dataScript?.textContent || '[]');
       } catch {
@@ -103,43 +105,85 @@ const index = entries.map((e) => ({
             a.href = `/wiki/${m.id}`;
             a.className = 'wiki-search__result';
             a.setAttribute('role', 'option');
+
+            const top = document.createElement('span');
+            top.className = 'wiki-search__top';
             const title = document.createElement('span');
             title.className = 'wiki-search__title';
-            const desc = document.createElement('span');
-            desc.className = 'wiki-search__desc';
-            const hl = (text: string, query: string) => {
-              const low = text.toLowerCase();
-              const qi = low.indexOf(query.toLowerCase());
-              if (qi < 0) return document.createTextNode(text);
+            if (m.group) {
+              const chip = document.createElement('span');
+              chip.className = 'wiki-search__group';
+              chip.textContent = m.group;
+              top.appendChild(chip);
+            }
+            top.appendChild(title);
+
+            const hl = (text: string, terms: string[]) => {
+              if (!terms.length) return document.createTextNode(text);
               const frag2 = document.createDocumentFragment();
-              frag2.appendChild(document.createTextNode(text.slice(0, qi)));
+              const low = text.toLowerCase();
+              // Mark the first occurrence of any query term, case-insensitively.
+              let best = -1;
+              let bestLen = 0;
+              for (const t of terms) {
+                const idx = low.indexOf(t);
+                if (idx >= 0 && (best === -1 || idx < best)) {
+                  best = idx;
+                  bestLen = t.length;
+                }
+              }
+              if (best < 0) return document.createTextNode(text);
+              frag2.appendChild(document.createTextNode(text.slice(0, best)));
               const mark = document.createElement('mark');
-              mark.textContent = text.slice(qi, qi + query.length);
+              mark.textContent = text.slice(best, best + bestLen);
               frag2.appendChild(mark);
-              frag2.appendChild(document.createTextNode(text.slice(qi + query.length)));
+              frag2.appendChild(document.createTextNode(text.slice(best + bestLen)));
               return frag2;
             };
-            title.appendChild(hl(m.title, q.trim()));
+            const qTerms = qWords.length ? qWords : [q.trim().toLowerCase()];
+            title.appendChild(hl(m.title, qTerms));
+
             // A body snippet is shown only when the body actually contains the
             // query - so title-only matches stay clean (no body text under them).
-            const bodyMatch = m.why === 'body' || m.why === 'title+body' || m.why === '';
+            const bodyMatch = m.why === 'body' || m.why === 'title+body';
             if (bodyMatch && m.description) {
+              const desc = document.createElement('span');
+              desc.className = 'wiki-search__desc';
               const qLow = q.trim().toLowerCase();
               let i = m.description.toLowerCase().indexOf(qLow);
               if (i >= 0) {
-                const start = Math.max(0, i - 60);
-                const end = Math.min(m.description.length, i + 110);
-                desc.textContent = m.description.slice(start, end).trim();
-                if (start > 0) desc.textContent = '…' + desc.textContent;
-                if (end < m.description.length) desc.textContent = desc.textContent + '…';
+                // Build a word-boundary snippet around the match: start at a
+                // word start, end after a word end, with spaced ellipses.
+                const before = m.description.slice(0, i);
+                const after = m.description.slice(i);
+                const beforeWords = before.split(' ');
+                let keepBefore = beforeWords.length;
+                while (keepBefore > 0 && beforeWords.slice(-keepBefore).join(' ').length > 70) keepBefore--;
+                const startText = beforeWords.slice(-keepBefore).join(' ');
+                const showStart = beforeWords.slice(0, -keepBefore).join(' ').trim().length > 0;
+
+                const afterWords = after.split(' ');
+                let keepAfter = 1;
+                let acc = afterWords[0] || '';
+                while (keepAfter < afterWords.length && acc.length < 130) {
+                  acc += ' ' + afterWords[keepAfter++];
+                }
+                const endText = acc;
+                const showEnd = keepAfter < afterWords.length;
+
+                desc.textContent =
+                  (showStart ? '… ' : '') + startText + ' ' + endText + (showEnd ? ' …' : '');
+                desc.textContent = desc.textContent.replace(/\s+/g, ' ').trim();
               } else {
                 desc.textContent = m.description.length > 140
-                  ? m.description.slice(0, 140).replace(/\s+\S*$/, '') + '…'
+                  ? m.description.slice(0, 140).replace(/\s+\S*$/, '') + ' …'
                   : m.description;
               }
+              a.appendChild(top);
+              a.appendChild(desc);
+            } else {
+              a.appendChild(top);
             }
-            a.appendChild(title);
-            if (desc.textContent) a.appendChild(desc);
             frag.appendChild(a);
           }
           results.innerHTML = '';
@@ -243,21 +287,37 @@ const index = entries.map((e) => ({
     padding: 0.35rem;
   }
   .wiki-search__result {
-    display: flex; flex-direction: column; gap: 0.1rem;
-    padding: 0.55rem 0.75rem; border-radius: var(--radius-md);
+    display: flex; flex-direction: column; gap: 0.25rem;
+    padding: 0.6rem 0.75rem; border-radius: var(--radius-md);
     color: var(--foreground); text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
   }
+  .wiki-search__result:last-child { border-bottom: none; }
   .wiki-search__result:hover,
   .wiki-search__result.is-selected {
     background: var(--muted);
   }
-  .wiki-search__title { font-size: 0.85rem; font-weight: 600; }
+  .wiki-search__top {
+    display: flex; align-items: center; gap: 0.5rem; min-width: 0;
+  }
+  .wiki-search__group {
+    flex-shrink: 0;
+    font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+    padding: 0.12rem 0.45rem; border-radius: var(--radius-full);
+    white-space: nowrap;
+  }
+  .wiki-search__title { font-size: 0.85rem; font-weight: 600; line-height: 1.35; }
   .wiki-search__title mark {
     background: color-mix(in srgb, var(--primary) 30%, transparent);
     color: inherit; border-radius: 2px; padding: 0 1px;
   }
   .wiki-search__desc {
-    font-size: 0.75rem; color: var(--muted-foreground); line-height: 1.4;
+    font-size: 0.75rem; color: var(--muted-foreground); line-height: 1.5;
+    padding-left: 0.1rem; word-break: normal;
   }
   .wiki-search__empty {
     padding: 0.75rem; font-size: 0.82rem; color: var(--muted-foreground);
