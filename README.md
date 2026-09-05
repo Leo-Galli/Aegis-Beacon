@@ -90,15 +90,17 @@ Aegis-Beacon/
 ├── website/             # Astro website (everything web lives here)
 │   ├── src/
 │   │   ├── pages/       # Route pages
-│   │   │   ├── index.astro        # Landing page
-│   │   │   ├── wiki/              # Documentation hub
-│   │   │   │   ├── index.astro    # Wiki home with grouped navigation
-│   │   │   │   └── [...slug].astro# Article renderer
-│   │   │   ├── demo.astro         # Interactive firmware simulation
-│   │   │   ├── builder.astro      # BOM cost builder
-│   │   │   ├── branding.astro     # Brand assets page
-│   │   │   ├── terms.astro        # Terms of Service
-│   │   │   └── privacy.astro      # Privacy Policy
+│   │   │   ├── index.astro            # Landing page
+│   │   │   ├── wiki/                  # Documentation hub
+│   │   │   │   ├── index.astro        # Wiki home with grouped navigation
+│   │   │   │   └── [...slug].astro    # Article renderer
+│   │   │   ├── demo.astro             # Interactive firmware simulation
+│   │   │   ├── builder.astro          # BOM cost builder
+│   │   │   ├── repeaters.astro        # Interactive amateur radio repeater map
+│   │   │   ├── config-dashboard.astro # Web configuration interface
+│   │   │   ├── branding.astro         # Brand assets page
+│   │   │   ├── terms.astro            # Terms of Service
+│   │   │   └── privacy.astro          # Privacy Policy
 │   │   ├── content/wiki/  # Markdown articles (41 pages, grouped)
 │   │   ├── layouts/       # Layout.astro + WikiLayout.astro
 │   │   ├── lib/           # wiki-nav.ts, motion.ts, callout plugin
@@ -153,7 +155,7 @@ All project documentation is written in English and kept in the repository root.
 | [FREQUENCIES.md](FREQUENCIES.md) | Global SAR frequency reference and regional compatibility database        |
 | [TECHNOLOGIES.md](TECHNOLOGIES.md) | Technology stack, architecture and verification checklist               |
 
-**Live documentation:** the website (`https://aegis-beacon.vercel.app`) renders this content as an in-depth wiki: 41 articles across 7 groups at `/wiki`, an interactive firmware simulation at `/demo` (OLED, Morse engine, frequency planner, GPS payload, RSSI audio, battery monitor, serial console), a BOM cost calculator at `/builder`, and brand assets at `/branding`.
+**Live documentation:** the website (`https://aegis-beacon.vercel.app`) renders this content as an in-depth wiki: 41 articles across 7 groups at `/wiki`, an interactive firmware simulation at `/demo` (OLED, Morse engine, frequency planner, GPS payload, RSSI audio, battery monitor, serial console), a BOM cost calculator at `/builder`, an interactive amateur radio repeater map at `/repeaters`, and brand assets at `/branding`.
 
 ---
 
@@ -170,6 +172,45 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 | **CONFIG**     | Both blink | SSID + IP + steps                    | Silent              | WiFi AP + full captive-portal dashboard                          |
 | **EMERGENCY**   | Red fast   | Full-screen inverted "SOS" + coords  | Continuous tone     | Max power, continuous TX with name + GPS, no sleep               |
 
+```mermaid
+graph TD
+    subgraph Power ["Power Subsystem"]
+        BAT["18650 Li-Ion (3.7V)"] --> TP["TP4056 USB-C Charger & Protection"]
+        TP --> VBUS["5V Rail / VBUS"]
+        TP --> DIV["Resistor Divider (100k + 100k)"]
+    end
+
+    subgraph MCU ["Microcontroller (ESP32 DevKit V1 - 240 MHz)"]
+        LDO["AMS1117 3.3V LDO"]
+        CORE["Dual-Core Xtensa LX6"]
+        NVS["NVS Flash Storage"]
+        DAC["DAC1 (GPIO 25)"]
+        VSPI["Hardware VSPI"]
+        SW_SPI["Software SPI"]
+        UART["UART2 Serial"]
+    end
+
+    subgraph Peripherals ["Sensors, UI & Radio"]
+        OLED["SSD1309 2.42 OLED"]
+        GPS["NEO-6M GPS Module"]
+        BTNS["4x Control Buttons (MODE, SEL, UP, DN)"]
+        AUDIO["3.5mm TRRS Audio Jack"]
+        RADIO["SX1262 (Ebyte E22-400M30S)"]
+        ANT["433 MHz Antenna"]
+    end
+
+    VBUS --> LDO
+    LDO --> CORE
+    DIV -->|GPIO 36 ADC| CORE
+
+    SW_SPI -->|GPIO 4, 13, 15, 16, 17| OLED
+    UART <-->|GPIO 12 TX / 22 RX| GPS
+    BTNS -->|GPIO 32, 33, 34, 35| CORE
+    DAC -->|AC-coupled| AUDIO
+    VSPI <-->|GPIO 2, 5, 14, 18, 19, 21, 23| RADIO
+    RADIO <--> ANT
+```
+
 ---
 
 ## What's New in v5.x
@@ -183,7 +224,7 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 | Display                  | SSD1306 0.96" I2C 128×64     | **SSD1309 2.42" SPI 128×64 (U8g2, larger screen)**  |
 | Display driver           | Adafruit SSD1306             | **U8g2 full-frame buffer**                           |
 | GPS                      | None (reserved flag)         | **NEO-6M UART — name + coords in Morse payload**     |
-| Battery monitor          | None                         | **ADC voltage divider → % + mV, live on every screen**|
+| Battery monitor          | None                         | **ADC voltage divider -> % + mV, live on every screen**|
 | Parameter adjustment     | Dashboard only               | **4 physical buttons: SEL + UP + DN (live VOL/WPM)** |
 | Morse payload            | `SOS`                        | `SOS DE [NAME] PSN [LAT] [LON]` (configurable)       |
 | BOM cost                 | ~$12–14 USD                  | ~$23–28 USD                                          |
@@ -191,6 +232,7 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 | BUSY pin                 | N/A                          | **GPIO 21 — mandatory on SX1262**                    |
 | Dependencies             | Adafruit SSD1306 + GFX       | **U8g2 + TinyGPS++**                                 |
 
+> [!WARNING]
 > **Breaking change from v4.0:** This is a full hardware revision. All GPIO assignments have changed. Do not attempt to run v5.x firmware on the original ESP32-C3 board with RA-02 module without rewiring.
 
 ---
@@ -337,7 +379,7 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 
 ### Wiring Tables
 
-#### SX1262 (Ebyte E22-400M30S) ↔ ESP32 DevKit V1
+#### SX1262 (Ebyte E22-400M30S) <-> ESP32 DevKit V1
 
 | E22 / SX1262 Pin | ESP32 GPIO | Notes                                              |
 |------------------|------------|-----------------------------------------------------|
@@ -355,7 +397,7 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 
 > **BUSY is not optional.** If GPIO 21 is not wired to BUSY, the firmware will hang on the first radio call.
 
-#### SSD1309 2.42" OLED (7-pin SPI) ↔ ESP32 DevKit V1
+#### SSD1309 2.42" OLED (7-pin SPI) <-> ESP32 DevKit V1
 
 | OLED Pin    | ESP32 GPIO | Notes                           |
 |-------------|------------|---------------------------------|
@@ -369,14 +411,14 @@ v5.4 is a significant hardware upgrade from the original v4.0. The microcontroll
 
 > Software SPI is used so the OLED does not share the VSPI bus with the radio. Both devices can operate simultaneously.
 
-#### NEO-6M GPS ↔ ESP32 DevKit V1 (UART2)
+#### NEO-6M GPS <-> ESP32 DevKit V1 (UART2)
 
 | GPS Pin | ESP32 GPIO | Notes                              |
 |---------|------------|------------------------------------|
 | VCC     | 3V3        | 3.3 V (most modules accept 3.3–5 V)|
 | GND     | GND        |                                    |
-| TX      | GPIO 22    | GPS TX → ESP32 RX (input-only pin) |
-| RX      | GPIO 12    | GPS RX ← ESP32 TX                  |
+| TX      | GPIO 22    | GPS TX -> ESP32 RX (input-only pin) |
+| RX      | GPIO 12    | GPS RX <- ESP32 TX                  |
 
 Baud rate: 9600 (NEO-6M default). UART2 is started only when `gpsEnabled = true`.
 
@@ -384,15 +426,15 @@ Baud rate: 9600 (NEO-6M default). UART2 is started only when `gpsEnabled = true`
 
 | Connection            | Value   | Notes                                              |
 |-----------------------|---------|----------------------------------------------------|
-| BAT+ (TP4056 output)  | → R3a   | First 100 kΩ resistor                              |
+| BAT+ (TP4056 output)  | -> R3a   | First 100 kΩ resistor                              |
 | R3a junction          | GPIO 36 | ADC1_CH0 (SVP) — input-only, no pull needed       |
-| GPIO 36               | → R3b   | Second 100 kΩ resistor                             |
-| R3b                   | → GND   | Completes divider                                  |
+| GPIO 36               | -> R3b   | Second 100 kΩ resistor                             |
+| R3b                   | -> GND   | Completes divider                                  |
 | TP4056 STDBY          | GPIO 39 | Optional — LOW when charging; SVN input-only       |
 
-Divider output: `VBAT / 2` → 4.2 V full = 2.1 V on GPIO 36 (safely within 3.3 V ADC range).
+Divider output: `VBAT / 2` -> 4.2 V full = 2.1 V on GPIO 36 (safely within 3.3 V ADC range).
 
-#### Audio Jack — 3.5mm TRRS ↔ ESP32 DevKit V1
+#### Audio Jack — 3.5mm TRRS <-> ESP32 DevKit V1
 
 | Jack Pin       | Connection   | Notes                                         |
 |----------------|--------------|-----------------------------------------------|
@@ -555,6 +597,25 @@ Key firmware constants (edit before compiling, or change via dashboard):
 
 ## Operating Modes
 
+```mermaid
+stateDiagram-v2
+    [*] --> BOOT: Power ON / Reset
+    BOOT --> BEACON: Default Start (or NVS saved mode)
+    BOOT --> SEARCH: Mode toggle
+    BOOT --> CONFIG: Hold SW_SEL (>= 3s)
+    BOOT --> FACTORY_RESET: Hold MODE + SEL (>= 5s at Boot)
+
+    BEACON --> SEARCH: SW_MODE Short Press (< 2s)
+    SEARCH --> BEACON: SW_MODE Short Press (< 2s)
+
+    BEACON --> EMERGENCY: SW_MODE Long Press (>= 2s)
+    SEARCH --> EMERGENCY: SW_MODE Long Press (>= 2s)
+    CONFIG --> EMERGENCY: Web Dashboard Emergency Button
+
+    EMERGENCY --> BEACON: SW_MODE Long Press (>= 2s)
+    CONFIG --> BEACON: Save & Reboot / Exit
+```
+
 ### BEACON Mode
 
 The primary emergency mode. On each cycle the device:
@@ -676,9 +737,9 @@ This encoding is intentionally compact to minimise transmission time. Full decim
 
 | Button         | GPIO | Press type     | Duration    | Action                                    |
 |----------------|------|----------------|-------------|-------------------------------------------|
-| **SW_MODE**    | 33   | Short press    | < 2000 ms   | Toggle BEACON ↔ SEARCH                    |
+| **SW_MODE**    | 33   | Short press    | < 2000 ms   | Toggle BEACON <-> SEARCH                    |
 | **SW_MODE**    | 33   | Long press     | ≥ 2000 ms   | Activate **EMERGENCY SOS**                |
-| **SW_SEL**     | 32   | Short press    | < 3000 ms   | Toggle adjustment target: VOL ↔ WPM       |
+| **SW_SEL**     | 32   | Short press    | < 3000 ms   | Toggle adjustment target: VOL <-> WPM       |
 | **SW_SEL**     | 32   | Long press     | ≥ 3000 ms   | Launch WiFi AP + config dashboard         |
 | **SW_SEL**     | 32   | Hold 1 s       | ≥ 1000 ms   | Save current VOL and WPM to NVS           |
 | **SW_UP**      | 35   | Short press    | —           | Increment selected parameter (+10 vol / +1 WPM) |
@@ -790,7 +851,7 @@ The ESP32 DevKit V1 has a **native 8-bit DAC** on GPIO 25 (`DAC_CHANNEL_1`). Aud
 
 | Section               | Feature                                                                                        |
 |-----------------------|------------------------------------------------------------------------------------------------|
-| **Mode toggle**       | BEACON ↔ SEARCH physical-style switch with payload preview                                     |
+| **Mode toggle**       | BEACON <-> SEARCH physical-style switch with payload preview                                     |
 | **Morse payload**     | Live-building preview of full `SOS DE [NAME] PSN [LAT] [LON]` as you configure each section   |
 | **Morse preview**     | Message decoded to dots/dashes in real time as you type                                        |
 | **Identity (GPS)**    | First name + last name fields + enable toggle — appended as `DE [NAME]` in Morse               |

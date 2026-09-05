@@ -31,8 +31,10 @@ Aegis-Beacon v5.4 uses the **Ebyte E22-400M30S** module (SX1262 / LLCC68 chip), 
 | UHF 406 MHz       | In range       | Satellite PLB band — **do not TX on 406.100 MHz** (see §1)  |
 | UHF 462–477 MHz   | In range       | GMRS/UHF CB emergency channels — Americas/Oceania           |
 
+> [!IMPORTANT]
 > **The SX1262 transmits a narrow CW carrier** via `transmitDirect()` / `standby()` keying — AM-detectable on any scanner or SDR. It does **not** generate FM, CTCSS sub-tones, or digital modulation. Use it to transmit Morse SOS on ISM/UHF frequencies and to passively scan RSSI on any configured frequency.
 
+> [!NOTE]
 > **CTCSS note:** The SX1262 cannot generate CTCSS sub-audio tones. Frequencies that require CTCSS (e.g. Canal E at 123.0 Hz, Radio Montana at 85.4 Hz) are useful for **SEARCH mode scanning** (detecting other radios already on the channel), but Aegis-Beacon transmissions on those channels will not open tone-squelched repeaters.
 
 ---
