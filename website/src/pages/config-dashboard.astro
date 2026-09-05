@@ -8,12 +8,12 @@ let bodyHtml = '';
 try {
   bodyHtml = fs.readFileSync(payloadPath, 'utf8');
 } catch {
-  bodyHtml = '<p style="color:var(--muted-foreground)">Dashboard payload unavailable — re-run `node website/scripts/firstBody.cjs` from the repo root.</p>';
+  bodyHtml = '<p style="color:var(--muted-foreground)">Dashboard payload unavailable - re-run `node website/scripts/firstBody.cjs` from the repo root.</p>';
 }
 ---
 
 <Layout
-  title="Config Dashboard — Aegis-Beacon"
+  title="Config Dashboard - Aegis-Beacon"
   description="Live preview of the AEGIS-BEACON configuration dashboard extracted directly from the firmware source (AegisBeacon.ino). Configure beacon, identity, GPS, search, audio, radio and display settings here."
 >
   <div class="dash-host">
