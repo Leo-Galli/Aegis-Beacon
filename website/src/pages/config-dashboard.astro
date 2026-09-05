@@ -1,0 +1,66 @@
+---
+import Layout from '../layouts/Layout.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const payloadPath = path.resolve('public/dashboard-body.html');
+let bodyHtml = '';
+try {
+  bodyHtml = fs.readFileSync(payloadPath, 'utf8');
+} catch {
+  bodyHtml = '<p style="color:var(--muted-foreground)">Dashboard payload unavailable — re-run `node website/scripts/firstBody.cjs` from the repo root.</p>';
+}
+---
+
+<Layout
+  title="Config Dashboard — Aegis-Beacon"
+  description="Live preview of the AEGIS-BEACON configuration dashboard extracted directly from the firmware source (AegisBeacon.ino). Configure beacon, identity, GPS, search, audio, radio and display settings here."
+>
+  <div class="dash-host">
+    <div class="dash-frame">
+      <div class="dash-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 12.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Extracted from firmware
+      </div>
+      <div class="dash-frame-inner" set:html={bodyHtml.trim()}></div>
+    </div>
+  </div>
+
+  <style>
+    .dash-host {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+    }
+    .dash-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted-foreground);
+      background: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.85rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1.25rem;
+    }
+    .dash-frame {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background: var(--background);
+      box-shadow: var(--shadow-lg);
+    }
+    .dash-frame-inner {
+      position: relative;
+    }
+    .dash-frame-inner :global(header) {
+      border-radius: 0;
+    }
+
+    @media (max-width: 640px) {
+      .dash-host { padding: 1rem 0.75rem 2rem; }
+    }
+  </style>
+</Layout>
