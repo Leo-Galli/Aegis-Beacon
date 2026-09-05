@@ -1,13 +1,17 @@
 # Technology Stack
 
-**Project:** Aegis-Beacon v5.4 — Dual-Mode Avalanche Rescue System
-**Repository:** https://github.com/Leo-Galli/Aegis-Beacon
-**License:** MIT
+<div align="center">
 
-This document is the complete technology reference for the project. It covers
-the **embedded firmware** (Arduino / PlatformIO on ESP32), the **hardware
-platform**, the **Astro website** and the **deployment toolchain**, with the
-exact libraries, versions and build commands used.
+### Aegis-Beacon v5.4 — Dual-Mode Avalanche Rescue System
+**Firmware, Hardware, Web Stack and Deployment Specification**
+
+[![Firmware](https://img.shields.io/badge/Firmware-C%2B%2B%20%2F%20Arduino-blue?style=flat-square&logo=c%2B%2B)](AegisBeacon.ino)
+[![Radio](https://img.shields.io/badge/Radio-SX1262%20(E22--400M30S)-f97316?style=flat-square&logo=semtech)](DATASHEET.md)
+[![Web](https://img.shields.io/badge/Website-Astro%205%20Static-22c55e?style=flat-square&logo=astro)](website/)
+[![Hosting](https://img.shields.io/badge/Hosting-Vercel-black?style=flat-square&logo=vercel)](https://aegis-beacon.vercel.app)
+[![License](https://img.shields.io/badge/License-MIT-0891b2?style=flat-square)](LICENSE)
+
+</div>
 
 ---
 

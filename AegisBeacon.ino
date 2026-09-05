@@ -52,7 +52,7 @@
 // └───────────────────────────────────┴──────────┴─────────────────────────── ┘
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
-// │  RADIO WIRING — SX1262 (Ebyte E22-400M30S) ↔ ESP32 DevKit V1 (VSPI)      │
+// │  RADIO WIRING — SX1262 (Ebyte E22-400M30S) <-> ESP32 DevKit V1 (VSPI)      │
 // ├────────────────┬─────────────────┬─────────────────────────────────────  │
 // │  SX1262 Pin    │  ESP32 GPIO     │  Notes                                │
 // ├────────────────┼─────────────────┼─────────────────────────────────────  │
@@ -96,14 +96,14 @@
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
-// │  GPS WIRING — NEO-6M ↔ ESP32 DevKit V1 (UART2)                           │
+// │  GPS WIRING — NEO-6M <-> ESP32 DevKit V1 (UART2)                           │
 // ├────────────────┬─────────────────┬─────────────────────────────────────  │
 // │  GPS Pin       │  ESP32 GPIO     │  Notes                                │
 // ├────────────────┼─────────────────┼─────────────────────────────────────  │
 // │  VCC           │  3V3            │  3.3V (some modules: 5V tolerable)    │
 // │  GND           │  GND            │                                       │
-// │  TX            │  GPIO 34        │  GPS TX → ESP RX (input only)         │
-// │  RX            │  GPIO 12        │  GPS RX ← ESP TX                      │
+// │  TX            │  GPIO 34        │  GPS TX -> ESP RX (input only)         │
+// │  RX            │  GPIO 12        │  GPS RX <- ESP TX                      │
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
 //  GPS uses HardwareSerial(2) — Serial2 — at 9600 baud (NEO-6M default).
 //  GPIO34 is input-only on ESP32 — perfect for GPS RX data.
@@ -111,7 +111,7 @@
 //  up to GPS_FIX_TIMEOUT_S seconds at startup if GPS is enabled.
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
-// │  BUTTON CONTROLS — 3-button adjustment system ↔ ESP32 DevKit V1          │
+// │  BUTTON CONTROLS — 3-button adjustment system <-> ESP32 DevKit V1          │
 // ├────────────────┬─────────────────┬─────────────────────────────────────  │
 // │  Button        │  ESP32 GPIO     │  Notes                                │
 // ├────────────────┼─────────────────┼─────────────────────────────────────  │
@@ -128,7 +128,7 @@
 //  with internal pullup and external 10kΩ pullup if needed.
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
-// │  AUDIO JACK WIRING — 3.5mm TRRS ↔ ESP32 DevKit V1                        │
+// │  AUDIO JACK WIRING — 3.5mm TRRS <-> ESP32 DevKit V1                        │
 // ├────────────────┬─────────────────┬─────────────────────────────────────  │
 // │  Jack Pin      │  ESP32 GPIO     │  Notes                                │
 // ├────────────────┼─────────────────┼─────────────────────────────────────  │
@@ -1887,7 +1887,7 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
     SCK=GPIO18  MISO=GPIO19  MOSI=GPIO23<br>
     CS=GPIO5   RST=GPIO14   BUSY=GPIO21<br>
     DIO1=GPIO2  TCXO=1.6V<br>
-    <span style="color:var(--a2)">⚠ BUSY pin must be wired or radio hangs</span>
+    <span style="color:var(--a2)">[!] BUSY pin must be wired or radio hangs</span>
   </div>
 </div>
 
@@ -1939,18 +1939,18 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
     Emergency mode transmits high-power SOS continuously, including your name and GPS position if enabled.
     Cannot be cancelled remotely — use MODE button (hold 2s) on the device.
   </p>
-  <button class="emg-btn" onclick="confirmEmergency()">⚡ ACTIVATE EMERGENCY SOS ⚡</button>
+  <button class="emg-btn" onclick="confirmEmergency()">ACTIVATE EMERGENCY SOS</button>
 </div>
 
 <!-- ── SAVE ─────────────────────────────────────────────────────────────── -->
 <div class="card full">
   <div class="ct"><span class="ct-dot"></span>SAVE & CONTROL</div>
   <div class="btn-row" style="margin-bottom:12px;">
-    <button class="btn btn-g btn-save" onclick="saveConfig()">💾 SAVE &amp; REBOOT</button>
+    <button class="btn btn-g btn-save" onclick="saveConfig()">SAVE &amp; REBOOT</button>
   </div>
   <div class="btn-row">
-    <button class="btn btn-c" onclick="fetchStatus()">↺ REFRESH STATUS</button>
-    <button class="btn btn-d" onclick="confirmFactory()">⚠ FACTORY RESET</button>
+    <button class="btn btn-c" onclick="fetchStatus()">REFRESH STATUS</button>
+    <button class="btn btn-d" onclick="confirmFactory()">FACTORY RESET</button>
   </div>
 </div>
 
@@ -1999,7 +1999,7 @@ function renderFreqs(){
   const ul=document.getElementById('freqList');ul.innerHTML='';
   freqs.forEach((f,i)=>{
     const li=document.createElement('li');
-    li.innerHTML=`<span class="fv">${f.toFixed(3)} MHz</span><span style="color:var(--dim);font-size:.61rem;">CH ${i+1}</span><button class="del" onclick="delFreq(${i})">✕</button>`;
+    li.innerHTML=`<span class="fv">${f.toFixed(3)} MHz</span><span style="color:var(--dim);font-size:.61rem;">CH ${i+1}</span><button class="del" onclick="delFreq(${i})">&times;</button>`;
     ul.appendChild(li);
   });
 }

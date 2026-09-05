@@ -84,7 +84,7 @@ const parts: Part[] = [
                 <span>{part.desc}</span>
                 <div class="comp-compare">
                   <span>Compare:</span>
-                  <a href={`https://www.trovaprezzi.it/ricerca.aspx?li=${encodeURIComponent(part.query)}`} target="_blank" rel="noopener" title="Search Trovaprezzi">Trovaprezzi</a>
+                  <a href={`https://www.trovaprezzi.it/categoria.aspx?id=-1&libera=${encodeURIComponent(part.query)}`} target="_blank" rel="noopener" title="Search Trovaprezzi">Trovaprezzi</a>
                   <a href={`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(part.query)}`} target="_blank" rel="noopener" title="Search Google Shopping">Google</a>
                   <a href={`https://www.ebay.it/sch/i.html?_nkw=${encodeURIComponent(part.query)}`} target="_blank" rel="noopener" title="Search eBay.it">eBay</a>
                   <a href={`https://www.aliexpress.com/wholesale?SearchText=${encodeURIComponent(part.query)}`} target="_blank" rel="noopener" title="Search AliExpress">AliExpress</a>

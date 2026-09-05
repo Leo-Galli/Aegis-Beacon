@@ -8,8 +8,18 @@
 -->
 # DATASHEET — Aegis-Beacon v5.4
 
-**Dual-Mode Avalanche Rescue System**
+<div align="center">
+
+### Dual-Mode Avalanche Rescue System
 **Revision: 5.4 | Date: 2026 | Author: Leonardo Galli**
+
+[![Revision](https://img.shields.io/badge/Revision-5.4.0-f97316?style=flat-square)](https://github.com/Leo-Galli/Aegis-Beacon)
+[![Hardware](https://img.shields.io/badge/Hardware-ESP32_DevKit_V1-ef4444?style=flat-square)](https://www.espressif.com/)
+[![Radio](https://img.shields.io/badge/Radio-SX1262_+30dBm-3b82f6?style=flat-square)](https://www.semtech.com/)
+[![Status](https://img.shields.io/badge/Status-Production_Ready-22c55e?style=flat-square)]()
+[![License](https://img.shields.io/badge/License-MIT-0891b2?style=flat-square)](LICENSE)
+
+</div>
 
 ---
 
@@ -36,6 +46,7 @@ The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled
 | Audio output load impedance        | 16     | 600     | Ω    |
 | Battery voltage divider input      | 0      | 4.5     | V    |
 
+> [!CAUTION]
 > **Never connect SX1262 VCC or OLED VCC to 5 V / VBUS — permanent damage will result.**
 
 ---
@@ -348,9 +359,9 @@ Volume is adjustable live via SW_UP / SW_DN (step ±10). Persisted to NVS with S
 
 | Button        | Press type    | Duration        | Action                                      |
 |---------------|---------------|-----------------|---------------------------------------------|
-| **SW_MODE**   | Short press   | < 2000 ms       | Toggle BEACON ↔ SEARCH                      |
+| **SW_MODE**   | Short press   | < 2000 ms       | Toggle BEACON <-> SEARCH                      |
 | **SW_MODE**   | Long press    | ≥ 2000 ms       | Activate EMERGENCY mode                     |
-| **SW_SEL**    | Short press   | < 3000 ms       | Toggle adjustment target: VOL ↔ WPM         |
+| **SW_SEL**    | Short press   | < 3000 ms       | Toggle adjustment target: VOL <-> WPM         |
 | **SW_SEL**    | Hold          | ≥ 1000 ms       | Save current VOL and WPM to NVS             |
 | **SW_SEL**    | Long press    | ≥ 3000 ms       | Launch WiFi AP + config dashboard           |
 | **SW_UP**     | Short press   | —               | Increment selected parameter (+10 vol / +1 WPM) |
