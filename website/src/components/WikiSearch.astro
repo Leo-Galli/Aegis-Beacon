@@ -121,7 +121,7 @@ const index = entries.map((e) => ({
             };
             title.appendChild(hl(m.title, q.trim()));
             // A body snippet is shown only when the body actually contains the
-            // query — so title-only matches stay clean (no body text under them).
+            // query - so title-only matches stay clean (no body text under them).
             const bodyMatch = m.why === 'body' || m.why === 'title+body' || m.why === '';
             if (bodyMatch && m.description) {
               const qLow = q.trim().toLowerCase();
