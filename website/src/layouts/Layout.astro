@@ -12,12 +12,14 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
-  /** Optional structured-data type to merge into the default WebSite JSON-LD. */
+  /** Structured-data type: 'WebSite' (default) or 'Article' for wiki pages. */
+  ogType?: string;
+  /** Optional structured-data object to merge into the default JSON-LD. */
   extraJsonLd?: Record<string, unknown>;
 }
 
 const SITE = 'https://aegis-beacon.vercel.app';
-const { title, description = 'Aegis-Beacon: Open Source Emergency Rescue Beacon', image = '/og-banner.png', extraJsonLd } = Astro.props;
+const { title, description = 'Aegis-Beacon: Open Source Emergency Rescue Beacon', image = '/og-banner.png', ogType = 'website', extraJsonLd } = Astro.props;
 const currentPath = Astro.url.pathname;
 const canonicalUrl = SITE + currentPath;
 const imageUrl = image.startsWith('http') ? image : SITE + image;
@@ -31,15 +33,19 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content={description}>
-  <meta name="theme-color" content="#0a0a0a">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fbfaf7">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141414">
   <meta name="robots" content="index, follow">
+  <meta name="generator" content="Astro">
+  <meta name="application-name" content="Aegis-Beacon">
   <title>{title}</title>
   <link rel="canonical" href={canonicalUrl}>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/css/site.css">
 
   <!-- Open Graph -->
-  <meta property="og:type" content="website">
+  <meta property="og:type" content={ogType}>
   <meta property="og:site_name" content="Aegis-Beacon">
   <meta property="og:title" content={cleanTitle}>
   <meta property="og:description" content={description}>
@@ -50,7 +56,8 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:alt" content="Aegis-Beacon emergency rescue beacon in an alpine setting">
   <meta property="og:locale" content="en_US">
-  <meta property="og:locale:alternate" content="it_IT">
+  {ogType === 'article' && <meta property="article:section" content="Documentation" />}
+  {ogType === 'article' && <meta property="article:author" content="Leonardo Galli" />}
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">

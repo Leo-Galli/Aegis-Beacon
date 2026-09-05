@@ -23,5 +23,20 @@ const { Content } = await render(entry);
   description={entry.data.description}
   slug={entry.id}
 >
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: entry.data.title,
+    description: entry.data.description ?? '',
+    image: 'https://aegis-beacon.vercel.app/og-banner.png',
+    author: { '@type': 'Person', name: 'Leonardo Galli' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Aegis-Beacon',
+      url: 'https://aegis-beacon.vercel.app',
+      logo: { '@type': 'ImageObject', url: 'https://aegis-beacon.vercel.app/favicon.svg' }
+    },
+    mainEntityOfPage: `https://aegis-beacon.vercel.app/wiki/${entry.id}`
+  })} />
   <Content />
 </WikiLayout>

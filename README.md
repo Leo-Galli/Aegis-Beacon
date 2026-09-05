@@ -17,26 +17,11 @@
 
 <br/>
 
-[![Version](https://img.shields.io/badge/version-5.4.0-0f172a?style=flat-square&labelColor=f97316&color=f97316)](https://github.com/leo-galli/aegis-beacon/releases)
-[![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square&labelColor=22c55e&color=16a34a)](LICENSE)
-[![CI](https://img.shields.io/badge/CI-Passing-22c55e?style=flat-square&logo=github-actions&logoColor=white&labelColor=22c55e&color=16a34a)](https://github.com/Leo-Galli/Aegis-Beacon/actions)
-[![Firmware](https://img.shields.io/badge/Firmware-ESP32-blue?style=flat-square&logo=platformio&logoColor=white&labelColor=3b82f6&color=2563eb)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/firmware-ci.yml)
-[![Website](https://img.shields.io/badge/Website-Astro-22c55e?style=flat-square&logo=astro&logoColor=white&labelColor=22c55e&color=16a34a)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/website-ci.yml)
-[![Security](https://img.shields.io/badge/Security-Audited-ef4444?style=flat-square&logo=shield&logoColor=white&labelColor=ef4444&color=dc2626)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/pr-checks.yml)
-
-[![Radio](https://img.shields.io/badge/Radio-SX1262-f97316?style=flat-square&logo=semtech&logoColor=white)](https://www.semtech.com/products/wireless-rf/lora-connect/sx1262)
-[![Platform](https://img.shields.io/badge/Platform-ESP32_240MHz-ef4444?style=flat-square&logo=espressif&logoColor=white)](https://www.espressif.com/en/products/socs/esp32)
-[![Display](https://img.shields.io/badge/Display-SSD1309_2.42--6366f1?style=flat-square&logo=github&logoColor=white)](https://github.com/olikraus/u8g2)
-[![GPS](https://img.shields.io/badge/GPS-NEO--6M-22c55e?style=flat-square&logo=location-dot&logoColor=white)](https://docs.arduino.cc/hardware/nano-33-iot/)
-[![Framework](https://img.shields.io/badge/Framework-Arduino-0891b2?style=flat-square&logo=arduino&logoColor=white)](https://www.arduino.cc/)
-[![Cost](https://img.shields.io/badge/BOM-~%2423_USD-eab308?style=flat-square&logo=dollar-sign&logoColor=white)](DATASHEET.md)
-
-<br/>
-
-![BEACON Mode](https://img.shields.io/badge/BEACON-SOS_+_NAME_+_GPS_TX-red?style=for-the-badge&logo=target&logoColor=white)
-![SEARCH Mode](https://img.shields.io/badge/SEARCH-RSSI_scan_+_audio_alert-blue?style=for-the-badge&logo=radar&logoColor=white)
-![CONFIG Mode](https://img.shields.io/badge/CONFIG-WiFi_captive_portal-grey?style=for-the-badge&logo=wifi&logoColor=white)
-![EMERGENCY Mode](https://img.shields.io/badge/EMERGENCY-max_power_no_sleep-orange?style=for-the-badge&logo=warning&logoColor=white)
+[![License](https://img.shields.io/github/license/Leo-Galli/Aegis-Beacon?style=flat-square&logo=github&logoColor=white&label=License)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Leo-Galli/Aegis-Beacon?style=flat-square&logo=github&logoColor=white&label=Release)](https://github.com/Leo-Galli/Aegis-Beacon/releases)
+[![Stars](https://img.shields.io/github/stars/Leo-Galli/Aegis-Beacon?style=flat-square&logo=github&logoColor=white&label=Stars)](https://github.com/Leo-Galli/Aegis-Beacon)
+[![Website CI](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/website-ci.yml/badge.svg)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/website-ci.yml)
+[![Firmware CI](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/firmware-ci.yml/badge.svg)](https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/firmware-ci.yml)
 
 </div>
 
@@ -101,7 +86,7 @@ Aegis-Beacon/
 │   │   │   ├── branding.astro         # Brand assets page
 │   │   │   ├── terms.astro            # Terms of Service
 │   │   │   └── privacy.astro          # Privacy Policy
-│   │   ├── content/wiki/  # Markdown articles (41 pages, grouped)
+│   │   ├── content/wiki/  # Markdown articles (125 pages, grouped)
 │   │   ├── layouts/       # Layout.astro + WikiLayout.astro
 │   │   ├── lib/           # wiki-nav.ts, motion.ts, callout plugin
 │   │   └── content.config.ts
@@ -155,7 +140,7 @@ All project documentation is written in English and kept in the repository root.
 | [FREQUENCIES.md](FREQUENCIES.md) | Global SAR frequency reference and regional compatibility database        |
 | [TECHNOLOGIES.md](TECHNOLOGIES.md) | Technology stack, architecture and verification checklist               |
 
-**Live documentation:** the website (`https://aegis-beacon.vercel.app`) renders this content as an in-depth wiki: 41 articles across 7 groups at `/wiki`, an interactive firmware simulation at `/demo` (OLED, Morse engine, frequency planner, GPS payload, RSSI audio, battery monitor, serial console), a BOM cost calculator at `/builder`, an interactive amateur radio repeater map at `/repeaters`, and brand assets at `/branding`.
+**Live documentation:** the website (`https://aegis-beacon.vercel.app`) renders this content as an in-depth wiki: 125 articles across 13 groups at `/wiki`, an interactive firmware simulation at `/demo` (OLED, Morse engine, frequency planner, GPS payload, RSSI audio, battery monitor, serial console), a live firmware dashboard extracted from the source at `/config-dashboard`, a BOM cost calculator at `/builder`, an interactive amateur radio repeater map at `/repeaters`, and brand assets at `/branding`.
 
 ---
 

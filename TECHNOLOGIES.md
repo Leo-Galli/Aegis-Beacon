@@ -119,7 +119,7 @@ kept in sync with the content collection.
 
 ### 4.3 Content
 
-- 41 wiki articles in `src/content/wiki/` across 7 groups (Getting Started,
+- 125 wiki articles in `src/content/wiki/` across 13 groups (Getting Started,
   Hardware & Assembly, Radio & RF, Firmware, Power, Field Ops, Reference).
 - Each article is plain Markdown with `title`/`description` frontmatter,
   validated by the content-collection schema.
@@ -165,8 +165,9 @@ vercel build
 2. `website/vercel.json` declares `framework: astro`,
    `buildCommand: npm run build` and `outputDirectory: dist`.
 3. Result: a fully static site served from Vercel's edge - `/`,
-   `/wiki` (41 articles), `/demo`, `/builder`, `/branding`, `/terms`,
-   `/privacy`. No serverless function or runtime is involved.
+   `/wiki` (125 articles), `/demo`, `/builder`, `/config-dashboard`,
+   `/repeaters`, `/branding`, `/terms`, `/privacy`. No serverless function
+   or runtime is involved.
 
 ---
 
@@ -178,7 +179,7 @@ Aegis-Beacon/
 │   ├── src/
 │   │   ├── pages/       # index, wiki/index + wiki/[...slug], demo, builder,
 │   │   │                #   branding, terms, privacy
-│   │   ├── content/wiki/# 41 Markdown articles (7 groups)
+│   │   ├── content/wiki/# 125 Markdown articles (13 groups)
 │   │   ├── layouts/     # Layout.astro + WikiLayout.astro
 │   │   ├── lib/         # wiki-nav.ts, motion.ts, obsidian-callouts.mjs
 │   │   └── content.config.ts
@@ -204,7 +205,7 @@ Aegis-Beacon/
 - [ ] `website/npm run build` emits a static site to `website/dist/`.
 - [ ] `website/npm run dev` serves `/`, `/wiki`, `/demo`, `/builder` locally.
 - [ ] Live site returns 200 on `/`, `/wiki`, `/demo`, `/builder`, `/css/site.css`.
-- [ ] All 41 wiki pages listed in `src/lib/wiki-nav.ts` exist in `src/content/wiki/`.
+- [ ] All wiki pages listed in `src/lib/wiki-nav.ts` exist in `src/content/wiki/`.
 - [ ] Firmware compiles with PlatformIO (`pio run --target upload`, env
       `esp32devkitv1`; RadioLib ≥ 6.x, U8g2 ≥ 2.34, TinyGPS++ ≥ 1.0.3,
       ArduinoJson ≥ 7.x).
