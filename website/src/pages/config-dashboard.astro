@@ -1,21 +1,18 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import fs from 'node:fs';
-import path from 'node:path';
+import rawBody from '../data/dashboard-body.html?raw';
+import rawCss from '../data/dashboard.css?raw';
 
-const payloadPath = path.resolve('public/dashboard-body.html');
-let bodyHtml = '';
-try {
-  bodyHtml = fs.readFileSync(payloadPath, 'utf8');
-} catch {
-  bodyHtml = '<p style="color:var(--muted-foreground)">Dashboard payload unavailable - re-run `node website/scripts/firstBody.cjs` from the repo root.</p>';
-}
+const bodyHtml = rawBody || '<p style="color:var(--muted-foreground)">Dashboard payload unavailable - re-run `node website/scripts/firstBody.cjs` from the repo root.</p>';
+const dashboardCss = rawCss || '';
 ---
 
 <Layout
   title="Config Dashboard - Aegis-Beacon"
   description="Live preview of the AEGIS-BEACON configuration dashboard extracted directly from the firmware source (AegisBeacon.ino). Configure beacon, identity, GPS, search, audio, radio and display settings here."
 >
+  <style is:inline set:html={dashboardCss}></style>
+
   <div class="dash-host">
     <div class="dash-frame">
       <div class="dash-badge">
@@ -49,7 +46,7 @@ try {
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
       overflow: hidden;
-      background: var(--background);
+      background: #07090e;
       box-shadow: var(--shadow-lg);
     }
     .dash-frame-inner {

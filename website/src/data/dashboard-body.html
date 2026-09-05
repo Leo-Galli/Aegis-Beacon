@@ -1,4 +1,3 @@
-<body>
 <header>
   <div class="logo">AEGIS<em>-</em>BEACON <span style="font-size:.65rem;color:var(--dim);margin-left:8px;">v5.1</span></div>
   <div class="badge">CONFIG MODE</div>
@@ -380,4 +379,3 @@ function saveConfig(){
 function confirmEmergency(){if(confirm('ACTIVATE EMERGENCY SOS?\n\nTransmits high-power SOS with name+GPS. Cannot be stopped remotely.')){fetch('/emergency',{method:'POST'});}}
 function confirmFactory(){if(confirm('FACTORY RESET?\n\nAll settings will be erased.')){fetch('/factory',{method:'POST'}).then(()=>setTimeout(()=>location.reload(),4000));}}
 </script>
-</body>
