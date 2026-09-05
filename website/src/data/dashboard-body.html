@@ -257,20 +257,20 @@
 <script>
 // ── Morse table ──────────────────────────────────────────────────────────────
 const MORSE={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',0:'-----',1:'.----',2:'..---',3:'...--',4:'....-',5:'.....',6:'-....',7:'--...',8:'---..',9:'----.'};
-function toMorse(s){return s.toUpperCase().split('').map(c=>MORSE[c]||' ').join('  ');}
+const toMorse=(s)=>{return s.toUpperCase().split('').map(c=>MORSE[c]||' ').join('  ');};
 
 // ── Mode toggle ───────────────────────────────────────────────────────────────
 let modeBeacon=true;
-function toggleMode(){
+window.toggleMode=()=>{
   modeBeacon=!modeBeacon;
   const sw=document.getElementById('modeSwitch');
   const kn=document.getElementById('modeKnob');
   if(modeBeacon){sw.style.borderColor='var(--a2)';kn.style.left='4px';kn.style.background='var(--a2)';kn.style.boxShadow='var(--glow2)';kn.textContent='BEACON';}
   else{sw.style.borderColor='var(--a1)';kn.style.left='88px';kn.style.background='var(--a1)';kn.style.color='#000';kn.style.boxShadow='var(--glow1)';kn.textContent='SEARCH';}
-}
+};
 
 // ── Payload preview ───────────────────────────────────────────────────────────
-function buildPayload(){
+window.buildPayload=()=>{
   let s=document.getElementById('msg').value.toUpperCase()||'SOS';
   const nameEn=document.getElementById('nameEn').checked;
   const fname=(document.getElementById('fname').value||'').toUpperCase().trim();
@@ -284,38 +284,38 @@ function buildPayload(){
   const gpsBeacon=document.getElementById('gpsBeacon').checked;
   if(gpsEn&&gpsBeacon) s+=' PSN N4553 E01230';  // placeholder
   return s;
-}
-function updatePayloadPreview(){
+};
+window.updatePayloadPreview=()=>{
   const pl=buildPayload();
   document.getElementById('payloadPreview').textContent=pl;
   document.getElementById('morsePreview').textContent=toMorse(pl);
-}
+};
 updatePayloadPreview();
 
 // ── Frequency list ────────────────────────────────────────────────────────────
 let freqs=[433.500];
-function renderFreqs(){
+window.renderFreqs=()=>{
   const ul=document.getElementById('freqList');ul.innerHTML='';
   freqs.forEach((f,i)=>{
     const li=document.createElement('li');
     li.innerHTML=`<span class="fv">${f.toFixed(3)} MHz</span><span style="color:var(--dim);font-size:.61rem;">CH ${i+1}</span><button class="del" onclick="delFreq(${i})">&times;</button>`;
     ul.appendChild(li);
   });
-}
-function addFreq(){const v=parseFloat(document.getElementById('newFreq').value);if(isNaN(v)||v<410||v>525||freqs.length>=10)return;freqs.push(v);document.getElementById('newFreq').value='';renderFreqs();}
-function delFreq(i){if(freqs.length<=1)return;freqs.splice(i,1);renderFreqs();}
+};
+window.addFreq=()=>{const v=parseFloat(document.getElementById('newFreq').value);if(isNaN(v)||v<410||v>525||freqs.length>=10)return;freqs.push(v);document.getElementById('newFreq').value='';renderFreqs();};
+window.delFreq=(i)=>{if(freqs.length<=1)return;freqs.splice(i,1);renderFreqs();};
 renderFreqs();
 
 // ── Knob visual (decorative) ──────────────────────────────────────────────────
-function updateKnob(markerId, valId, rawVal, min, max, suffix){
+window.updateKnob=(markerId, valId, rawVal, min, max, suffix)=>{
   const pct=(rawVal-min)/(max-min);
   const deg=-140+pct*280;
   document.getElementById(markerId).style.transform=`translateX(-50%) rotate(${deg}deg)`;
   document.getElementById(valId).textContent=rawVal+suffix;
-}
+};
 
 // ── Status fetch ──────────────────────────────────────────────────────────────
-function fetchStatus(){
+window.fetchStatus=()=>{
   fetch('/status').then(r=>r.json()).then(d=>{
     document.getElementById('sBoot').textContent='#'+d.boot;
     document.getElementById('sHeap').textContent=Math.round(d.heap/1024)+'KB';
@@ -342,12 +342,12 @@ function fetchStatus(){
       });
     }
   }).catch(()=>{});
-}
+};
 fetchStatus();
 setInterval(fetchStatus,4000);
 
 // ── Save ────────────────────────────────────────────────────────────────────
-function saveConfig(){
+window.saveConfig=()=>{
   const data={
     msg:document.getElementById('msg').value,
     wpm:parseInt(document.getElementById('wpm').value),
@@ -374,8 +374,8 @@ function saveConfig(){
   fetch('/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
     .then(r=>r.text()).then(()=>alert('Saved! Device rebooting...'))
     .catch(()=>alert('Save failed — check connection.'));
-}
+};
 
-function confirmEmergency(){if(confirm('ACTIVATE EMERGENCY SOS?\n\nTransmits high-power SOS with name+GPS. Cannot be stopped remotely.')){fetch('/emergency',{method:'POST'});}}
-function confirmFactory(){if(confirm('FACTORY RESET?\n\nAll settings will be erased.')){fetch('/factory',{method:'POST'}).then(()=>setTimeout(()=>location.reload(),4000));}}
+window.confirmEmergency=()=>{if(confirm('ACTIVATE EMERGENCY SOS?\n\nTransmits high-power SOS with name+GPS. Cannot be stopped remotely.')){fetch('/emergency',{method:'POST'});}};
+window.confirmFactory=()=>{if(confirm('FACTORY RESET?\n\nAll settings will be erased.')){fetch('/factory',{method:'POST'}).then(()=>setTimeout(()=>location.reload(),4000));}};
 </script>
