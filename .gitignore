@@ -28,4 +28,5 @@ Thumbs.db
 # IDE files
 .vscode/
 .idea/
+.obsidian/
 website/.astro/

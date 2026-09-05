@@ -83,7 +83,7 @@ If the board uses a TCXO for the radio, the firmware enables it at the correct v
 
 ## Related Pages
 
-- [SX1262 Radio Module](/wiki/sx1262-radio-module) — the transceiver and its capabilities.
+- [SX1262 Datasheet Notes](/wiki/sx1262-datasheet-notes) — the transceiver and its capabilities.
 - [E22 Radio Module Guide](/wiki/e22-radio-module-guide) — the alternative module family.
 - [Frequency Compatibility](/wiki/frequency-compatibility) — band limits and legal use.
 - [Antenna Design](/wiki/antenna-design) — matching the radio to the antenna.
