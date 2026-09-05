@@ -38,5 +38,13 @@ const { Content } = await render(entry);
     },
     mainEntityOfPage: `https://aegis-beacon.vercel.app/wiki/${entry.id}`
   })} />
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Documentation', item: 'https://aegis-beacon.vercel.app/wiki' },
+      { '@type': 'ListItem', position: 2, name: entry.data.title, item: `https://aegis-beacon.vercel.app/wiki/${entry.id}` }
+    ]
+  })} />
   <Content />
 </WikiLayout>

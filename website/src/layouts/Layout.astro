@@ -85,9 +85,9 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
       '@type': 'SearchAction',
       target: { '@type': 'EntryPoint', urlTemplate: SITE + '/wiki?q={search_term_string}' },
       'query-input': 'required name=search_term_string'
-    },
-    ...extraJsonLd
+    }
   })} />
+  {extraJsonLd && <script type="application/ld+json" is:inline set:html={JSON.stringify({ '@context': 'https://schema.org', ...extraJsonLd })} />}
 
   <script is:inline>
     (function() {

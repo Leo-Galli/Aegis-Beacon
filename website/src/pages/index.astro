@@ -4,7 +4,18 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout
   title="Aegis-Beacon | Open Source Emergency Radio System"
-  description="Low-cost emergency radio-location system based on LoRa for mountain rescue and SAR operations."
+  description="Open-source LoRa emergency beacon for mountain rescue: ESP32, SX1262 radio, NEO-6M GPS and Morse SOS on 433 MHz. Build it for under $28, run it for 65+ hours."
+  extraJsonLd={{
+    '@type': 'FAQPage',
+    mainEntity: [
+      { '@type': 'Question', name: 'What is the total cost to build an Aegis-Beacon?', acceptedAnswer: { '@type': 'Answer', text: 'The complete bill of materials costs between $23 and $28 depending on sourcing, and all components are readily available from AliExpress or local electronics stores.' } },
+      { '@type': 'Question', name: 'Does it require any cellular or internet connection?', acceptedAnswer: { '@type': 'Answer', text: 'No. Aegis-Beacon uses direct peer-to-peer LoRa radio communication and works entirely offline. WiFi is only used in Config mode for local settings adjustment.' } },
+      { '@type': 'Question', name: 'What is the maximum range?', acceptedAnswer: { '@type': 'Answer', text: 'Up to 15 km line-of-sight with the included antenna at +17 dBm TX power, extending further in Emergency mode at +22 dBm.' } },
+      { '@type': 'Question', name: 'How long does the battery last?', acceptedAnswer: { '@type': 'Answer', text: 'In Beacon mode with a standard 18650 cell (3000 mAh), expect 65+ hours of continuous operation thanks to 10 uA deep sleep between transmissions.' } },
+      { '@type': 'Question', name: 'Is this legal to use?', acceptedAnswer: { '@type': 'Answer', text: 'The device operates in the 410-525 MHz band; check local regulations for unlicensed radio operation. In many jurisdictions low-power emergency beacons are permitted, and the firmware supports PMR446-compliant frequencies.' } },
+      { '@type': 'Question', name: 'How do I configure the device?', acceptedAnswer: { '@type': 'Answer', text: 'Switch to Config mode to activate the WiFi access point, connect to AEGIS-SETUP and open 192.168.4.1 in a browser to adjust every parameter without reflashing.' } }
+    ]
+  }}
 >
 
 <!-- ═══════════════════════════════════════════════════════════
