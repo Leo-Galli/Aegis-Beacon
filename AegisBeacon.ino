@@ -172,9 +172,9 @@
 // │  WITH GPS only    : "SOS PSN N4553 E01230"                               │
 // │  WITH BOTH        : "SOS DE MARIO ROSSI PSN N4553 E01230"                │
 // │                                                                          │
-// │  Coordinates use truncated DDM (degrees + decimal minutes × 100) to      │
-// │  keep message short in Morse. Full coordinates logged on Serial.         │
-// │  Receiver can decode: N4553 = 45.53° N, E01230 = 12.30° E                │
+// │  Coordinates use truncated DDM (degrees + whole minutes) to keep the    │
+// │  message short in Morse. Full coordinates logged on Serial.             │
+// │  Receiver can decode: N4553 = 45°53' N, E01230 = 12°30' E               │
 // └──────────────────────────────────────────────────────────────────────────┘
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
@@ -559,12 +559,12 @@ static void adjStep(int8_t dir) {
     // Volume
     int v = (int)cfg.audioVolume + dir * ADJ_VOL_STEP;
     cfg.audioVolume = (uint8_t)constrain(v, ADJ_VOL_MIN, ADJ_VOL_MAX);
-    LOG_POT("BTN VOL %s -> audioVolume=%d", dir>0?"+":"−", cfg.audioVolume);
+    LOG_POT("BTN VOL %s -> audioVolume=%d", dir>0?"+":"-", cfg.audioVolume);
   } else {
     // WPM
     int w = (int)cfg.wpm + dir * ADJ_WPM_STEP;
     cfg.wpm = (uint8_t)constrain(w, ADJ_WPM_MIN, ADJ_WPM_MAX);
-    LOG_POT("BTN WPM %s -> wpm=%d (dot=%lu ms)", dir>0?"+":"−", cfg.wpm, dotMs());
+    LOG_POT("BTN WPM %s -> wpm=%d (dot=%lu ms)", dir>0?"+":"-", cfg.wpm, dotMs());
   }
   g_adjOledShowMs = millis() + ADJ_SHOW_MS;
 }
@@ -650,17 +650,22 @@ void readGPS() {
   }
 }
 
-// Format latitude for Morse: N4553 (= 45.53° N)
-// Uses DDM × 100 integer to avoid decimal in Morse (no '.' character)
-// N/S prefix + 4 digits degrees×100 truncated
+// Format one coordinate for the Morse payload as truncated DDM:
+//   N4553 = 45 degrees 53 minutes North  (lat 45.883)
+//   E01230 = 12 degrees 30 minutes East  (lng 12.500)
+// Layout: hemisphere letter + 2-digit degrees + 2-digit whole minutes.
+// Minutes are truncated (not rounded) so a listener copying the digits
+// can only ever be ~0.5' (~1 km) optimistic, never past the real spot.
+// No '.' character exists in Morse for decimals, hence the implied
+// decimal point of DDM. This is the format documented across the wiki.
 void formatCoordMorse(char* buf, size_t len, double deg, bool isLat) {
   char hemi;
   if (isLat) hemi = (deg >= 0) ? 'N' : 'S';
   else        hemi = (deg >= 0) ? 'E' : 'W';
   double absDeg = fabs(deg);
-  int    degInt = (int)absDeg;
-  double minFrac = (absDeg - degInt) * 60.0;   // decimal minutes
-  int    minInt  = (int)(minFrac * 100.0 / 10.0); // trim to 2-digit minutes*10
+  int    degInt = (int)absDeg;                    // whole degrees
+  double minFrac = (absDeg - degInt) * 60.0;      // decimal minutes
+  int    minInt  = (int)minFrac;                  // whole minutes, truncated
   snprintf(buf, len, "%c%02d%02d", hemi, degInt, minInt);
 }
 
@@ -2279,6 +2284,9 @@ void waitForGpsFix() {
 // BEACON MODE
 // =============================================================================
 void runBeaconMode(bool emergency) {
+  // Emergency mode loops forever without deep sleep. A loop is used instead
+  // of tail recursion so the call stack can never grow across SOS cycles.
+  for (;;) {
   dbSep(emergency ? "EMERGENCY MODE" : "BEACON MODE");
   WiFi.mode(WIFI_OFF);
   btStop();
@@ -2288,7 +2296,9 @@ void runBeaconMode(bool emergency) {
   LOG_INFO("Full payload: \"%s\"", g_currentPayload);
   serialPosReport(true);
 
-  int8_t  txPower = emergency ? 20 : cfg.powerDbm;
+  // Emergency always transmits at the SX1262 maximum (+22 dBm), matching
+  // the OLED status line and the documented behaviour on the wiki.
+  int8_t  txPower = emergency ? 22 : cfg.powerDbm;
   int     repeats = emergency ? 3  : (int)cfg.repeatCount;
   g_txCycles++;
   uint32_t cycleStart = millis();
@@ -2336,7 +2346,9 @@ void runBeaconMode(bool emergency) {
   radio.sleep();
   LOG_OK("Beacon cycle done in %lu ms", millis() - cycleStart);
 
-  if (emergency) { delay(300); runBeaconMode(true); return; }
+  if (emergency) { delay(300); continue; }  // next SOS cycle, stack-safe
+  break;                                     // beacon mode: sleep between cycles
+  }
 
   {
     uint32_t sleepMs = cfg.sleepSec * 1000UL;

@@ -161,11 +161,6 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
 /* ─── 7. Section heads ─── */
 .section-head { max-width: 46rem; margin: 0 auto 2.5rem; text-align: center; }
 .section-head--left { margin-inline: 0; text-align: left; }
-.section-head__eyebrow {
-  display: inline-block; margin-bottom: 0.9rem;
-  font-family: var(--font-mono); font-size: 0.7rem; font-weight: 500;
-  letter-spacing: 0.14em; text-transform: uppercase; color: var(--primary);
-}
 .section-head__title { margin: 0; letter-spacing: -0.01em; }
 .section-head__lead { margin: 0.75rem 0 0; color: var(--muted-foreground); line-height: 1.65; }
 
@@ -214,8 +209,8 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
 }
 .hero-copy { display: grid; gap: 1.25rem; justify-items: start; }
 .hero-kicker {
-  font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500;
-  letter-spacing: 0.12em; text-transform: uppercase; color: var(--primary);
+  font-family: var(--font-mono); font-size: 0.82rem; font-weight: 500;
+  letter-spacing: 0.02em; color: var(--primary);
   padding-bottom: 0.5rem; border-bottom: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
 }
 .hero-title {
