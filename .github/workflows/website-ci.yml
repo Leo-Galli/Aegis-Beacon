@@ -80,7 +80,9 @@ jobs:
           echo "OK: no em-dashes in UI source"
 
           echo "=== AI / co-author strings check ==="
-          if grep -rIli 'co-authored-by\|generated with\|codebuff\|claude' src/ 2>/dev/null | grep -v node_modules; then
+          # The contributing policy page legitimately names the rejected attribution
+          # pattern (Co-authored-by), so it is excluded from this scan.
+          if grep -rIli 'co-authored-by\|generated with\|codebuff\|claude' src/ 2>/dev/null | grep -v node_modules | grep -v 'content/wiki/contributing.md'; then
             echo "FAIL: AI or co-author references found in source"
             exit 1
           fi

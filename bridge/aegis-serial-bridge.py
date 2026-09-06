@@ -20,16 +20,24 @@ page you choose to open.
 Requires Python 3.8+ and pyserial:
     pip install pyserial          (or: py -m pip install pyserial on Windows)
 
+The bridge ships with a live terminal dashboard (TUI): device status, latest
+position, page state and a scrolling log. It auto-enables when stdout is a
+terminal, or can be forced with --tui / disabled with --no-tui.
+
 Examples:
     python bridge/aegis-serial-bridge.py
     python bridge/aegis-serial-bridge.py --list
     python bridge/aegis-serial-bridge.py --port COM3
     python bridge/aegis-serial-bridge.py --port /dev/ttyUSB0 --no-open
+    python bridge/aegis-serial-bridge.py --no-tui          # plain log lines
     python bridge/aegis-serial-bridge.py --http-port 9123 --site http://localhost:4321
 """
 
 import argparse
+import datetime
 import json
+import os
+import shutil
 import sys
 import threading
 import time
@@ -95,6 +103,80 @@ class BridgeState:
 
 
 STATE = BridgeState()
+
+
+# ---------------------------------------------------------------------------
+# Terminal UI (TUI)
+# ---------------------------------------------------------------------------
+# A small live dashboard rendered with ANSI escapes. Every draw is protected
+# by TUI.lock so log lines from other threads cannot interleave mid-frame.
+# Falls back to plain line logging automatically when stdout is not a TTY.
+class TUI:
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.enabled = sys.stdout.isatty()
+        self.lines = []          # rolling log lines (newest last)
+        self.last_status = ""
+        self.last_pos = "no position received yet"
+        self.last_page = "not detected"
+        self.started = time.time()
+
+    def _clear(self):
+        # Move to home, clear the screen and the scrollback buffer.
+        sys.stdout.write("\x1b[2J\x1b[H\x1b[3J")
+
+    def _bar(self, label, value, width=34):
+        return f"{label:<10} {value}".ljust(width)
+
+    def draw(self):
+        if not self.enabled:
+            return
+        with self.lock:
+            width = min(shutil.get_terminal_size((80, 24)).columns, 96)
+            now = datetime.datetime.now().strftime("%H:%M:%S")
+            uptime = int(time.time() - self.started)
+            lines = []
+            lines.append("")
+            lines.append(f"  AEGIS-BEACON SERIAL BRIDGE   {now}   uptime {uptime}s".ljust(width))
+            lines.append("  " + "-" * (width - 2))
+            lines.append("  " + self._bar("Device", self.last_status))
+            lines.append("  " + self._bar("Position", self.last_pos))
+            lines.append("  " + self._bar("Page", self.last_page))
+            lines.append("  " + "-" * (width - 2))
+            lines.append("  Live log:")
+            body = self.lines[- (width // 2) - 8:]  # keep the newest lines
+            for line in body:
+                lines.append("  " + line[: width - 2])
+            frame = "\n".join(lines)
+            self._clear()
+            sys.stdout.write(frame + "\n")
+            sys.stdout.flush()
+
+    def log(self, msg):
+        if not self.enabled:
+            print(msg)
+            return
+        with self.lock:
+            self.lines.append(msg)
+            self.draw()
+
+    def set_status(self, status):
+        with self.lock:
+            self.last_status = status
+            self.draw()
+
+    def set_position(self, text):
+        with self.lock:
+            self.last_pos = text
+            self.draw()
+
+    def set_page(self, text):
+        with self.lock:
+            self.last_page = text
+            self.draw()
+
+
+TUI_UI = TUI()
 
 
 # ---------------------------------------------------------------------------
@@ -197,17 +279,55 @@ def should_open_browser(data):
     return False
 
 
+def _forward_stdin(ser_ref, stop):
+    """Background thread: read lines from the terminal and write them to the
+    device as serial commands (FREQ, WPM, MODE, POS, STATUS, HELP)."""
+    try:
+        while not stop.is_set():
+            try:
+                line = input()
+            except EOFError:
+                return
+            except KeyboardInterrupt:
+                return
+            line = line.strip()
+            if not line:
+                continue
+            if line.lower() in ("quit", "exit"):
+                TUI_UI.log("[bridge] bye")
+                stop.set()
+                return
+            ser = ser_ref[0]
+            if ser is not None and ser.is_open:
+                try:
+                    ser.write((line + "\r\n").encode("utf-8"))
+                    TUI_UI.log(f"[bridge] -> device: {line}")
+                except serial.SerialException as exc:
+                    TUI_UI.log(f"[bridge] cannot send command ({exc})")
+            else:
+                TUI_UI.log("[bridge] device not connected, command ignored")
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def handle_serial(device, baud, site, no_open, verbose):
-    """Open the port (with reconnect) and process AEGIS: lines forever."""
+    """Open the port (with reconnect), process AEGIS: lines forever and forward
+    terminal commands to the device."""
+    ser_ref = [None]
+    stop = threading.Event()
+    stdin_thread = threading.Thread(target=_forward_stdin, args=(ser_ref, stop), daemon=True)
+    stdin_thread.start()
     while True:
         try:
             ser = serial.Serial(device, baud, timeout=0.2)
         except serial.SerialException as exc:
-            print(f"[bridge] cannot open {device}: {exc}")
-            print(f"[bridge] retrying in 2 s... (plug the device in? try --list)")
+            TUI_UI.log(f"[bridge] cannot open {device}: {exc}")
+            TUI_UI.log("[bridge] retrying in 2 s... (plug the device in? try --list)")
             time.sleep(2)
             continue
-        print(f"[bridge] connected to {device} @ {baud} baud")
+        ser_ref[0] = ser
+        TUI_UI.set_status(f"{device} @ {baud} baud (connected)")
+        TUI_UI.log(f"[bridge] connected to {device} @ {baud} baud")
         try:
             while True:
                 raw = ser.readline()
@@ -218,42 +338,43 @@ def handle_serial(device, baud, site, no_open, verbose):
                     continue
                 upper = line.upper()
                 if upper.startswith("AEGIS:"):
-                    print(f"[device] {line}")
+                    TUI_UI.log(f"[device] {line}")
                     if upper.startswith("AEGIS:POS:"):
                         data = parse_pos_line(line)
                         if "lat" in data and "lng" in data:
                             STATE.set_position(data)
+                            TUI_UI.set_position(f"{data['lat']:.6f}, {data['lng']:.6f}")
                             if no_open:
-                                print(f"[bridge] position captured: {data['lat']:.6f}, {data['lng']:.6f}")
+                                TUI_UI.log(f"[bridge] position captured: {data['lat']:.6f}, {data['lng']:.6f}")
                                 continue
                             if STATE.page_is_open():
-                                print(f"[bridge] page is open, streaming update to it")
+                                TUI_UI.log("[bridge] page is open, streaming update to it")
                             elif should_open_browser(data):
                                 url = build_site_url(site, data)
-                                print(f"[bridge] opening page with position: {url}")
+                                TUI_UI.log(f"[bridge] opening page with position: {url}")
                                 try:
                                     webbrowser.open(url, new=2)
                                 except Exception as exc:  # noqa: BLE001
-                                    print(f"[bridge] could not open browser ({exc}); paste this link manually:\n  {url}")
+                                    TUI_UI.log(f"[bridge] could not open browser ({exc}); paste this link manually:\n  {url}")
                             else:
-                                print(f"[bridge] position unchanged, not opening a new tab")
+                                TUI_UI.log("[bridge] position unchanged, not opening a new tab")
                         else:
-                            print(f"[bridge] AEGIS:POS: line without usable coordinates, ignoring")
+                            TUI_UI.log("[bridge] AEGIS:POS: line without usable coordinates, ignoring")
                     elif upper.startswith("AEGIS:HELLO:"):
-                        print(f"[device] firmware handshake received")
+                        TUI_UI.log("[device] firmware handshake received")
                     elif verbose:
-                        print(f"[bridge] (ignored) {line}")
+                        TUI_UI.log(f"[bridge] (ignored) {line}")
                 elif verbose:
-                    print(f"[serial]  {line}")
+                    TUI_UI.log(f"[serial]  {line}")
         except serial.SerialException as exc:
-            print(f"[bridge] serial error ({exc}); reconnecting...")
+            TUI_UI.log(f"[bridge] serial error ({exc}); reconnecting...")
             time.sleep(2)
         finally:
             try:
                 ser.close()
             except Exception:  # noqa: BLE001
                 pass
-            print(f"[bridge] disconnected from {device}, reconnecting...")
+            TUI_UI.log(f"[bridge] disconnected from {device}, reconnecting...")
 
 
 # ---------------------------------------------------------------------------
@@ -281,6 +402,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 from_page = query.get("from", [""])[0] == "page"
                 if from_page or parts.path in ("/ping", "/state"):
                     STATE.note_page_ping()
+                    TUI_UI.set_page("open, live streaming")
                 with STATE.lock:
                     data = dict(STATE.latest) if STATE.latest else {}
                     ts = STATE.ts
@@ -306,7 +428,7 @@ def run_http_server(port):
     server = ThreadingHTTPServer(("127.0.0.1", port), BridgeHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    print(f"[bridge] loopback server on http://127.0.0.1:{port}/ (stream|ping|state)")
+    TUI_UI.log(f"[bridge] loopback server on http://127.0.0.1:{port}/ (stream|ping|state)")
     return server
 
 
@@ -318,14 +440,26 @@ def main(argv=None):
         description="Aegis-Beacon serial bridge: forward device positions to the official site.",
     )
     parser.add_argument("--port", help="serial port (auto-detected if omitted)")
+    parser.add_argument("--no-tui", action="store_false", dest="tui",
+                        help="disable the live terminal dashboard (plain log lines)")
     parser.add_argument("--baud", type=int, default=DEFAULT_BAUD, help=f"baud rate (default {DEFAULT_BAUD})")
     parser.add_argument("--http-port", type=int, default=DEFAULT_HTTP_PORT,
                         help=f"loopback HTTP port for the page (default {DEFAULT_HTTP_PORT})")
     parser.add_argument("--site", default=DEFAULT_SITE, help=f"site base URL (default {DEFAULT_SITE})")
     parser.add_argument("--no-open", action="store_true", help="never open a browser tab")
+    parser.add_argument("--tui", action="store_true", default=None,
+                        help="render the live terminal dashboard (auto-enabled on a TTY)")
     parser.add_argument("--list", action="store_true", help="list serial ports and exit")
     parser.add_argument("--verbose", action="store_true", help="print all serial traffic")
     args = parser.parse_args(argv)
+
+    # --tui forces the dashboard on (even when piped); --no-tui disables it.
+    if args.tui is False:
+        TUI_UI.enabled = False
+    elif args.tui is True:
+        TUI_UI.enabled = True
+    elif not sys.stdout.isatty():
+        TUI_UI.enabled = False
 
     if args.list:
         ports = serial.tools.list_ports.comports()
@@ -343,15 +477,22 @@ def main(argv=None):
         print("or pass the port explicitly with --port (e.g. COM3, /dev/ttyUSB0).")
         return 1
 
-    print(f"[bridge] Aegis-Beacon serial bridge")
-    print(f"[bridge] site target: {args.site}")
-    print(f"[bridge] opening browser for new positions: {'no' if args.no_open else 'yes'}")
+    if not TUI_UI.enabled:
+        print(f"[bridge] Aegis-Beacon serial bridge")
+        print(f"[bridge] site target: {args.site}")
+        print(f"[bridge] opening browser for new positions: {'no' if args.no_open else 'yes'}")
+    else:
+        TUI_UI.log(f"site target: {args.site}")
+        TUI_UI.log(f"opening browser for new positions: {'no' if args.no_open else 'yes'}")
     run_http_server(args.http_port)
 
     try:
         handle_serial(device, args.baud, args.site, args.no_open, args.verbose)
     except KeyboardInterrupt:
-        print("\n[bridge] stopped.")
+        if TUI_UI.enabled:
+            TUI_UI.log("[bridge] stopped.")
+        else:
+            print("\n[bridge] stopped.")
     return 0
 
 

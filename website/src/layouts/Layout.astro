@@ -14,8 +14,8 @@ interface Props {
   image?: string;
   /** Structured-data type: 'WebSite' (default) or 'Article' for wiki pages. */
   ogType?: string;
-  /** Optional structured-data object to merge into the default JSON-LD. */
-  extraJsonLd?: Record<string, unknown>;
+  /** Optional structured-data object (or array of objects) to add as JSON-LD blocks. */
+  extraJsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const SITE = 'https://aegis-beacon.vercel.app';
@@ -87,7 +87,13 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
       'query-input': 'required name=search_term_string'
     }
   })} />
-  {extraJsonLd && <script type="application/ld+json" is:inline set:html={JSON.stringify({ '@context': 'https://schema.org', ...extraJsonLd })} />}
+  {extraJsonLd &&
+    (Array.isArray(extraJsonLd)
+      ? extraJsonLd.map((block) => (
+          <script type="application/ld+json" is:inline set:html={JSON.stringify({ '@context': 'https://schema.org', ...block })} />
+        ))
+      : <script type="application/ld+json" is:inline set:html={JSON.stringify({ '@context': 'https://schema.org', ...extraJsonLd })} />)
+  }
 
   <script is:inline>
     (function() {
@@ -167,6 +173,7 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
       <div class="site-footer__legal">
         <a href="/terms">Terms of Service</a>
         <a href="/privacy">Privacy Policy</a>
+        <a href="/disclaimer">Disclaimer</a>
         <a href="/branding">Branding & Assets</a>
       </div>
       <p class="site-footer__copy">MIT License, Leonardo Galli 2026</p>

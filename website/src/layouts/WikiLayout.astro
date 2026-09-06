@@ -43,7 +43,34 @@ const nextMeta = nextId ? meta.get(nextId) : null;
 const currentGroupLabel = currentGroup?.label ?? '';
 ---
 
-<Layout title={`${title} | Aegis-Beacon Wiki`} description={description} ogType="article">
+<Layout
+  title={`${title} | Aegis-Beacon Wiki`}
+  description={description}
+  ogType="article"
+  extraJsonLd={[
+    {
+      '@type': 'Article',
+      headline: title,
+      description,
+      inLanguage: 'en',
+      author: { '@type': 'Person', name: 'Leonardo Galli' },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Aegis-Beacon',
+        url: 'https://aegis-beacon.vercel.app',
+      },
+      mainEntityOfPage: `https://aegis-beacon.vercel.app/wiki/${slug}`,
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aegis-beacon.vercel.app/' },
+        { '@type': 'ListItem', position: 2, name: 'Wiki', item: 'https://aegis-beacon.vercel.app/wiki' },
+        { '@type': 'ListItem', position: 3, name: title, item: `https://aegis-beacon.vercel.app/wiki/${slug}` },
+      ],
+    },
+  ]}
+>
   <!-- Mobile nav: accordion -->
   <details class="wiki-mobile-nav" id="wiki-mobile-nav">
     <summary class="wiki-mobile-summary">

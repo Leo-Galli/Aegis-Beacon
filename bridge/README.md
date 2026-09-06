@@ -58,9 +58,33 @@ Useful options:
 | `--site URL`    | Site base URL, default the official one                    |
 | `--no-open`     | Never open a browser tab, only print links                 |
 | `--verbose`     | Print all serial traffic                                   |
+| `--tui`         | Force the live terminal dashboard on                       |
+| `--no-tui`      | Force plain log lines (no dashboard)                       |
 
 The beacon does not need a special mode: the serial commands and position
 reporting work in BEACON, SEARCH and CONFIG modes.
+
+## Live terminal dashboard (TUI)
+
+When run in a terminal, the bridge renders a live dashboard instead of plain
+logs:
+
+```text
+  AEGIS-BEACON SERIAL BRIDGE   14:32:08   uptime 412s
+  ----------------------------------------------------------
+  Device     COM3 @ 115200 baud (connected)
+  Position   45.531240, 12.304560
+  Page       open, live streaming
+  ----------------------------------------------------------
+  Live log:
+  [device] AEGIS:POS:lat=45.531240;lng=12.304560;sats=6;fix=1;age=0
+  [bridge] page is open, streaming update to it
+```
+
+The dashboard shows the connected device and baud rate, the latest received
+position, whether the Report Position page is open and streaming, and a
+scrolling live log. It auto-enables when stdout is a terminal; use `--tui` to
+force it on, or `--no-tui` for plain lines (useful when piping to a file).
 
 ## Setting the frequency over serial
 

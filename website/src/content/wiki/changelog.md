@@ -12,8 +12,12 @@ All notable changes across firmware, hardware and documentation, mirroring the a
 - **Serial bridge protocol**: machine-readable `AEGIS:POS:`, `AEGIS:HELLO:` and `AEGIS:STATE:` lines on USB serial, printed plain (never ANSI-colored) and throttled to at most one position report every 5 seconds.
 - **Serial commands**: `FREQ <MHz>` (set and persist the desired frequency), `FREQ?`, `WPM <5-40>`, `MODE <BEACON|SEARCH|CONFIG|EMERGENCY>`, `POS`, `STATUS`, `HELP`.
 - **Cross-platform bridge** (`bridge/aegis-serial-bridge.py`): auto-detects the serial port on Windows, macOS and Linux, and forwards GPS fixes to the website's Report Position page, streaming live into an open page or opening it pre-filled.
-- **Report Position page** (`/report-position`): auto-fills from a link, live-updates from the bridge, Google Maps and OpenStreetMap links, copy-link, and a paste box for testing without hardware.
+- **Bridge live TUI**: the bridge renders a live terminal dashboard (device status, latest position, page state, scrolling log) when run in a terminal, and forwards typed serial commands (`FREQ`, `WPM`, `MODE`, `POS`, `STATUS`, `HELP`) to the device; `--tui` / `--no-tui` override the auto-detection.
+- **Report Position page** (`/report-position`): auto-fills from a link, live-updates from the bridge, Google Maps and OpenStreetMap links, copy-link, a paste box for testing without hardware, and a keyless Leaflet map that draws a track as positions move.
 - **Offline-first config dashboard**: the WiFi captive portal now uses only default system fonts, since it is configured without connectivity.
+- **Merged reference documentation**: `DATASHEET.md` is now the single authoritative document (electrical specs, GPIO map, NVS schema, HTTP API, technology stack, global SAR frequency database, serial protocol reference, deep dives and troubleshooting), replacing the standalone FREQUENCIES.md and TECHNOLOGIES.md.
+- **SEO and legal pages**: canonical URLs, Open Graph, Twitter cards and JSON-LD structured data on every page, plus dedicated Disclaimer, Terms of Service and Privacy Policy pages.
+- **Building Effectively wiki section**: six new pages covering build strategy, quality gates, bench fixtures, rework, time planning and build logging.
 
 ## Version 5.4
 

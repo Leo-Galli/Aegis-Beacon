@@ -68,10 +68,36 @@ Useful flags:
 | `--site URL` | Site base URL, default the official one |
 | `--no-open` | Print links instead of opening the browser |
 | `--verbose` | Print all serial traffic, not only `AEGIS:` lines |
+| `--tui` | Force the live terminal dashboard on (auto-enabled on a TTY) |
+| `--no-tui` | Plain log lines, no dashboard |
+
+## Live terminal dashboard (TUI)
+
+When you run the bridge in a terminal, it renders a live dashboard instead of
+plain logs:
+
+```text
+  AEGIS-BEACON SERIAL BRIDGE   14:32:08   uptime 412s
+  ----------------------------------------------------------
+  Device     COM3 @ 115200 baud (connected)
+  Position   45.531240, 12.304560
+  Page       open, live streaming
+  ----------------------------------------------------------
+  Live log:
+  [device] AEGIS:POS:lat=45.531240;lng=12.304560;sats=6;fix=1;age=0
+  [bridge] page is open, streaming update to it
+```
+
+The dashboard shows the connected device and baud rate, the latest received
+position, whether the Report Position page is open and streaming, and a
+scrolling live log. It is auto-enabled whenever stdout is a terminal; use
+`--tui` to force it on (for example inside a wrapper) or `--no-tui` for plain
+line output suitable for piping or logging. See the [Bridge TUI](bridge-tui)
+page for the full tour.
 
 ## Setting the frequency and listening
 
-The bridge also forwards commands you type in its terminal to the device:
+The bridge forwards commands you type in its terminal to the device:
 
 ```
 FREQ 433.500     set the desired frequency, persisted
@@ -83,10 +109,10 @@ STATUS           print device state
 HELP             list everything
 ```
 
-To home in on a beacon, put the receiving device in SEARCH mode
-(`MODE SEARCH`); the bridge keeps reporting positions in the background while
-you follow the signal. See [Serial Command Protocol](serial-command-protocol)
-for the full reference.
+Type `exit` or `quit` to stop the bridge cleanly. To home in on a beacon, put
+the receiving device in SEARCH mode (`MODE SEARCH`); the bridge keeps
+reporting positions in the background while you follow the signal. See
+[Serial Command Protocol](serial-command-protocol) for the full reference.
 
 ## Phones
 

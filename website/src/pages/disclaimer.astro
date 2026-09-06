@@ -1,0 +1,95 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Disclaimer | Aegis-Beacon" description="Legal disclaimer for the Aegis-Beacon open-source emergency radio system: no warranty, no certification, regulatory and safety notices.">
+  <div class="legal-page container">
+    <header class="section-head" style="padding-top: clamp(2rem, 4vw, 3rem);">
+      <h1 class="section-head__title">Disclaimer</h1>
+      <p class="section-head__lead">Last updated: September 6, 2026</p>
+    </header>
+
+    <div class="legal-content prose-wiki">
+      <h2>1. Not a certified rescue device</h2>
+      <p>Aegis-Beacon is an <strong>open-source experimental project</strong>, not a certified rescue device. It is not approved, certified or endorsed by any rescue, aviation, maritime or telecommunications authority. It does not carry a PLB/EPIRB certification and must never be treated as a replacement for professional rescue equipment, certified personal locator beacons, satellite communicators or emergency services.</p>
+      <div class="wiki-alert wiki-alert-warning">
+        <strong>In a life-threatening emergency, always contact professional rescue services first.</strong>
+        <p>Use certified equipment (PLB, EPIRB, ELT, satellite messenger) alongside or instead of this device.</p>
+      </div>
+
+      <h2>2. No warranty</h2>
+      <p>The project, including all firmware, hardware designs, documentation and website content, is provided <strong>"as is"</strong> without warranty of any kind, express or implied, including but not limited to the implied warranties of merchantability and fitness for a particular purpose. The authors make no guarantee that the device will transmit, receive, or function at all in any given environment.</p>
+
+      <h2>3. Radio transmission is your responsibility</h2>
+      <p>Operating radio equipment is regulated in every country. You are solely responsible for:</p>
+      <ul>
+        <li>Verifying that the frequencies, power levels and duty cycles you use are legal in your jurisdiction</li>
+        <li>Obtaining any required licence (for example a ham radio licence or GMRS licence) before transmitting</li>
+        <li>Not transmitting on protected frequencies such as 406.100 MHz, or on distress frequencies outside genuine emergencies</li>
+      </ul>
+      <p>Misuse of radio frequencies is a criminal offence in most jurisdictions. See the <a href="/wiki/regulatory-compliance">Regulatory Compliance</a> wiki article and the frequency database in <code>DATASHEET.md</code>.</p>
+
+      <h2>4. No guarantee of reception or rescue</h2>
+      <p>The radio link depends on terrain, antenna, battery state, atmospheric conditions and the receiver used. A rescue team may not hear the beacon, may not be listening on your frequencies, or may not be able to locate you. This device is a supplementary tool; it does not guarantee rescue.</p>
+
+      <h2>5. Battery and hardware safety</h2>
+      <p>Li-ion cells can catch fire or explode if damaged, short-circuited or charged incorrectly. Only use protected cells, a correct TP4056 module and the wiring documented in the <a href="/wiki/assembly-guide">Assembly Guide</a>. Never leave a charging cell unattended. Do not expose the device to extreme temperatures beyond the rated operating range.</p>
+
+      <h2>6. Medical and weather information</h2>
+      <p>Any safety, medical, avalanche or weather information published on this site or in the wiki is general educational content. It is not professional medical or mountaineering advice. Always follow the guidance of certified guides, rescue professionals and local authorities.</p>
+
+      <h2>7. Limitation of liability</h2>
+      <p>To the maximum extent permitted by law, the authors, contributors and maintainers of Aegis-Beacon shall not be liable for any damages whatsoever arising from the use, misuse or inability to use the project, including loss of life, injury, data loss or property damage, whether in contract, tort or otherwise.</p>
+
+      <h2>8. Third-party content</h2>
+      <p>The site links to and embeds third-party resources (OpenStreetMap tiles, retailer listings, SDR software). These are subject to their own terms and are not controlled by this project. The repeater map data is community-contributed and may be incomplete or inaccurate.</p>
+
+      <h2>9. No professional advice</h2>
+      <p>Nothing on this website constitutes professional engineering, legal, medical or rescue advice. If you rely on this project in a professional capacity, verify everything independently with qualified experts.</p>
+
+      <h2>10. Contact</h2>
+      <p>Questions about this disclaimer: open an issue on the <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank">GitHub repository</a>.</p>
+    </div>
+  </div>
+
+<style>
+  .legal-page { padding-bottom: 4rem; }
+  .legal-content {
+    max-width: 700px;
+    margin: 2.5rem auto 0;
+  }
+  .legal-content h2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--foreground);
+    padding-bottom: 0.375rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .legal-content p {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: var(--muted-foreground);
+    margin-bottom: 0.875rem;
+  }
+  .legal-content strong { color: var(--foreground); }
+  .legal-content ul {
+    padding-left: 1.5rem;
+    margin-bottom: 0.875rem;
+    list-style-type: disc;
+  }
+  .legal-content li {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--muted-foreground);
+    margin-bottom: 0.25rem;
+  }
+  .legal-content a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--primary) 30%, transparent);
+    text-underline-offset: 2px;
+  }
+  .legal-content a:hover { text-decoration-color: currentColor; }
+</style>

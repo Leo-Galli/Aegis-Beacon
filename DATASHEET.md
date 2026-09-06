@@ -660,7 +660,7 @@ Connect at **115200 baud, 8N1**.
 
 | Version | Date | Changes                                                                                                                          |
 |---------|------|----------------------------------------------------------------------------------------------------------------------------------|
-| v5.5    | 2026 | Serial bridge protocol and commands; cross-platform bridge script + Report Position page with live streaming; config dashboard on default system fonts |
+| v5.5    | 2026 | Serial bridge protocol and commands; cross-platform bridge script with a live TUI + command forwarding; Report Position page with live streaming and track map; config dashboard on default system fonts; merged DATASHEET (specs + stack + frequency database + serial reference); SEO and legal pages (disclaimer, terms, privacy); Building Effectively wiki section |
 | v5.4    | 2026 | Battery monitor (GPIO 36 divider, 9-point Li-ion curve, pixel-art icon in all headers, CHG indicator, dashboard animated bar); improved OLED graphics across all screens |
 | v5.3    | 2026 | Replaced potentiometers with 4-button control (SW_MODE / SW_SEL / SW_UP / SW_DN); OLED adj overlay; auto-repeat; NVS save via SEL long press |
 | v5.2    | 2026 | Radio upgraded SX1276 → SX1262 (Ebyte E22-400M30S); BUSY pin GPIO 21 mandatory; `ensureSpiStarted()` helper; TCXO 1.6 V parameter |
@@ -1005,6 +1005,255 @@ The SX1262 produces a narrow CW carrier (FSK carrier on, key off = silence) — 
 
 > [!IMPORTANT]
 > This frequency database is updated for **June 2026**. Emergency frequencies and regulatory limits are subject to change by national telecommunications authorities. Always verify current regulations before operation.
+
+---
+
+## 26. Serial Protocol Reference
+
+The firmware prints machine-readable `AEGIS:` lines on USB serial (115200 baud, 8N1) and accepts a small set of commands. These lines are never ANSI-colored and are emitted one per line, so they can be consumed by scripts and the serial bridge.
+
+### 26.1 Outgoing lines
+
+| Line | Example | Meaning |
+|------|---------|---------|
+| `AEGIS:HELLO:` | `AEGIS:HELLO:ver=5.5;mode=BEACON;freq=433.500;wpm=12;vol=64` | Emitted at boot after the banner |
+| `AEGIS:POS:` | `AEGIS:POS:lat=45.123456;lng=11.123456;alt=412;sats=8;freq=433.500;mode=BEACON;fix=1;age=87;payload=SOS PSN N4553 E01130` | Position report (see below) |
+| `AEGIS:STATE:` | `AEGIS:STATE:mode=SEARCH;freq=433.500;wpm=12;vol=64;heap=184320;boot=1;tx=0;hits=0;gpsFix=1;sats=8` | Response to `STATUS` |
+| `AEGIS:FREQ:n=` | `AEGIS:FREQ:0=433.500` | One line per configured frequency (response to `FREQ?`) |
+| `AEGIS:WPM:n` | `AEGIS:WPM:14` | Confirmation after a `WPM` command |
+| `AEGIS:MODE:x` | `AEGIS:MODE:SEARCH` | Confirmation after a `MODE` command |
+| `AEGIS:ERR:` | `AEGIS:ERR:frequency 434.900 out of range (410-525 MHz)` | Error message |
+| `AEGIS:HELP:` | `AEGIS:HELP:FREQ <MHz> | FREQ? | WPM <5-40> | MODE <BEACON|SEARCH|CONFIG|EMERGENCY> | POS | STATUS | HELP` | Response to `HELP` |
+
+### 26.2 The POS line fields
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `lat`, `lng` | float, 6 decimals | Coordinates, clamped to real-world ranges (-90..90, -180..180) |
+| `alt` | float | Altitude in metres from the GPS receiver |
+| `sats` | int | Number of satellites used for the fix |
+| `freq` | float | Primary frequency (MHz) |
+| `mode` | string | Current mode: BEACON, SEARCH, CONFIG or EMERGENCY |
+| `fix` | int | 1 when the reported fix is a fresh live calculation, 0 when it is a stale last-known position |
+| `age` | int | Age of the fix in seconds (0 for a fresh fix) |
+| `payload` | string | The Morse payload built for the current cycle |
+
+**Freshness contract:** the firmware recalculates the position from the receiver on every GPS update. If no new satellite data has arrived for 30 seconds, the fix is flagged `fix=0` and the `age` grows, instead of echoing the same coordinates as if they were new. A POS line is never emitted before any fix exists (no bogus `0,0`).
+
+### 26.3 Incoming commands
+
+| Command | Example | Behaviour |
+|---------|---------|-----------|
+| `FREQ <MHz>` | `FREQ 433.500` | Sets the primary frequency (410-525 MHz), persists to NVS, echoes `AEGIS:FREQ:0=` |
+| `FREQ?` | `FREQ?` | Lists every configured frequency as `AEGIS:FREQ:n=` |
+| `WPM <5-40>` | `WPM 14` | Sets the Morse speed, persists, echoes `AEGIS:WPM:` |
+| `MODE <name>` | `MODE SEARCH` | Switches mode, persists, restarts the device, echoes `AEGIS:MODE:` |
+| `POS` | `POS` | Forces a position report now |
+| `STATUS` | `STATUS` | Prints a `AEGIS:STATE:` line with mode, freq, wpm, volume, heap, boot count, TX count, hits, GPS state |
+| `HELP` / `?` | `HELP` | Prints the `AEGIS:HELP:` summary |
+
+Commands are case-insensitive, whitespace-trimmed, and each produces at most one machine-readable response line. Out-of-range values produce `AEGIS:ERR:` lines and change nothing.
+
+---
+
+## 27. Serial Bridge & Terminal UI
+
+The bridge (`bridge/aegis-serial-bridge.py`) is a single Python 3.8+ file (dependency: `pyserial`) that connects the beacon to the official website. It runs on Windows, macOS and Linux.
+
+### 27.1 What it does
+
+1. Auto-detects the serial port (or takes `--port`).
+2. Reads `AEGIS:` lines and extracts `AEGIS:POS:` coordinates.
+3. Builds a Report Position link: `https://aegis-beacon.vercel.app/report-position?lat=..&lng=..`.
+4. If the page is already open in a browser, the page polls the bridge's loopback HTTP server (`127.0.0.1:8765`) and every new fix streams into it live — no new tabs. If the page is not open, the bridge opens it already filled in.
+
+Everything stays on the loopback interface; no API keys, no accounts, no cloud.
+
+### 27.2 Live terminal dashboard (TUI)
+
+When stdout is a terminal, the bridge renders a live dashboard:
+
+```text
+  AEGIS-BEACON SERIAL BRIDGE   14:32:08   uptime 412s
+  ----------------------------------------------------------
+  Device     COM3 @ 115200 baud (connected)
+  Position   45.531240, 12.304560
+  Page       open, live streaming
+  ----------------------------------------------------------
+  Live log:
+  [device] AEGIS:POS:lat=45.531240;lng=12.304560;sats=6;fix=1;age=0
+  [bridge] page is open, streaming update to it
+```
+
+The dashboard shows the connected device and baud rate, the latest position, whether the Report Position page is open and streaming, and a scrolling live log. Use `--tui` to force it on or `--no-tui` for plain line output.
+
+### 27.3 Command forwarding
+
+While the bridge runs, commands typed in its terminal are forwarded to the device over serial (`FREQ`, `WPM`, `MODE`, `POS`, `STATUS`, `HELP`). `exit` or `quit` stops the bridge cleanly. See §26.3 for the command reference.
+
+### 27.4 Bridge flags
+
+| Flag | Meaning |
+|------|---------|
+| `--port X` | Serial port (auto-detected if omitted) |
+| `--baud N` | Baud rate, default 115200 |
+| `--http-port N` | Loopback port, default 8765 |
+| `--site URL` | Site base URL, default the official one |
+| `--no-open` | Print links instead of opening the browser |
+| `--verbose` | Print all serial traffic, not only `AEGIS:` lines |
+| `--tui` / `--no-tui` | Force the dashboard on / off |
+
+---
+
+## 28. Deep Dive: Deep Sleep State Machine
+
+```text
+             ┌────────────────────────────┐
+             │  WATCHDOG FEED (30 s WDT)  │
+             └────────────┬───────────────┘
+                          ▼
+  TX cycle ──► OLED update ──► setPowerSave(1) ──► esp_deep_sleep_start()
+                          │
+                          ▼
+                    WAKE (timer)
+                          │
+                          ▼
+        RTC RAM restored (mode, counters, GPS cache)
+```
+
+1. Before sleeping, the OLED receives `setPowerSave(1)` (drops from ~6 mA to ~0.3 mA).
+2. The ESP32 enters deep sleep; RTC RAM keeps `g_currentMode`, cycle counters, scan hits and the last GPS fix.
+3. The configured interval (1-300 s) elapses, the device wakes, restores state and runs the next cycle.
+4. The 30 s hardware watchdog (`esp_task_wdt`) is fed throughout; a stuck loop resets the device instead of leaving it silent.
+
+**Power budget** (2000 mAh 18650, 20 °C): 10 µA deep sleep, ~120 mA TX at +17 dBm, ~40 mA scan. At a 10 s beacon interval the duty cycle is dominated by TX, giving roughly 65 h; stretching the interval to 60 s reaches ~175 h. See §3.3 for the full table.
+
+---
+
+## 29. Deep Dive: GPS Fix Acquisition
+
+1. On boot, if GPS is enabled and no RTC-cached fix exists, the device shows the GPS wait screen (satellite count, elapsed time, progress bar).
+2. TinyGPS++ parses NMEA sentences on Serial2 (GPIO 22 RX, 9600 baud).
+3. A fix is considered valid at ≥ 3 satellites (`GPS_MIN_SATS`).
+4. Timeout (`gpstmo`, 10-120 s) or a MODE press skips the wait; without a fix the payload carries `PSN UNKN`.
+5. Once acquired, the fix is stored in RTC RAM (`g_rtcLat`, `g_rtcLng`, `g_rtcFixValid`) and survives deep sleep.
+6. On later cycles, the firmware distinguishes a fresh live fix (`fix=1`) from a cached one (`fix=0`, growing `age`).
+
+**Morse coordinates** use compact DDM: `N4553` = 45°53' N, `E01230` = 12°30' E (degrees + whole minutes, ~0.1 arcminute ≈ 185 m precision). Full decimal coordinates are logged to Serial. The encoder truncates minutes (never rounds up), so a reported position is never optimistic past the real spot.
+
+---
+
+## 30. Deep Dive: BEACON TX Cycle
+
+1. WiFi and Bluetooth stacks are shut down (~120 mA saved).
+2. The payload is assembled: `SOS` + optional name + optional GPS per configuration.
+3. The SX1262 is initialised in CW mode (`beginFSK` + `transmitDirect()`).
+4. Each configured frequency is visited in sequence; the message is repeated N times per frequency (1-10).
+5. Morse timing follows PARIS standard: dot = `1200/WPM` ms, dash = 3 units, intra-character gap = 1, inter-character gap = 3, word gap = 7.
+6. The DAC (GPIO 25) emits a 600 Hz click stream in sync with TX for headphone monitoring.
+7. SW_MODE aborts the transmission between characters (max latency one character).
+8. Deep sleep for the configured interval, then repeat.
+
+At 13 WPM: dot = 92 ms, dash = 277 ms. `SOS` ≈ 2.7 s; the full payload `SOS DE MARIO ROSSI PSN N4553 E01230` ≈ 45 s.
+
+---
+
+## 31. Deep Dive: SEARCH Scan Cycle
+
+1. WiFi and Bluetooth are shut down.
+2. Each configured frequency is opened in FSK receive for the dwell time (50-2000 ms, default 400 ms).
+3. Peak RSSI over the dwell window is measured (SX1262 internal RSSI, -120 to -40 dBm, ±2 dBm).
+4. The signal is classified: WEAK (threshold to -80), MEDIUM (-80 to -60), STRONG (≥ -60).
+5. A rising-pitch tone (440-2200 Hz, metal-detector style) tracks signal strength on the DAC.
+6. Detections above the threshold append to the rolling hit log (last 20 in RTC RAM).
+7. The blue LED blinks on detection; the OLED shows the RSSI bar with a threshold tick.
+
+**Recommended scan parameters:** alpine SAR — 400 ms dwell, -105 dBm threshold; urban — 200 ms, -90 dBm. See §25.7.
+
+---
+
+## 32. Troubleshooting Matrix
+
+| Symptom | Most likely cause | Fastest check / fix |
+|---------|-------------------|---------------------|
+| No boot, no OLED, no serial | Power path broken | Measure 3.3 V on the rail; check TP4056 and cell polarity |
+| Boot loop / continuous restart | Brownout or bad 5V connection | Check VBUS and the 100 µF bulk cap; see [Boot Loop](boot-loop) |
+| Radio hangs on first TX call | BUSY not wired | Continuity-test GPIO 21 to the E22 BUSY pin — the #1 missed wire |
+| `[ERROR] SX1262 TX init FAILED` | SPI wiring or BUSY | Verify GPIO 18/19/23/5/14/21; see §11 |
+| OLED blank | Wrong panel (I2C instead of SPI) or wiring | Confirm the 7-pin SPI variant; check RES/CS |
+| Garbled OLED columns | DC swapped with CS | Swap GPIO 16 and 17 |
+| Battery stuck at 0 % or 100 % | Divider disconnected | Measure the voltage directly at GPIO 36; check the 100k/100k pair |
+| No GPS fix outdoors | Sky view blocked or wrong UART | Cold start can take 3 min; verify GPIO 22/12 and 9600 baud |
+| No audio / quiet audio | Missing AC cap or wrong pin | Check the 10 µF cap and GPIO 25 path |
+| SW_UP / SW_DN dead | No external pull-up (input-only pins) | Add 10 kΩ from GPIO 34/35 to 3.3 V |
+| Device stuck in EMERGENCY | RTC flag set | Enter CONFIG and save to clear |
+| `[WARN] NVS empty` on every boot | NVS corrupt or reset | First boot is normal; if persistent, factory reset and reconfigure |
+| Upload fails | Wrong board or driver | Select ESP32 Dev Module; install CP210x/CH340 driver |
+| Serial shows nothing | Wrong baud or wrong cable | Use 115200 8N1 and a data (not charge-only) USB cable |
+| Bridge cannot find the port | Driver missing | Run `--list`; install the CP210x/CH340 driver |
+| Bridge opens no page | Page already open, or `--no-open` | Check the dashboard Page field; the page polls 127.0.0.1:8765 |
+| Coordinates look wrong in Morse | DDM misread | `N4553` = 45°53' N, not 45.53°; the encoder truncates, never rounds up |
+
+---
+
+## 33. Frequently Asked Questions
+
+**Q: What receiver do I need to hear the beacon?**
+A: Any AM-mode receiver on the beacon frequency: a Baofeng in AM mode, a scanner, a ham radio transceiver, or an RTL-SDR with SDR# / GQRX. The SX1262 CW carrier is detected identically to OOK. See §25.9.
+
+**Q: Can a rescuer decode the coordinates without special software?**
+A: Yes. `N4553 E01230` is plain Morse text: a trained operator hears N-4-5-5-3 E-0-1-2-3-0 and plots 45°53' N, 12°30' E in any map app.
+
+**Q: How accurate are the transmitted coordinates?**
+A: The compact DDM encoding resolves ~0.1 arcminute (~185 m), which is intentional: shorter Morse = faster cycles. Full decimal coordinates are logged over serial at full receiver precision.
+
+**Q: Is the SX1262 backward compatible with SX1276 receivers?**
+A: Yes for CW: the carrier signal is modulation-agnostic. Any AM receiver that could hear the SX1276 OOK will hear the SX1262 CW carrier.
+
+**Q: Can I run without the GPS module?**
+A: Yes. Set `gpsEnabled = false`; the beacon transmits `SOS` or `SOS DE [NAME]` as configured. GPS is optional.
+
+**Q: Does it work through snow?**
+A: 433 MHz attenuates ~3 dB/m in wet snow. The +30 dBm PA compensates: at 1 m burial expect 3-9 dB loss, within the link budget.
+
+**Q: I upgraded from v4.0. Do I need to factory reset?**
+A: Yes, mandatory: the hardware, GPIO map, libraries and NVS schema all changed (see §23). Rewire, reset, reconfigure.
+
+**Q: What is the legal status of transmitting?**
+A: In the EU SRD band keep ≤ 10 mW ERP (use the dashboard to set ≤ +10 dBm); PMR446 allows ≤ 500 mW ERP licence-free. In genuine life-threatening emergencies, using any available means to signal distress is legally protected. See §25.10 and §19.
+
+**Q: How do I update the firmware?**
+A: Flash via PlatformIO (`pio run --target upload`) or the Arduino IDE with the ESP32 board package. Settings survive in NVS; do a factory reset only if the NVS schema changed between versions.
+
+**Q: The battery percentage jumps around.**
+A: The ESP32 ADC is inherently ±5-10 %; the 32-sample average reduces noise but cannot fix a loose divider connection. Calibrate `BAT_VREF_MV` against a multimeter (§8.4).
+
+---
+
+## 34. Operation Checklists
+
+### 34.1 First power-on
+
+1. Cell inserted, polarity correct, TP4056 charging LED lit.
+2. Boot screen shows `AEGIS-BEACON v5.5` and a sensible battery percentage.
+3. Default mode is BEACON at 433.500 MHz.
+4. Plug into USB and check the serial banner + `AEGIS:HELLO:` line.
+5. If GPS enabled, the fix wait screen appears; outdoors, a fix arrives within ~3 min.
+
+### 34.2 Field deployment
+
+1. Battery above 30 % (checked at power-on and every 5 s).
+2. Antenna vertical, clear of the body and metal.
+3. GPS fixed (solid dot) before leaving the trailhead if coordinates are needed.
+4. Mode set to BEACON; interval and WPM configured for the scenario.
+5. Test transmission heard on a second device or SDR before the trip.
+
+### 34.3 After a rescue operation
+
+1. Exit EMERGENCY via CONFIG mode and save.
+2. Review the serial log and scan-hit history for the debrief.
+3. Charge the cell; store at ~50 % if unused for weeks.
+4. Run the [two-beacon bench test] before the next deployment.
 
 ---
 

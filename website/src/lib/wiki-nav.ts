@@ -335,6 +335,7 @@ export const WIKI_NAV: WikiGroup[] = [
       { id: 'bridge-automation', label: 'Bridge Automation' },
       { id: 'bridge-security', label: 'Bridge Security' },
       { id: 'bridge-troubleshooting', label: 'Bridge Troubleshooting' },
+      { id: 'bridge-tui', label: 'Bridge TUI' },
       { id: 'ch340-driver-install', label: 'CH340 Driver Install' },
       { id: 'cp210x-driver-install', label: 'CP210x Driver Install' },
       { id: 'report-position-page', label: 'Report Position Page' },

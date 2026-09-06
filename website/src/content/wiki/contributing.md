@@ -118,16 +118,24 @@ pio test -v
 
 ### Git Commit Messages
 
-- Use imperative mood ("Add feature" not "Added feature").
-- Keep the subject line under 72 characters.
-- Reference issue numbers when applicable.
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<scope>): <short description in English>
+```
+
+Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`.
+
+- Write the description in **English**, imperative mood, lowercase.
+- Keep the subject line under 72 characters; use the body for the "why".
+- Do not add AI or bot attribution to commits (see the AI Use Policy below).
 
 Example:
 ```
-Add configurable beep pattern for Search mode
+feat: add configurable beep pattern for search mode
 
 Implement user-selectable beep patterns (short, long, ascending)
-in the Search mode configuration. Patterns are stored in EEPROM
+in the Search mode configuration. Patterns are stored in NVS
 and persist across reboots.
 
 Fixes #142
@@ -155,6 +163,14 @@ When reporting bugs, please include:
 - **Steps to reproduce:** What you did, what you expected, what happened.
 - **Serial log output:** If available, include the relevant log section.
 - **Photos:** For hardware issues, include clear photos of the affected area.
+
+## AI Use Policy
+
+This project is built by human engineers. **AI-generated or AI-assisted code is not tolerated** in the firmware, the website source, or any script in this repository. The safety-critical nature of the device (radio, GPS, emergency mode, rescue logic) means every line must be written, reviewed and understood by a person. Do not submit code produced by an assistant, and do not ask an assistant to write, rewrite, or patch code for you.
+
+AI use is acceptable only for **images and media** — for example generating a diagram, illustration or banner — and even then only when strictly necessary and clearly derived from the project's own content. Any such asset must be noted in the pull request body.
+
+Pull requests containing AI-generated code, or commits carrying AI or bot attribution such as `Co-authored-by: ...` or generator signatures, will be rejected without review.
 
 ## Code of Conduct
 
