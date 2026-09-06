@@ -89,10 +89,9 @@ Aegis-Beacon v5.5 builds on the v5.4 hardware revision of the original v4.0 desi
 | Path | What lives there |
 |------|------------------|
 | `AegisBeacon.ino` | Full ESP32 firmware (single file) |
-| `README.md` | Project overview and quick start |
-| `DATASHEET.md` | Electrical specs and GPIO map |
-| `FREQUENCIES.md` | SAR frequency reference per region |
-| `TECHNOLOGIES.md` | Stack, build commands and verification checklist |
+| `README.md` | Short project overview and quick start |
+| `DATASHEET.md` | Single merged reference: electrical specs, GPIO map, technology stack and the global SAR frequency database |
+| `CONTRIBUTING.md` | Contribution guide and automated PR workflow documentation |
 | `website/` | This documentation site, demo and BOM builder |
 
 ## Quick Links

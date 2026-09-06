@@ -105,6 +105,39 @@ jobs:
             echo "WARNING: untracked TODOs remain (not blocking)"
           fi
 
+      - name: Root documentation set check
+        run: |
+          echo "=== Root documentation set ==="
+          cd ..
+          for f in README.md DATASHEET.md CONTRIBUTING.md; do
+            if [ -f "$f" ]; then
+              echo "OK: $f exists"
+            else
+              echo "FAIL: $f missing"
+              exit 1
+            fi
+          done
+          if [ -f "FREQUENCIES.md" ] || [ -f "TECHNOLOGIES.md" ]; then
+            echo "FAIL: legacy FREQUENCIES.md / TECHNOLOGIES.md must stay merged into DATASHEET.md"
+            exit 1
+          fi
+          echo "OK: no legacy split reference files"
+          echo "=== README must not reference removed files ==="
+          if grep -q "FREQUENCIES.md\|TECHNOLOGIES.md" README.md; then
+            echo "FAIL: README references removed files"
+            exit 1
+          fi
+          echo "OK: README references are current"
+          echo "=== DATASHEET merged sections ==="
+          for section in '## 24. Technology Stack' '## 25. Global Emergency Frequencies'; do
+            if grep -q "$section" DATASHEET.md; then
+              echo "OK: $section present"
+            else
+              echo "FAIL: $section missing"
+              exit 1
+            fi
+          done
+
   build:
     name: Build & Verify
     runs-on: ubuntu-latest

@@ -18,6 +18,18 @@ Continuous integration runs the project's checks automatically on every push and
 | Wiki coverage | Every wiki page is registered in the navigation |
 | Link check | No broken internal links |
 | Content rules | No emojis or em-dashes in UI source, no AI authorship strings |
+| Documentation set | README, DATASHEET and CONTRIBUTING exist; the frequency database and technology stack stay merged inside `DATASHEET.md` |
+
+## The workflow files
+
+| Workflow | File | Scope |
+| --- | --- | --- |
+| Website CI | `website-ci.yml` | Type check, content gates, build, output verification, security audit, documentation set |
+| Firmware CI | `firmware-ci.yml` | PlatformIO build, size report, static source checks |
+| PR Quality Checks | `pr-checks.yml` | Title and commit validation, sensitive-file scan, reviewer assignment |
+| Benchmarks | `benchmarks.yml` | Compiles the firmware on four runner architectures and times the website build, publishing results |
+
+See [CONTRIBUTING.md](https://github.com/Leo-Galli/Aegis-Beacon/blob/main/CONTRIBUTING.md) for the full contribution workflow.
 
 ## The CD step
 

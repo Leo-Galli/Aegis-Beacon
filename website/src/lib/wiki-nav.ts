@@ -486,6 +486,18 @@ export const WIKI_NAV: WikiGroup[] = [
     ],
   },
   {
+    label: 'Building Effectively',
+    blurb: 'How to plan, execute and log a build so it works the first time: stage order, quality gates, fixtures, rework and time planning.',
+    pages: [
+      { id: 'effective-build-strategy', label: 'Effective Build Strategy' },
+      { id: 'build-quality-gates', label: 'Build Quality Gates' },
+      { id: 'bench-jigs-and-fixtures', label: 'Bench Jigs and Fixtures' },
+      { id: 'rework-and-desoldering', label: 'Rework and Desoldering' },
+      { id: 'build-time-planning', label: 'Build Time Planning' },
+      { id: 'build-log-and-tracking', label: 'Build Log and Tracking' },
+    ],
+  },
+  {
     label: 'Build Variants',
     blurb: 'Alternative builds and multi-beacon setups: minimal, displayless, GPS-focused, solar and more.',
     pages: [

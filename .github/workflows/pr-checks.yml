@@ -32,7 +32,13 @@ jobs:
             exit 1
           fi
           echo "PR Title: $TITLE"
-          echo "OK: PR title format valid"
+          # Enforce Conventional Commits prefix (feat/fix/docs/style/refactor/perf/test/chore/ci)
+          if ! echo "$TITLE" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|chore|ci)(\([a-z0-9-]+\))?!?: '; then
+            echo "ERROR: PR title must follow Conventional Commits, e.g. 'fix: align Morse coordinates'"
+            echo "Allowed types: feat, fix, docs, style, refactor, perf, test, chore, ci"
+            exit 1
+          fi
+          echo "OK: PR title follows Conventional Commits format"
 
       - name: Check commit messages
         run: |
@@ -42,10 +48,20 @@ jobs:
             echo "No commits to validate"
             exit 0
           fi
+          FAILED=0
           echo "$COMMITS" | while read -r line; do
-            echo "OK: $line"
+            if echo "$line" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|chore|ci)(\([a-z0-9-]+\))?!?: '; then
+              echo "OK:   $line"
+            else
+              echo "FAIL: $line"
+              exit 1
+            fi
           done
-          echo "All commit messages valid"
+          if [ "$FAILED" -ne 0 ]; then
+            echo "ERROR: some commit messages do not follow Conventional Commits"
+            exit 1
+          fi
+          echo "All commit messages follow Conventional Commits"
 
       - name: Check file changes
         run: |
@@ -117,18 +133,34 @@ jobs:
           else
             echo "WARNING: README.md not found"
           fi
-          # Check for DATASHEET
+          # Check for DATASHEET (single merged technical reference)
           if [ -f "DATASHEET.md" ]; then
             echo "OK: DATASHEET.md exists"
+            if grep -q '## 25. Global Emergency Frequencies' DATASHEET.md; then
+              echo "OK: frequency database merged into DATASHEET"
+            else
+              echo "WARNING: frequency database section missing from DATASHEET"
+            fi
+            if grep -q '## 24. Technology Stack' DATASHEET.md; then
+              echo "OK: technology stack merged into DATASHEET"
+            else
+              echo "WARNING: technology stack section missing from DATASHEET"
+            fi
           else
             echo "INFO: DATASHEET.md not found"
           fi
-          # Check for FREQUENCIES
-          if [ -f "FREQUENCIES.md" ]; then
-            echo "OK: FREQUENCIES.md exists"
+          # Check for CONTRIBUTING
+          if [ -f "CONTRIBUTING.md" ]; then
+            echo "OK: CONTRIBUTING.md exists"
           else
-            echo "INFO: FREQUENCIES.md not found"
+            echo "WARNING: CONTRIBUTING.md not found"
           fi
+          # Legacy split files must not reappear
+          if [ -f "FREQUENCIES.md" ] || [ -f "TECHNOLOGIES.md" ]; then
+            echo "ERROR: legacy FREQUENCIES.md / TECHNOLOGIES.md must stay merged into DATASHEET.md"
+            exit 1
+          fi
+          echo "OK: no legacy split reference files"
 
   assign-reviewer:
     name: Assign Reviewer

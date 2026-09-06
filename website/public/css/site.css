@@ -141,7 +141,10 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
 
 /* ─── 5. Container & sections ─── */
 .container { width: 100%; max-width: var(--container-max); margin-inline: auto; padding-inline: var(--container-px); }
-.section { padding: clamp(3rem, 6vw, 5rem) 0; }
+/* .section only owns vertical rhythm; horizontal padding always comes from .container,
+   so a `section.container` element keeps its side gutters (a later `padding` shorthand
+   would otherwise zero padding-inline due to equal specificity). */
+.section { padding-block: clamp(3rem, 6vw, 5rem); }
 .section-alt {
   background:
     radial-gradient(ellipse 70% 55% at 50% -12%, color-mix(in srgb, var(--primary) 9%, transparent), transparent 70%),
