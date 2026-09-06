@@ -26,18 +26,63 @@ const parts: Part[] = [
   { id: 'passives', name: 'Resistors & Capacitors', desc: 'Pull-ups, decoupling and bias kit', price: 0.3, qty: 1, max: 5, essential: true, source: 'Local Store', query: 'resistor capacitor assortment kit' },
   { id: 'case', name: '3D-Printed Enclosure', desc: 'Optional rugged case (printed locally)', price: 2.0, qty: 1, max: 2, essential: false, source: '3D Print', query: 'ESP32 OLED 18650 enclosure STL' },
 ];
+
+const partById = new Map(parts.map((p) => [p.id, p]));
+
+interface Phase {
+  n: number;
+  title: string;
+  why: string;
+  ids: string[];
+}
+
+const phases: Phase[] = [
+  {
+    n: 1,
+    title: 'Phase 1: core electronics',
+    why: 'Modules with the longest shipping times, usually 7-20+ days from Asia. Order these first: every later step depends on them.',
+    ids: ['esp32', 'radio', 'oled', 'gps', 'antenna', 'switches', 'charger', 'buzzer'],
+  },
+  {
+    n: 2,
+    title: 'Phase 2: bench and power',
+    why: 'Parts you can buy locally or receive quickly. Order them as phase 1 ships, so you can bench-test the day the boards arrive.',
+    ids: ['cell', 'passives'],
+  },
+  {
+    n: 3,
+    title: 'Phase 3: enclosure and finishing',
+    why: 'Print or order the case last, after a successful bench test, so it matches the final wiring layout.',
+    ids: ['case'],
+  },
+];
+
+interface PayPlan {
+  n: number;
+  tag: string;
+  hint: string;
+}
+
+const payPlans: PayPlan[] = [
+  { n: 1, tag: 'Pay now', hint: 'One payment at checkout.' },
+  { n: 3, tag: 'PayPal / Klarna / Scalapay', hint: 'Interest-free where the store offers it.' },
+  { n: 4, tag: 'Scalapay Pay in 4', hint: 'One payment now, three more later.' },
+  { n: 6, tag: 'Scalapay / Klarna longer plans', hint: 'Six monthly payments at partner stores.' },
+  { n: 12, tag: 'Amazon.it financing', hint: 'Monthly instalments on eligible orders.' },
+];
 ---
 
 <Layout
   title="BOM Builder | Aegis-Beacon"
-  description="Interactive bill of materials calculator for Aegis-Beacon with live pricing, budget fitting and direct links to compare prices across stores."
+  description="Interactive bill of materials calculator for Aegis-Beacon: live pricing, budget fitting, a phased purchase order, payment plans in instalments and price comparison links across stores."
 >
   <div class="builder-page container">
     <header class="section-head" style="padding-top: clamp(2rem, 4vw, 3rem);">
       <h1 class="section-head__title">BOM Builder</h1>
       <p class="section-head__lead">
-        Adjust quantities, compare prices across stores, and fit the build to your budget.
-        Essential parts are kept, non-essential extras are dropped automatically when needed.
+        Adjust quantities, compare prices across stores, and fit the build to your budget. Plan
+        the payments, follow the recommended purchase order, and know where instalments are
+        available before you check out. All figures update live.
       </p>
     </header>
 
@@ -144,6 +189,102 @@ const parts: Part[] = [
           current best offer across stores and price comparators.
         </p>
       </div>
+
+      <section class="plan-card" data-rv>
+        <div class="card-title-row">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          <div>
+            <h2>Payment plan</h2>
+            <p>Pay the full total now, or split it across several payments. The amounts below update with your quantities and choices above.</p>
+          </div>
+        </div>
+
+        <div class="plan-layout">
+          <div class="plan-controls">
+            <div class="plan-label">Number of payments</div>
+            <div class="plan-segments" role="group" aria-label="Number of payments">
+              {payPlans.map((pl) => (
+                <button
+                  type="button"
+                  class="plan-seg"
+                  data-plan={pl.n}
+                  aria-pressed={pl.n === 1 ? 'true' : 'false'}
+                >
+                  <span class="plan-seg-num">{pl.n}</span>
+                  <span class="plan-seg-tag">{pl.tag}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div class="plan-details">
+            <div class="plan-total-label">Amount per payment</div>
+            <div class="plan-lines" id="plan-lines" aria-live="polite"></div>
+            <p class="plan-method" id="plan-method"></p>
+            <p class="plan-note">
+              Plans are examples of the options that can appear at a store's checkout. Availability
+              depends on the store, the order value and your account, and some financing plans
+              charge interest. Confirm the exact terms before you pay.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="order-card" data-rv>
+        <div class="card-title-row">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+          <div>
+            <h2>What to buy first</h2>
+            <p>Follow the phases for the shortest wait and a smoother first build. Each list updates live with the quantities and choices above.</p>
+          </div>
+        </div>
+
+        <div class="phase-stack">
+          {phases.map((ph, i) => (
+            <details class="phase" open={i < 2}>
+              <summary>
+                <span class="phase-head">
+                  <span class="phase-title">{ph.title}</span>
+                  <span class="phase-why">{ph.why}</span>
+                </span>
+                <span class="phase-sub" id={`phase-sub-${ph.n}`}>$0.00</span>
+                <svg class="phase-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+              </summary>
+              <ul class="phase-list">
+                {ph.ids.map((pid) => {
+                  const p = partById.get(pid)!;
+                  return (
+                    <li data-part={p.id}>
+                      <span class="ph-name">
+                        {p.name}
+                        {!p.essential && <span class="comp-optional-badge">optional</span>}
+                      </span>
+                      <span class="ph-qty" id={`ph-qty-${p.id}`}>x{p.qty}</span>
+                      <span class="ph-total" id={`ph-total-${p.id}`}>${(p.price * p.qty).toFixed(2)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <details class="store-legend" data-rv>
+        <summary>
+          <span>Which stores offer instalments?</span>
+          <svg class="phase-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <div class="store-legend__body">
+          <dl>
+            <div><dt>Amazon.it</dt><dd>Monthly instalments on eligible orders through Cofidis financing (from 3 up to 24 payments). Interest-free promotions appear regularly; you choose the rate plan at checkout.</dd></div>
+            <div><dt>PayPal merchants</dt><dd>PayPal Paga in 3 Rate is interest-free with no fees, offered only where the seller enables it at checkout.</dd></div>
+            <div><dt>Scalapay and Klarna stores</dt><dd>Pay in 3, Pay in 4 or longer monthly plans at partner merchants, interest-free when each payment arrives on time.</dd></div>
+            <div><dt>eBay.it and AliExpress</dt><dd>Single payment at checkout with card or PayPal. These platforms do not offer instalment plans themselves.</dd></div>
+            <div><dt>Google Shopping and Trovaprezzi</dt><dd>Price comparators. You always pay on the merchant's own site, where instalment options vary.</dd></div>
+            <div><dt>Local store or 3D print</dt><dd>Cash, card or bank transfer, usually as one payment.</dd></div>
+          </dl>
+        </div>
+      </details>
     </div>
   </div>
 </Layout>
@@ -173,6 +314,79 @@ const parts: Part[] = [
     price: parseFloat(row.dataset.price || '0'),
     essential: row.dataset.essential === 'true',
   }));
+
+  const phaseIds: Record<number, string[]> = {
+    1: ['esp32', 'radio', 'oled', 'gps', 'antenna', 'switches', 'charger', 'buzzer'],
+    2: ['cell', 'passives'],
+    3: ['case'],
+  };
+
+  const planButtons = [...document.querySelectorAll<HTMLButtonElement>('.plan-seg')];
+  const planLines = document.getElementById('plan-lines');
+  const planMethod = document.getElementById('plan-method');
+  const planTotal = document.getElementById('plan-total');
+  let currentPlan = 1;
+
+  function refreshPhases() {
+    Object.entries(phaseIds).forEach(([phaseStr, ids]) => {
+      const phaseNum = parseInt(phaseStr, 10);
+      let sub = 0;
+      ids.forEach((pid) => {
+        const row = document.getElementById('part-' + pid) as HTMLElement | null;
+        const li = document.querySelector(`.phase-list li[data-part="${pid}"]`);
+        if (!li) return;
+        const line = row && rowEnabled(row) ? (parseFloat(row.dataset.price || '0') * qtyOf(row)) : 0;
+        sub += line;
+        li.classList.toggle('ph-dropped', !row || !rowEnabled(row) || qtyOf(row) === 0);
+        const qtyEl = li.querySelector('.ph-qty');
+        const totalEl = li.querySelector('.ph-total');
+        if (qtyEl) qtyEl.textContent = 'x' + (row ? qtyOf(row) : 0);
+        if (totalEl) totalEl.textContent = '$' + line.toFixed(2);
+      });
+      const subEl = document.getElementById('phase-sub-' + phaseNum);
+      if (subEl) subEl.textContent = '$' + sub.toFixed(2);
+    });
+  }
+
+  function renderPlan() {
+    if (!planLines) return;
+    const raw = (grandTotal?.textContent || '').replace(/[^0-9.]/g, '');
+    const totalCents = Math.round(parseFloat(raw || '0') * 100);
+    if (planTotal) planTotal.textContent = '$' + (totalCents / 100).toFixed(2);
+    planLines.innerHTML = '';
+
+    const push = (label: string, amount: string) => {
+      const line = document.createElement('div');
+      line.className = 'plan-line';
+      const l = document.createElement('span');
+      l.textContent = label;
+      const v = document.createElement('strong');
+      v.textContent = amount;
+      line.appendChild(l);
+      line.appendChild(v);
+      planLines.appendChild(line);
+    };
+
+    if (currentPlan <= 1) {
+      push('Pay the full total at checkout', '$' + (totalCents / 100).toFixed(2));
+    } else {
+      const base = Math.ceil(totalCents / currentPlan);
+      const first = totalCents - base * (currentPlan - 1);
+      push('First payment, today', '$' + (first / 100).toFixed(2));
+      push('Next ' + (currentPlan - 1) + ' payments', 'each $' + (base / 100).toFixed(2));
+    }
+
+    planButtons.forEach((b) => b.setAttribute('aria-pressed', b.dataset.plan === String(currentPlan) ? 'true' : 'false'));
+    planButtons.forEach((b) => b.classList.toggle('is-active', b.dataset.plan === String(currentPlan)));
+
+    if (planMethod) {
+      const pl = planButtons.find((b) => b.dataset.plan === String(currentPlan));
+      const tag = pl?.querySelector('.plan-seg-tag')?.textContent || 'Pay now';
+      planMethod.textContent = currentPlan <= 1
+        ? 'One transaction at the store of your choice. Every linked store accepts a single card or PayPal payment.'
+        : tag + ': the first payment leaves your account at checkout, and the rest follow on the schedule the provider sets. No interest when each payment arrives on time.';
+    }
+  }
 
   function rowEnabled(row: HTMLElement): boolean {
     const toggle = row.querySelector<HTMLInputElement>('.include-toggle');
@@ -219,6 +433,8 @@ const parts: Part[] = [
     }
 
     renderFitPanel();
+    refreshPhases();
+    renderPlan();
     if (announce) {
       const total = (grandTotal?.textContent || '').replace('$', '');
       const live = document.getElementById('aria-live');
@@ -318,6 +534,12 @@ const parts: Part[] = [
     input.addEventListener('change', () => updateTotals(true))
   );
   autoFitBtn?.addEventListener('click', autoFit);
+  planButtons.forEach((b) =>
+    b.addEventListener('click', () => {
+      currentPlan = parseInt(b.dataset.plan || '1', 10);
+      renderPlan();
+    })
+  );
   updateTotals();
 </script>
 
@@ -474,5 +696,142 @@ const parts: Part[] = [
     .component-row { grid-template-columns: 1fr auto; gap: 0.75rem; }
     .comp-meta, .comp-price { display: none; }
     .comp-compare { grid-column: 1 / -1; }
+  }
+
+  /* Payment plan, purchase order and store legend cards */
+  .plan-card, .order-card, .store-legend {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-xl); padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-title-row {
+    display: flex; gap: 0.75rem; align-items: flex-start;
+    padding-bottom: 1rem; margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-title-row svg {
+    flex-shrink: 0; margin-top: 0.2rem; color: var(--primary);
+  }
+  .card-title-row h2 { margin: 0 0 0.25rem; font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; }
+  .card-title-row p { margin: 0; font-size: 0.8125rem; color: var(--muted-foreground); line-height: 1.55; }
+
+  .plan-layout {
+    display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 1.5rem; align-items: start;
+  }
+  .plan-label {
+    font-size: 0.6875rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--muted-foreground); margin-bottom: 0.75rem;
+  }
+  .plan-segments { display: flex; flex-direction: column; gap: 0.5rem; }
+  .plan-seg {
+    display: flex; align-items: center; gap: 0.75rem; width: 100%;
+    padding: 0.7rem 0.9rem; cursor: pointer; text-align: left;
+    background: var(--background); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); font: inherit;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  }
+  .plan-seg:hover { border-color: color-mix(in srgb, var(--primary) 45%, var(--border)); }
+  .plan-seg.is-active {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 7%, var(--background));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
+  }
+  .plan-seg-num {
+    flex-shrink: 0; width: 2.1rem; text-align: center;
+    font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.05rem;
+    color: var(--foreground); border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 0.2rem 0.1rem; background: var(--card);
+  }
+  .plan-seg.is-active .plan-seg-num { border-color: var(--primary); color: var(--primary); }
+  .plan-seg-tag { font-size: 0.8125rem; color: var(--muted-foreground); line-height: 1.35; }
+  .plan-seg.is-active .plan-seg-tag { color: var(--foreground); }
+
+  .plan-lines { display: flex; flex-direction: column; margin-bottom: 0.9rem; }
+  .plan-line {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+    padding: 0.55rem 0; font-size: 0.875rem; color: var(--muted-foreground);
+    border-bottom: 1px solid color-mix(in srgb, var(--foreground) 7%, var(--background));
+  }
+  .plan-line strong {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;
+    color: var(--foreground); font-weight: 600; white-space: nowrap;
+  }
+  .plan-method { margin: 0 0 0.75rem; font-size: 0.8125rem; color: var(--muted-foreground); line-height: 1.55; }
+  .plan-note {
+    margin: 0; padding: 0.7rem 0.85rem; font-size: 0.72rem; line-height: 1.55;
+    color: var(--muted-foreground); background: var(--muted);
+    border: 1px solid var(--border); border-radius: var(--radius-lg);
+  }
+
+  .phase-stack { display: flex; flex-direction: column; gap: 0.75rem; }
+  .phase {
+    border: 1px solid var(--border); border-radius: var(--radius-lg);
+    background: var(--background); overflow: hidden;
+  }
+  .phase > summary {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0.9rem 1.1rem; cursor: pointer; list-style: none; user-select: none;
+  }
+  .phase > summary::-webkit-details-marker { display: none; }
+  .phase > summary:hover { background: var(--muted); }
+  .phase[open] > summary { border-bottom: 1px solid var(--border); }
+  .phase-head { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+  .phase-title { font-weight: 650; font-size: 0.95rem; color: var(--foreground); }
+  .phase-why { font-size: 0.75rem; color: var(--muted-foreground); line-height: 1.5; }
+  .phase-sub {
+    flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+    font-size: 0.95rem; color: var(--primary); white-space: nowrap;
+  }
+  .phase-chevron { color: var(--muted-foreground); flex-shrink: 0; transition: transform 0.2s; }
+  .phase[open] > summary .phase-chevron,
+  .store-legend[open] > summary .phase-chevron { transform: rotate(180deg); }
+  .phase-list { margin: 0; padding: 0.4rem 0 0.5rem; list-style: none; }
+  .phase-list li {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 0.75rem; align-items: center;
+    padding: 0.5rem 1.1rem; font-size: 0.8125rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--foreground) 4%, var(--background));
+    transition: opacity 0.15s;
+  }
+  .phase-list li:last-child { border-bottom: none; }
+  .ph-name { color: var(--foreground); min-width: 0; overflow-wrap: anywhere; }
+  .ph-name .comp-optional-badge { margin-left: 0.35rem; }
+  .ph-qty {
+    font-size: 0.7rem; color: var(--muted-foreground);
+    font-family: 'JetBrains Mono', monospace; white-space: nowrap;
+  }
+  .ph-total {
+    font-family: 'JetBrains Mono', monospace; font-weight: 600; white-space: nowrap;
+    min-width: 4.2rem; text-align: right; color: var(--foreground);
+  }
+  .phase-list li.ph-dropped { opacity: 0.45; }
+  .phase-list li.ph-dropped .ph-total { color: var(--muted-foreground); }
+
+  .store-legend { padding: 0; overflow: hidden; }
+  .store-legend > summary {
+    display: flex; align-items: center; gap: 0.75rem; cursor: pointer;
+    padding: 0.9rem 1.5rem; list-style: none; user-select: none; font-weight: 650;
+    font-size: 0.9rem; color: var(--foreground);
+  }
+  .store-legend > summary::-webkit-details-marker { display: none; }
+  .store-legend > summary:hover { background: var(--muted); }
+  .store-legend > summary svg { margin-left: auto; }
+  .store-legend__body { padding: 0 1.5rem 1.25rem; }
+  .store-legend dl { margin: 0; display: flex; flex-direction: column; }
+  .store-legend dl > div {
+    display: grid; grid-template-columns: 12rem 1fr; gap: 1rem;
+    padding: 0.7rem 0; border-bottom: 1px solid color-mix(in srgb, var(--foreground) 6%, var(--background));
+  }
+  .store-legend dl > div:last-child { border-bottom: none; }
+  .store-legend dt { font-size: 0.8125rem; font-weight: 600; color: var(--foreground); }
+  .store-legend dd { margin: 0; font-size: 0.78rem; color: var(--muted-foreground); line-height: 1.55; }
+
+  @media (max-width: 720px) {
+    .plan-layout { grid-template-columns: 1fr; }
+    .phase > summary { flex-wrap: wrap; row-gap: 0.25rem; }
+    .phase-why { width: 100%; }
+    .phase-list li { grid-template-columns: 1fr auto; }
+    .ph-total { grid-column: 2; }
+    .store-legend dl > div { grid-template-columns: 1fr; gap: 0.15rem; }
   }
 </style>
