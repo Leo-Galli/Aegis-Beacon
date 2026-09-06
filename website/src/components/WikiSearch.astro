@@ -56,141 +56,172 @@ const index = entries.map((e) => ({
       const kbd = box.querySelector<HTMLElement>('.wiki-search__kbd');
       if (!input || !results) return;
 
-      function render(q: string) {
-          const ql = q.trim().toLowerCase();
-          if (!ql) {
-            results.hidden = true;
-            results.innerHTML = '';
-            input.setAttribute('aria-expanded', 'false');
-            return;
-          }
-          const qWords = ql.split(/\s+/).filter(Boolean);
-          const inBody = (it: { title: string; description: string }, qw: string) =>
-            it.description.toLowerCase().includes(qw);
-          const inTitle = (it: { title: string; description: string }, qw: string) =>
-            it.title.toLowerCase().includes(qw);
-          const titleStarts = (it: { title: string; description: string }, qw: string) =>
-            it.title.toLowerCase().startsWith(qw);
+      const escapeRx = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-          const scored = items.map((it) => {
-            // Title prefix match is still the fastest, most exact hit.
-            if (titleStarts(it, ql)) {
-              // Unless the body also contains it, this is a title-only match.
-              return { ...it, s: inBody(it, ql) ? 110 : 100, why: inBody(it, ql) ? 'title+body' : 'title' };
-            }
-            if (inTitle(it, ql) && inBody(it, ql)) return { ...it, s: 90, why: 'title+body' };
-            if (inBody(it, ql)) return { ...it, s: 70, why: 'body' };
-            if (inTitle(it, ql)) return { ...it, s: 50, why: 'title' };
-            if (qWords.every((w) => it.title.toLowerCase().includes(w))) return { ...it, s: 40, why: 'title-phrase' };
-            if (qWords.some((w) => it.title.toLowerCase().includes(w))) return { ...it, s: 25, why: 'title-word' };
-            return { ...it, s: 0, why: '' };
-          });
-          const matches = scored
-            .filter((it) => it.s > 0)
-            .sort((a, b) => b.s - a.s || a.title.localeCompare(b.title))
-            .slice(0, 24);
-
-          if (!matches.length) {
-            results.hidden = false;
-            results.innerHTML =
-              '<div class="wiki-search__empty">No page matches <strong></strong>.</div>';
-            results.querySelector('strong')!.textContent = q.trim();
-            input.setAttribute('aria-expanded', 'true');
-            return;
-          }
-
-          const frag = document.createDocumentFragment();
-          for (const m of matches) {
-            const a = document.createElement('a');
-            a.href = `/wiki/${m.id}`;
-            a.className = 'wiki-search__result';
-            a.setAttribute('role', 'option');
-
-            const top = document.createElement('span');
-            top.className = 'wiki-search__top';
-            const title = document.createElement('span');
-            title.className = 'wiki-search__title';
-            if (m.group) {
-              const chip = document.createElement('span');
-              chip.className = 'wiki-search__group';
-              chip.textContent = m.group;
-              top.appendChild(chip);
-            }
-            top.appendChild(title);
-
-            const hl = (text: string, terms: string[]) => {
-              if (!terms.length) return document.createTextNode(text);
-              const frag2 = document.createDocumentFragment();
-              const low = text.toLowerCase();
-              // Mark the first occurrence of any query term, case-insensitively.
-              let best = -1;
-              let bestLen = 0;
-              for (const t of terms) {
-                const idx = low.indexOf(t);
-                if (idx >= 0 && (best === -1 || idx < best)) {
-                  best = idx;
-                  bestLen = t.length;
-                }
-              }
-              if (best < 0) return document.createTextNode(text);
-              frag2.appendChild(document.createTextNode(text.slice(0, best)));
-              const mark = document.createElement('mark');
-              mark.textContent = text.slice(best, best + bestLen);
-              frag2.appendChild(mark);
-              frag2.appendChild(document.createTextNode(text.slice(best + bestLen)));
-              return frag2;
-            };
-            const qTerms = qWords.length ? qWords : [q.trim().toLowerCase()];
-            title.appendChild(hl(m.title, qTerms));
-
-            // A body snippet is shown only when the body actually contains the
-            // query - so title-only matches stay clean (no body text under them).
-            const bodyMatch = m.why === 'body' || m.why === 'title+body';
-            if (bodyMatch && m.description) {
-              const desc = document.createElement('span');
-              desc.className = 'wiki-search__desc';
-              const qLow = q.trim().toLowerCase();
-              let i = m.description.toLowerCase().indexOf(qLow);
-              if (i >= 0) {
-                // Build a word-boundary snippet around the match: start at a
-                // word start, end after a word end, with spaced ellipses.
-                const before = m.description.slice(0, i);
-                const after = m.description.slice(i);
-                const beforeWords = before.split(' ');
-                let keepBefore = beforeWords.length;
-                while (keepBefore > 0 && beforeWords.slice(-keepBefore).join(' ').length > 70) keepBefore--;
-                const startText = beforeWords.slice(-keepBefore).join(' ');
-                const showStart = beforeWords.slice(0, -keepBefore).join(' ').trim().length > 0;
-
-                const afterWords = after.split(' ');
-                let keepAfter = 1;
-                let acc = afterWords[0] || '';
-                while (keepAfter < afterWords.length && acc.length < 130) {
-                  acc += ' ' + afterWords[keepAfter++];
-                }
-                const endText = acc;
-                const showEnd = keepAfter < afterWords.length;
-
-                desc.textContent =
-                  (showStart ? '… ' : '') + startText + ' ' + endText + (showEnd ? ' …' : '');
-                desc.textContent = desc.textContent.replace(/\s+/g, ' ').trim();
-              } else {
-                desc.textContent = m.description.length > 140
-                  ? m.description.slice(0, 140).replace(/\s+\S*$/, '') + ' …'
-                  : m.description;
-              }
-              a.appendChild(top);
-              a.appendChild(desc);
-            } else {
-              a.appendChild(top);
-            }
-            frag.appendChild(a);
-          }
-          results.innerHTML = '';
-          results.appendChild(frag);
-          results.hidden = false;
-          input.setAttribute('aria-expanded', 'true');
+      // Highlight every occurrence of any query term, longest first.
+      function hlAll(text: string, terms: string[]): Node {
+        const frag = document.createDocumentFragment();
+        const live = terms.filter((t) => t.length > 0);
+        if (!live.length) return document.createTextNode(text);
+        const re = new RegExp(
+          live.map(escapeRx).sort((a, b) => b.length - a.length).join('|'),
+          'gi'
+        );
+        let last = 0;
+        let m: RegExpExecArray | null;
+        while ((m = re.exec(text)) !== null) {
+          if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+          const mark = document.createElement('mark');
+          mark.textContent = m[0];
+          frag.appendChild(mark);
+          last = m.index + m[0].length;
         }
+        if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+        return frag;
+      }
+
+      // A short excerpt around the body match (or the start of the description),
+      // always cut on word boundaries so it reads naturally.
+      function makeSnippet(desc: string, ql: string): string {
+        const d = desc;
+        const i = d.toLowerCase().indexOf(ql);
+        if (i < 0) {
+          return d.length > 150 ? d.slice(0, 150).replace(/\s+\S*$/, '') + ' …' : d;
+        }
+        let start = Math.max(0, i - 55);
+        if (start > 0) {
+          const sp = d.indexOf(' ', start);
+          start = sp >= 0 ? sp + 1 : start;
+        }
+        let end = Math.min(d.length, i + ql.length + 95);
+        if (end < d.length) {
+          const sp = d.lastIndexOf(' ', end);
+          if (sp > start) end = sp;
+        }
+        const prefix = start > 0 ? '… ' : '';
+        const suffix = end < d.length ? ' …' : '';
+        return prefix + d.slice(start, end).trim() + suffix;
+      }
+
+      function render(q: string) {
+        const ql = q.trim().toLowerCase();
+        if (!ql) {
+          results.hidden = true;
+          results.innerHTML = '';
+          input.setAttribute('aria-expanded', 'false');
+          return;
+        }
+        const qWords = ql.split(/\s+/).filter(Boolean);
+        const inBody = (it: { title: string; description: string }, qw: string) =>
+          it.description.toLowerCase().includes(qw);
+        const inTitle = (it: { title: string; description: string }, qw: string) =>
+          it.title.toLowerCase().includes(qw);
+        const titleStarts = (it: { title: string; description: string }, qw: string) =>
+          it.title.toLowerCase().startsWith(qw);
+
+        const scored = items.map((it) => {
+          if (titleStarts(it, ql)) {
+            return { ...it, s: inBody(it, ql) ? 110 : 100, why: inBody(it, ql) ? 'title+body' : 'title' };
+          }
+          if (inTitle(it, ql) && inBody(it, ql)) return { ...it, s: 90, why: 'title+body' };
+          if (inBody(it, ql)) return { ...it, s: 70, why: 'body' };
+          if (inTitle(it, ql)) return { ...it, s: 50, why: 'title' };
+          if (qWords.every((w) => it.title.toLowerCase().includes(w))) return { ...it, s: 40, why: 'title-phrase' };
+          if (qWords.some((w) => it.title.toLowerCase().includes(w))) return { ...it, s: 25, why: 'title-word' };
+          return { ...it, s: 0, why: '' };
+        });
+
+        const ranked = scored
+          .filter((it) => it.s > 0)
+          .sort((a, b) => b.s - a.s || a.title.localeCompare(b.title));
+
+        if (!ranked.length) {
+          results.hidden = false;
+          results.innerHTML = '';
+          const boxEl = document.createElement('div');
+          boxEl.className = 'wiki-search__empty';
+          const p = document.createElement('p');
+          p.appendChild(document.createTextNode('No pages match "'));
+          const strong = document.createElement('strong');
+          strong.textContent = q.trim();
+          p.appendChild(strong);
+          p.appendChild(document.createTextNode('".'));
+          const hint = document.createElement('p');
+          hint.className = 'wiki-search__hint';
+          hint.textContent = 'Check the spelling, or try a broader term such as battery, Morse, GPS, antenna or serial.';
+          boxEl.appendChild(p);
+          boxEl.appendChild(hint);
+          results.appendChild(boxEl);
+          input.setAttribute('aria-expanded', 'true');
+          return;
+        }
+
+        // Total hits per wiki section, so each heading can carry its count.
+        const totals = new Map<string, number>();
+        for (const r of ranked) {
+          const key = r.group || 'Documentation';
+          totals.set(key, (totals.get(key) || 0) + 1);
+        }
+
+        // Keep relevance order, but group each section's hits under one heading.
+        const frag = document.createDocumentFragment();
+        let emitted = 0;
+        let budget = 24;
+        const seen = new Set<string>();
+        for (const r of ranked) {
+          if (budget <= 0) break;
+          const key = r.group || 'Documentation';
+          if (!seen.has(key)) {
+            seen.add(key);
+            if (emitted > 0) {
+              const divider = document.createElement('div');
+              divider.className = 'wiki-search__divider';
+              frag.appendChild(divider);
+            }
+            const head = document.createElement('div');
+            head.className = 'wiki-search__section';
+            const label = document.createElement('span');
+            label.className = 'wiki-search__section-label';
+            label.textContent = key;
+            const count = document.createElement('span');
+            count.className = 'wiki-search__section-count';
+            count.textContent = String(totals.get(key) ?? 0);
+            head.appendChild(label);
+            head.appendChild(count);
+            frag.appendChild(head);
+          }
+          budget -= 1;
+          emitted += 1;
+
+          const a = document.createElement('a');
+          a.href = `/wiki/${r.id}`;
+          a.className = 'wiki-search__result';
+          a.setAttribute('role', 'option');
+
+          const title = document.createElement('span');
+          title.className = 'wiki-search__title';
+          title.appendChild(hlAll(r.title, qWords));
+          a.appendChild(title);
+
+          // Every result shows a short page description, so each entry is a
+          // self-contained block you can tell apart from the neighbours.
+          if (r.description) {
+            // Body matches get an excerpt around the matched words; other
+            // matches get the start of the description. Both identify the page.
+            const text = makeSnippet(r.description, ql);
+            const desc = document.createElement('span');
+            desc.className = 'wiki-search__desc';
+            desc.appendChild(hlAll(text, qWords));
+            a.appendChild(desc);
+          }
+
+          frag.appendChild(a);
+        }
+        results.innerHTML = '';
+        results.appendChild(frag);
+        results.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+      }
 
       function move(dir: number) {
         const opts = [...results.querySelectorAll<HTMLElement>('.wiki-search__result')];
@@ -251,7 +282,9 @@ const index = entries.map((e) => ({
   }
 </script>
 
-<style>
+<style is:global>
+  /* is:global: rows are built at runtime by the script, so scoped
+     selectors (which require [data-astro-cid]) would never match them. */
   .wiki-search {
     position: relative;
     width: 100%;
@@ -279,47 +312,57 @@ const index = entries.map((e) => ({
     border: 1px solid var(--border); border-radius: var(--radius-sm);
     padding: 0.1rem 0.45rem; background: var(--muted); pointer-events: none;
   }
+
   .wiki-search__results {
     position: absolute; top: calc(100% + 0.4rem); left: 0; right: 0; z-index: 60;
     background: var(--card); border: 1px solid var(--border);
     border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
-    overflow-y: auto; max-height: min(420px, 60vh);
-    padding: 0.35rem;
+    overflow-y: auto; max-height: min(460px, 62vh);
+    padding: 0.45rem;
   }
+
+  /* Section headings mirror the wiki sidebar taxonomy */
+  .wiki-search__section {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem;
+    padding: 0.5rem 0.65rem 0.35rem;
+    font-size: 0.625rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted-foreground);
+  }
+  .wiki-search__divider {
+    height: 1px; margin: 0.3rem 0.4rem;
+    background: color-mix(in srgb, var(--border) 70%, transparent);
+  }
+
+  /* One result = one page: a clear title over a short description block */
   .wiki-search__result {
-    display: flex; flex-direction: column; gap: 0.25rem;
-    padding: 0.6rem 0.75rem; border-radius: var(--radius-md);
-    color: var(--foreground); text-decoration: none;
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    display: block; padding: 0.55rem 0.65rem;
+    border-radius: var(--radius-md); text-decoration: none;
+    color: var(--foreground); outline: none;
+    transition: background 0.12s;
   }
-  .wiki-search__result:last-child { border-bottom: none; }
   .wiki-search__result:hover,
-  .wiki-search__result.is-selected {
+  .wiki-search__result.is-selected { background: var(--muted); }
+  .wiki-search__result:focus-visible {
     background: var(--muted);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--primary) 55%, transparent);
   }
-  .wiki-search__top {
-    display: flex; align-items: center; gap: 0.5rem; min-width: 0;
-  }
-  .wiki-search__group {
-    flex-shrink: 0;
-    font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--primary);
-    background: color-mix(in srgb, var(--primary) 10%, transparent);
-    border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
-    padding: 0.12rem 0.45rem; border-radius: var(--radius-full);
-    white-space: nowrap;
-  }
-  .wiki-search__title { font-size: 0.85rem; font-weight: 600; line-height: 1.35; }
-  .wiki-search__title mark {
-    background: color-mix(in srgb, var(--primary) 30%, transparent);
-    color: inherit; border-radius: 2px; padding: 0 1px;
+  .wiki-search__title {
+    display: block; font-size: 0.86rem; font-weight: 650; line-height: 1.4;
   }
   .wiki-search__desc {
-    font-size: 0.75rem; color: var(--muted-foreground); line-height: 1.5;
-    padding-left: 0.1rem; word-break: normal;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+    overflow: hidden; margin-top: 0.2rem;
+    font-size: 0.74rem; color: var(--muted-foreground); line-height: 1.55;
+    overflow-wrap: break-word;
   }
-  .wiki-search__empty {
-    padding: 0.75rem; font-size: 0.82rem; color: var(--muted-foreground);
+  .wiki-search mark {
+    background: color-mix(in srgb, var(--primary) 26%, transparent);
+    color: inherit; border-radius: 2px; padding: 0 1px;
   }
+
+  .wiki-search__empty { padding: 0.75rem 0.85rem; }
+  .wiki-search__empty p { margin: 0; font-size: 0.82rem; color: var(--muted-foreground); }
+  .wiki-search__empty strong { color: var(--foreground); font-weight: 600; }
+  .wiki-search__hint { margin-top: 0.35rem !important; font-size: 0.75rem !important; line-height: 1.5; }
 </style>
