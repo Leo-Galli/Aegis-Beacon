@@ -539,12 +539,36 @@ html.motion-ok [data-rv].is-in {
 .key-btn:hover { background: oklch(0.29 0.008 50deg); color: oklch(0.95 0 0deg); border-color: oklch(0.45 0.012 50deg); }
 .key-btn:active { transform: translateY(2px); background: oklch(0.32 0.01 50deg); }
 
-/* ─── 21. Mobile (shared) ─── */
+/* ─── 21. Hero & page responsiveness ───
+   On narrow and mid screens the hero stacks, so the copy centres
+   and breathes instead of hugging the viewport edges. The split
+   layout and left-aligned copy return at 900px+. */
+@media (max-width: 899px) {
+  .hero-grid { gap: 3rem; }
+  .hero-copy { justify-items: center; text-align: center; gap: 1.1rem; }
+  .hero-kicker { width: fit-content; }
+  .hero-title { margin-inline: auto; }
+  .hero-sub { margin-inline: auto; }
+  .hero-device {
+    width: min(100%, 34rem); margin-inline: auto;
+    justify-self: center;
+  }
+}
+@media (max-width: 560px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+  }
+  .hero-actions .btn { width: 100%; max-width: 18.5rem; }
+}
 @media (max-width: 640px) {
-  .hero-title { font-size: 1.9rem; }
-  .hero-actions { flex-direction: column; align-items: stretch; }
-  .hero-actions .btn { width: 100%; }
+  .hero-title { font-size: 1.85rem; }
   .design-card { padding: 1.3rem; }
+}
+@media (min-width: 900px) {
+  .hero-device { width: 100%; }
 }
 
 /* ─── 22. Ambient page tint (static, no animation) ─── */
