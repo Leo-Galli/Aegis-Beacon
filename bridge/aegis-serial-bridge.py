@@ -111,6 +111,9 @@ STATE = BridgeState()
 # A small live dashboard rendered with ANSI escapes. Every draw is protected
 # by TUI.lock so log lines from other threads cannot interleave mid-frame.
 # Falls back to plain line logging automatically when stdout is not a TTY.
+TRACK_MAX = 8  # how many recent fixes the dashboard keeps on screen
+
+
 class TUI:
     def __init__(self):
         self.lock = threading.Lock()
@@ -119,6 +122,8 @@ class TUI:
         self.last_status = ""
         self.last_pos = "no position received yet"
         self.last_page = "not detected"
+        self.last_url = ""      # public site link for the latest fix (shareable)
+        self.track = []          # recent fixes: (time, lat, lng, url), newest last
         self.started = time.time()
 
     def _clear(self):
@@ -127,6 +132,18 @@ class TUI:
 
     def _bar(self, label, value, width=34):
         return f"{label:<10} {value}".ljust(width)
+
+    def set_share(self, url):
+        """Remember the latest fix's public link and push it onto the on-screen
+        track so the user always has the current shareable URL and the path."""
+        with self.lock:
+            self.last_url = url
+            if self.last_pos and self.last_pos != "no position received yet":
+                now = datetime.datetime.now().strftime("%H:%M:%S")
+                self.track.append((now, self.last_pos, url))
+                if len(self.track) > TRACK_MAX:
+                    del self.track[: len(self.track) - TRACK_MAX]
+            self.draw()
 
     def draw(self):
         if not self.enabled:
@@ -141,7 +158,13 @@ class TUI:
             lines.append("  " + "-" * (width - 2))
             lines.append("  " + self._bar("Device", self.last_status))
             lines.append("  " + self._bar("Position", self.last_pos))
+            lines.append("  " + self._bar("Share", self.last_url or "(public link appears on first fix)"))
             lines.append("  " + self._bar("Page", self.last_page))
+            if self.track:
+                lines.append("  " + "-" * (width - 2))
+                lines.append("  Local track (path taken, newest last):")
+                for ts, pos, _url in self.track:
+                    lines.append(f"    {ts}  {pos}")
             lines.append("  " + "-" * (width - 2))
             lines.append("  Live log:")
             body = self.lines[- (width // 2) - 8:]  # keep the newest lines
@@ -343,14 +366,16 @@ def handle_serial(device, baud, site, no_open, verbose):
                         data = parse_pos_line(line)
                         if "lat" in data and "lng" in data:
                             STATE.set_position(data)
+                            url = build_site_url(site, data)
                             TUI_UI.set_position(f"{data['lat']:.6f}, {data['lng']:.6f}")
+                            TUI_UI.set_share(url)
+                            TUI_UI.log(f"[bridge] share link: {url}")
                             if no_open:
                                 TUI_UI.log(f"[bridge] position captured: {data['lat']:.6f}, {data['lng']:.6f}")
                                 continue
                             if STATE.page_is_open():
                                 TUI_UI.log("[bridge] page is open, streaming update to it")
                             elif should_open_browser(data):
-                                url = build_site_url(site, data)
                                 TUI_UI.log(f"[bridge] opening page with position: {url}")
                                 try:
                                     webbrowser.open(url, new=2)

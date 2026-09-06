@@ -89,11 +89,12 @@ plain logs:
 ```
 
 The dashboard shows the connected device and baud rate, the latest received
-position, whether the Report Position page is open and streaming, and a
-scrolling live log. It is auto-enabled whenever stdout is a terminal; use
-`--tui` to force it on (for example inside a wrapper) or `--no-tui` for plain
-line output suitable for piping or logging. See the [Bridge TUI](bridge-tui)
-page for the full tour.
+position, a ready-to-share public link for the latest fix, the last 8 fixes
+as a local track (the path the device took), whether the Report Position page
+is open and streaming, and a scrolling live log. It is auto-enabled whenever
+stdout is a terminal; use `--tui` to force it on (for example inside a
+wrapper) or `--no-tui` for plain line output suitable for piping or logging.
+See the [Bridge TUI](bridge-tui) page for the full tour.
 
 ## Setting the frequency and listening
 
