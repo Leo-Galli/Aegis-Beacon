@@ -37,7 +37,9 @@ The workflow file is `.github/workflows/benchmarks.yml`. On every push to `main`
 
 1. A firmware job on each of the four runners. Each job installs PlatformIO (cached), compiles the firmware, and runs the measurement script `.github/scripts/benchmark-firmware.mjs`.
 2. A website job on the Linux x64 runner that runs `npm ci` and times `npm run build` with `.github/scripts/benchmark-website.mjs`.
-3. A publish job that downloads all results, merges them with the existing history in `website/src/data/benchmarks.json`, and commits the updated file back to the repository. The commit is tagged `[skip ci]` so the benchmarks do not trigger themselves in a loop.
+3. A report job that downloads all results, merges them into a temporary file, renders a summary table into the workflow run's step summary, and uploads the merged JSON as a `benchmarks-report` artifact (retained 7 days).
+
+The workflow is a **check only**: it never commits anything to the repository, so the git history stays clean and the workflow cannot trigger itself. The static `website/src/data/benchmarks.json` snapshot on the site is updated by maintainers, not by the workflow.
 
 The workflow can also be started manually from the Actions tab (`workflow_dispatch`) if you want a fresh measurement without pushing.
 
@@ -59,9 +61,9 @@ The workflow can also be started manually from the Actions tab (`workflow_dispat
 
 ## Where the results live
 
-- The data file: `website/src/data/benchmarks.json` in the repository.
-- The public page: [Benchmark Results](/benchmarks).
-- The raw workflow runs: the Actions tab on GitHub, under the Benchmarks workflow.
+- The live measurement: the step summary of each run of the Benchmarks workflow, plus the `benchmarks-report` artifact attached to that run (Actions tab on GitHub).
+- The static snapshot: `website/src/data/benchmarks.json` in the repository, rendered on the public [Benchmark Results](/benchmarks) page.
+- The workflow does not push commits; check a specific run for its measured numbers.
 
 ## Reproducing locally
 

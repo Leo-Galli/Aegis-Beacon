@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: benchmarks-${{ github.ref }}
@@ -92,8 +92,8 @@ jobs:
           path: bench-website.json
           retention-days: 7
 
-  publish:
-    name: Publish benchmark results
+  report:
+    name: Report benchmark results
     runs-on: ubuntu-latest
     needs: [firmware, website]
     if: always() && github.event_name != 'pull_request'
@@ -108,18 +108,29 @@ jobs:
           pattern: bench-*
           path: artifacts
 
-      - name: Merge results into the site data file
-        run: node .github/scripts/merge-benchmarks.mjs artifacts website/src/data/benchmarks.json
-
-      - name: Commit and push updated results
+      - name: Merge results and render run summary
         run: |
-          if git diff --quiet website/src/data/benchmarks.json; then
-            echo "No benchmark changes to publish."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add website/src/data/benchmarks.json
-            git commit -m "chore: refresh benchmark results [skip ci]"
-            git push
-            echo "Benchmark results committed and pushed."
-          fi
+          node .github/scripts/merge-benchmarks.mjs artifacts /tmp/benchmarks-report.json
+          node -e "
+            const fs = require('fs');
+            const data = JSON.parse(fs.readFileSync('/tmp/benchmarks-report.json', 'utf8'));
+            const runs = data.runs ?? [];
+            const lines = ['## Benchmark results', ''];
+            lines.push('| Platform | Kind | Commit | Build time | Size |');
+            lines.push('|---|---|---|---|---|');
+            for (const r of runs.slice(0, 20)) {
+              const size = r.kind === 'firmware'
+                ? r.flashPct + '% flash / ' + r.ramPct + '% RAM'
+                : r.pages + ' pages';
+              lines.push('| ' + r.runner + ' | ' + r.kind + ' | ' + r.shortSha + ' | ' + (r.buildMs / 1000).toFixed(1) + ' s | ' + size + ' |');
+            }
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
+            console.log('Reported ' + runs.length + ' benchmark run(s) in the workflow summary.');
+          "
+
+      - name: Upload merged report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmarks-report
+          path: /tmp/benchmarks-report.json
+          retention-days: 7

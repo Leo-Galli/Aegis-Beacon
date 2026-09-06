@@ -104,7 +104,7 @@ Every pull request and push to `main` runs automated checks:
 - **Firmware CI**: compiles the sketch with PlatformIO, checks the firmware size and runs static checks over the `.ino` source (required libraries, serial init, watchdog, deep sleep, GPS, WiFi/BT management).
 - **PR Quality Checks**: validates the PR title and commit messages, flags sensitive or oversized files, and verifies the root documentation set (`README.md`, `DATASHEET.md`, `CONTRIBUTING.md`, and that the legacy `FREQUENCIES.md` / `TECHNOLOGIES.md` stay merged inside `DATASHEET.md`).
 
-If a check fails, read the workflow log, fix the cause locally, and push again. Do not silence checks with `[skip ci]` except for the benchmark publish commit, which uses it deliberately to avoid an infinite loop.
+If a check fails, read the workflow log, fix the cause locally, and push again. Do not silence checks with `[skip ci]`: benchmarks are reported inside the workflow run itself and never create commits.
 
 ## Automated Pull Request Workflows
 
@@ -119,7 +119,7 @@ Reviewer assignment is automatic: the PR Quality Checks workflow assigns the mai
 
 ## Benchmark Pipeline
 
-Pushes to `main` trigger the **Benchmarks** workflow, which measures the firmware build time on the four GitHub Actions architectures (Intel x64 Linux, ARM64 Linux, Windows x64, Apple Silicon macOS) plus the full website build time. Results are merged into `website/src/data/benchmarks.json` and committed back with `[skip ci]`; the `/benchmarks` page on the site renders them. See the [Benchmark Methodology](/wiki/benchmark-methodology) wiki article for details.
+Pushes to `main` trigger the **Benchmarks** workflow, which measures the firmware build time on the four GitHub Actions architectures (Intel x64 Linux, ARM64 Linux, Windows x64, Apple Silicon macOS) plus the full website build time. The workflow is a **check only**: results are merged, rendered into the run's step summary and uploaded as a `benchmarks-report` artifact, and **no commit is ever created**. The `/benchmarks` page on the site renders the static data file. See the [Benchmark Methodology](/wiki/benchmark-methodology) wiki article for details.
 
 ## Code Style
 
