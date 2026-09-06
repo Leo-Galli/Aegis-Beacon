@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import 'leaflet/dist/leaflet.css';
 ---
 
 <Layout
@@ -25,6 +26,11 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <p class="rp__status" id="pos-status" role="status">Waiting for device data.</p>
+
+        <div id="pos-map" class="rp__map" aria-label="Map of reported positions"></div>
+        <p class="rp__map-note">
+          Map &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors. New fixes draw the marker and a track of the movement.
+        </p>
 
         <dl class="rp__fields">
           <div class="rp__field">
@@ -61,6 +67,7 @@ import Layout from '../layouts/Layout.astro';
           <a id="pos-maps-link" class="rp__btn rp__btn--ghost is-hidden" href="#" target="_blank" rel="noopener">Open in Google Maps</a>
           <a id="pos-osm-link" class="rp__btn rp__btn--ghost is-hidden" href="#" target="_blank" rel="noopener">OpenStreetMap</a>
           <button id="pos-copy-link" class="rp__btn rp__btn--primary" type="button">Copy link with position</button>
+          <button id="pos-clear-track" class="rp__btn rp__btn--ghost" type="button">Clear track</button>
         </div>
       </section>
 
@@ -91,6 +98,126 @@ import Layout from '../layouts/Layout.astro';
   </div>
 
   <script is:inline src="/js/position-bridge.js" defer></script>
+
+  <script>
+    import L from 'leaflet';
+
+    const mapEl = document.getElementById('pos-map');
+    if (mapEl) {
+      const MIN_MOVE_M = 5;
+      type PosData = {
+        lat?: number; lng?: number; alt?: number; sats?: number; freq?: number;
+        fix?: number; age?: number; mode?: string; payload?: string;
+      };
+      const map = L.map(mapEl, { zoomControl: true });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+      map.setView([20, 0], 2);
+
+      const points = [];
+      const track = L.polyline([], { color: '#f97316', weight: 3, opacity: 0.85 }).addTo(map);
+      let marker = null;
+      let hasView = false;
+
+      const toRad = (d: number): number => (d * Math.PI) / 180;
+      function distanceM(a: number[], b: number[]): number {
+        const R = 6371000;
+        const dLat = toRad(b[0] - a[0]);
+        const dLng = toRad(b[1] - a[1]);
+        const s = Math.sin(dLat / 2) ** 2 +
+          Math.cos(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.sin(dLng / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(s));
+      }
+
+      function buildPopup(data: PosData): HTMLDivElement {
+        const wrap = document.createElement('div');
+        wrap.className = 'pos-popup';
+        const rows = [
+          ['Payload', data.payload || ''],
+          ['Frequency', data.freq !== undefined ? Number(data.freq).toFixed(3) + ' MHz' : ''],
+          ['Mode', data.mode || ''],
+          ['Satellites', data.sats !== undefined ? String(Math.round(data.sats)) : ''],
+          ['Fix', data.fix === 0 ? 'Last known, GPS not updating' : 'Live'],
+          ['Time', new Date().toLocaleTimeString()],
+        ];
+        for (const [k, v] of rows) {
+          if (!v) continue;
+          const row = document.createElement('div');
+          const kEl = document.createElement('span');
+          kEl.textContent = k + ': ';
+          const vEl = document.createElement('span');
+          vEl.textContent = v;
+          row.append(kEl, vEl);
+          wrap.appendChild(row);
+        }
+        return wrap;
+      }
+
+      function addPoint(data: PosData) {
+        const lat = Number(data.lat);
+        const lng = Number(data.lng);
+        if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return;
+
+        const last = points[points.length - 1];
+        if (last && distanceM(last, [lat, lng]) < MIN_MOVE_M) {
+          if (marker) marker.setLatLng([lat, lng]);
+          return;
+        }
+        points.push([lat, lng]);
+        track.setLatLngs(points);
+
+        if (marker) {
+          marker.setLatLng([lat, lng]);
+        } else {
+          marker = L.circleMarker([lat, lng], {
+            radius: 8,
+            color: '#fff',
+            weight: 2,
+            fillColor: '#f97316',
+            fillOpacity: 1,
+          }).addTo(map);
+        }
+        marker.bindPopup(buildPopup(data));
+
+        if (!hasView) {
+          hasView = true;
+          map.fitBounds(track.getBounds(), { padding: [36, 36], maxZoom: 15 });
+        } else if (!map.getBounds().contains([lat, lng])) {
+          map.panTo([lat, lng]);
+        }
+      }
+
+      window.addEventListener('aegis:position', (e: Event) => {
+        const detail = (e as CustomEvent).detail as PosData | undefined;
+        if (detail) addPoint(detail);
+      });
+
+      /* The bridge client may have applied URL params before this module ran. */
+      const latEl = document.getElementById('pos-lat') as HTMLInputElement | null;
+      const lngEl = document.getElementById('pos-lng') as HTMLInputElement | null;
+      if (latEl && lngEl && latEl.value && lngEl.value) {
+        addPoint({ lat: Number(latEl.value), lng: Number(lngEl.value) });
+      }
+
+      const clearBtn = document.getElementById('pos-clear-track');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          points.length = 0;
+          track.setLatLngs([]);
+          if (marker) {
+            map.removeLayer(marker);
+            marker = null;
+          }
+          hasView = false;
+          map.setView([20, 0], 2);
+        });
+      }
+
+      window.setTimeout(() => map.invalidateSize(), 300);
+    }
+  </script>
 
   <style>
     .rp {
@@ -168,6 +295,60 @@ import Layout from '../layouts/Layout.astro';
     }
     .rp__status--ok { color: var(--success, #15803d); border-color: color-mix(in srgb, #15803d 40%, var(--border)); }
     .rp__status--warn { color: var(--warning, #b45309); border-color: color-mix(in srgb, #b45309 40%, var(--border)); }
+    .rp__status--idle { color: var(--muted-foreground); }
+
+    .rp__map {
+      position: relative;
+      z-index: 0;
+      isolation: isolate;
+      height: clamp(260px, 40vh, 340px);
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .rp__map-note {
+      margin: 0 0 1.1rem;
+      font-size: 0.72rem;
+      color: var(--muted-foreground);
+    }
+    .rp__map-note a { color: var(--primary); }
+    .rp__map :global(.leaflet-container) {
+      font-family: var(--font-body);
+      background: color-mix(in srgb, var(--card) 90%, #000);
+    }
+    .rp__map :global(.leaflet-control-zoom a) {
+      color: var(--foreground);
+      background: var(--card);
+      border-color: var(--border);
+    }
+    .rp__map :global(.leaflet-control-zoom a:hover) {
+      background: var(--muted);
+    }
+    .rp__map :global(.leaflet-popup-content-wrapper) {
+      background: var(--card);
+      color: var(--foreground);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+    }
+    .rp__map :global(.leaflet-popup-tip) {
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+    .rp__map :global(.leaflet-popup-content) {
+      margin: 0.7rem 0.9rem;
+    }
+    .rp__map :global(.pos-popup) {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      line-height: 1.65;
+    }
+    .rp__map :global(.pos-popup span:first-child) {
+      color: var(--muted-foreground);
+    }
 
     .rp__fields {
       display: grid;

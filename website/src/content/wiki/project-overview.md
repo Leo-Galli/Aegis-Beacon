@@ -58,7 +58,7 @@ Aegis-Beacon is a professional emergency radio-location system based on LoRa tec
 > [!WARNING]
 > EMERGENCY mode consumes maximum power. Use only in critical situations where immediate rescue communication is required.
 
-## Hardware Platform (v5.4)
+## Hardware Platform (v5.5)
 
 | Component | Part | Role |
 |-----------|------|------|
@@ -72,7 +72,7 @@ Aegis-Beacon is a professional emergency radio-location system based on LoRa tec
 
 ## What Changed in v5.x
 
-Aegis-Beacon v5.4 is a full hardware revision of the original v4.0 design:
+Aegis-Beacon v5.5 builds on the v5.4 hardware revision of the original v4.0 design:
 
 - **ESP32-C3 -> ESP32 DevKit V1** with native DAC1 audio (cleaner tone)
 - **SX1276 -> SX1262** (E22 module): CW keying, +30 dBm PA, and a mandatory BUSY pin

@@ -6,14 +6,14 @@
 ██║  ██║███████╗╚██████╔╝██║███████║    ██████╔╝███████╗██║  ██║╚██████╗╚██████╔╝██║ ╚████║
 ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝╚══════╝    ╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝╚═╝  ╚═══╝
 -->
-# DATASHEET — Aegis-Beacon v5.4
+# DATASHEET — Aegis-Beacon v5.5
 
 <div align="center">
 
 ### Dual-Mode Avalanche Rescue System
-**Revision: 5.4 | Date: 2026 | Author: Leonardo Galli**
+**Revision: 5.5 | Date: 2026 | Author: Leonardo Galli**
 
-[![Revision](https://img.shields.io/badge/Revision-5.4.0-f97316?style=flat-square)](https://github.com/Leo-Galli/Aegis-Beacon)
+[![Revision](https://img.shields.io/badge/Revision-5.5.0-f97316?style=flat-square)](https://github.com/Leo-Galli/Aegis-Beacon)
 [![Hardware](https://img.shields.io/badge/Hardware-ESP32_DevKit_V1-ef4444?style=flat-square)](https://www.espressif.com/)
 [![Radio](https://img.shields.io/badge/Radio-SX1262_+30dBm-3b82f6?style=flat-square)](https://www.semtech.com/)
 [![Status](https://img.shields.io/badge/Status-Production_Ready-22c55e?style=flat-square)]()
@@ -25,9 +25,9 @@
 
 ## 1. General Description
 
-Aegis-Beacon v5.4 is an open-source, ultra-low-cost emergency rescue beacon for avalanche survival, backcountry SAR operations, and off-grid emergency communication. The device combines a 433 MHz CW radio transmitter with a passive RSSI scanner, a 2.42" SSD1309 OLED status display, a NEO-6M GPS module, a 4-button physical control panel, a live battery monitor, and a 3.5mm audio alert output into a pocketable, battery-powered unit buildable for approximately $23–28 USD.
+Aegis-Beacon v5.5 is an open-source, ultra-low-cost emergency rescue beacon for avalanche survival, backcountry SAR operations, and off-grid emergency communication. The device combines a 433 MHz CW radio transmitter with a passive RSSI scanner, a 2.42" SSD1309 OLED status display, a NEO-6M GPS module, a 4-button physical control panel, a live battery monitor, and a 3.5mm audio alert output into a pocketable, battery-powered unit buildable for approximately $23–28 USD.
 
-The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled by the RadioLib driver stack, and exposes a WiFi captive-portal dashboard for field configuration without any additional tools. v5.4 is a full hardware revision from v4.0 (ESP32-C3 + SX1276); all GPIO assignments, libraries, and the NVS schema have changed.
+The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled by the RadioLib driver stack, and exposes a WiFi captive-portal dashboard for field configuration without any additional tools. v5.5 adds a machine-readable serial protocol with commands, a cross-platform bridge script that forwards GPS fixes to the website's Report Position page, and a config dashboard that runs on default system fonts. v5.4 was a full hardware revision from v4.0 (ESP32-C3 + SX1276); all GPIO assignments, libraries, and the NVS schema have changed.
 
 ---
 
@@ -261,7 +261,7 @@ A pixel-art 18×9 px battery icon appears in the top-right corner of every scree
 
 | Mode          | Content                                                                                             |
 |---------------|-----------------------------------------------------------------------------------------------------|
-| **BOOT**      | Inverted header "AEGIS-BEACON v5.4" · feature flags · battery icon + % · INITIALISING progress bar |
+| **BOOT**      | Inverted header "AEGIS-BEACON v5.5" · feature flags · battery icon + % · INITIALISING progress bar |
 | **BEACON**    | Header "TX BEACON" + cycle# + bat icon · Large frequency (logisoso24) · GPS fix dot · Info line (CH/PWR/WPM) · TX progress bar · Payload scroll · GPS state + bat% + sleep countdown + ADJ indicator |
 | **SEARCH**    | Header "RX SEARCH" + hit count + bat icon · Large frequency · RSSI value · RSSI fill bar + threshold tick · Signal label / last hit / scan pass + bat% + ADJ indicator |
 | **EMERGENCY** | Alternating inverse · Giant "SOS" (logisoso32) · "EMERGENCY BEACON TX" · Freq + power · GPS coords or cycle + bat% |
@@ -383,7 +383,7 @@ Volume is adjustable live via SW_UP / SW_DN (step ±10). Persisted to NVS with S
 
 ---
 
-## 11. GPIO Pin Map (v5.4 — ESP32 DevKit V1)
+## 11. GPIO Pin Map (v5.5 — ESP32 DevKit V1)
 
 | GPIO | Direction | Function                                                      | Notes                               |
 |------|-----------|---------------------------------------------------------------|-------------------------------------|
@@ -627,7 +627,7 @@ Connect at **115200 baud, 8N1**.
 
 ---
 
-## 21. Bill of Materials (v5.4)
+## 21. Bill of Materials (v5.5)
 
 > **Total estimated cost: ~$23–28 USD** (AliExpress / LCSC pricing, 2026)
 
@@ -658,6 +658,7 @@ Connect at **115200 baud, 8N1**.
 
 | Version | Date | Changes                                                                                                                          |
 |---------|------|----------------------------------------------------------------------------------------------------------------------------------|
+| v5.5    | 2026 | Serial bridge protocol and commands; cross-platform bridge script + Report Position page with live streaming; config dashboard on default system fonts |
 | v5.4    | 2026 | Battery monitor (GPIO 36 divider, 9-point Li-ion curve, pixel-art icon in all headers, CHG indicator, dashboard animated bar); improved OLED graphics across all screens |
 | v5.3    | 2026 | Replaced potentiometers with 4-button control (SW_MODE / SW_SEL / SW_UP / SW_DN); OLED adj overlay; auto-repeat; NVS save via SEL long press |
 | v5.2    | 2026 | Radio upgraded SX1276 → SX1262 (Ebyte E22-400M30S); BUSY pin GPIO 21 mandatory; `ensureSpiStarted()` helper; TCXO 1.6 V parameter |

@@ -1,6 +1,6 @@
 ---
 title: "GPIO Pin Mapping"
-description: "Complete v5.4 GPIO map: radio, OLED, GPS, audio, LEDs, buttons and ADC connections"
+description: "Complete v5.5 GPIO map: radio, OLED, GPS, audio, LEDs, buttons and ADC connections"
 ---
 
 # GPIO Pin Mapping
@@ -8,7 +8,7 @@ description: "Complete v5.4 GPIO map: radio, OLED, GPS, audio, LEDs, buttons and
 > [!IMPORTANT]
 > **GPIO 21 is mandatory** for the SX1262 BUSY pin. If not wired, the firmware will hang on the first radio call.
 
-## Complete GPIO Map (v5.4)
+## Complete GPIO Map (v5.5)
 
 | GPIO | Function | Direction | Notes |
 |------|----------|-----------|-------|

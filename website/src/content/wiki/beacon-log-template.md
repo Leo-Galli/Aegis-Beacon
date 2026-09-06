@@ -11,7 +11,7 @@ A beacon log is the project's memory. The same test run twice, months apart, is 
 
 ```
 Date: 2026-09-05
-Firmware: v5.4.0
+Firmware: v5.5.0
 Beacon A: unit 1, E22 module, whip antenna
 Beacon B: unit 2, E22 module, whip antenna
 Distance: 2 m, bench, 30 dB attenuator in line

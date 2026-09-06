@@ -48,7 +48,7 @@ Verbose mode is off by default because it floods the console during a long paylo
 
 ```text
 ============================================================
-  AEGIS-BEACON v5.4 - SX1262+GPS+BTN+BAT+SSD1309
+  AEGIS-BEACON v5.5 - SX1262+GPS+BTN+BAT+SSD1309
 ============================================================
     Active mode: BEACON
 

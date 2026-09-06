@@ -7,7 +7,7 @@ description: "Regional frequency table and compatibility guidance for legal beac
 
 ## Overview
 
-The Aegis-Beacon v5.4 radio is an **Ebyte E22-400M30S** module (SX1262 / LLCC68 chip) that covers **410-525 MHz** only. Everything in this page is organized around that constraint: the 433 MHz ISM band is the native operating range, PMR446 and UHF GMRS/CB emergency channels fall inside the coverage window, and VHF mountain-rescue services require a separate radio.
+The Aegis-Beacon v5.5 radio is an **Ebyte E22-400M30S** module (SX1262 / LLCC68 chip) that covers **410-525 MHz** only. Everything in this page is organized around that constraint: the 433 MHz ISM band is the native operating range, PMR446 and UHF GMRS/CB emergency channels fall inside the coverage window, and VHF mountain-rescue services require a separate radio.
 
 | Band | SX1262 support | Notes |
 |:-----|:--------------:|:------|

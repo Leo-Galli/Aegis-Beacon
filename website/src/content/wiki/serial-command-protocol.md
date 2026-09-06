@@ -34,7 +34,7 @@ rebuilt, on demand (`POS`), and then throttled to at most one every 5 seconds
 while the device is awake:
 
 ```
-AEGIS:POS:lat=45.123456;lng=11.123456;alt=412;sats=8;freq=433.500;mode=BEACON;payload=SOS PSN N4553 E01130
+AEGIS:POS:lat=45.123456;lng=11.123456;alt=412;sats=8;freq=433.500;mode=BEACON;fix=1;age=87;payload=SOS PSN N4553 E01130
 ```
 
 | Field | Meaning |
@@ -45,7 +45,15 @@ AEGIS:POS:lat=45.123456;lng=11.123456;alt=412;sats=8;freq=433.500;mode=BEACON;pa
 | `sats` | Satellites in use |
 | `freq` | First configured frequency in MHz |
 | `mode` | Current operating mode |
+| `fix` | `1` for a fresh live fix, `0` for a last-known/cached position |
+| `age` | Age of the fix in milliseconds |
 | `payload` | The exact Morse payload, as transmitted |
+
+The `fix` and `age` fields let consumers tell a freshly recalculated position
+from a repeated last-known one. The firmware recalculates from the receiver on
+every GPS update, and after 30 seconds without fresh satellite data it flags
+the report as stale (`fix=0`) instead of pretending the same coordinates are
+new (see [Firmware GPS Handling](firmware-gps-handling)).
 
 ### `AEGIS:STATE:`
 

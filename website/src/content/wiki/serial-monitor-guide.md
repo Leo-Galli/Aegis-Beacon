@@ -20,7 +20,7 @@ The baud rate is 115200 for the debug build. Wrong baud rate = garbage character
 ## The log format
 
 ```
-[BOOT]  Firmware v5.4.0, ESP32 rev 3
+[BOOT]  Firmware v5.5.0, ESP32 rev 3
 [CFG]   Loaded config, version 2
 [GPS]   No fix yet, 3 satellites
 [RF]    TX burst complete, freq 433.920, power +17

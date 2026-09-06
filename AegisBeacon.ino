@@ -8,7 +8,7 @@
 // ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝╚══════╝    ╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝╚═╝  ╚═══╝
 //
 // =============================================================================
-//  PROJECT   : Aegis-Beacon v5.3 — Dual-Mode Avalanche Rescue System
+//  PROJECT   : Aegis-Beacon v5.5 — Dual-Mode Avalanche Rescue System
 //              SSD1309 2.42" OLED (SPI/U8g2) | GPS payload | Button controls
 //  MODES     : BEACON (TX SOS + name + GPS coords) ←→ SEARCH (scan + audio)
 //  TARGET HW : ESP32 DevKit V1 (30-pin)
@@ -24,7 +24,7 @@
 // =============================================================================
 //
 // ┌───────────────────────────────────────────────────────────────────────────┐
-// │                   BOM v5.1 — ~$20-25 USD                                  │
+// │                   BOM v5.5 — ~$20-28 USD                                  │
 // ├────┬──────────────────────────────┬──────────┬──────────────────────────  │
 // │Ref │ Part                         │ Cost USD │ Notes                      │
 // ├────┼──────────────────────────────┼──────────┼──────────────────────────  │
@@ -139,7 +139,7 @@
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
-// │  COMPLETE PIN MAP — ESP32 DevKit V1 (30-pin) v5.3                        │
+// │  COMPLETE PIN MAP — ESP32 DevKit V1 (30-pin) v5.5                        │
 // ├────────────┬───────────────────────────────────────────────────────────  │
 // │  GPIO  2   │  SX1262 DIO1 (TX/RX Done / Timeout IRQ)                     │
 // │  GPIO  4   │  OLED RESET                                                 │
@@ -285,6 +285,7 @@
 #define GPS_SERIAL     Serial2
 #define GPS_FIX_TIMEOUT_S  60   // max seconds to wait for GPS fix on boot
 #define GPS_MIN_SATS   3        // minimum satellites to consider fix valid
+#define GPS_FIX_STALE_MS 30000UL // after this without fresh GPS data, a fix is reported as stale (last known)
 
 // ── Buttons — adjustment controls ────────────────────────────────────────────
 // GPIO 34 and 35 are input-only; use external 10kΩ pull-up resistors if
@@ -449,7 +450,7 @@ void dbSep(const char* lbl = nullptr) {
 void dbBanner(const char* mode) {
   Serial.println(C_BOLD C_CYAN
     "\n╔══════════════════════════════════════════════════════════╗\n"
-    "║  AEGIS-BEACON v5.3 — SX1262 + GPS + BTN + SSD1309       ║\n"
+    "║  AEGIS-BEACON v5.5 — SX1262 + GPS + BTN + SSD1309       ║\n"
     "║      https://github.com/Leo-Galli/Aegis-Beacon           ║\n"
     "╚══════════════════════════════════════════════════════════╝" C_RESET);
   Serial.printf(C_YELLOW "    Active mode: %s\n\n" C_RESET, mode);
@@ -542,7 +543,7 @@ inline uint32_t wordGapMs()  { return dotMs() * 7; }
 
 // =============================================================================
 // ╔══════════════════════════════════════════════════════╗
-// ║         BUTTON ADJUSTMENT ENGINE (v5.3)              ║
+// ║         BUTTON ADJUSTMENT ENGINE (v5.5)              ║
 // ╚══════════════════════════════════════════════════════╝
 // Three buttons replace the two potentiometers:
 //   SW_SEL  — toggle adjustment target between VOL and WPM
@@ -622,6 +623,7 @@ void readGPS() {
     gps.encode(gpsSerial.read());
   }
   if (gps.location.isValid() && gps.location.age() < 3000) {
+    // Fresh live fix: recalculate from the receiver every time it delivers data.
     g_gpsFix.lat        = gps.location.lat();
     g_gpsFix.lng        = gps.location.lng();
     g_gpsFix.altitude   = gps.altitude.isValid() ? gps.altitude.meters() : 0;
@@ -633,12 +635,18 @@ void readGPS() {
     g_rtcLat      = g_gpsFix.lat;
     g_rtcLng      = g_gpsFix.lng;
     g_rtcFixValid = g_gpsFix.valid;
-  } else if (g_rtcFixValid && !g_gpsFix.valid) {
-    // Use RTC-persisted fix if GPS lost lock
+  } else if (g_gpsFix.valid && (millis() - g_gpsFix.timestamp) > GPS_FIX_STALE_MS) {
+    // GPS stopped producing data: the coordinates are the last known position,
+    // not a fresh calculation. Drop the live flag so consumers stop treating
+    // the same coordinates as a new fix.
+    g_gpsFix.valid = false;
+    g_gpsFix.age   = millis() - g_gpsFix.timestamp;
+  } else if (g_rtcFixValid && !g_gpsFix.valid && g_gpsFix.timestamp == 0) {
+    // No live fix yet this session: fall back to the RTC-persisted position.
     g_gpsFix.lat   = g_rtcLat;
     g_gpsFix.lng   = g_rtcLng;
-    g_gpsFix.valid = true;   // stale but better than nothing
-    g_gpsFix.age   = millis() - g_gpsFix.timestamp + 60000;
+    g_gpsFix.valid = false;   // cached, not fresh
+    g_gpsFix.age   = 60000;   // at least a minute old by definition
   }
 }
 
@@ -827,7 +835,7 @@ void oledSplash() {
   u8g2.setFont(u8g2_font_7x13B_tf);
   u8g2.drawStr(4, 1, "AEGIS-BEACON");
   u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(101, 2, "v5.3");
+  u8g2.drawStr(101, 2, "v5.5");
   u8g2.setDrawColor(1);
 
   // Separator line
@@ -1597,7 +1605,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"HTMLDOC(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AEGIS-BEACON v5.3 // CONFIG</title>
+<title>AEGIS-BEACON v5.5 // CONFIG</title>
 <style>
 /* Self-contained UI: only fonts already installed on the device are used
    (no internet during configuration, so no web fonts). */
@@ -1710,7 +1718,7 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
 </head>
 <body>
 <header>
-  <div class="logo">AEGIS<em>-</em>BEACON <span style="font-size:.65rem;color:var(--dim);margin-left:8px;">v5.3</span></div>
+  <div class="logo">AEGIS<em>-</em>BEACON <span style="font-size:.65rem;color:var(--dim);margin-left:8px;">v5.5</span></div>
   <div class="badge">CONFIG MODE</div>
 </header>
 <main>
@@ -1810,7 +1818,7 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
 
 <!-- ── BUTTON CONTROLS ─────────────────────────────────────────────────── -->
 <div class="card pot full">
-  <div class="ct"><span class="ct-dot"></span>BUTTON CONTROLS (v5.3)</div>
+  <div class="ct"><span class="ct-dot"></span>BUTTON CONTROLS (v5.5)</div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;align-items:start;">
     <div>
       <div style="font-family:var(--font-display);font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_SEL — GPIO32</div>
@@ -2442,8 +2450,8 @@ search_exit:
 // Machine-readable "AEGIS:" lines (never ANSI-colored, one per line) for the
 // cross-platform bridge script (bridge/aegis-serial-bridge.py):
 //
-//   AEGIS:HELLO:ver=5.3;mode=BEACON;freq=433.500;wpm=12;vol=64
-//   AEGIS:POS:lat=45.123456;lng=11.123456;alt=412;sats=8;freq=433.500;mode=BEACON;payload=SOS PSN N4553 E01130
+//   AEGIS:HELLO:ver=5.5;mode=BEACON;freq=433.500;wpm=12;vol=64
+//   AEGIS:POS:lat=45.123456;lng=11.123456;alt=412;sats=8;freq=433.500;mode=BEACON;fix=1;age=87;payload=SOS PSN N4553 E01130
 //   AEGIS:STATE:mode=SEARCH;freq=433.500;wpm=12;vol=64;heap=184320;boot=1;tx=0;hits=0;gpsFix=1;sats=8
 //   AEGIS:FREQ:0=433.500   AEGIS:WPM:14   AEGIS:MODE:SEARCH   AEGIS:ERR:<message>
 //
@@ -2483,15 +2491,23 @@ static bool striStarts(const char* s, const char* prefix) {
 }
 
 // Print the current position as a single machine-readable line. Throttled to
-// POS_REPORT_MIN_INTERVAL_MS unless force is true.
+// POS_REPORT_MIN_INTERVAL_MS unless force is true. The fix/age fields let
+// consumers tell a fresh recalculation from a repeated last-known position.
 void serialPosReport(bool force) {
   uint32_t now = millis();
   if (!force && (now - s_lastPosReport) < POS_REPORT_MIN_INTERVAL_MS) return;
   s_lastPosReport = now;
   float freq = (cfg.freqCount > 0) ? cfg.freqs[0] : DEFAULT_FREQ_MHZ;
-  Serial.printf("AEGIS:POS:lat=%.6f;lng=%.6f;alt=%.0f;sats=%u;freq=%.3f;mode=%s;payload=%s\n",
-                g_gpsFix.lat, g_gpsFix.lng, g_gpsFix.altitude, g_gpsFix.satellites,
-                freq, modeName(g_currentMode), g_currentPayload);
+  // Nothing at all yet (no live fix, no cached fix, no satellites): skip.
+  if (!g_gpsFix.valid && !g_rtcFixValid && g_gpsFix.satellites == 0) return;
+  // Sanity clamp: never emit an impossible coordinate.
+  double lat = constrain(g_gpsFix.lat, -90.0, 90.0);
+  double lng = constrain(g_gpsFix.lng, -180.0, 180.0);
+  Serial.printf("AEGIS:POS:lat=%.6f;lng=%.6f;alt=%.0f;sats=%u;freq=%.3f;mode=%s;fix=%d;age=%lu;payload=%s\n",
+                lat, lng, g_gpsFix.altitude, g_gpsFix.satellites,
+                freq, modeName(g_currentMode),
+                g_gpsFix.valid ? 1 : 0, (unsigned long)g_gpsFix.age,
+                g_currentPayload);
 }
 
 void processSerialCommand(const char* cmd) {
@@ -2684,7 +2700,7 @@ void setup() {
 
   LOG_MODE("Starting: %s", modeName(g_currentMode));
   ledModeIndicate(g_currentMode);
-  Serial.printf("AEGIS:HELLO:ver=5.3;mode=%s;freq=%.3f;wpm=%d;vol=%d\n",
+  Serial.printf("AEGIS:HELLO:ver=5.5;mode=%s;freq=%.3f;wpm=%d;vol=%d\n",
                 modeName(g_currentMode),
                 (cfg.freqCount > 0) ? cfg.freqs[0] : DEFAULT_FREQ_MHZ,
                 cfg.wpm, cfg.audioVolume);
@@ -2728,7 +2744,7 @@ void loop() {
 }
 
 // =============================================================================
-// END — AEGIS-BEACON v5.3
+// END — AEGIS-BEACON v5.5
 // https://github.com/Leo-Galli/Aegis-Beacon
 // =============================================================================
 //
@@ -2739,7 +2755,7 @@ void loop() {
 // │  [AUDIO] Audio   [OLED ] Display  [BTN  ] Button  [CFG  ] NVS save       │
 // │  [MORSE] Per-symbol*  [RF   ] RadioLib code*   (* = DEBUG_VERBOSE 1)     │
 // │                                                                          │
-// │  BUTTON WIRING QUICK REFERENCE (v5.3):                                   │
+// │  BUTTON WIRING QUICK REFERENCE (v5.5):                                   │
 // │   SW_MODE : GPIO33 → GND  (short=mode toggle, long2s=emergency)          │
 // │   SW_SEL  : GPIO32 → GND  (short=VOL/WPM select, long3s=config)          │
 // │   SW_UP   : GPIO35 → GND  (increment selected parameter)                 │

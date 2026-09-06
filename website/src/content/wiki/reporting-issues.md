@@ -23,7 +23,7 @@ Serial log: the relevant lines
 
 | Include | Example |
 | --- | --- |
-| The version | "v5.4.0" |
+| The version | "v5.5.0" |
 | The exact scenario | "In CONFIG mode, setting TX power to +22, then saving" |
 | The serial log | The lines around the failure (see [Serial Monitor Guide](serial-monitor-guide)) |
 | A photo of the wiring | For hardware reports |

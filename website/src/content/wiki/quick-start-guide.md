@@ -90,7 +90,7 @@ pio run --target upload
 
 | Screen element | Expected value |
 |----------------|----------------|
-| Inverted header | `AEGIS-BEACON v5.4` |
+| Inverted header | `AEGIS-BEACON v5.5` |
 | Subtitle line | Build feature flags (SX1262, GPS, BTN, BAT, SSD1309) |
 | Battery icon + % | e.g. `[███ ] 87%` |
 | Status bar | `INITIALISING...` then mode name |

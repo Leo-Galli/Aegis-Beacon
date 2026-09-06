@@ -2,7 +2,7 @@
 
 <div align="center">
 
-### Aegis-Beacon v5.4 — Dual-Mode Avalanche Rescue System
+### Aegis-Beacon v5.5 — Dual-Mode Avalanche Rescue System
 **Firmware, Hardware, Web Stack and Deployment Specification**
 
 [![Firmware](https://img.shields.io/badge/Firmware-C%2B%2B%20%2F%20Arduino-blue?style=flat-square&logo=c%2B%2B)](AegisBeacon.ino)

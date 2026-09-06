@@ -9,7 +9,7 @@
 ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝╚══════╝    ╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝╚═╝  ╚═══╝
 ```
 
-# Aegis-Beacon v5.4
+# Aegis-Beacon v5.5
 
 ![Banner](https://github.com/Leo-Galli/Aegis-Beacon/blob/main/website/public/banner.png?raw=true)
 
@@ -148,7 +148,7 @@ All project documentation is written in English and kept in the repository root.
 
 **Aegis-Beacon** is an open-source, ultra-low-cost emergency rescue beacon designed for avalanche survival, backcountry emergencies, and SAR (Search and Rescue) operations. It fits in a jacket pocket, costs around $23-28 to build, and runs roughly **65 hours at the default 10 s beacon interval** on a single 18650 cell - up to **~175 hours** when the interval is stretched to 60 s.
 
-v5.4 is a significant hardware upgrade from the original v4.0. The microcontroller has been upgraded to an **ESP32 DevKit V1** (30-pin), the radio module to an **SX1262** (Ebyte E22-400M30S, up to +30 dBm with onboard PA), and the display to a larger **SSD1309 2.42" OLED**. New features include a **NEO-6M GPS module** that can append your coordinates to every Morse transmission, a **battery voltage monitor** driven by a simple resistor divider, and a **4-button physical control panel** for live volume and WPM adjustment.
+v5.5 is the current release. It builds on the v5.4 hardware revision — **ESP32 DevKit V1** (30-pin), **SX1262** radio (Ebyte E22-400M30S, up to +30 dBm with onboard PA), **SSD1309 2.42" OLED**, **NEO-6M GPS** with coordinates in every Morse transmission, a battery voltage monitor, and a 4-button physical control panel — and adds a **machine-readable serial protocol** (`AEGIS:` lines) with **serial commands** to set the frequency, speed and mode over USB, a **cross-platform bridge script** (`bridge/`) that forwards GPS fixes to the official website's **Report Position** page, and a **WiFi configuration dashboard that runs entirely on default system fonts** (it is used without connectivity).
 
 | Mode              | LED        | OLED                                 | Audio               | What it does                                                     |
 |-------------------|------------|--------------------------------------|---------------------|------------------------------------------------------------------|
@@ -200,9 +200,16 @@ graph TD
 
 ## What's New in v5.x
 
+### v5.5 — Serial Bridge & Live Position Reporting
+
+- **Machine-readable serial protocol**: the firmware prints `AEGIS:POS:`, `AEGIS:HELLO:` and `AEGIS:STATE:` lines on USB serial, plus accepts commands (`FREQ 433.500`, `WPM 14`, `MODE BEACON|SEARCH|CONFIG|EMERGENCY`, `POS`, `STATUS`, `HELP`).
+- **Cross-platform bridge** (`bridge/aegis-serial-bridge.py`): one Python file for Windows, macOS and Linux that auto-detects the port, reads fixes, and opens the official **Report Position** page already filled in — or streams live into an open page.
+- **Report Position page** (`/report-position` on the website): auto-fills from the link, live-updates from the bridge, one-click Google Maps / OpenStreetMap links, copy-link, and a paste box to test without hardware.
+- **Offline-first config dashboard**: the WiFi captive-portal dashboard now uses only fonts installed on the device by default (no web fonts, since configuration happens without connectivity).
+
 ### v5.4 vs v4.0 — Complete Comparison
 
-| Feature                  | v4.0 (original)              | v5.4 (current)                                       |
+| Feature                  | v4.0 (original)              | v5.5 (current)                                       |
 |--------------------------|------------------------------|------------------------------------------------------|
 | Microcontroller          | ESP32-C3 SuperMini           | **ESP32 DevKit V1 (30-pin)**                         |
 | Radio                    | SX1276 RA-02 (OOK, +17 dBm) | **SX1262 E22-400M30S (CW/FSK, +22 dBm / +30 dBm PA)**|
@@ -439,7 +446,7 @@ Divider output: `VBAT / 2` -> 4.2 V full = 2.1 V on GPIO 36 (safely within 3.3 V
 | SW_UP            | GPIO 35   | Input-only; 10 kΩ ext. pullup recommended |
 | SW_DN            | GPIO 34   | Input-only; 10 kΩ ext. pullup recommended |
 
-#### Complete GPIO Map (v5.4)
+#### Complete GPIO Map (v5.5)
 
 | GPIO | Function                                                   |
 |------|------------------------------------------------------------|
@@ -758,7 +765,7 @@ The SSD1309 128×64 display refreshes every 120 ms. Every screen except EMERGENC
 
 | Mode          | Content                                                                            |
 |---------------|------------------------------------------------------------------------------------|
-| **BOOT**      | Inverted header "AEGIS-BEACON v5.4" · subtitle · feature flags · battery icon + % · INITIALISING bar |
+| **BOOT**      | Inverted header "AEGIS-BEACON v5.5" · subtitle · feature flags · battery icon + % · INITIALISING bar |
 | **BEACON**    | Inverted header "TX BEACON" + cycle# + **bat icon** · Large frequency (logisoso24) · GPS fix dot · Info line (CH/PWR/WPM) · TX progress bar · Payload scroll · Status (GPS state + bat% + sleep countdown) + ADJ indicator |
 | **SEARCH**    | Inverted header "RX SEARCH" + hit count + **bat icon** · Large frequency · RSSI value · RSSI fill bar + threshold tick · Signal label / last hit / scan pass + bat% + ADJ indicator |
 | **EMERGENCY** | Alternating inverse · Giant "SOS" (logisoso32) · "EMERGENCY BEACON TX" · Frequency + power · GPS coordinates or cycle + bat% |
@@ -888,7 +895,7 @@ Connect at **115200 baud, 8N1**.
 
 ```
 ╔══════════════════════════════════════════════════════════╗
-║  AEGIS-BEACON v5.4 — SX1262+GPS+BTN+BAT+SSD1309         ║
+║  AEGIS-BEACON v5.5 — SX1262+GPS+BTN+BAT+SSD1309         ║
 ╚══════════════════════════════════════════════════════════╝
     Active mode: BEACON
 
@@ -1037,6 +1044,7 @@ A: Yes, mandatory. Hardware is completely different (ESP32 DevKit V1 instead of 
 
 | Version | Date | Changes                                                                                                            |
 |---------|------|--------------------------------------------------------------------------------------------------------------------|
+| v5.5    | 2026 | Serial bridge protocol (`AEGIS:POS`/`HELLO`/`STATE`) and serial commands (`FREQ`, `WPM`, `MODE`, `POS`, `STATUS`); cross-platform bridge script + website Report Position page with live streaming; WiFi config dashboard rebuilt on default system fonts; wiki expanded with bridge and protocol documentation |
 | v5.4    | 2026 | Battery monitor: 100kΩ/100kΩ divider on GPIO36, piecewise Li-ion curve, pixel-art icon in all headers, CHG indicator; improved OLED graphics across all screens; `readBattery()` integrated into main loops; battery exposed in dashboard with animated bar |
 | v5.3    | 2026 | Replaced potentiometers with 4-button control (MODE/SEL/UP/DN); OLED adj overlay; auto-repeat on UP/DN; NVS save via SEL long press |
 | v5.2    | 2026 | Radio upgraded SX1276 → SX1262 (Ebyte E22-400M30S); BUSY pin GPIO21 mandatory; `ensureSpiStarted()` helper; TCXO 1.6V parameter |

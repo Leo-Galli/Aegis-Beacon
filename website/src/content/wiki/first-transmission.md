@@ -9,7 +9,7 @@ Your first transmission should be boring: a known signal, on a known frequency, 
 
 ## Before you transmit
 
-1. Flash the latest v5.4 firmware.
+1. Flash the latest v5.5 firmware.
 2. Confirm the boot screen shows the expected version and mode.
 3. Attach the antenna (or a dummy load).
 4. Confirm your frequency is legal where you are (see Frequency Compatibility).

@@ -41,7 +41,7 @@ The SSD1309 2.42" OLED provides real-time status information across all operatin
 
 ```
 +----------------------------------+
-| AEGIS-BEACON v5.4          [87%]|  <-- Inverted header with battery
+| AEGIS-BEACON v5.5          [87%]|  <-- Inverted header with battery
 | Emergency Radio System           |
 |                                  |
 | [Features enabled]               |

@@ -15,7 +15,7 @@ Not every ESP32 development board is the same. This project is written for the E
 |------|---------|
 | ESP32-WROOM-32 | The radio module (chip + flash + antenna) |
 | DevKit V1 | The breakout board with USB and LDO |
-| SuperMini / C3 | Different chips - NOT compatible with v5.4 firmware |
+| SuperMini / C3 | Different chips - NOT compatible with v5.5 firmware |
 
 ## WROOM vs WROVER
 

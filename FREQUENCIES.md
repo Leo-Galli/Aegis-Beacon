@@ -9,7 +9,7 @@
 <div align="center">
 
 # GLOBAL EMERGENCY FREQUENCIES
-### Aegis-Beacon v5.4 — Search and Rescue (SAR) Reference Manual
+### Aegis-Beacon v5.5 — Search and Rescue (SAR) Reference Manual
 
 [![Version](https://img.shields.io/badge/DATABASE-2026.2-red?style=for-the-badge)](https://github.com/Leo-Galli/Aegis-Beacon)
 [![License](https://img.shields.io/badge/LICENSE-MIT-green?style=for-the-badge)](LICENSE)
@@ -20,9 +20,9 @@
 
 ---
 
-## Hardware Compatibility Notice (v5.4)
+## Hardware Compatibility Notice (v5.5)
 
-Aegis-Beacon v5.4 uses the **Ebyte E22-400M30S** module (SX1262 / LLCC68 chip), which covers **410–525 MHz** only. This document is organized accordingly:
+Aegis-Beacon v5.5 uses the **Ebyte E22-400M30S** module (SX1262 / LLCC68 chip), which covers **410–525 MHz** only. This document is organized accordingly:
 
 | Band              | SX1262 Support | Notes                                                        |
 |:------------------|:--------------:|:-------------------------------------------------------------|
@@ -187,7 +187,7 @@ PMR446 (446.0–446.2 MHz) is a licence-free UHF band in the EU (and adopted in 
 
 ---
 
-## 6. Frequency Configuration Guide (v5.4 Firmware)
+## 6. Frequency Configuration Guide (v5.5 Firmware)
 
 ### Dashboard — Frequency Manager
 

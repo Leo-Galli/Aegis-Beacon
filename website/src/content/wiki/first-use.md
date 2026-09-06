@@ -26,7 +26,7 @@ A freshly flashed Aegis-Beacon boots straight into BEACON mode with safe default
 [  12410][MODE ] Starting: BEACON
 ```
 
-On the OLED you should see the inverted `AEGIS-BEACON v5.4` header, the battery icon, and the BEACON layout with a large frequency.
+On the OLED you should see the inverted `AEGIS-BEACON v5.5` header, the battery icon, and the BEACON layout with a large frequency.
 
 ## First Transmission
 
@@ -43,7 +43,7 @@ To confirm the RF path without a second radio, tune any AM-capable receiver or S
 
 | Check | Expected result |
 |-------|-----------------|
-| Boot screen | AEGIS-BEACON v5.4 + battery icon |
+| Boot screen | AEGIS-BEACON v5.5 + battery icon |
 | Battery % | Matches a fresh cell (80-100%) |
 | Serial log | No `[ERROR]`, no SX1262 init failure |
 | First TX | Progress bar runs, payload scrolls |

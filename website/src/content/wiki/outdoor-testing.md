@@ -159,7 +159,7 @@ Maintain a testing log for each device:
 ```
 Device: AB-0001
 Date: YYYY-MM-DD
-Firmware: v5.4
+Firmware: v5.5
 Battery at start: 4.18V
 Battery at end: 3.72V
 Duration: 8 hours

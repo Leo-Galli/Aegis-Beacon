@@ -13,7 +13,7 @@ The first seconds after power-on tell you a lot. This page maps boot-time OLED s
 
 | Screen | What it means |
 |--------|---------------|
-| AEGIS-BEACON v5.4 + battery | Firmware running |
+| AEGIS-BEACON v5.5 + battery | Firmware running |
 | INITIALISING progress bar | Peripherals starting |
 | ACQUIRING GPS FIX | GPS enabled, no cached fix |
 | TX BEACON screen | Ready, mode restored from RTC |

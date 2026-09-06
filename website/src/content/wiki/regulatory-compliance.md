@@ -138,7 +138,7 @@ Maintain a compliance log for each device:
 | Field | Value |
 |-------|-------|
 | Device Serial | AB-XXXX |
-| Firmware Version | v5.4 |
+| Firmware Version | v5.5 |
 | Frequencies | 446.000, 446.0625, ... |
 | Max TX Power | +17 dBm |
 | Operator License | PMR446 (exempt) |

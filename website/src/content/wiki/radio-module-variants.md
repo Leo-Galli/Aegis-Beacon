@@ -38,7 +38,7 @@ Everything in the firmware works, but you must add:
 ## Compatibility Notes
 
 - LLCC68 is pin-compatible enough that RadioLib handles it as an SX126x variant.
-- Do not mix in SX1276 modules: the v5.4 firmware, pinout and BUSY handling target the SX1262 family.
+- Do not mix in SX1276 modules: the v5.5 firmware, pinout and BUSY handling target the SX1262 family.
 
 ## Related Pages
 

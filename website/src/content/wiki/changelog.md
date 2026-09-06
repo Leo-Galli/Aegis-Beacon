@@ -7,7 +7,15 @@ description: "Version history of Aegis-Beacon firmware and hardware, aligned wit
 
 All notable changes across firmware, hardware and documentation, mirroring the authoritative [DATASHEET](../../../DATASHEET.md) at the repository root.
 
-## Version 5.4 (Current)
+## Version 5.5 (Current)
+
+- **Serial bridge protocol**: machine-readable `AEGIS:POS:`, `AEGIS:HELLO:` and `AEGIS:STATE:` lines on USB serial, printed plain (never ANSI-colored) and throttled to at most one position report every 5 seconds.
+- **Serial commands**: `FREQ <MHz>` (set and persist the desired frequency), `FREQ?`, `WPM <5-40>`, `MODE <BEACON|SEARCH|CONFIG|EMERGENCY>`, `POS`, `STATUS`, `HELP`.
+- **Cross-platform bridge** (`bridge/aegis-serial-bridge.py`): auto-detects the serial port on Windows, macOS and Linux, and forwards GPS fixes to the website's Report Position page, streaming live into an open page or opening it pre-filled.
+- **Report Position page** (`/report-position`): auto-fills from a link, live-updates from the bridge, Google Maps and OpenStreetMap links, copy-link, and a paste box for testing without hardware.
+- **Offline-first config dashboard**: the WiFi captive portal now uses only default system fonts, since it is configured without connectivity.
+
+## Version 5.4
 
 - Battery monitor: 100 kohm divider on GPIO 36, 9-point piecewise Li-ion curve, pixel-art icon in every screen header, CHG (charging) indicator, animated dashboard bar.
 - Improved OLED graphics across all screens.

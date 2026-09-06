@@ -7,7 +7,7 @@ description: "Absolute maximum ratings, power supply rails, per-state current dr
 
 ## Overview
 
-Reference values for the Aegis-Beacon v5.4 power system: what the hardware can tolerate, what it draws in every state, and how long a 2000 mAh 18650 cell lasts per mode.
+Reference values for the Aegis-Beacon v5.5 power system: what the hardware can tolerate, what it draws in every state, and how long a 2000 mAh 18650 cell lasts per mode.
 
 ## Absolute Maximum Ratings
 

@@ -104,14 +104,19 @@ streaming the position in the background.
 The firmware prints (never ANSI-colored):
 
 ```
-AEGIS:HELLO:ver=5.3;mode=BEACON;freq=433.500;wpm=12;vol=64
-AEGIS:POS:lat=45.123456;lng=11.123456;alt=412;sats=8;freq=433.500;mode=BEACON;payload=SOS PSN N4553 E01130
+AEGIS:HELLO:ver=5.5;mode=BEACON;freq=433.500;wpm=12;vol=64
+AEGIS:POS:lat=45.123456;lng=11.123456;alt=412;sats=8;freq=433.500;mode=BEACON;fix=1;age=87;payload=SOS PSN N4553 E01130
 AEGIS:STATE:mode=SEARCH;freq=433.500;wpm=12;vol=64;heap=184320;boot=1;tx=0;hits=0;gpsFix=1;sats=8
 AEGIS:FREQ:0=433.500
 AEGIS:WPM:14
 AEGIS:MODE:SEARCH
 AEGIS:ERR:<message>
 ```
+
+The `fix` and `age` fields flag whether a position is a fresh live fix (`fix=1`)
+or a repeated last-known one (`fix=0`); the bridge only bumps its stream
+counter when the position actually changes, so the website draws a track of
+real movement rather than repeated dots.
 
 The bridge only acts on `AEGIS:POS:` lines; everything else is printed for
 visibility. See the wiki pages **Serial Bridge Guide** and **Serial Command

@@ -6,8 +6,9 @@ Reads the machine-readable "AEGIS:" lines the firmware prints over USB serial
 and forwards GPS positions to the official website:
 
   1. It auto-detects the serial port (or you can pass --port).
-  2. When the beacon reports a position (AEGIS:POS:...), the bridge builds a
-     link with the coordinates:  https://aegis-beacon.vercel.app/report-position?lat=..&lng=..
+  2. When the beacon reports a position (AEGIS:POS:lat=..;lng=..;fix=..;age=..), the
+     bridge builds a link with the coordinates:
+     https://aegis-beacon.vercel.app/report-position?lat=..&lng=..
   3. If the /report-position page is already open in a browser, this bridge's
      tiny loopback HTTP endpoint is being polled by that page, so the bridge
      knows not to open new tabs and the page updates live instead.
@@ -64,7 +65,7 @@ class BridgeState:
     def __init__(self):
         self.lock = threading.Lock()
         self.latest = None      # dict of the most recent AEGIS:POS: data
-        self.ts = 0             # increments on every new position
+        self.ts = 0             # increments only when the position actually changes
         self.page_heartbeat = 0.0  # time.monotonic() of last page poll
 
     def page_is_open(self):
@@ -75,12 +76,22 @@ class BridgeState:
         with self.lock:
             self.page_heartbeat = time.monotonic()
 
+    _SIGNIFICANT_KEYS = ("lat", "lng", "alt", "sats", "freq", "mode", "payload", "fix")
+
     def set_position(self, data):
+        """Store a position; bump the stream counter only when something real
+        changed, so the page draws a track of movement, not repeated dots."""
         with self.lock:
-            self.latest = data
-            self.ts += 1
-            ts = self.ts
-        return ts
+            changed = self.latest is None
+            if not changed:
+                for key in self._SIGNIFICANT_KEYS:
+                    if self.latest.get(key) != data.get(key):
+                        changed = True
+                        break
+            if changed:
+                self.latest = data
+                self.ts += 1
+            return self.ts
 
 
 STATE = BridgeState()
@@ -132,7 +143,7 @@ def parse_pos_line(line):
         value = value.strip()
         if not key or not value:
             continue
-        if key in ("lat", "lng", "alt", "sats", "freq"):
+        if key in ("lat", "lng", "alt", "sats", "freq", "fix", "age"):
             try:
                 data[key] = float(value)
             except ValueError:
@@ -141,6 +152,16 @@ def parse_pos_line(line):
             data[key] = value
     if "lng" not in data and "lon" in data:
         data["lng"] = data.pop("lon")
+    # Sanity clamps: never trust a coordinate outside the real world, and cap
+    # free-form fields so a corrupt line cannot grow into a huge payload.
+    if "lat" in data and not (-90.0 <= data["lat"] <= 90.0):
+        data.pop("lat")
+    if "lng" in data and not (-180.0 <= data["lng"] <= 180.0):
+        data.pop("lng")
+    if "payload" in data:
+        data["payload"] = str(data["payload"])[:128]
+    if "mode" in data:
+        data["mode"] = str(data["mode"])[:32]
     return data
 
 
@@ -151,6 +172,29 @@ def build_site_url(site, data):
             params[key] = data[key]
     qs = urlencode(params)
     return site.rstrip("/") + POS_PATH + ("?" + qs if qs else "")
+
+
+# Last browser-open (lat, lng, monotonic time) so repeated identical fixes
+# do not spawn a new tab every few seconds.
+_LAST_OPEN = [None, None, 0.0]
+_OPEN_MOVE_DEG = 0.00025   # ~25 m at the equator
+_OPEN_MIN_INTERVAL_S = 120.0
+
+
+def should_open_browser(data):
+    """True when the page is not open and the fix is worth a new tab: first fix,
+    a real move, or a periodic refresh so a stale tab is re-raised."""
+    lat, lng = data["lat"], data["lng"]
+    now = time.monotonic()
+    if _LAST_OPEN[2] == 0.0:
+        _LAST_OPEN[0], _LAST_OPEN[1], _LAST_OPEN[2] = lat, lng, now
+        return True
+    moved = abs(lat - _LAST_OPEN[0]) > _OPEN_MOVE_DEG or abs(lng - _LAST_OPEN[1]) > _OPEN_MOVE_DEG
+    stale = (now - _LAST_OPEN[2]) > _OPEN_MIN_INTERVAL_S
+    if moved or stale:
+        _LAST_OPEN[0], _LAST_OPEN[1], _LAST_OPEN[2] = lat, lng, now
+        return True
+    return False
 
 
 def handle_serial(device, baud, site, no_open, verbose):
@@ -184,13 +228,15 @@ def handle_serial(device, baud, site, no_open, verbose):
                                 continue
                             if STATE.page_is_open():
                                 print(f"[bridge] page is open, streaming update to it")
-                            else:
+                            elif should_open_browser(data):
                                 url = build_site_url(site, data)
                                 print(f"[bridge] opening page with position: {url}")
                                 try:
                                     webbrowser.open(url, new=2)
                                 except Exception as exc:  # noqa: BLE001
                                     print(f"[bridge] could not open browser ({exc}); paste this link manually:\n  {url}")
+                            else:
+                                print(f"[bridge] position unchanged, not opening a new tab")
                         else:
                             print(f"[bridge] AEGIS:POS: line without usable coordinates, ignoring")
                     elif upper.startswith("AEGIS:HELLO:"):
@@ -226,6 +272,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):  # noqa: N802
         try:
+            if len(self.path) > 512:
+                self._send_json({"error": "request too large"}, 414)
+                return
             parts = urlsplit(self.path)
             query = parse_qs(parts.query)
             if parts.path in ("/stream", "/ping", "/state"):
@@ -245,6 +294,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 self._send_json({"error": str(exc)}, 500)
             except Exception:  # noqa: BLE001
                 pass
+
+    def do_POST(self):  # noqa: N802
+        self._send_json({"error": "GET only"}, 405)
 
     def log_message(self, fmt, *args):  # quiet by default
         pass

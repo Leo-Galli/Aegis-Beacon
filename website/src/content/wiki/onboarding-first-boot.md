@@ -15,7 +15,7 @@ The first power-up is the moment of truth. Here is exactly what should happen, i
 
 ## The boot sequence
 
-1. The OLED lights up with the **AEGIS-BEACON v5.4** header, inverted.
+1. The OLED lights up with the **AEGIS-BEACON v5.5** header, inverted.
 2. The red LED blinks once or twice.
 3. If GPS is enabled and there is no cached fix, the **ACQUIRING GPS FIX** screen appears with a satellite count and progress bar.
 4. After the fix (or timeout, or pressing MODE to skip), the beacon enters **BEACON** mode.
