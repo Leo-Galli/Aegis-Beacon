@@ -12,8 +12,7 @@ on:
       - '.github/workflows/benchmarks.yml'
       - '.github/scripts/benchmark-*.mjs'
       - '.github/scripts/merge-benchmarks.mjs'
-    paths-ignore:
-      - 'website/src/data/benchmarks.json'
+      - '!website/src/data/benchmarks.json'
   workflow_dispatch:
 
 permissions:
