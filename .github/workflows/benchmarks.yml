@@ -1,0 +1,126 @@
+name: Benchmarks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.ino'
+      - 'platformio.ini'
+      - 'src/**'
+      - 'include/**'
+      - 'website/**'
+      - '.github/workflows/benchmarks.yml'
+      - '.github/scripts/benchmark-*.mjs'
+      - '.github/scripts/merge-benchmarks.mjs'
+    paths-ignore:
+      - 'website/src/data/benchmarks.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: benchmarks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  firmware:
+    name: Firmware benchmark (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install PlatformIO
+        run: python -m pip install --upgrade pip && python -m pip install platformio
+
+      - name: Cache PlatformIO packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio/packages
+            ~/.platformio/platforms
+          key: bench-${{ runner.os }}-${{ runner.arch }}-pio-${{ hashFiles('platformio.ini') }}
+          restore-keys: |
+            bench-${{ runner.os }}-${{ runner.arch }}-pio-
+
+      - name: Run firmware benchmark
+        run: node .github/scripts/benchmark-firmware.mjs
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-firmware-${{ runner.os }}-${{ runner.arch }}
+          path: bench-firmware.json
+          retention-days: 7
+
+  website:
+    name: Website build benchmark
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run website build benchmark
+        run: node ../.github/scripts/benchmark-website.mjs
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-website-ubuntu-x64
+          path: ../bench-website.json
+          retention-days: 7
+
+  publish:
+    name: Publish benchmark results
+    runs-on: ubuntu-latest
+    needs: [firmware, website]
+    if: always() && github.event_name != 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download benchmark artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: bench-*
+          path: artifacts
+
+      - name: Merge results into the site data file
+        run: node .github/scripts/merge-benchmarks.mjs artifacts website/src/data/benchmarks.json
+
+      - name: Commit and push updated results
+        run: |
+          if git diff --quiet website/src/data/benchmarks.json; then
+            echo "No benchmark changes to publish."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add website/src/data/benchmarks.json
+            git commit -m "chore: refresh benchmark results [skip ci]"
+            git push
+            echo "Benchmark results committed and pushed."
+          fi

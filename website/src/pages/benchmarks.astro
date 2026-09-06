@@ -1,0 +1,271 @@
+---
+import Layout from '../layouts/Layout.astro';
+import benchmarkData from '../data/benchmarks.json';
+
+interface Run {
+  id: string;
+  kind: string;
+  commit: string;
+  shortSha: string;
+  branch: string;
+  timestamp: string;
+  platform: string;
+  runner: string;
+  cpuModel: string;
+  cpuCount: number;
+  buildMs: number;
+  flashBytes: number | null;
+  flashLimit: number | null;
+  flashPct: number | null;
+  ramBytes: number | null;
+  ramLimit: number | null;
+  ramPct: number | null;
+  pioVersion?: string;
+  pages?: number;
+}
+
+const runs = (benchmarkData.runs ?? []) as Run[];
+const updatedAt = benchmarkData.updatedAt as string | null;
+
+const firmwareRuns = runs.filter((r) => r.kind === 'firmware');
+const websiteRuns = runs.filter((r) => r.kind === 'website-build');
+
+const latestPerRunner = [...new Set(firmwareRuns.map((r) => r.runner))]
+  .map((runner) =>
+    firmwareRuns
+      .filter((r) => r.runner === runner)
+      .sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0]
+  )
+  .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+
+const latestWebsite = websiteRuns.sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0] ?? null;
+
+const history = runs.slice().sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 15);
+
+function fmtDate(iso: string): string {
+  return new Date(iso).toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function fmtMs(ms: number): string {
+  if (ms >= 60000) return (ms / 60000).toFixed(1) + ' min';
+  return (ms / 1000).toFixed(1) + ' s';
+}
+
+function fmtBytes(n: number | null): string {
+  if (n == null) return 'n/a';
+  if (n >= 1024 * 1024) return (n / (1024 * 1024)).toFixed(2) + ' MB';
+  return (n / 1024).toFixed(1) + ' KB';
+}
+
+function fmtPct(n: number | null): string {
+  return n == null ? 'n/a' : n.toFixed(1) + '%';
+}
+---
+
+<Layout
+  title="Benchmark Results | Aegis-Beacon"
+  description="Real, automated benchmarks of the Aegis-Beacon firmware and website, measured on every push by GitHub Actions across Intel x64, ARM64, Windows and Apple Silicon runners."
+>
+  <section class="bench container">
+    <header class="bench-head" data-rv="fade">
+      <p class="hero-kicker">Automated performance tracking</p>
+      <h1>Benchmark results</h1>
+      <p class="bench-lead">
+        Every push to main compiles the firmware with PlatformIO and builds the
+        website on the four processor families GitHub Actions offers: Intel x64
+        Linux, ARM64 Linux, Intel x64 Windows and Apple Silicon macOS. The
+        numbers below are recorded from those real runs and refreshed
+        automatically on each commit and push.
+      </p>
+      <div class="bench-actions">
+        <a href="/wiki/benchmark-methodology" class="btn btn-primary">Read the methodology</a>
+        <a href="https://github.com/Leo-Galli/Aegis-Beacon/actions/workflows/benchmarks.yml" target="_blank" rel="noopener" class="btn btn-secondary">View workflow runs</a>
+      </div>
+      {updatedAt && <p class="bench-updated">Last refreshed: {fmtDate(updatedAt)}</p>}
+    </header>
+
+    {
+      runs.length === 0 ? (
+        <div class="bench-empty" data-rv>
+          <h2>No benchmark results yet</h2>
+          <p>
+            The Benchmarks workflow runs on every push to the main branch. The
+            first results are written back to the repository a few minutes
+            after the next push, and this page updates automatically.
+          </p>
+        </div>
+      ) : (
+        <>
+          <section class="bench-block" data-rv>
+            <header class="bench-block__head">
+              <h2>Latest firmware build per runner</h2>
+              <p>
+                Wall-clock compile time plus flash and RAM usage of the ESP32
+                firmware, measured on each processor family.
+              </p>
+            </header>
+            <div class="bench-grid">
+              {
+                latestPerRunner.map((r) => (
+                  <article class="bench-card">
+                    <div class="bench-card__top">
+                      <span class="bench-card__runner">{r.runner}</span>
+                      <span class="bench-card__time">{fmtMs(r.buildMs)}</span>
+                    </div>
+                    <p class="bench-card__cpu">{r.cpuModel}</p>
+                    <dl class="bench-card__metrics">
+                      <div>
+                        <dt>Flash</dt>
+                        <dd>{fmtPct(r.flashPct)} <small>({fmtBytes(r.flashBytes)} of {fmtBytes(r.flashLimit)})</small></dd>
+                      </div>
+                      <div>
+                        <dt>RAM</dt>
+                        <dd>{fmtPct(r.ramPct)} <small>({fmtBytes(r.ramBytes)} of {fmtBytes(r.ramLimit)})</small></dd>
+                      </div>
+                      <div>
+                        <dt>Commit</dt>
+                        <dd><code>{r.shortSha}</code></dd>
+                      </div>
+                      <div>
+                        <dt>PlatformIO</dt>
+                        <dd>{r.pioVersion ? r.pioVersion.replace('PlatformIO Core, ', '') : 'n/a'}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                ))
+              }
+            </div>
+          </section>
+
+          {
+            latestWebsite && (
+              <section class="bench-block" data-rv>
+                <header class="bench-block__head">
+                  <h2>Website build</h2>
+                  <p>
+                    Full static build of the Astro site, timed on the Linux x64
+                    runner.
+                  </p>
+                </header>
+                <div class="bench-grid bench-grid--single">
+                  <article class="bench-card">
+                    <div class="bench-card__top">
+                      <span class="bench-card__runner">{latestWebsite.runner}</span>
+                      <span class="bench-card__time">{fmtMs(latestWebsite.buildMs)}</span>
+                    </div>
+                    <p class="bench-card__cpu">{latestWebsite.cpuModel}</p>
+                    <dl class="bench-card__metrics">
+                      <div>
+                        <dt>Pages built</dt>
+                        <dd>{latestWebsite.pages}</dd>
+                      </div>
+                      <div>
+                        <dt>Commit</dt>
+                        <dd><code>{latestWebsite.shortSha}</code></dd>
+                      </div>
+                    </dl>
+                  </article>
+                </div>
+              </section>
+            )
+          }
+
+          <section class="bench-block" data-rv>
+            <header class="bench-block__head">
+              <h2>Recent history</h2>
+              <p>
+                The most recent recorded runs. Flash and RAM figures are
+                deterministic for a given commit; build times vary with runner
+                load, so compare them only within the same runner.
+              </p>
+            </header>
+            <div class="bench-table-wrap">
+              <table class="bench-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Commit</th>
+                    <th>Kind</th>
+                    <th>Runner</th>
+                    <th>Build time</th>
+                    <th>Flash</th>
+                    <th>RAM</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    history.map((r) => (
+                      <tr>
+                        <td>{fmtDate(r.timestamp)}</td>
+                        <td><code>{r.shortSha}</code></td>
+                        <td>{r.kind === 'firmware' ? 'firmware' : 'website'}</td>
+                        <td>{r.runner}</td>
+                        <td>{fmtMs(r.buildMs)}</td>
+                        <td>{r.kind === 'firmware' ? fmtPct(r.flashPct) : 'n/a'}</td>
+                        <td>{r.kind === 'firmware' ? fmtPct(r.ramPct) : (r.pages != null ? r.pages + ' pages' : 'n/a')}</td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </>
+      )
+    }
+  </section>
+</Layout>
+
+<style>
+  .bench { padding-block: clamp(3rem, 6vw, 5rem); }
+  .bench-head { max-width: 52rem; margin-bottom: 3rem; }
+  .bench-head h1 { margin: 0.9rem 0 0; font-size: clamp(2rem, 4vw, 2.8rem); letter-spacing: -0.02em; }
+  .bench-lead { margin: 1rem 0 0; color: var(--muted-foreground); line-height: 1.7; max-width: 62ch; }
+  .bench-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .bench-updated { margin: 1rem 0 0; font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted-foreground); }
+  .bench-empty {
+    border: 1px dashed var(--border-strong); border-radius: var(--radius-xl);
+    padding: 2.5rem; max-width: 46rem;
+  }
+  .bench-empty h2 { margin: 0 0 0.6rem; }
+  .bench-empty p { margin: 0; color: var(--muted-foreground); line-height: 1.7; }
+  .bench-block { margin-top: 3.5rem; }
+  .bench-block__head { max-width: 52rem; margin-bottom: 1.5rem; }
+  .bench-block__head h2 { margin: 0; }
+  .bench-block__head p { margin: 0.5rem 0 0; color: var(--muted-foreground); line-height: 1.65; }
+  .bench-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .bench-grid--single { max-width: 380px; }
+  .bench-card {
+    border: 1px solid var(--border); border-radius: var(--radius-xl);
+    background: var(--card); padding: 1.25rem 1.35rem; box-shadow: var(--shadow-sm);
+  }
+  .bench-card__top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+  .bench-card__runner {
+    font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
+    letter-spacing: 0.08em; color: var(--primary);
+  }
+  .bench-card__time { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 600; }
+  .bench-card__cpu { margin: 0.6rem 0 1rem; font-size: 0.85rem; color: var(--muted-foreground); line-height: 1.5; min-height: 2.6em; }
+  .bench-card__metrics { display: grid; gap: 0.45rem; margin: 0; }
+  .bench-card__metrics > div { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.85rem; }
+  .bench-card__metrics dt { color: var(--muted-foreground); }
+  .bench-card__metrics dd { margin: 0; font-family: var(--font-mono); font-size: 0.82rem; text-align: right; }
+  .bench-card__metrics small { color: var(--muted-foreground); font-weight: 400; }
+  .bench-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--card); }
+  .bench-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 720px; }
+  .bench-table th, .bench-table td { padding: 0.7rem 1rem; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .bench-table th { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; color: var(--muted-foreground); background: var(--muted); }
+  .bench-table tr:last-child td { border-bottom: 0; }
+  .bench-table td code { font-size: 0.78rem; }
+  @media (max-width: 560px) {
+    .bench-actions { flex-direction: column; }
+    .bench-actions .btn { width: 100%; }
+    .bench-card__cpu { min-height: 0; }
+  }
+</style>

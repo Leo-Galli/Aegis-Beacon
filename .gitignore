@@ -35,6 +35,9 @@ website/.astro/
 # Local tooling
 .claude/
 
+# Benchmark artifacts (CI-only, merged into website/src/data/benchmarks.json)
+bench-*.json
+
 # Python
 __pycache__/
 *.pyc

@@ -504,6 +504,7 @@ export const WIKI_NAV: WikiGroup[] = [
     pages: [
       { id: 'acknowledgements', label: 'Acknowledgements' },
       { id: 'attribution-and-license', label: '"Attribution and License"' },
+      { id: 'benchmark-methodology', label: 'Benchmark Methodology' },
       { id: 'beacon-settings-reference', label: 'Beacon Settings Reference' },
       { id: 'branding', label: 'Branding' },
       { id: 'ci-cd', label: 'CI/CD' },

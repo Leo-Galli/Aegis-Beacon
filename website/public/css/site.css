@@ -58,7 +58,7 @@
 
   --header-h: 64px;
   --container-max: 80rem;
-  --container-px: 1.5rem;
+  --container-px: clamp(1.25rem, 3vw, 2.75rem);
 }
 
 .dark {
@@ -210,6 +210,7 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
 }
 @media (min-width: 900px) {
   .hero-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 3.5rem; }
+  .hero-copy { padding-inline-start: clamp(0rem, 2vw, 2.5rem); }
 }
 .hero-copy { display: grid; gap: 1.25rem; justify-items: start; }
 .hero-kicker {
