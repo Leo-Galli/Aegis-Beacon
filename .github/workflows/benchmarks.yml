@@ -89,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bench-website-ubuntu-x64
-          path: ../bench-website.json
+          path: bench-website.json
           retention-days: 7
 
   publish:
