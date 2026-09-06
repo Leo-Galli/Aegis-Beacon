@@ -308,6 +308,8 @@ export const WIKI_NAV: WikiGroup[] = [
       { id: 'nvs-configuration-store', label: '"NVS Configuration Store"' },
       { id: 'platformio-guide', label: 'PlatformIO Guide' },
       { id: 'rtc-ram-state', label: '"RTC RAM State"' },
+      { id: 'serial-bridge-guide', label: 'Serial Bridge Guide' },
+      { id: 'serial-command-protocol', label: 'Serial Command Protocol' },
       { id: 'serial-debug-system', label: '"Serial Debug System"' },
       { id: 'serial-monitor-guide', label: 'Serial Monitor Guide' },
       { id: 'software-build-process', label: '"Software Build Process"' },

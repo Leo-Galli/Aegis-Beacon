@@ -76,6 +76,9 @@ function scopeCss(css, scopeClass = '.dash-frame-inner') {
   // Remove external Google fonts import to satisfy self-hosted policy & CI
   let cleaned = css.replace(/@import\s+url\([^)]+\);?/g, '');
 
+  // Strip comments (they can confuse the rule scoper below)
+  cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, '');
+
   // Add self-hosted font fallbacks
   cleaned = cleaned
     .replace(/'Share Tech Mono',\s*monospace/g, "'Share Tech Mono', 'JetBrains Mono', monospace")

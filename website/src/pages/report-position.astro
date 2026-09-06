@@ -1,0 +1,277 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Report Position | Aegis-Beacon"
+  description="Send the beacon's GPS position to this page automatically. Plug the device in over USB, run the cross-platform bridge script, and the coordinates land here: filled in from the link the bridge opens, or streamed live while the page stays open."
+>
+  <div class="rp container">
+    <header class="rp__head">
+      <h1 class="rp__title">Report Device Position</h1>
+      <p class="rp__lead">
+        Connect the beacon to a computer or phone over USB and run the bridge script.
+        The device reports its GPS fix over the serial link, the script turns it into
+        a link with the coordinates, and this page fills itself in. If the page is
+        already open, new fixes stream in live. No account, no API key.
+      </p>
+    </header>
+
+    <div class="rp__grid">
+      <section class="rp__panel" aria-labelledby="rp-live-title">
+        <div class="rp__panel-bar">
+          <h2 id="rp-live-title" class="rp__panel-title">Live position</h2>
+          <span class="rp__dot" aria-hidden="true"></span>
+        </div>
+
+        <p class="rp__status" id="pos-status" role="status">Waiting for device data.</p>
+
+        <dl class="rp__fields">
+          <div class="rp__field">
+            <dt><label for="pos-lat">Latitude</label></dt>
+            <dd><input id="pos-lat" type="text" readonly autocomplete="off" placeholder="45.123456" /></dd>
+          </div>
+          <div class="rp__field">
+            <dt><label for="pos-lng">Longitude</label></dt>
+            <dd><input id="pos-lng" type="text" readonly autocomplete="off" placeholder="11.123456" /></dd>
+          </div>
+          <div class="rp__field">
+            <dt><label for="pos-alt">Altitude (m)</label></dt>
+            <dd><input id="pos-alt" type="text" readonly autocomplete="off" placeholder="1200" /></dd>
+          </div>
+          <div class="rp__field">
+            <dt><label for="pos-sats">Satellites</label></dt>
+            <dd><input id="pos-sats" type="text" readonly autocomplete="off" placeholder="8" /></dd>
+          </div>
+          <div class="rp__field">
+            <dt><label for="pos-freq">Frequency (MHz)</label></dt>
+            <dd><input id="pos-freq" type="text" readonly autocomplete="off" placeholder="433.500" /></dd>
+          </div>
+          <div class="rp__field">
+            <dt><label for="pos-mode">Mode</label></dt>
+            <dd><input id="pos-mode" type="text" readonly autocomplete="off" placeholder="BEACON" /></dd>
+          </div>
+          <div class="rp__field rp__field--wide">
+            <dt><label for="pos-payload">Morse payload</label></dt>
+            <dd><input id="pos-payload" type="text" readonly autocomplete="off" placeholder="SOS PSN N4553 E01130" /></dd>
+          </div>
+        </dl>
+
+        <div class="rp__actions">
+          <a id="pos-maps-link" class="rp__btn rp__btn--ghost is-hidden" href="#" target="_blank" rel="noopener">Open in Google Maps</a>
+          <a id="pos-osm-link" class="rp__btn rp__btn--ghost is-hidden" href="#" target="_blank" rel="noopener">OpenStreetMap</a>
+          <button id="pos-copy-link" class="rp__btn rp__btn--primary" type="button">Copy link with position</button>
+        </div>
+      </section>
+
+      <aside class="rp__side">
+        <section class="rp__card">
+          <h2 class="rp__card-title">How it works</h2>
+          <ol class="rp__steps">
+            <li>Flash the current firmware and plug the beacon into a computer or phone over USB.</li>
+            <li>Run the bridge script once. It finds the serial port automatically.</li>
+            <li>Each GPS fix becomes a link with the coordinates. If this page is open, the bridge detects it and streams the fix here; otherwise it opens the page for you, already filled in.</li>
+          </ol>
+          <p class="rp__card-note">
+            The bridge is a single Python file that works on Windows, macOS and Linux.
+            See <a href="/wiki/serial-bridge-guide">Serial Bridge Guide</a> in the wiki for setup.
+          </p>
+        </section>
+
+        <section class="rp__card">
+          <h2 class="rp__card-title">Test without hardware</h2>
+          <p class="rp__card-note">
+            Paste a device line below to see the form fill itself in.
+          </p>
+          <textarea id="pos-paste" class="rp__paste" rows="3" spellcheck="false"
+            placeholder="AEGIS:POS:lat=45.123456;lng=11.123456;alt=1200;sats=8;freq=433.500;mode=BEACON;payload=SOS PSN N4553 E01130"></textarea>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script is:inline src="/js/position-bridge.js" defer></script>
+
+  <style>
+    .rp {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: clamp(2.5rem, 6vw, 4.5rem) 1.5rem 4rem;
+    }
+    .rp__head {
+      max-width: 42rem;
+      margin-bottom: 2.5rem;
+    }
+    .rp__title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+      letter-spacing: -0.015em;
+    }
+    .rp__lead {
+      margin: 0.9rem 0 0;
+      color: var(--muted-foreground);
+      line-height: 1.7;
+      max-width: 60ch;
+    }
+
+    .rp__grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .rp__panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      background: var(--card);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .rp__panel-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .rp__panel-title,
+    .rp__card-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: 0.01em;
+    }
+    .rp__dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent);
+      animation: rp-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes rp-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+    .rp__status {
+      margin: 0 0 1.25rem;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--muted);
+      color: var(--muted-foreground);
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      line-height: 1.5;
+    }
+    .rp__status--ok { color: var(--success, #15803d); border-color: color-mix(in srgb, #15803d 40%, var(--border)); }
+    .rp__status--warn { color: var(--warning, #b45309); border-color: color-mix(in srgb, #b45309 40%, var(--border)); }
+
+    .rp__fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem 1rem;
+      margin: 0;
+    }
+    .rp__field--wide { grid-column: 1 / -1; }
+    .rp__field dt { margin-bottom: 0.3rem; }
+    .rp__field label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted-foreground);
+      letter-spacing: 0.04em;
+    }
+    .rp__field input {
+      width: 100%;
+      padding: 0.6rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .rp__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.25rem;
+    }
+    .rp__btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.55rem 1rem;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .rp__btn--primary {
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+    .rp__btn--primary:hover { background: var(--primary-hover); }
+    .rp__btn--ghost {
+      background: transparent;
+      border-color: var(--border-strong);
+      color: var(--foreground);
+    }
+    .rp__btn--ghost:hover { border-color: var(--primary); color: var(--primary); }
+    .is-hidden { display: none !important; }
+
+    .rp__side {
+      display: grid;
+      gap: 1.25rem;
+    }
+    .rp__card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--card);
+      padding: 1.25rem 1.35rem;
+    }
+    .rp__steps {
+      margin: 0.9rem 0 0;
+      padding-left: 1.2rem;
+      display: grid;
+      gap: 0.55rem;
+      color: var(--muted-foreground);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .rp__steps li::marker { color: var(--primary); font-weight: 700; }
+    .rp__card-note {
+      margin: 0.9rem 0 0;
+      color: var(--muted-foreground);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    .rp__card-note a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+    .rp__paste {
+      width: 100%;
+      margin-top: 0.8rem;
+      padding: 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      line-height: 1.5;
+      resize: vertical;
+    }
+
+    @media (max-width: 860px) {
+      .rp__grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px) {
+      .rp__fields { grid-template-columns: 1fr; }
+      .rp { padding-inline: 1rem; }
+    }
+  </style>
+</Layout>

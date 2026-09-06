@@ -1,0 +1,307 @@
+#!/usr/bin/env python3
+"""
+aegis-serial-bridge.py - Aegis-Beacon serial bridge (Windows / macOS / Linux)
+
+Reads the machine-readable "AEGIS:" lines the firmware prints over USB serial
+and forwards GPS positions to the official website:
+
+  1. It auto-detects the serial port (or you can pass --port).
+  2. When the beacon reports a position (AEGIS:POS:...), the bridge builds a
+     link with the coordinates:  https://aegis-beacon.vercel.app/report-position?lat=..&lng=..
+  3. If the /report-position page is already open in a browser, this bridge's
+     tiny loopback HTTP endpoint is being polled by that page, so the bridge
+     knows not to open new tabs and the page updates live instead.
+     If the page is not open, the bridge opens it, already filled in.
+
+No API keys, no accounts, no cloud: everything stays on 127.0.0.1 except the
+page you choose to open.
+
+Requires Python 3.8+ and pyserial:
+    pip install pyserial          (or: py -m pip install pyserial on Windows)
+
+Examples:
+    python bridge/aegis-serial-bridge.py
+    python bridge/aegis-serial-bridge.py --list
+    python bridge/aegis-serial-bridge.py --port COM3
+    python bridge/aegis-serial-bridge.py --port /dev/ttyUSB0 --no-open
+    python bridge/aegis-serial-bridge.py --http-port 9123 --site http://localhost:4321
+"""
+
+import argparse
+import json
+import sys
+import threading
+import time
+import webbrowser
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlencode, urlsplit
+
+try:
+    import serial
+    import serial.tools.list_ports
+except ImportError:  # pragma: no cover
+    sys.exit(
+        "pyserial is required. Install it with:\n"
+        "    pip install pyserial\n"
+        "or on Windows:  py -m pip install pyserial"
+    )
+
+DEFAULT_BAUD = 115200
+DEFAULT_HTTP_PORT = 8765
+DEFAULT_SITE = "https://aegis-beacon.vercel.app"
+PAGE_OPEN_WINDOW_S = 10.0  # a page heartbeat newer than this counts as "open"
+POS_PATH = "/report-position"
+
+# Well-known USB serial chips used by ESP32 dev boards.
+PREFERRED_VIDS = {0x10C4, 0x1A86, 0x0403, 0x303A}  # CP210x, CH340, FTDI, ESP32-S3 native
+PREFERRED_HINTS = ("cp210", "ch340", "silicon", "ftdi", "ft232", "usb serial", "usbserial", "usbmodem")
+
+
+# ---------------------------------------------------------------------------
+# Bridge state
+# ---------------------------------------------------------------------------
+class BridgeState:
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.latest = None      # dict of the most recent AEGIS:POS: data
+        self.ts = 0             # increments on every new position
+        self.page_heartbeat = 0.0  # time.monotonic() of last page poll
+
+    def page_is_open(self):
+        with self.lock:
+            return (time.monotonic() - self.page_heartbeat) < PAGE_OPEN_WINDOW_S
+
+    def note_page_ping(self):
+        with self.lock:
+            self.page_heartbeat = time.monotonic()
+
+    def set_position(self, data):
+        with self.lock:
+            self.latest = data
+            self.ts += 1
+            ts = self.ts
+        return ts
+
+
+STATE = BridgeState()
+
+
+# ---------------------------------------------------------------------------
+# Serial reading
+# ---------------------------------------------------------------------------
+def score_port(port):
+    """Higher is better. Prefer USB serial adapters over bluetooth/other."""
+    desc = ((port.description or "") + " " + (port.device or "")).lower()
+    score = 0
+    if port.vid in PREFERRED_VIDS:
+        score += 3
+    for hint in PREFERRED_HINTS:
+        if hint in desc:
+            score += 2
+            break
+    if port.device and ("bluetooth" in desc or "ble" in desc):
+        score -= 4
+    return score
+
+
+def detect_port(explicit=None):
+    if explicit:
+        return explicit
+    ports = sorted(serial.tools.list_ports.comports(), key=score_port, reverse=True)
+    if not ports:
+        return None
+    best = ports[0]
+    if score_port(best) <= 0:
+        return None
+    return best.device
+
+
+def parse_pos_line(line):
+    """Parse an AEGIS:POS:lat=..;lng=..;... line into a dict of floats/strs."""
+    body = line.strip()
+    prefix = "AEGIS:POS:"
+    if body.upper().startswith(prefix):
+        body = body[len(prefix):]
+    data = {}
+    for pair in body.split(";"):
+        pair = pair.strip()
+        if "=" not in pair:
+            continue
+        key, _, value = pair.partition("=")
+        key = key.strip().lower()
+        value = value.strip()
+        if not key or not value:
+            continue
+        if key in ("lat", "lng", "alt", "sats", "freq"):
+            try:
+                data[key] = float(value)
+            except ValueError:
+                continue
+        else:
+            data[key] = value
+    if "lng" not in data and "lon" in data:
+        data["lng"] = data.pop("lon")
+    return data
+
+
+def build_site_url(site, data):
+    params = {}
+    for key in ("lat", "lng", "alt", "sats", "freq", "mode", "payload"):
+        if key in data and data[key] not in (None, ""):
+            params[key] = data[key]
+    qs = urlencode(params)
+    return site.rstrip("/") + POS_PATH + ("?" + qs if qs else "")
+
+
+def handle_serial(device, baud, site, no_open, verbose):
+    """Open the port (with reconnect) and process AEGIS: lines forever."""
+    while True:
+        try:
+            ser = serial.Serial(device, baud, timeout=0.2)
+        except serial.SerialException as exc:
+            print(f"[bridge] cannot open {device}: {exc}")
+            print(f"[bridge] retrying in 2 s... (plug the device in? try --list)")
+            time.sleep(2)
+            continue
+        print(f"[bridge] connected to {device} @ {baud} baud")
+        try:
+            while True:
+                raw = ser.readline()
+                if not raw:
+                    continue
+                line = raw.decode("utf-8", errors="replace").strip()
+                if not line:
+                    continue
+                upper = line.upper()
+                if upper.startswith("AEGIS:"):
+                    print(f"[device] {line}")
+                    if upper.startswith("AEGIS:POS:"):
+                        data = parse_pos_line(line)
+                        if "lat" in data and "lng" in data:
+                            STATE.set_position(data)
+                            if no_open:
+                                print(f"[bridge] position captured: {data['lat']:.6f}, {data['lng']:.6f}")
+                                continue
+                            if STATE.page_is_open():
+                                print(f"[bridge] page is open, streaming update to it")
+                            else:
+                                url = build_site_url(site, data)
+                                print(f"[bridge] opening page with position: {url}")
+                                try:
+                                    webbrowser.open(url, new=2)
+                                except Exception as exc:  # noqa: BLE001
+                                    print(f"[bridge] could not open browser ({exc}); paste this link manually:\n  {url}")
+                        else:
+                            print(f"[bridge] AEGIS:POS: line without usable coordinates, ignoring")
+                    elif upper.startswith("AEGIS:HELLO:"):
+                        print(f"[device] firmware handshake received")
+                    elif verbose:
+                        print(f"[bridge] (ignored) {line}")
+                elif verbose:
+                    print(f"[serial]  {line}")
+        except serial.SerialException as exc:
+            print(f"[bridge] serial error ({exc}); reconnecting...")
+            time.sleep(2)
+        finally:
+            try:
+                ser.close()
+            except Exception:  # noqa: BLE001
+                pass
+            print(f"[bridge] disconnected from {device}, reconnecting...")
+
+
+# ---------------------------------------------------------------------------
+# Loopback HTTP server (talked to by the /report-position page)
+# ---------------------------------------------------------------------------
+class BridgeHandler(BaseHTTPRequestHandler):
+    def _send_json(self, obj, code=200):
+        body = json.dumps(obj).encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self):  # noqa: N802
+        try:
+            parts = urlsplit(self.path)
+            query = parse_qs(parts.query)
+            if parts.path in ("/stream", "/ping", "/state"):
+                from_page = query.get("from", [""])[0] == "page"
+                if from_page or parts.path in ("/ping", "/state"):
+                    STATE.note_page_ping()
+                with STATE.lock:
+                    data = dict(STATE.latest) if STATE.latest else {}
+                    ts = STATE.ts
+                data["ts"] = ts
+                data["page_open"] = STATE.page_is_open()
+                self._send_json(data)
+            else:
+                self._send_json({"error": "not found"}, 404)
+        except Exception as exc:  # noqa: BLE001
+            try:
+                self._send_json({"error": str(exc)}, 500)
+            except Exception:  # noqa: BLE001
+                pass
+
+    def log_message(self, fmt, *args):  # quiet by default
+        pass
+
+
+def run_http_server(port):
+    server = ThreadingHTTPServer(("127.0.0.1", port), BridgeHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    print(f"[bridge] loopback server on http://127.0.0.1:{port}/ (stream|ping|state)")
+    return server
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Aegis-Beacon serial bridge: forward device positions to the official site.",
+    )
+    parser.add_argument("--port", help="serial port (auto-detected if omitted)")
+    parser.add_argument("--baud", type=int, default=DEFAULT_BAUD, help=f"baud rate (default {DEFAULT_BAUD})")
+    parser.add_argument("--http-port", type=int, default=DEFAULT_HTTP_PORT,
+                        help=f"loopback HTTP port for the page (default {DEFAULT_HTTP_PORT})")
+    parser.add_argument("--site", default=DEFAULT_SITE, help=f"site base URL (default {DEFAULT_SITE})")
+    parser.add_argument("--no-open", action="store_true", help="never open a browser tab")
+    parser.add_argument("--list", action="store_true", help="list serial ports and exit")
+    parser.add_argument("--verbose", action="store_true", help="print all serial traffic")
+    args = parser.parse_args(argv)
+
+    if args.list:
+        ports = serial.tools.list_ports.comports()
+        if not ports:
+            print("No serial ports found.")
+            return 0
+        for p in ports:
+            print(f"{p.device:20s} {p.description or ''}  vid={p.vid and hex(p.vid)} pid={p.pid and hex(p.pid)}")
+        return 0
+
+    device = detect_port(args.port)
+    if not device:
+        print("No supported serial device found. Plug the beacon in over USB,")
+        print("install its driver (CP210x / CH340), then run with --list to inspect ports,")
+        print("or pass the port explicitly with --port (e.g. COM3, /dev/ttyUSB0).")
+        return 1
+
+    print(f"[bridge] Aegis-Beacon serial bridge")
+    print(f"[bridge] site target: {args.site}")
+    print(f"[bridge] opening browser for new positions: {'no' if args.no_open else 'yes'}")
+    run_http_server(args.http_port)
+
+    try:
+        handle_serial(device, args.baud, args.site, args.no_open, args.verbose)
+    except KeyboardInterrupt:
+        print("\n[bridge] stopped.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

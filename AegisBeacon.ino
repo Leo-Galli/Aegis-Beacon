@@ -470,6 +470,11 @@ RTC_DATA_ATTR double     g_rtcLat         = 0;
 RTC_DATA_ATTR double     g_rtcLng         = 0;
 RTC_DATA_ATTR bool       g_rtcFixValid    = false;
 
+// ── Serial bridge protocol prototypes (defined before setup()) ─────────────
+void serialPosReport(bool force);
+void processSerialCommand(const char* cmd);
+void serialPoll();
+
 // =============================================================================
 // GLOBALS
 // =============================================================================
@@ -1592,9 +1597,10 @@ const char DASHBOARD_HTML[] PROGMEM = R"HTMLDOC(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AEGIS-BEACON v5.1 // CONFIG</title>
+<title>AEGIS-BEACON v5.3 // CONFIG</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;900&display=swap');
+/* Self-contained UI: only fonts already installed on the device are used
+   (no internet during configuration, so no web fonts). */
 :root{
   --bg:#07090e;--s1:#0b1019;--s2:#0f1825;--border:#182640;
   --a1:#00e5ff;--a2:#ff3b3b;--a3:#39ff14;--a4:#ff9900;--a5:#b060ff;
@@ -1602,9 +1608,11 @@ const char DASHBOARD_HTML[] PROGMEM = R"HTMLDOC(
   --glow1:0 0 18px rgba(0,229,255,.35);--glow2:0 0 18px rgba(255,59,59,.35);
   --glow3:0 0 18px rgba(57,255,20,.35);--glow5:0 0 18px rgba(176,96,255,.35);
   --r:5px;--r2:10px;
+  --font-display:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --font-mono:ui-monospace,'Cascadia Mono','SF Mono',Menlo,Consolas,'Liberation Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font-family:'Share Tech Mono',monospace;min-height:100vh;
+body{background:var(--bg);color:var(--txt);font-family:var(--font-mono);min-height:100vh;
   background-image:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(0,100,160,.18) 0%,transparent 70%),
   repeating-linear-gradient(0deg,transparent,transparent 48px,rgba(0,229,255,.025) 48px,rgba(0,229,255,.025) 49px),
   repeating-linear-gradient(90deg,transparent,transparent 48px,rgba(0,229,255,.025) 48px,rgba(0,229,255,.025) 49px);}
@@ -1612,9 +1620,9 @@ body{background:var(--bg);color:var(--txt);font-family:'Share Tech Mono',monospa
 header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;
   border-bottom:1px solid var(--border);background:linear-gradient(90deg,rgba(0,229,255,.04),transparent,rgba(0,229,255,.04));
   position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);}
-.logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.15rem;color:var(--a1);text-shadow:var(--glow1);letter-spacing:4px;}
+.logo{font-family:var(--font-display);font-weight:800;font-size:1.15rem;color:var(--a1);text-shadow:var(--glow1);letter-spacing:2px;}
 .logo em{color:var(--a2);font-style:normal;}
-.badge{font-size:.58rem;color:var(--a1);border:1px solid var(--a1);padding:3px 9px;border-radius:2px;letter-spacing:3px;animation:pulse 2.5s infinite;}
+.badge{font-size:.6rem;color:var(--a1);border:1px solid var(--a1);padding:3px 9px;border-radius:2px;letter-spacing:1.5px;animation:pulse 2.5s infinite;}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:var(--glow1)}50%{opacity:.4;box-shadow:none}}
 main{max-width:1000px;margin:0 auto;padding:24px 18px;display:grid;gap:16px;grid-template-columns:1fr 1fr;}
 @media(max-width:640px){main{grid-template-columns:1fr}}
@@ -1628,7 +1636,7 @@ main{max-width:1000px;margin:0 auto;padding:24px 18px;display:grid;gap:16px;grid
 .card.gps::before{background:linear-gradient(90deg,transparent,var(--a3),transparent);}
 .card.id::before{background:linear-gradient(90deg,transparent,var(--a5),transparent);}
 .card.pot::before{background:linear-gradient(90deg,transparent,var(--a4),transparent);}
-.ct{font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:3px;color:var(--a1);margin-bottom:16px;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
+.ct{font-family:var(--font-display);font-weight:600;font-size:.68rem;letter-spacing:1.5px;color:var(--a1);margin-bottom:16px;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
 .ct-dot{width:6px;height:6px;border-radius:50%;background:var(--a1);box-shadow:var(--glow1);animation:pulse 2.5s infinite;}
 .card.alert .ct,.card.alert .ct-dot{color:var(--a2);background:var(--a2);box-shadow:var(--glow2);}
 .card.ok .ct,.card.ok .ct-dot,.card.gps .ct,.card.gps .ct-dot{color:var(--a3);background:var(--a3);box-shadow:var(--glow3);}
@@ -1636,7 +1644,7 @@ main{max-width:1000px;margin:0 auto;padding:24px 18px;display:grid;gap:16px;grid
 .card.id .ct,.card.id .ct-dot{color:var(--a5);background:var(--a5);box-shadow:var(--glow5);}
 label{display:block;font-size:.66rem;color:var(--dim);margin-bottom:4px;letter-spacing:1px;}
 .form-row{margin-bottom:14px;}
-input[type=text],input[type=number],textarea,select{width:100%;background:#050810;border:1px solid var(--border);border-radius:var(--r);color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:.85rem;padding:8px 11px;outline:none;transition:border-color .2s,box-shadow .2s;}
+input[type=text],input[type=number],textarea,select{width:100%;background:#050810;border:1px solid var(--border);border-radius:var(--r);color:var(--txt);font-family:var(--font-mono);font-size:.85rem;padding:8px 11px;outline:none;transition:border-color .2s,box-shadow .2s;}
 input:focus,textarea:focus,select:focus{border-color:var(--a1);box-shadow:0 0 0 2px rgba(0,229,255,.1);}
 input[type=range]{-webkit-appearance:none;width:100%;height:5px;background:var(--border);border-radius:3px;outline:none;margin:9px 0 3px;}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--a1);cursor:pointer;box-shadow:var(--glow1);}
@@ -1651,10 +1659,10 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
 .tog-cb input:checked+.tog-slider::before{transform:translateX(20px);background:var(--a1);box-shadow:var(--glow1);}
 .tog-lbl{font-size:.76rem;color:var(--txt);}
 .info-box{background:#050810;border:1px solid var(--dim2);border-radius:var(--r);padding:10px 12px;font-size:.66rem;color:var(--dim);line-height:1.8;margin-top:8px;}
-.coord-display{font-family:'Orbitron',sans-serif;font-size:.85rem;color:var(--a3);text-shadow:var(--glow3);text-align:center;margin:8px 0;letter-spacing:2px;}
+.coord-display{font-family:var(--font-display);font-size:.85rem;color:var(--a3);text-shadow:var(--glow3);text-align:center;margin:8px 0;letter-spacing:2px;}
 #morsePreview{font-size:.88rem;letter-spacing:4px;color:var(--a1);word-break:break-all;min-height:22px;margin-top:7px;}
-.payload-preview{background:#000;border:2px solid var(--a1);border-radius:4px;padding:9px 11px;font-family:'Share Tech Mono',monospace;font-size:.78rem;color:#fff;letter-spacing:2px;margin-top:8px;word-break:break-all;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:var(--r);font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:2px;cursor:pointer;border:1px solid;transition:all .2s;text-transform:uppercase;white-space:nowrap;}
+.payload-preview{background:#000;border:2px solid var(--a1);border-radius:4px;padding:9px 11px;font-family:var(--font-mono);font-size:.78rem;color:#fff;letter-spacing:2px;margin-top:8px;word-break:break-all;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:var(--r);font-family:var(--font-display);font-size:.62rem;letter-spacing:2px;cursor:pointer;border:1px solid;transition:all .2s;text-transform:uppercase;white-space:nowrap;}
 .btn:disabled{opacity:.4;cursor:not-allowed;}
 .btn-c{background:rgba(0,229,255,.08);border-color:var(--a1);color:var(--a1);}
 .btn-c:hover:not(:disabled){background:rgba(0,229,255,.18);box-shadow:var(--glow1);}
@@ -1668,41 +1676,41 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
 .stat-item{background:#050810;border:1px solid var(--dim2);border-radius:var(--r);padding:9px 12px;}
 .stat-lbl{font-size:.58rem;color:var(--dim);letter-spacing:1px;margin-bottom:2px;}
-.stat-val{font-family:'Orbitron',sans-serif;font-size:.82rem;color:var(--a1);}
+.stat-val{font-family:var(--font-display);font-size:.82rem;color:var(--a1);}
 .stat-val.ok{color:var(--a3);}.stat-val.warn{color:var(--a4);}.stat-val.err{color:var(--a2);}
 #freqList{list-style:none;margin-bottom:11px;}
 #freqList li{display:flex;align-items:center;gap:7px;padding:7px 10px;background:#050810;border:1px solid var(--border);border-radius:var(--r);margin-bottom:4px;font-size:.82rem;}
-.fv{flex:1;color:var(--a1);font-family:'Orbitron',sans-serif;font-size:.78rem;}
+.fv{flex:1;color:var(--a1);font-family:var(--font-display);font-size:.78rem;}
 .del{background:none;border:1px solid #2a1010;color:var(--a2);padding:2px 7px;border-radius:3px;cursor:pointer;font-size:.68rem;}
 .del:hover{background:rgba(255,59,59,.12);}
 .add-row{display:flex;gap:7px;}.add-row input{flex:1;}
 #scanList{max-height:180px;overflow-y:auto;margin-top:7px;}
 .hit-row{display:flex;align-items:center;gap:9px;padding:5px 9px;border-bottom:1px solid var(--dim2);font-size:.75rem;}
-.hit-freq{color:var(--a1);font-family:'Orbitron',sans-serif;font-size:.73rem;min-width:95px;}
+.hit-freq{color:var(--a1);font-family:var(--font-display);font-size:.73rem;min-width:95px;}
 .rssi-bar-bg{flex:1;height:6px;background:var(--dim2);border-radius:3px;overflow:hidden;}
 .rssi-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--a2),var(--a4),var(--a3));}
 .rssi-val{color:var(--txt);font-size:.72rem;min-width:55px;text-align:right;}
-.hit-lbl{font-size:.62rem;padding:1px 6px;border-radius:2px;font-family:'Orbitron',sans-serif;letter-spacing:1px;}
+.hit-lbl{font-size:.62rem;padding:1px 6px;border-radius:2px;font-family:var(--font-display);letter-spacing:1px;}
 .hit-lbl.STRONG{background:rgba(57,255,20,.12);color:var(--a3);border:1px solid var(--a3);}
 .hit-lbl.MEDIUM{background:rgba(255,153,0,.1);color:var(--a4);border:1px solid var(--a4);}
 .hit-lbl.WEAK{background:rgba(0,229,255,.07);color:var(--a1);border:1px solid var(--a1);}
-.emg-btn{width:100%;padding:14px;font-size:.72rem;letter-spacing:3px;background:rgba(255,59,59,.12);border:2px solid var(--a2);color:var(--a2);animation:emgPulse 2s infinite;font-family:'Orbitron',sans-serif;cursor:pointer;}
+.emg-btn{width:100%;padding:14px;font-size:.76rem;letter-spacing:1.5px;background:rgba(255,59,59,.12);border:2px solid var(--a2);color:var(--a2);animation:emgPulse 2s infinite;font-family:var(--font-display);cursor:pointer;}
 @keyframes emgPulse{0%,100%{box-shadow:var(--glow2)}50%{box-shadow:none}}
 .emg-btn:hover{background:rgba(255,59,59,.25);}
 .section-hdr{grid-column:1/-1;display:flex;align-items:center;gap:14px;margin-top:6px;}
-.section-hdr span{font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:4px;color:var(--dim);white-space:nowrap;}
+.section-hdr span{font-family:var(--font-display);font-weight:600;font-size:.64rem;letter-spacing:2px;color:var(--dim);white-space:nowrap;}
 .section-hdr::before,.section-hdr::after{content:'';flex:1;height:1px;background:var(--border);}
 .knob-wrap{display:flex;gap:20px;justify-content:center;margin:10px 0;}
 .knob{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .knob-ring{width:64px;height:64px;border-radius:50%;border:3px solid var(--a4);background:var(--s2);position:relative;box-shadow:0 0 12px rgba(255,153,0,.2);}
 .knob-marker{position:absolute;width:3px;height:18px;background:var(--a4);left:50%;top:6px;transform-origin:50% 26px;transform:translateX(-50%);}
-.knob-label{font-family:'Orbitron',sans-serif;font-size:.56rem;letter-spacing:2px;color:var(--a4);}
-.knob-val{font-family:'Orbitron',sans-serif;font-size:.9rem;color:var(--a4);}
+.knob-label{font-family:var(--font-display);font-size:.56rem;letter-spacing:2px;color:var(--a4);}
+.knob-val{font-family:var(--font-display);font-size:.9rem;color:var(--a4);}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo">AEGIS<em>-</em>BEACON <span style="font-size:.65rem;color:var(--dim);margin-left:8px;">v5.1</span></div>
+  <div class="logo">AEGIS<em>-</em>BEACON <span style="font-size:.65rem;color:var(--dim);margin-left:8px;">v5.3</span></div>
   <div class="badge">CONFIG MODE</div>
 </header>
 <main>
@@ -1712,9 +1720,9 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
   <div class="ct"><span class="ct-dot"></span>OPERATING MODE</div>
   <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
     <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <div style="font-family:'Orbitron',sans-serif;font-size:.6rem;letter-spacing:3px;color:var(--dim);">ACTIVE MODE</div>
+      <div style="font-family:var(--font-display);font-weight:600;font-size:.64rem;letter-spacing:1.5px;color:var(--dim);">ACTIVE MODE</div>
       <div style="position:relative;width:176px;height:46px;background:var(--s1);border-radius:23px;cursor:pointer;border:2px solid var(--border);transition:border-color .3s;" id="modeSwitch" onclick="toggleMode()">
-        <div id="modeKnob" style="position:absolute;top:4px;width:80px;height:34px;border-radius:19px;transition:left .3s;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:.58rem;letter-spacing:2px;font-weight:600;left:4px;background:var(--a2);color:#fff;box-shadow:var(--glow2);">BEACON</div>
+        <div id="modeKnob" style="position:absolute;top:4px;width:80px;height:34px;border-radius:19px;transition:left .3s;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:.58rem;letter-spacing:2px;font-weight:600;left:4px;background:var(--a2);color:#fff;box-shadow:var(--glow2);">BEACON</div>
       </div>
       <div style="display:flex;width:176px;justify-content:space-between;font-size:.62rem;"><span style="color:var(--a2)">BEACON</span><span style="color:var(--a1)">SEARCH</span></div>
     </div>
@@ -1805,7 +1813,7 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
   <div class="ct"><span class="ct-dot"></span>BUTTON CONTROLS (v5.3)</div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;align-items:start;">
     <div>
-      <div style="font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_SEL — GPIO32</div>
+      <div style="font-family:var(--font-display);font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_SEL — GPIO32</div>
       <div class="info-box">
         Short press: toggle VOL / WPM adjust target.<br>
         Long 3s: enter Config (WiFi AP mode).<br>
@@ -1813,7 +1821,7 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
       </div>
     </div>
     <div>
-      <div style="font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_UP — GPIO35</div>
+      <div style="font-family:var(--font-display);font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_UP — GPIO35</div>
       <div class="info-box">
         Increment: Volume +10 or WPM +1.<br>
         Auto-repeat after 500ms hold.<br>
@@ -1821,7 +1829,7 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
       </div>
     </div>
     <div>
-      <div style="font-family:'Orbitron',sans-serif;font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_DN — GPIO34</div>
+      <div style="font-family:var(--font-display);font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_DN — GPIO34</div>
       <div class="info-box">
         Decrement: Volume -10 or WPM -1.<br>
         Auto-repeat after 500ms hold.<br>
@@ -2201,6 +2209,8 @@ void runConfigMode() {
     dns.processNextRequest();
     server.handleClient();
     if (cfg.gpsEnabled) readGPS();
+    serialPoll();
+    serialPosReport(false);
     esp_task_wdt_reset();
     if (g_modeButtonPressed) {
       uint8_t p = checkButton(PIN_SW_MODE, BTN_LONG_MODE_MS, g_modeButtonPressed);
@@ -2231,12 +2241,14 @@ void waitForGpsFix() {
 
   while (millis() - t0 < (uint32_t)cfg.gpsFix1Timeout * 1000UL) {
     readGPS();
+    serialPoll();
     uint32_t elapsed = (millis() - t0) / 1000;
     uint8_t sats = gps.satellites.isValid() ? (uint8_t)gps.satellites.value() : 0;
     oledGpsWait(sats, elapsed, cfg.gpsFix1Timeout);
 
     if (g_gpsFix.valid) {
       LOG_GPS("Fix acquired: %.5f  %.5f  sats=%d", g_gpsFix.lat, g_gpsFix.lng, g_gpsFix.satellites);
+      serialPosReport(true);
       audioSweep(400, 1200, 6);
       return;
     }
@@ -2266,6 +2278,7 @@ void runBeaconMode(bool emergency) {
   // Build Morse payload once per cycle
   buildMorsePayload(g_currentPayload, sizeof(g_currentPayload));
   LOG_INFO("Full payload: \"%s\"", g_currentPayload);
+  serialPosReport(true);
 
   int8_t  txPower = emergency ? 20 : cfg.powerDbm;
   int     repeats = emergency ? 3  : (int)cfg.repeatCount;
@@ -2323,6 +2336,8 @@ void runBeaconMode(bool emergency) {
     while (millis() - sleepStart < sleepMs) {
       readPots();
       readGPS();
+      serialPoll();
+      serialPosReport(false);
       uint32_t remain = (sleepMs - (millis() - sleepStart)) / 1000;
       oledBeacon(0, cfg.freqs[0], 0, 1, g_txCycles, remain, false, g_currentPayload);
       if (g_modeButtonPressed || g_selButtonPressed) break;
@@ -2386,6 +2401,8 @@ void runSearchMode() {
     for (int fi = 0; fi < cfg.freqCount; fi++) {
       readPots();
       readGPS();
+      serialPoll();
+      serialPosReport(false);
 
       if (g_modeButtonPressed) {
         uint8_t p = checkButton(PIN_SW_MODE, BTN_LONG_MODE_MS, g_modeButtonPressed);
@@ -2416,6 +2433,161 @@ search_exit:
   ledModeIndicate(g_currentMode);
   delay(300);
   ESP.restart();
+}
+
+// =============================================================================
+// ╔══════════════════════════════════════════════════════════════════════════╗
+// ║           SERIAL BRIDGE PROTOCOL (companion to bridge/)                  ║
+// ╚══════════════════════════════════════════════════════════════════════════╝
+// Machine-readable "AEGIS:" lines (never ANSI-colored, one per line) for the
+// cross-platform bridge script (bridge/aegis-serial-bridge.py):
+//
+//   AEGIS:HELLO:ver=5.3;mode=BEACON;freq=433.500;wpm=12;vol=64
+//   AEGIS:POS:lat=45.123456;lng=11.123456;alt=412;sats=8;freq=433.500;mode=BEACON;payload=SOS PSN N4553 E01130
+//   AEGIS:STATE:mode=SEARCH;freq=433.500;wpm=12;vol=64;heap=184320;boot=1;tx=0;hits=0;gpsFix=1;sats=8
+//   AEGIS:FREQ:0=433.500   AEGIS:WPM:14   AEGIS:MODE:SEARCH   AEGIS:ERR:<message>
+//
+// Inbound commands (newline-terminated, case-insensitive):
+//   HELP                 list commands
+//   POS                  report current fix immediately
+//   STATUS               report current state
+//   FREQ?                list configured frequencies
+//   FREQ <MHz>           set desired frequency (410-525), persisted
+//   WPM <5-40>           set Morse speed, persisted
+//   MODE <BEACON|SEARCH|CONFIG|EMERGENCY>   switch mode (reboots)
+// =============================================================================
+
+#define POS_REPORT_MIN_INTERVAL_MS 5000UL
+static uint32_t s_lastPosReport = 0;
+
+static bool striEq(const char* a, const char* b) {
+  while (*a && *b) {
+    char ca = *a, cb = *b;
+    if (ca >= 'A' && ca <= 'Z') ca += 32;
+    if (cb >= 'A' && cb <= 'Z') cb += 32;
+    if (ca != cb) return false;
+    a++; b++;
+  }
+  return *a == *b;
+}
+
+static bool striStarts(const char* s, const char* prefix) {
+  while (*prefix) {
+    char cs = *s, cp = *prefix;
+    if (cs >= 'A' && cs <= 'Z') cs += 32;
+    if (cp >= 'A' && cp <= 'Z') cp += 32;
+    if (cs != cp) return false;
+    s++; prefix++;
+  }
+  return true;
+}
+
+// Print the current position as a single machine-readable line. Throttled to
+// POS_REPORT_MIN_INTERVAL_MS unless force is true.
+void serialPosReport(bool force) {
+  uint32_t now = millis();
+  if (!force && (now - s_lastPosReport) < POS_REPORT_MIN_INTERVAL_MS) return;
+  s_lastPosReport = now;
+  float freq = (cfg.freqCount > 0) ? cfg.freqs[0] : DEFAULT_FREQ_MHZ;
+  Serial.printf("AEGIS:POS:lat=%.6f;lng=%.6f;alt=%.0f;sats=%u;freq=%.3f;mode=%s;payload=%s\n",
+                g_gpsFix.lat, g_gpsFix.lng, g_gpsFix.altitude, g_gpsFix.satellites,
+                freq, modeName(g_currentMode), g_currentPayload);
+}
+
+void processSerialCommand(const char* cmd) {
+  char buf[96];
+  strlcpy(buf, cmd, sizeof(buf));
+
+  // Trim surrounding whitespace
+  char* s = buf;
+  while (*s == ' ' || *s == '\t') s++;
+  size_t len = strlen(s);
+  while (len > 0 && (s[len-1] == ' ' || s[len-1] == '\t' || s[len-1] == '\r')) { s[--len] = '\0'; }
+  if (!*s) return;
+
+  if (striEq(s, "HELP") || striEq(s, "?")) {
+    Serial.println("AEGIS:HELP:FREQ <MHz> | FREQ? | WPM <5-40> | MODE <BEACON|SEARCH|CONFIG|EMERGENCY> | POS | STATUS | HELP");
+    return;
+  }
+  if (striEq(s, "POS")) { serialPosReport(true); return; }
+  if (striEq(s, "STATUS")) {
+    Serial.printf("AEGIS:STATE:mode=%s;freq=%.3f;wpm=%d;vol=%d;heap=%lu;boot=%lu;tx=%lu;hits=%u;gpsFix=%d;sats=%u\n",
+                  modeName(g_currentMode),
+                  (cfg.freqCount > 0) ? cfg.freqs[0] : DEFAULT_FREQ_MHZ,
+                  cfg.wpm, cfg.audioVolume,
+                  (unsigned long)ESP.getFreeHeap(),
+                  (unsigned long)g_bootCycle,
+                  (unsigned long)g_txCycles,
+                  (unsigned int)g_scanHitCount,
+                  g_gpsFix.valid ? 1 : 0,
+                  g_gpsFix.satellites);
+    return;
+  }
+  if (striStarts(s, "FREQ?")) {
+    for (int i = 0; i < cfg.freqCount; i++) Serial.printf("AEGIS:FREQ:%d=%.3f\n", i, cfg.freqs[i]);
+    return;
+  }
+  if (striStarts(s, "FREQ ")) {
+    float f = atof(s + 5);
+    if (f >= 410.0f && f <= 525.0f) {
+      cfg.freqs[0] = f;
+      if (cfg.freqCount == 0) cfg.freqCount = 1;
+      saveConfig();
+      LOG_CFG("Frequency set to %.3f MHz via serial", f);
+      Serial.printf("AEGIS:FREQ:0=%.3f\n", f);
+    } else {
+      Serial.printf("AEGIS:ERR:frequency %.3f out of range (410-525 MHz)\n", f);
+    }
+    return;
+  }
+  if (striStarts(s, "WPM ")) {
+    int w = atoi(s + 4);
+    if (w >= 5 && w <= 40) {
+      cfg.wpm = w;
+      saveConfig();
+      Serial.printf("AEGIS:WPM:%d\n", w);
+    } else {
+      Serial.printf("AEGIS:ERR:wpm %d out of range (5-40)\n", w);
+    }
+    return;
+  }
+  if (striStarts(s, "MODE ")) {
+    const char* m = s + 5;
+    if      (striEq(m, "BEACON"))     { g_currentMode = MODE_BEACON;    cfg.lastMode = MODE_BEACON; }
+    else if (striEq(m, "SEARCH"))     { g_currentMode = MODE_SEARCH;    cfg.lastMode = MODE_SEARCH; }
+    else if (striEq(m, "CONFIG"))     { g_currentMode = MODE_CONFIG; }
+    else if (striEq(m, "EMERGENCY"))  { g_currentMode = MODE_EMERGENCY; g_emergencyActive = true; }
+    else {
+      Serial.printf("AEGIS:ERR:unknown mode '%s' (BEACON|SEARCH|CONFIG|EMERGENCY)\n", m);
+      return;
+    }
+    saveConfig();
+    LOG_MODE("Mode set to %s via serial", modeName(g_currentMode));
+    Serial.printf("AEGIS:MODE:%s\n", modeName(g_currentMode));
+    delay(200);
+    ESP.restart();
+    return;
+  }
+  Serial.printf("AEGIS:ERR:unknown command '%s' (try HELP)\n", s);
+}
+
+// Poll Serial for newline-terminated commands. Call frequently from every
+// mode loop so the device stays controllable over USB at all times.
+void serialPoll() {
+  static char lineBuf[96];
+  static uint8_t idx = 0;
+  while (Serial.available()) {
+    char c = (char)Serial.read();
+    if (c == '\n' || c == '\r') {
+      if (idx > 0) {
+        lineBuf[idx] = '\0';
+        idx = 0;
+        processSerialCommand(lineBuf);
+      }
+    } else if (idx < sizeof(lineBuf) - 1) {
+      lineBuf[idx++] = c;
+    }
+  }
 }
 
 // =============================================================================
@@ -2512,6 +2684,10 @@ void setup() {
 
   LOG_MODE("Starting: %s", modeName(g_currentMode));
   ledModeIndicate(g_currentMode);
+  Serial.printf("AEGIS:HELLO:ver=5.3;mode=%s;freq=%.3f;wpm=%d;vol=%d\n",
+                modeName(g_currentMode),
+                (cfg.freqCount > 0) ? cfg.freqs[0] : DEFAULT_FREQ_MHZ,
+                cfg.wpm, cfg.audioVolume);
 
   // ── GPS fix wait (BEACON mode only, non-emergency) ────────────────────────
   if ((g_currentMode == MODE_BEACON) && cfg.gpsEnabled && !g_emergencyActive) {
