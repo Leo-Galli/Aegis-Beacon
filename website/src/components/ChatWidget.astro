@@ -552,6 +552,7 @@
     title: string;
     group: string;
     description: string;
+    section: string;
     snippet: string;
   }
 
@@ -581,6 +582,101 @@
     'How do I set the transmit frequency?',
     'Why does it use 433 MHz?',
   ];
+
+  // ---------------------------------------------------------------------------
+  // Curated answer bank. For the most common questions the assistant answers
+  // instantly and precisely from these facts (no model download needed), then
+  // points to the exact wiki page as source. Each entry carries an English and
+  // an Italian phrasing; the reply is picked by the language of the question.
+  // ---------------------------------------------------------------------------
+
+  interface BankEntry {
+    // Any of these regexes matching the question triggers the answer.
+    match: RegExp;
+    en: string;
+    it: string;
+    sources: string[];
+  }
+
+  const ANSWER_BANK: BankEntry[] = [
+    {
+      match: /(who\s+(created|founded|made|built|wrote|owns|is behind)|creator|founder|author|autore|creatore|fondatore|chi ha (creato|fondato|fatto|realizzato|scritto)|chi è (dietro|l'autore)|chi e dietro)/i,
+      en: 'Aegis-Beacon was created by Leonardo Galli (GitHub: Leo-Galli/Aegis-Beacon) and is released under the MIT License. It started as a personal project with a simple question: could a capable rescue beacon be built from off-the-shelf hobby parts for under thirty euros, on the license-free 433 MHz band, using nothing more exotic than Morse code.',
+      it: "Aegis-Beacon è stato creato da Leonardo Galli (GitHub: Leo-Galli/Aegis-Beacon) ed è rilasciato con licenza MIT. È nato come progetto personale con una domanda semplice: si può costruire un beacon di soccorso affidabile con componenti hobbistici comuni spendendo meno di trenta euro, sulla banda libera 433 MHz, usando niente di più esotico del codice Morse?",
+      sources: ['project-history', 'acknowledgements'],
+    },
+    {
+      match: /(what\s+is\s+(the\s+)?(aegis|beacon|it|this|device)|what\s+does\s+it\s+do|what\s+is\s+this\s+project|describe\s+(the\s+)?(device|beacon|aegis)|overview\s+of\s+(the\s+)?(device|beacon|project)|cos'è\s*(il|la|un|una|aegis)?|cos e\s*(il|la|un|una|aegis)?|che cos'è|che cosa (è|fa)|cosa fa|panoramica)/i,
+      en: 'Aegis-Beacon is an open-source, ultra-low-cost emergency rescue beacon designed for avalanche survival, backcountry emergencies and SAR operations. It is built on an ESP32, an SX1262 LoRa radio and an optional NEO-6M GPS module, and it transmits GPS coordinates in Morse code on the 433 MHz ISM band. It costs around $23-28 to build, fits in a jacket pocket and runs 70+ hours in BEACON mode on a single 18650 cell. It has four operating modes: BEACON, SEARCH, CONFIG and EMERGENCY.',
+      it: "Aegis-Beacon è un beacon di soccorso open-source e a costo ultra-basso, progettato per la sopravvivenza in valanga, le emergenze fuori pista e le operazioni SAR. È basato su ESP32, radio LoRa SX1262 e modulo GPS NEO-6M opzionale, e trasmette le coordinate GPS in codice Morse sulla banda ISM 433 MHz. Costa circa 23-28 dollari da costruire, sta in una tasca del giaccone e dura oltre 70 ore in modalità BEACON con una singola cella 18650. Ha quattro modalità operative: BEACON, SEARCH, CONFIG ed EMERGENCY.",
+      sources: ['project-overview', 'quick-start-guide', 'system-architecture'],
+    },
+    {
+      match: /(how\s+much\s+(does\s+it\s+)?(cost|is)|what.*(cost|price)|cost\s+to\s+build|total\s+cost|quanto costa|prezzo|costo totale|budget)/i,
+      en: 'The total BOM cost is about $23-28 USD using AliExpress or LCSC components. The main parts are an ESP32 DevKit V1 ($3), an E22-400M30S SX1262 module ($5.50), a 2.42 inch SSD1309 OLED ($3.50), an optional NEO-6M GPS ($4.50) and a 18650 cell ($1.50). The interactive builder on this site computes an exact shopping list for any budget.',
+      it: "Il costo totale dei componenti (BOM) è di circa 23-28 dollari usando AliExpress o LCSC. I componenti principali sono: ESP32 DevKit V1 (3 dollari), modulo SX1262 E22-400M30S (5,50), display OLED SSD1309 2,42 pollici (3,50), GPS NEO-6M opzionale (4,50) e una cella 18650 (1,50). Il builder interattivo del sito calcola la lista della spesa esatta per qualsiasi budget.",
+      sources: ['hardware-components', 'project-overview', 'faq'],
+    },
+    {
+      match: /(set\s+(the\s+)?(frequency|transmit|tx)|change\s+(the\s+)?frequency|imposto|impostare|imposta la frequenza|frequenza di trasmissione|set\s+frequency)/i,
+      en: 'The transmit frequency is stored in NVS and survives power cycles. The default is 433.500 MHz (DEFAULT_FREQ_MHZ). Change it at runtime through the CONFIG mode WiFi portal, or edit the DEFAULT_FREQ_MHZ constant in the firmware before flashing. Power is configured the same way (DEFAULT_POWER_DBM, up to 22 dBm via RadioLib).',
+      it: "La frequenza di trasmissione è salvata in NVS e sopravvive ai riavvii. Il valore predefinito è 433,500 MHz (DEFAULT_FREQ_MHZ). Puoi cambiarla a runtime dal portale WiFi della modalità CONFIG, oppure modificare la costante DEFAULT_FREQ_MHZ nel firmware prima del flash. La potenza si configura allo stesso modo (DEFAULT_POWER_DBM, fino a 22 dBm con RadioLib).",
+      sources: ['configuration-reference', 'firmware-config-load', 'config-dashboard'],
+    },
+    {
+      match: /(why\s+433|why\s+this\s+frequency|perché 433|perche 433|perchè 433|why does it use 433)/i,
+      en: '433 MHz is the license-free CEPT ISM band in Europe, so receivers everywhere can hear it. The hardware is cheap (SX1262 modules cost a few euros), the quarter-wave antenna is a practical 17 cm, and the band propagates better through foliage and terrain than 868 MHz. The trade-off: without a license you are limited to 10 mW ERP, which emergency use can override.',
+      it: "433 MHz è la banda ISM libera (CEPT) in Europa, quindi può essere ricevuta ovunque senza licenza. L'hardware è economico (i moduli SX1262 costano pochi euro), l'antenna a quarto d'onda è pratica (17 cm) e la banda si propaga meglio attraverso vegetazione e terreno rispetto a 868 MHz. Il compromesso: senza licenza sei limitato a 10 mW ERP, limite che l'uso di emergenza può superare.",
+      sources: ['why-433mhz', 'ism-band-explained', 'frequency-compatibility'],
+    },
+    {
+      match: /(battery|autonomia|batteria|how\s+long.*(last|run)|durata)/i,
+      en: 'In BEACON mode with a 10-second sleep interval, the runtime is about 65 hours on a single 2000 mAh 18650 cell (OLED on, GPS off). Deep sleep current is around 10 uA. For alpine use, a LiFePO4 18650 is recommended: slightly lower capacity but it keeps working at -30 C.',
+      it: "In modalità BEACON con intervallo di sleep di 10 secondi, l'autonomia è di circa 65 ore con una singola cella 18650 da 2000 mAh (OLED acceso, GPS spento). La corrente in deep sleep è di circa 10 uA. Per l'uso alpino si consiglia una 18650 LiFePO4: capacità leggermente inferiore ma continua a funzionare a -30 °C.",
+      sources: ['power-management', 'faq', '18650-battery-guide'],
+    },
+    {
+      match: /(receiver|listen|hear|ricevitore|ascolt|senti|decode)/i,
+      en: 'Any AM-mode receiver on 433 MHz can hear the beacon: a Baofeng handheld with AM mode, a handheld scanner, a ham radio transceiver, or an RTL-SDR with SDR# software. The SX1262 CW carrier is detected identically to OOK, so even simple receivers pick it up.',
+      it: "Qualsiasi ricevitore in AM su 433 MHz può sentire il beacon: una Baofeng con modalità AM, uno scanner portatile, una ricetrasmittente da radioamatore oppure un RTL-SDR con SDR#. La portante CW dell'SX1262 viene rilevata esattamente come OOK, quindi anche i ricevitori semplici la captano.",
+      sources: ['faq', 'frequency-compatibility', 'radio-quick-start'],
+    },
+    {
+      match: /(update|upgrade|flash|aggiorn|flashare)/i,
+      en: 'To update the firmware: connect the ESP32 via USB, open Arduino IDE or PlatformIO, and upload the new build. Settings are preserved because they live in NVS, not in the flash image. The v5.5 upgrade guide in the wiki covers the migration steps in detail.',
+      it: "Per aggiornare il firmware: collega l'ESP32 via USB, apri Arduino IDE o PlatformIO e carica la nuova build. Le impostazioni vengono conservate perché vivono in NVS, non nell'immagine flash. La guida all'aggiornamento v5.5 nella wiki spiega i passaggi di migrazione in dettaglio.",
+      sources: ['firmware-v55-upgrade-guide', 'faq', 'firmware-update-field'],
+    },
+    {
+      match: /(without\s+gps|no\s+gps|gps\s+optional|senza gps|gps opzionale)/i,
+      en: 'Yes, GPS is optional. Set gpsEnabled = false in the CONFIG portal and the beacon still works: it simply transmits SOS or SOS DE [NAME] instead of coordinates. This is the honest fallback when a GPS fix is unavailable.',
+      it: "Sì, il GPS è opzionale. Imposta gpsEnabled = false nel portale CONFIG e il beacon funziona comunque: trasmette semplicemente SOS o SOS DE [NOME] invece delle coordinate. È il fallback onesto quando il fix GPS non è disponibile.",
+      sources: ['faq', 'firmware-gps-handling', 'gps-integration'],
+    },
+    {
+      match: /(legal|license|license|legale|licenza|compliance|normativ)/i,
+      en: 'Legality depends on your region: check local regulations before transmitting. In the EU, PMR446 allows 500 mW without a license; in the US, FRS allows 2 W. On the 433 MHz ISM band, unlicensed use is limited to 10 mW ERP, with an explicit exception for emergency use. At higher power, an amateur license applies. The Frequency Compatibility page has the per-country tables.',
+      it: "La legalità dipende dalla tua regione: controlla le normative locali prima di trasmettere. Nell'UE la PMR446 consente 500 mW senza licenza; negli USA la FRS consente 2 W. Sulla banda ISM 433 MHz l'uso senza licenza è limitato a 10 mW ERP, con un'eccezione esplicita per l'uso di emergenza. A potenze superiori serve la licenza da radioamatore. La pagina Frequency Compatibility contiene le tabelle per ogni paese.",
+      sources: ['frequency-compatibility', 'emergency-use-legal', 'ism-band-explained'],
+    },
+    {
+      match: /(how\s+do\s+i\s+build|assemble|build\s+one|costruir|montar|assembl)/i,
+      en: 'The build is a straightforward soldering project: an ESP32 DevKit V1, an E22-400M30S SX1262 module, a 2.42 inch SSD1309 OLED (7-pin SPI, not the 4-pin I2C variant), an optional NEO-6M GPS, a 18650 cell and a push-button panel. The Quick Start guide walks through the full assembly and the first power-on.',
+      it: "Il montaggio è un semplice progetto di saldatura: ESP32 DevKit V1, modulo SX1262 E22-400M30S, OLED SSD1309 da 2,42 pollici (SPI a 7 pin, non la variante I2C a 4 pin), GPS NEO-6M opzionale, una cella 18650 e un pannello di pulsanti. La guida Quick Start accompagna passo passo nell'assemblaggio e nel primo avvio.",
+      sources: ['quick-start-guide', 'hardware-components', 'antenna-testing-and-tuning'],
+    },
+  ];
+
+  /** Answer a question from the curated bank when it matches; null otherwise. */
+  function bankAnswer(query: string): { text: string; sources: string[] } | null {
+    const lower = query.toLowerCase();
+    for (const entry of ANSWER_BANK) {
+      if (!entry.match.test(lower)) continue;
+      const isItalian = IT_WORDS_RE.test(query);
+      return { text: isItalian ? entry.it : entry.en, sources: entry.sources };
+    }
+    return null;
+  }
 
   const STOPWORDS = new Set(
     'the a an and or of to for in on is are was be by with at from as about into over after under again further then once here there when where why how what which who whom this that these those you your yours i me my we our they their do does did can could will would should may might not no nor only own same so than too very just but its it s t d m ll ve re'.split(
@@ -785,7 +881,9 @@
 
   function setState(next: typeof state): void {
     state = next;
-    if (sendBtn) sendBtn.disabled = !(next === 'ready' || next === 'generating' || next === 'error');
+    // The send button stays usable even while the model loads or errors: the
+    // curated answer bank answers the most common questions without the model.
+    if (sendBtn) sendBtn.disabled = next === 'generating';
     if (stopBtn) stopBtn.hidden = next !== 'generating';
     if (progressEl) progressEl.hidden = next !== 'loading';
     if (next === 'ready') {
@@ -859,14 +957,17 @@
     bubble.innerHTML = '<span></span><span></span><span></span>';
   }
 
-  function renderSources(body: HTMLElement, hits: IndexedEntry[]): void {
+  function renderSources(body: HTMLElement, hits: { id: string; title: string; description?: string }[]): void {
     const wrap = document.createElement('div');
     wrap.className = 'ac-sources';
     const label = document.createElement('span');
     label.className = 'ac-sources__label';
     label.textContent = 'From the wiki';
     wrap.appendChild(label);
+    const shown = new Set<string>();
     for (const hit of hits) {
+      if (shown.has(hit.id)) continue;
+      shown.add(hit.id);
       const a = document.createElement('a');
       a.className = 'ac-source';
       a.href = `/wiki/${hit.id}`;
@@ -878,6 +979,12 @@
     }
     body.appendChild(wrap);
     scrollMessages();
+  }
+
+  /** Resolve a page id from the loaded index to a { id, title } pair. */
+  function resolveSource(id: string): { id: string; title: string } {
+    const found = index?.find((e) => e.id === id);
+    return { id, title: found?.title ?? id.replace(/[-_]/g, ' ') };
   }
 
   function renderGreeting(): void {
@@ -937,7 +1044,8 @@
       index = raw.map((entry) => ({
         ...entry,
         titleTokens: new Set(tokenize(`${entry.title} ${entry.id.replace(/[-_]/g, ' ')}`)),
-        bodyTokens: new Set(tokenize(`${entry.description} ${entry.group} ${entry.snippet}`)),
+        // Section heading and body both count as searchable body text.
+        bodyTokens: new Set(tokenize(`${entry.description} ${entry.group} ${entry.section} ${entry.snippet}`)),
       }));
     } catch {
       index = [];
@@ -1014,11 +1122,25 @@
       }
       if (bodyHits + titleHits === 0) continue;
       if (bodyHits < 2 && titleHits === 0) continue;
-      const score = bodyHits * 2 + titleHits * 4;
+      // Sections that are closer to the start of the query get a small bonus
+      // over page-level entries, and section matches outrank the intro.
+      const sectionBonus = entry.section ? 1.5 : 0;
+      const score = bodyHits * 2 + titleHits * 4 + sectionBonus;
       scored.push({ score, entry });
     }
     scored.sort((a, b) => b.score - a.score);
-    return scored.slice(0, 3).map((s) => s.entry);
+
+    // Deduplicate by page: keep the best-matching section per page so the
+    // notes cover three different pages instead of three passages of one.
+    const seen = new Set<string>();
+    const top: IndexedEntry[] = [];
+    for (const { entry } of scored) {
+      if (seen.has(entry.id)) continue;
+      seen.add(entry.id);
+      top.push(entry);
+      if (top.length === 3) break;
+    }
+    return top;
   }
 
   function buildReferenceNotes(query: string): { notes: string; hits: IndexedEntry[] } {
@@ -1038,8 +1160,9 @@
     const parts = hits.map((hit, i) => {
       const where = hit.group ? `${hit.group} wiki group` : 'the wiki';
       const head = hit.description ? `${hit.description} ` : '';
-      const body = hit.snippet.length > 520 ? `${hit.snippet.slice(0, 519)}...` : hit.snippet;
-      return `[${i + 1}] Page "${hit.title}" (${where}). ${head}${body}`;
+      const section = hit.section ? ` Section "${hit.section}".` : '';
+      const body = hit.snippet.length > 560 ? `${hit.snippet.slice(0, 559)}...` : hit.snippet;
+      return `[${i + 1}] Page "${hit.title}" (${where}).${section} ${head}${body}`;
     });
     return { notes: parts.join('\n\n'), hits };
   }
@@ -1128,6 +1251,25 @@
       addUserMessage(trimmed);
       const { bubble } = addAssistantBubble();
       bubble.textContent = kind === 'greeting' ? GREETING_REPLY : scopeReply(trimmed);
+      return;
+    }
+
+    // Curated answer bank: the most common questions are answered instantly
+    // and precisely from hand-verified facts, with source chips. No model
+    // download or generation is needed for these.
+    const canned = bankAnswer(trimmed);
+    if (canned) {
+      if (!suggestionsGone) {
+        suggestionsGone = true;
+        messagesEl?.querySelector('.ac-sugg')?.remove();
+      }
+      history = [...history, { role: 'user' as const, content: trimmed }].slice(-MAX_HISTORY);
+      addUserMessage(trimmed);
+      const { body, bubble } = addAssistantBubble();
+      bubble.textContent = canned.text;
+      history = [...history, { role: 'assistant' as const, content: canned.text }].slice(-MAX_HISTORY);
+      await ensureIndex();
+      renderSources(body, canned.sources.map(resolveSource));
       return;
     }
 

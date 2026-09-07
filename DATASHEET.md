@@ -2706,12 +2706,12 @@ Scale: 2:1 divider → ADC reads 0–3.1 V for 0–6.2 V battery
 
 | Item | Status |
 | --- | --- |
-| Battery charged (≥3.8 V) | ☐ |
-| Antenna connected and tight | ☐ |
-| Frequency agreed with the team | ☐ |
-| GPS fix acquired before departure | ☐ |
-| Bridge + laptop ready (if logging) | ☐ |
-| Spare battery / power bank | ☐ |
+| Battery charged (≥3.8 V) | [ ] |
+| Antenna connected and tight | [ ] |
+| Frequency agreed with the team | [ ] |
+| GPS fix acquired before departure | [ ] |
+| Bridge + laptop ready (if logging) | [ ] |
+| Spare battery / power bank | [ ] |
 
 ### 68.2 During the mission
 
@@ -4473,14 +4473,14 @@ python bridge/aegis-serial-bridge.py --port /dev/ttyACM0
 
 | Item | Check |
 | --- | --- |
-| License valid | ☐ |
-| Frequency inside band | ☐ |
-| Power within limits | ☐ |
-| Callsign configured / identified | ☐ |
-| Interference plan agreed | ☐ |
-| Battery charged | ☐ |
-| Antenna connected | ☐ |
-| Emergency procedure rehearsed | ☐ |
+| License valid | [ ] |
+| Frequency inside band | [ ] |
+| Power within limits | [ ] |
+| Callsign configured / identified | [ ] |
+| Interference plan agreed | [ ] |
+| Battery charged | [ ] |
+| Antenna connected | [ ] |
+| Emergency procedure rehearsed | [ ] |
 
 ---
 
@@ -5165,15 +5165,15 @@ behavior deterministic.
 
 | Item | Check |
 | --- | --- |
-| Serial protocol backward compatible | ☐ |
-| No new global mutable state without need | ☐ |
-| NVS writes verified | ☐ |
-| Watchdogs not disabled | ☐ |
-| Strings sanitized before display/serial | ☐ |
-| Mode state machines can't livelock | ☐ |
-| Benchmarks compile for all envs | ☐ |
-| Wiki/docs updated | ☐ |
-| Conventional commit message | ☐ |
+| Serial protocol backward compatible | [ ] |
+| No new global mutable state without need | [ ] |
+| NVS writes verified | [ ] |
+| Watchdogs not disabled | [ ] |
+| Strings sanitized before display/serial | [ ] |
+| Mode state machines can't livelock | [ ] |
+| Benchmarks compile for all envs | [ ] |
+| Wiki/docs updated | [ ] |
+| Conventional commit message | [ ] |
 
 ---
 
@@ -5181,12 +5181,12 @@ behavior deterministic.
 
 | Step | Done |
 | --- | --- |
-| Version bumped everywhere (§140) | ☐ |
-| Changelog + What's New updated | ☐ |
-| CI green (website, firmware, benchmarks) | ☐ |
-| Tag pushed | ☐ |
-| Release notes written from the changelog | ☐ |
-| Wiki updated to the new version | ☐ |
+| Version bumped everywhere (§140) | [ ] |
+| Changelog + What's New updated | [ ] |
+| CI green (website, firmware, benchmarks) | [ ] |
+| Tag pushed | [ ] |
+| Release notes written from the changelog | [ ] |
+| Wiki updated to the new version | [ ] |
 
 ---
 
@@ -8797,13 +8797,13 @@ Keep feeds short; RG58 is fine under 3 m.
 
 ## 455. Reference — Frequency Selection Checklist
 
-| Check | ✓ |
+| Check | [x] |
 | --- | --- |
-| Inside 433.050–434.790 | ☐ |
-| Not on 433.92 (key fobs) | ☐ |
-| Not on a known repeater output | ☐ |
-| Agreed with the team | ☐ |
-| Logged in the field plan | ☐ |
+| Inside 433.050–434.790 | [ ] |
+| Not on 433.92 (key fobs) | [ ] |
+| Not on a known repeater output | [ ] |
+| Agreed with the team | [ ] |
+| Logged in the field plan | [ ] |
 
 ---
 
@@ -9413,35 +9413,35 @@ out body;
 
 ## 501. Reference — Final Assembly Checklist
 
-| Item | ✓ |
+| Item | [x] |
 | --- | --- |
-| All wires strain-relieved | ☐ |
-| Antenna connected | ☐ |
-| Battery polarity correct | ☐ |
-| Case sealed (gasket) | ☐ |
-| Firmware version verified | ☐ |
-| Serial handshake verified | ☐ |
-| GPS fix verified | ☐ |
-| TX verified | ☐ |
-| Bridge logging verified | ☐ |
-| Spare battery packed | ☐ |
+| All wires strain-relieved | [ ] |
+| Antenna connected | [ ] |
+| Battery polarity correct | [ ] |
+| Case sealed (gasket) | [ ] |
+| Firmware version verified | [ ] |
+| Serial handshake verified | [ ] |
+| GPS fix verified | [ ] |
+| TX verified | [ ] |
+| Bridge logging verified | [ ] |
+| Spare battery packed | [ ] |
 
 ---
 
 ## 502. Reference — Field Kit Final Check
 
-| Item | ✓ |
+| Item | [x] |
 | --- | --- |
-| Beacon + antenna | ☐ |
-| Spare cell | ☐ |
-| Receiver unit | ☐ |
-| Bridge laptop | ☐ |
-| USB data cables | ☐ |
-| PMR446 radios | ☐ |
-| Maps + compass | ☐ |
-| Log template | ☐ |
-| First aid | ☐ |
-| Emergency plan | ☐ |
+| Beacon + antenna | [ ] |
+| Spare cell | [ ] |
+| Receiver unit | [ ] |
+| Bridge laptop | [ ] |
+| USB data cables | [ ] |
+| PMR446 radios | [ ] |
+| Maps + compass | [ ] |
+| Log template | [ ] |
+| First aid | [ ] |
+| Emergency plan | [ ] |
 
 ---
 
