@@ -1,0 +1,672 @@
+<!--
+  ChatWidget.astro
+  Floating chat assistant that runs a small LLM entirely in the browser
+  via WebLLM (@mlc-ai/web-llm) on WebGPU. No API keys, no backend, no
+  paid services. The model weights are fetched from Hugging Face on first
+  use and cached by the browser.
+-->
+<div class="chat-widget" data-chat-widget>
+  <!-- Floating launcher -->
+  <button
+    type="button"
+    class="chat-widget__fab"
+    id="chat-fab"
+    aria-label="Open chat with the Aegis-Beacon assistant"
+    aria-expanded="false"
+    aria-controls="chat-panel"
+  >
+    <svg class="chat-widget__fab-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12a8 8 0 0 1-8 8H4l2.3-2.3A8 8 0 1 1 21 12Z" />
+    </svg>
+    <svg class="chat-widget__fab-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  </button>
+
+  <!-- Chat panel -->
+  <section
+    class="chat-widget__panel"
+    id="chat-panel"
+    role="dialog"
+    aria-label="Aegis-Beacon assistant chat"
+    hidden
+  >
+    <header class="chat-widget__head">
+      <div class="chat-widget__title">
+        <span class="chat-widget__title-name">Aegis Assistant</span>
+        <span class="chat-widget__status" data-status role="status" aria-live="polite">Local AI in your browser</span>
+      </div>
+      <div class="chat-widget__head-actions">
+        <label class="chat-widget__model">
+          <span class="visually-hidden">Model</span>
+          <select data-model-select aria-label="Choose the local model size">
+            <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">Fast (~160 MB)</option>
+            <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Balanced (~400 MB)</option>
+            <option value="SmolLM2-1.7B-Instruct-q4f16_1-MLC">Smarter (~800 MB)</option>
+            <option value="Phi-4-mini-instruct-q4f16_1-MLC">Strong (~2.6 GB)</option>
+          </select>
+        </label>
+        <button type="button" class="chat-widget__close" data-close aria-label="Close chat">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Load progress -->
+    <div class="chat-widget__progress" data-progress hidden>
+      <div class="chat-widget__progress-track" aria-hidden="true">
+        <div class="chat-widget__progress-bar" data-progress-bar></div>
+      </div>
+      <p class="chat-widget__progress-text" data-progress-text>Preparing the model...</p>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-widget__messages" data-messages tabindex="-1">
+      <div class="chat-widget__msg chat-widget__msg--assistant">
+        <p>Hi. I run entirely in your browser on the local model you pick above: nothing you type leaves this page. Ask me anything about building, configuring or using the Aegis-Beacon, its firmware, radio, GPS or the project wiki.</p>
+      </div>
+      <div class="chat-widget__error" data-error hidden></div>
+    </div>
+
+    <!-- Composer -->
+    <footer class="chat-widget__composer">
+      <textarea
+        data-input
+        rows="1"
+        placeholder="Ask about the beacon..."
+        aria-label="Message the assistant"
+      ></textarea>
+      <button type="button" class="chat-widget__send" data-send aria-label="Send message" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m5 12 14-7-4.5 14L11 13l-6-1Z" />
+        </svg>
+      </button>
+      <button type="button" class="chat-widget__stop" data-stop aria-label="Stop generating" hidden>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2" /></svg>
+      </button>
+    </footer>
+  </section>
+</div>
+
+<style>
+  .chat-widget__fab {
+    position: fixed;
+    right: 24px;
+    bottom: 84px;
+    z-index: 220;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-full);
+    border: 1px solid color-mix(in srgb, var(--primary) 60%, transparent);
+    background: linear-gradient(160deg, var(--primary), color-mix(in srgb, var(--primary) 82%, var(--primary-hover)));
+    color: var(--primary-foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-glow);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.2s ease;
+  }
+  .chat-widget__fab:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .chat-widget__fab:active { transform: translateY(0); }
+  .chat-widget__fab[aria-expanded="true"] { transform: rotate(90deg); }
+  .chat-widget__fab[aria-expanded="true"] .chat-widget__fab-icon { display: none; }
+  .chat-widget__fab[aria-expanded="true"] .chat-widget__fab-close { display: block; }
+  .chat-widget__fab-close { display: none; }
+
+  .chat-widget__panel {
+    position: fixed;
+    right: 24px;
+    bottom: 152px;
+    z-index: 220;
+    width: min(400px, calc(100vw - 2rem));
+    max-height: min(620px, calc(100vh - 170px));
+    display: flex;
+    flex-direction: column;
+    background: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: chatPanelIn 0.22s ease-out;
+  }
+  .chat-widget__panel[hidden] { display: none; }
+  @keyframes chatPanelIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .chat-widget__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--muted) 60%, transparent);
+  }
+  .chat-widget__title { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+  .chat-widget__title-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--foreground);
+    letter-spacing: 0.01em;
+  }
+  .chat-widget__status {
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .chat-widget__head-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+  .chat-widget__model select {
+    font: inherit;
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 0.375rem;
+    max-width: 120px;
+    cursor: pointer;
+  }
+  .chat-widget__model select:hover { border-color: var(--primary); color: var(--foreground); }
+  .chat-widget__close {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--muted-foreground);
+    transition: color 0.15s, background-color 0.15s;
+  }
+  .chat-widget__close:hover { color: var(--foreground); background: var(--muted); }
+
+  .chat-widget__progress { padding: 0.625rem 1rem; border-bottom: 1px solid var(--border); }
+  .chat-widget__progress-track {
+    height: 4px;
+    border-radius: var(--radius-full);
+    background: var(--muted);
+    overflow: hidden;
+  }
+  .chat-widget__progress-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: var(--radius-full);
+    background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+    transition: width 0.25s ease;
+  }
+  .chat-widget__progress-text {
+    margin-top: 0.4rem;
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+  }
+
+  .chat-widget__messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+  .chat-widget__msg {
+    max-width: 88%;
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.84375rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .chat-widget__msg--user {
+    align-self: flex-end;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-bottom-right-radius: var(--radius-sm);
+  }
+  .chat-widget__msg--assistant {
+    align-self: flex-start;
+    background: var(--muted);
+    color: var(--foreground);
+    border-bottom-left-radius: var(--radius-sm);
+  }
+  .chat-widget__msg--assistant p { margin: 0; }
+  .chat-widget__msg--typing::after {
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 1em;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    background: var(--muted-foreground);
+    animation: chatBlink 1s steps(2, start) infinite;
+  }
+  @keyframes chatBlink { to { visibility: hidden; } }
+
+  .chat-widget__error {
+    padding: 0.625rem 0.875rem;
+    border: 1px solid color-mix(in srgb, var(--destructive) 40%, var(--border));
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--destructive) 8%, var(--card));
+    color: var(--foreground);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+  .chat-widget__error a { color: var(--destructive); text-decoration: underline; }
+
+  .chat-widget__composer {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-top: 1px solid var(--border);
+    background: var(--card);
+  }
+  .chat-widget__composer textarea {
+    flex: 1;
+    resize: none;
+    max-height: 120px;
+    padding: 0.5rem 0.75rem;
+    font: inherit;
+    font-size: 0.84375rem;
+    line-height: 1.45;
+    color: var(--foreground);
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    outline: none;
+  }
+  .chat-widget__composer textarea:focus { border-color: var(--ring); box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 22%, transparent); }
+  .chat-widget__composer textarea::placeholder { color: var(--muted-foreground); }
+  .chat-widget__send {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: var(--radius-lg);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    transition: background-color 0.15s, opacity 0.15s;
+  }
+  .chat-widget__send:hover:not(:disabled) { background: var(--primary-hover); }
+  .chat-widget__send:disabled { opacity: 0.45; cursor: not-allowed; }
+  .chat-widget__stop {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    color: var(--destructive);
+  }
+  .chat-widget__stop:hover { background: var(--muted); }
+  .chat-widget__stop[hidden] { display: none; }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 560px) {
+    .chat-widget__fab { right: 16px; bottom: 76px; }
+    .chat-widget__panel {
+      right: 12px;
+      left: 12px;
+      width: auto;
+      bottom: 142px;
+      max-height: calc(100vh - 156px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chat-widget__panel { animation: none; }
+    .chat-widget__msg--typing::after { animation: none; }
+  }
+
+  @media print {
+    .chat-widget { display: none !important; }
+  }
+</style>
+
+<script>
+  // ---------------------------------------------------------------------------
+  // Aegis-Beacon chat widget.
+  //
+  // The LLM runs fully in the browser on WebGPU through WebLLM
+  // (@mlc-ai/web-llm, loaded on demand). No API keys, no backend calls,
+  // no paid services. Model weights are fetched from Hugging Face once and
+  // then served from the browser's HTTP cache.
+  // ---------------------------------------------------------------------------
+
+  type EngineHandle = any;
+
+  const MODELS: { id: string; label: string }[] = [
+    { id: 'SmolLM2-360M-Instruct-q4f16_1-MLC', label: 'Fast' },
+    { id: 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC', label: 'Balanced' },
+    { id: 'SmolLM2-1.7B-Instruct-q4f16_1-MLC', label: 'Smarter' },
+    { id: 'Phi-4-mini-instruct-q4f16_1-MLC', label: 'Strong' },
+  ];
+
+  const SYSTEM_PROMPT =
+    'You are the Aegis-Beacon assistant embedded in the official Aegis-Beacon website. ' +
+    'Aegis-Beacon is an open-source emergency rescue beacon built on an ESP32, an SX1262 LoRa ' +
+    'radio and a NEO-6M GPS module. It transmits GPS coordinates in Morse code on the 433 MHz ISM ' +
+    'band and supports a SEARCH mode to help rescuers locate a signal. Help users build, configure, ' +
+    'use and troubleshoot the device, its firmware, the serial bridge, or the project wiki. Be ' +
+    'concise, practical and honest, and say so when you do not know something. You are a small ' +
+    'model running locally in the browser, so keep answers short and direct.';
+
+  const MAX_HISTORY = 12;
+  const STORAGE_KEY = 'aegis-chat-model';
+
+  const fab = document.getElementById('chat-fab') as HTMLButtonElement | null;
+  const panel = document.getElementById('chat-panel') as HTMLElement | null;
+  const messagesEl = document.querySelector<HTMLElement>('[data-messages]');
+  const inputEl = document.querySelector<HTMLTextAreaElement>('[data-input]');
+  const sendBtn = document.querySelector<HTMLButtonElement>('[data-send]');
+  const stopBtn = document.querySelector<HTMLButtonElement>('[data-stop]');
+  const closeBtn = document.querySelector<HTMLButtonElement>('[data-close]');
+  const statusEl = document.querySelector<HTMLElement>('[data-status]');
+  const progressEl = document.querySelector<HTMLElement>('[data-progress]');
+  const progressBar = document.querySelector<HTMLElement>('[data-progress-bar]');
+  const progressText = document.querySelector<HTMLElement>('[data-progress-text]');
+  const errorEl = document.querySelector<HTMLElement>('[data-error]');
+  const modelSelect = document.querySelector<HTMLSelectElement>('[data-model-select]');
+
+  let engine: EngineHandle | null = null;
+  let state: 'idle' | 'loading' | 'ready' | 'generating' | 'error' = 'idle';
+  let history: { role: 'user' | 'assistant'; content: string }[] = [];
+  let pendingMessage: string | null = null;
+  let open = false;
+
+  // ---- helpers -------------------------------------------------------------
+
+  function setStatus(text: string): void {
+    if (statusEl) statusEl.textContent = text;
+  }
+
+  function setState(next: typeof state): void {
+    state = next;
+    const canSend = next === 'ready' || next === 'generating' || next === 'error';
+    if (sendBtn) sendBtn.disabled = !canSend;
+    if (stopBtn) stopBtn.hidden = next !== 'generating';
+    if (progressEl) progressEl.hidden = next !== 'loading';
+    if (next === 'idle' || next === 'ready') {
+      if (progressBar) progressBar.style.width = '0%';
+      if (progressText) progressText.textContent = 'Preparing the model...';
+    }
+  }
+
+  function showError(html: string): void {
+    if (errorEl) {
+      errorEl.innerHTML = html;
+      errorEl.hidden = false;
+    }
+  }
+
+  function hideError(): void {
+    if (errorEl) errorEl.hidden = true;
+  }
+
+  function scrollMessages(): void {
+    if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function addMessage(role: 'user' | 'assistant', text: string, typing = false): HTMLElement {
+    const el = document.createElement('div');
+    el.className = `chat-widget__msg chat-widget__msg--${role}`;
+    if (typing) el.classList.add('chat-widget__msg--typing');
+    el.textContent = text;
+    messagesEl?.appendChild(el);
+    scrollMessages();
+    return el;
+  }
+
+  function persistModel(): void {
+    try {
+      localStorage.setItem(STORAGE_KEY, modelSelect?.value ?? MODELS[0].id);
+    } catch {
+      /* private mode: ignore */
+    }
+  }
+
+  function readModel(): string {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved && MODELS.some((m) => m.id === saved)) return saved;
+    } catch {
+      /* ignore */
+    }
+    return MODELS[0].id;
+  }
+
+  // ---- engine lifecycle ----------------------------------------------------
+
+  async function loadEngine(modelId: string): Promise<void> {
+    hideError();
+    setState('loading');
+    setStatus(`Loading ${MODELS.find((m) => m.id === modelId)?.label.toLowerCase() ?? 'local'} model...`);
+
+    const gpu = (navigator as unknown as { gpu?: unknown }).gpu;
+    if (!gpu) {
+      setState('error');
+      setStatus('WebGPU unavailable');
+      showError(
+        'This chat needs WebGPU to run the model locally. Open the site in a recent version of ' +
+          'Chrome, Edge or Opera on desktop, or Chrome on Android, then reload this page. ' +
+          '<a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API" target="_blank" rel="noopener noreferrer">Learn about WebGPU</a>.'
+      );
+      return;
+    }
+
+    try {
+      const webllm = await import('@mlc-ai/web-llm');
+      if (engine) {
+        await engine.reload(modelId);
+      } else {
+        engine = await webllm.CreateMLCEngine(modelId, {
+          initProgressCallback: (report: { progress: number; text: string }) => {
+            const pct = Math.min(99, Math.round(report.progress * 100));
+            if (progressBar) progressBar.style.width = `${pct}%`;
+            const label = String(report.text || '').trim();
+            if (progressText) {
+              progressText.textContent = label
+                ? `Downloading model: ${pct}%`
+                : `Preparing the model: ${pct}%`;
+            }
+            setStatus(`Downloading model ${pct}%`);
+          },
+        });
+      }
+      setState('ready');
+      setStatus('Ready. Runs 100% in your browser.');
+      if (progressBar) progressBar.style.width = '100%';
+      if (pendingMessage) {
+        const msg = pendingMessage;
+        pendingMessage = null;
+        void send(msg);
+      }
+    } catch (err) {
+      console.error('WebLLM init failed:', err);
+      const msg = String((err as Error)?.message ?? err);
+      setState('error');
+      setStatus('Model failed to load');
+      if (/shader-f16|ShaderF16SupportError/i.test(msg)) {
+        showError(
+          'This browser exposes WebGPU but lacks the shader-f16 extension the local model needs. ' +
+            'Use Chrome or Edge 113 or newer on desktop, enable WebGPU if it is turned off, then ' +
+            'reload the page. ' +
+            '<a href="https://webllm.mlc.ai/docs/#webgpu-browser-support" target="_blank" rel="noopener noreferrer">WebGPU browser support</a>.'
+        );
+      } else {
+        showError(
+          'The local model could not be loaded. The download may have been interrupted or the ' +
+            'browser ran out of memory. Try a smaller model from the list above, then reload the ' +
+            'page and try again.'
+        );
+      }
+    }
+  }
+
+  // ---- chat -----------------------------------------------------------------
+
+  async function send(text: string): Promise<void> {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    if (inputEl) inputEl.value = '';
+    autoSizeInput();
+    hideError();
+
+    if (state !== 'ready') {
+      pendingMessage = trimmed;
+      if (state === 'loading') return;
+      addMessage('user', trimmed);
+      void loadEngine(modelSelect?.value ?? readModel());
+      return;
+    }
+
+    history = [...history, { role: 'user' as const, content: trimmed }].slice(-MAX_HISTORY);
+    addMessage('user', trimmed);
+
+    setState('generating');
+    setStatus('Thinking...');
+    const bubble = addMessage('assistant', '', true);
+    let full = '';
+
+    try {
+      const messages = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...history.map((h) => ({ role: h.role, content: h.content })),
+      ];
+      const chunks = await engine.chat.completions.create({
+        messages,
+        stream: true,
+        temperature: 0.7,
+        max_tokens: 512,
+      });
+      for await (const chunk of chunks) {
+        const delta = chunk?.choices?.[0]?.delta?.content;
+        if (typeof delta === 'string' && delta.length > 0) {
+          full += delta;
+          bubble.classList.remove('chat-widget__msg--typing');
+          bubble.textContent = full;
+          scrollMessages();
+        }
+      }
+    } catch (err) {
+      console.error('Generation failed:', err);
+      if (!full) {
+        bubble.remove();
+        showError('The model stopped responding. Check your browser console or try a smaller model.');
+      }
+    }
+
+    if (full.trim()) {
+      history = [...history, { role: 'assistant' as const, content: full }].slice(-MAX_HISTORY);
+    }
+    setState('ready');
+    setStatus('Ready. Runs 100% in your browser.');
+  }
+
+  function stop(): void {
+    try {
+      engine?.interruptGenerate();
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function autoSizeInput(): void {
+    if (!inputEl) return;
+    inputEl.style.height = 'auto';
+    inputEl.style.height = `${Math.min(inputEl.scrollHeight, 120)}px`;
+  }
+
+  // ---- open / close ---------------------------------------------------------
+
+  function openChat(): void {
+    if (!panel || !fab) return;
+    open = true;
+    panel.hidden = false;
+    fab.setAttribute('aria-expanded', 'true');
+    fab.setAttribute('aria-label', 'Close chat with the Aegis-Beacon assistant');
+    const modelId = readModel();
+    if (modelSelect) modelSelect.value = modelId;
+    window.setTimeout(() => inputEl?.focus(), 120);
+    if (state === 'idle') void loadEngine(modelId);
+  }
+
+  function closeChat(): void {
+    if (!panel || !fab) return;
+    open = false;
+    panel.hidden = true;
+    fab.setAttribute('aria-expanded', 'false');
+    fab.setAttribute('aria-label', 'Open chat with the Aegis-Beacon assistant');
+  }
+
+  // ---- events ---------------------------------------------------------------
+
+  fab?.addEventListener('click', () => (open ? closeChat() : openChat()));
+  closeBtn?.addEventListener('click', closeChat);
+
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && open) closeChat();
+  });
+
+  sendBtn?.addEventListener('click', () => {
+    if (state === 'ready') void send(inputEl?.value ?? '');
+  });
+
+  stopBtn?.addEventListener('click', stop);
+
+  inputEl?.addEventListener('input', autoSizeInput);
+  inputEl?.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (state === 'ready') void send(inputEl.value);
+    }
+  });
+
+  modelSelect?.addEventListener('change', () => {
+    persistModel();
+    if (state === 'loading') return;
+    void loadEngine(modelSelect.value);
+  });
+
+  // Keep the message list scrollable from the keyboard.
+  messagesEl?.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Tab' && e.shiftKey && open && inputEl) {
+      e.preventDefault();
+      inputEl.focus();
+    }
+  });
+
+  // ---- init ------------------------------------------------------------------
+
+  if (modelSelect) modelSelect.value = readModel();
+  setState('idle');
+</script>
