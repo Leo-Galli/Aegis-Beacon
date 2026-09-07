@@ -1,368 +1,564 @@
 <!--
   ChatWidget.astro
-  Floating chat assistant that runs a small LLM entirely in the browser
-  via WebLLM (@mlc-ai/web-llm) on WebGPU. No API keys, no backend, no
-  paid services. The model weights are fetched from Hugging Face on first
-  use and cached by the browser.
+
+  Floating chat assistant that runs a small LLM entirely in the browser via
+  WebLLM (@mlc-ai/web-llm) on WebGPU: no API keys, no backend, no paid
+  services. Answers are grounded in the project wiki through a lightweight
+  retrieval step over /wiki-index.json (a build-time index of every wiki
+  page). Model weights are fetched from Hugging Face once and cached by the
+  browser.
 -->
-<div class="chat-widget" data-chat-widget>
+<div class="ac-chat" data-ac-chat>
   <!-- Floating launcher -->
   <button
     type="button"
-    class="chat-widget__fab"
-    id="chat-fab"
-    aria-label="Open chat with the Aegis-Beacon assistant"
+    class="ac-fab"
+    id="ac-fab"
+    aria-label="Open chat with the Aegis assistant"
     aria-expanded="false"
-    aria-controls="chat-panel"
+    aria-controls="ac-panel"
   >
-    <svg class="chat-widget__fab-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M21 12a8 8 0 0 1-8 8H4l2.3-2.3A8 8 0 1 1 21 12Z" />
+    <svg class="ac-fab__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" />
     </svg>
-    <svg class="chat-widget__fab-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <svg class="ac-fab__close" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
       <path d="M18 6 6 18M6 6l12 12" />
     </svg>
   </button>
 
   <!-- Chat panel -->
-  <section
-    class="chat-widget__panel"
-    id="chat-panel"
-    role="dialog"
-    aria-label="Aegis-Beacon assistant chat"
-    hidden
-  >
-    <header class="chat-widget__head">
-      <div class="chat-widget__title">
-        <span class="chat-widget__title-name">Aegis Assistant</span>
-        <span class="chat-widget__status" data-status role="status" aria-live="polite">Local AI in your browser</span>
+  <section class="ac-panel" id="ac-panel" role="dialog" aria-label="Aegis assistant chat" hidden>
+    <div class="ac-panel__accent" aria-hidden="true"></div>
+
+    <header class="ac-head">
+      <div class="ac-head__brand">
+        <span class="ac-mark" aria-hidden="true">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none" />
+            <path d="M7.6 16.4a6.2 6.2 0 0 1 0-8.8M16.4 7.6a6.2 6.2 0 0 1 0 8.8M4.9 19.1a10.3 10.3 0 0 1 0-14.2M19.1 4.9a10.3 10.3 0 0 1 0 14.2" />
+          </svg>
+        </span>
+        <div class="ac-head__titles">
+          <span class="ac-name">Aegis Assistant</span>
+          <span class="ac-status" role="status" aria-live="polite">
+            <span class="ac-dot" data-dot aria-hidden="true"></span>
+            <span data-status>Local model</span>
+          </span>
+        </div>
       </div>
-      <div class="chat-widget__head-actions">
-        <label class="chat-widget__model">
-          <span class="visually-hidden">Model</span>
-          <select data-model-select aria-label="Choose the local model size">
-            <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">Fast (~160 MB)</option>
-            <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Balanced (~400 MB)</option>
-            <option value="SmolLM2-1.7B-Instruct-q4f16_1-MLC">Smarter (~800 MB)</option>
-            <option value="Phi-4-mini-instruct-q4f16_1-MLC">Strong (~2.6 GB)</option>
-          </select>
-        </label>
-        <button type="button" class="chat-widget__close" data-close aria-label="Close chat">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <div class="ac-head__tools">
+        <button type="button" class="ac-close" id="ac-close" aria-label="Close chat">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>
       </div>
     </header>
 
-    <!-- Load progress -->
-    <div class="chat-widget__progress" data-progress hidden>
-      <div class="chat-widget__progress-track" aria-hidden="true">
-        <div class="chat-widget__progress-bar" data-progress-bar></div>
-      </div>
-      <p class="chat-widget__progress-text" data-progress-text>Preparing the model...</p>
+    <div class="ac-modelbar">
+      <label class="ac-modelbar__field" for="ac-model">
+        <span class="ac-modelbar__label">Model</span>
+        <span class="ac-modelbar__selectwrap">
+          <select id="ac-model" aria-label="Choose the local model size">
+            <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">Fast, 360M (~160 MB)</option>
+            <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Balanced, 0.5B (~400 MB)</option>
+            <option value="SmolLM2-1.7B-Instruct-q4f16_1-MLC">Smarter, 1.7B (~800 MB)</option>
+            <option value="Phi-4-mini-instruct-q4f16_1-MLC">Strong, 3.8B (~2.6 GB)</option>
+          </select>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </span>
+      </label>
+      <span class="ac-privacy">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+        On-device, nothing leaves your browser
+      </span>
     </div>
 
-    <!-- Messages -->
-    <div class="chat-widget__messages" data-messages tabindex="-1">
-      <div class="chat-widget__msg chat-widget__msg--assistant">
-        <p>Hi. I run entirely in your browser on the local model you pick above: nothing you type leaves this page. Ask me anything about building, configuring or using the Aegis-Beacon, its firmware, radio, GPS or the project wiki.</p>
-      </div>
-      <div class="chat-widget__error" data-error hidden></div>
+    <div class="ac-progress" id="ac-progress" hidden>
+      <div class="ac-progress__track" aria-hidden="true"><div class="ac-progress__bar" data-progress-bar></div></div>
+      <p class="ac-progress__text" data-progress-text>Preparing the model</p>
     </div>
 
-    <!-- Composer -->
-    <footer class="chat-widget__composer">
-      <textarea
-        data-input
-        rows="1"
-        placeholder="Ask about the beacon..."
-        aria-label="Message the assistant"
-      ></textarea>
-      <button type="button" class="chat-widget__send" data-send aria-label="Send message" disabled>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="m5 12 14-7-4.5 14L11 13l-6-1Z" />
-        </svg>
-      </button>
-      <button type="button" class="chat-widget__stop" data-stop aria-label="Stop generating" hidden>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2" /></svg>
-      </button>
+    <div class="ac-messages" id="ac-messages" data-messages></div>
+
+    <footer class="ac-composer">
+      <div class="ac-composer__error" id="ac-error" hidden></div>
+      <div class="ac-composer__row">
+        <textarea
+          id="ac-input"
+          rows="1"
+          placeholder="Ask about the Aegis-Beacon..."
+          aria-label="Message the assistant"
+        ></textarea>
+        <button type="button" class="ac-send" id="ac-send" aria-label="Send message" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m4 12 16-7-5.5 15-3.5-7-7-1Z" />
+          </svg>
+        </button>
+        <button type="button" class="ac-stop" id="ac-stop" aria-label="Stop generating" hidden>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3" /></svg>
+        </button>
+      </div>
     </footer>
   </section>
 </div>
 
-<style>
-  .chat-widget__fab {
+<style is:global>
+  /* ============================================================
+     Aegis Assistant chat widget (global, class names are unique).
+     ============================================================ */
+  .ac-chat [hidden] { display: none !important; }
+
+  /* Launcher */
+  .ac-fab {
     position: fixed;
     right: 24px;
     bottom: 84px;
-    z-index: 220;
+    z-index: 300;
     width: 56px;
     height: 56px;
-    border-radius: var(--radius-full);
-    border: 1px solid color-mix(in srgb, var(--primary) 60%, transparent);
-    background: linear-gradient(160deg, var(--primary), color-mix(in srgb, var(--primary) 82%, var(--primary-hover)));
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--primary) 55%, transparent);
+    background: linear-gradient(160deg, var(--primary), var(--primary-hover));
     color: var(--primary-foreground);
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: var(--shadow-glow);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
   }
-  .chat-widget__fab:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-  .chat-widget__fab:active { transform: translateY(0); }
-  .chat-widget__fab[aria-expanded="true"] { transform: rotate(90deg); }
-  .chat-widget__fab[aria-expanded="true"] .chat-widget__fab-icon { display: none; }
-  .chat-widget__fab[aria-expanded="true"] .chat-widget__fab-close { display: block; }
-  .chat-widget__fab-close { display: none; }
+  .ac-fab:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .ac-fab:active { transform: translateY(0); }
+  .ac-fab[aria-expanded="true"] { transform: rotate(90deg); }
+  .ac-fab__close { display: none; }
+  .ac-fab[aria-expanded="true"] .ac-fab__icon { display: none; }
+  .ac-fab[aria-expanded="true"] .ac-fab__close { display: block; }
 
-  .chat-widget__panel {
+  /* Panel */
+  .ac-panel {
     position: fixed;
     right: 24px;
     bottom: 152px;
-    z-index: 220;
+    z-index: 300;
     width: min(400px, calc(100vw - 2rem));
-    max-height: min(620px, calc(100vh - 170px));
+    max-height: min(660px, calc(100vh - 172px));
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     background: var(--card);
     color: var(--card-foreground);
     border: 1px solid var(--border-strong);
-    border-radius: var(--radius-xl);
+    border-radius: 18px;
     box-shadow: var(--shadow-lg);
-    overflow: hidden;
-    animation: chatPanelIn 0.22s ease-out;
+    animation: acIn 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
   }
-  .chat-widget__panel[hidden] { display: none; }
-  @keyframes chatPanelIn {
-    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  @keyframes acIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
     to { opacity: 1; transform: none; }
   }
+  .ac-panel__accent {
+    height: 3px;
+    flex: none;
+    background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 45%, var(--warning)), transparent 90%);
+  }
 
-  .chat-widget__head {
+  /* Header */
+  .ac-head {
+    flex: none;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    padding: 0.875rem 1rem;
-    border-bottom: 1px solid var(--border);
-    background: color-mix(in srgb, var(--muted) 60%, transparent);
+    padding: 0.85rem 0.9rem 0.6rem;
   }
-  .chat-widget__title { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
-  .chat-widget__title-name {
+  .ac-head__brand { display: flex; align-items: center; gap: 0.65rem; min-width: 0; }
+  .ac-mark {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: var(--primary-foreground);
+    background: linear-gradient(145deg, var(--primary), color-mix(in srgb, var(--primary) 70%, var(--primary-hover)));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent), var(--shadow-sm);
+  }
+  .ac-head__titles { display: flex; flex-direction: column; min-width: 0; }
+  .ac-name {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 0.9375rem;
-    color: var(--foreground);
+    font-size: 0.95rem;
     letter-spacing: 0.01em;
+    color: var(--foreground);
+    line-height: 1.2;
   }
-  .chat-widget__status {
+  .ac-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.15rem;
     font-size: 0.6875rem;
     color: var(--muted-foreground);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .chat-widget__head-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
-  .chat-widget__model select {
-    font: inherit;
-    font-size: 0.6875rem;
-    color: var(--muted-foreground);
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 0.25rem 0.375rem;
-    max-width: 120px;
-    cursor: pointer;
+  .ac-dot {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--muted-foreground);
+    transition: background-color 0.2s ease;
   }
-  .chat-widget__model select:hover { border-color: var(--primary); color: var(--foreground); }
-  .chat-widget__close {
+  .ac-dot--ok { background: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 18%, transparent); }
+  .ac-dot--busy { background: var(--primary); animation: acPulse 1.2s ease-in-out infinite; }
+  .ac-dot--err { background: var(--destructive); box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 15%, transparent); }
+  @keyframes acPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  .ac-close {
+    flex: none;
     width: 30px;
     height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: none;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: 9px;
+    background: transparent;
     color: var(--muted-foreground);
-    transition: color 0.15s, background-color 0.15s;
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
   }
-  .chat-widget__close:hover { color: var(--foreground); background: var(--muted); }
+  .ac-close:hover { color: var(--foreground); background: var(--muted); }
 
-  .chat-widget__progress { padding: 0.625rem 1rem; border-bottom: 1px solid var(--border); }
-  .chat-widget__progress-track {
+  /* Model bar */
+  .ac-modelbar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 0 0.9rem 0.65rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--muted) 45%, transparent);
+  }
+  .ac-modelbar__field { display: inline-flex; align-items: center; gap: 0.5rem; min-width: 0; }
+  .ac-modelbar__label {
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .ac-modelbar__selectwrap { position: relative; display: inline-flex; align-items: center; }
+  .ac-modelbar__selectwrap svg {
+    position: absolute;
+    right: 8px;
+    pointer-events: none;
+    color: var(--muted-foreground);
+  }
+  #ac-model {
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--foreground);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.3rem 1.5rem 0.3rem 0.55rem;
+    max-width: 190px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  #ac-model:hover, #ac-model:focus { border-color: var(--primary); }
+  .ac-privacy {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.656rem;
+    color: var(--muted-foreground);
+    white-space: nowrap;
+  }
+  .ac-privacy svg { flex: none; color: var(--success); }
+
+  /* Progress */
+  .ac-progress { flex: none; padding: 0.25rem 0.9rem 0.7rem; }
+  .ac-progress__track {
     height: 4px;
-    border-radius: var(--radius-full);
+    border-radius: 999px;
     background: var(--muted);
     overflow: hidden;
   }
-  .chat-widget__progress-bar {
+  .ac-progress__bar {
     height: 100%;
     width: 0%;
-    border-radius: var(--radius-full);
-    background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 55%, var(--warning)));
     transition: width 0.25s ease;
   }
-  .chat-widget__progress-text {
-    margin-top: 0.4rem;
-    font-size: 0.6875rem;
+  .ac-progress__text {
+    margin-top: 0.35rem;
+    font-size: 0.656rem;
     color: var(--muted-foreground);
     font-family: var(--font-mono);
   }
 
-  .chat-widget__messages {
+  /* Messages */
+  .ac-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 1rem;
+    overscroll-behavior: contain;
+    padding: 0.35rem 0.9rem 0.9rem;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.7rem;
     scrollbar-width: thin;
     scrollbar-color: var(--border-strong) transparent;
   }
-  .chat-widget__msg {
-    max-width: 88%;
-    padding: 0.625rem 0.875rem;
-    border-radius: var(--radius-lg);
-    font-size: 0.84375rem;
-    line-height: 1.55;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-  .chat-widget__msg--user {
-    align-self: flex-end;
-    background: var(--primary);
-    color: var(--primary-foreground);
-    border-bottom-right-radius: var(--radius-sm);
-  }
-  .chat-widget__msg--assistant {
-    align-self: flex-start;
-    background: var(--muted);
-    color: var(--foreground);
-    border-bottom-left-radius: var(--radius-sm);
-  }
-  .chat-widget__msg--assistant p { margin: 0; }
-  .chat-widget__msg--typing::after {
-    content: "";
-    display: inline-block;
-    width: 4px;
-    height: 1em;
-    margin-left: 2px;
-    vertical-align: text-bottom;
-    background: var(--muted-foreground);
-    animation: chatBlink 1s steps(2, start) infinite;
-  }
-  @keyframes chatBlink { to { visibility: hidden; } }
-
-  .chat-widget__error {
-    padding: 0.625rem 0.875rem;
-    border: 1px solid color-mix(in srgb, var(--destructive) 40%, var(--border));
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--destructive) 8%, var(--card));
-    color: var(--foreground);
-    font-size: 0.8125rem;
-    line-height: 1.5;
-  }
-  .chat-widget__error a { color: var(--destructive); text-decoration: underline; }
-
-  .chat-widget__composer {
+  .ac-msg {
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     gap: 0.5rem;
-    padding: 0.75rem;
-    border-top: 1px solid var(--border);
-    background: var(--card);
+    max-width: 100%;
+    animation: acMsgIn 0.18s ease-out;
   }
-  .chat-widget__composer textarea {
-    flex: 1;
-    resize: none;
-    max-height: 120px;
-    padding: 0.5rem 0.75rem;
-    font: inherit;
-    font-size: 0.84375rem;
-    line-height: 1.45;
+  @keyframes acMsgIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
+  }
+  .ac-msg--user { flex-direction: row-reverse; }
+  .ac-avatar {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    margin-top: 0.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--primary-foreground);
+    background: linear-gradient(145deg, var(--primary), color-mix(in srgb, var(--primary) 70%, var(--primary-hover)));
+  }
+  .ac-msg__body { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; min-width: 0; max-width: 100%; }
+  .ac-msg--user .ac-msg__body { align-items: flex-end; }
+  .ac-bubble {
+    padding: 0.55rem 0.8rem;
+    border-radius: 4px 14px 14px 14px;
+    font-size: 0.85rem;
+    line-height: 1.6;
     color: var(--foreground);
     background: var(--muted);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    outline: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    max-width: min(30rem, 100%);
   }
-  .chat-widget__composer textarea:focus { border-color: var(--ring); box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 22%, transparent); }
-  .chat-widget__composer textarea::placeholder { color: var(--muted-foreground); }
-  .chat-widget__send {
+  .ac-msg--user .ac-bubble {
+    border-radius: 14px 14px 4px 14px;
+    color: var(--primary-foreground);
+    background: linear-gradient(145deg, var(--primary), color-mix(in srgb, var(--primary) 78%, var(--primary-hover)));
+    border-color: transparent;
+  }
+  .ac-msg--assistant .ac-bubble { border-top-left-radius: 4px; }
+
+  /* Typing dots */
+  .ac-bubble.ac-typing { display: inline-flex; align-items: center; gap: 4px; padding: 0.7rem 0.85rem; }
+  .ac-typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted-foreground);
+    animation: acBounce 1.2s ease-in-out infinite;
+  }
+  .ac-typing span:nth-child(2) { animation-delay: 0.15s; }
+  .ac-typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes acBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* Sources */
+  .ac-sources { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
+  .ac-sources__label {
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    margin-right: 0.1rem;
+  }
+  .ac-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.18rem 0.55rem;
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: var(--primary);
+    border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary) 6%, var(--card));
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .ac-source:hover { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, var(--card)); }
+  .ac-source svg { flex: none; opacity: 0.7; }
+
+  /* Suggestions */
+  .ac-sugg {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.15rem;
+    padding-left: 2.05rem;
+  }
+  .ac-sugg__label { font-size: 0.68rem; color: var(--muted-foreground); }
+  .ac-sugg__list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .ac-sugg__btn {
+    font: inherit;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: var(--foreground);
+    background: var(--card);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    padding: 0.32rem 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+  }
+  .ac-sugg__btn:hover { border-color: var(--primary); color: var(--primary); }
+  .ac-sugg__btn:active { transform: scale(0.98); }
+
+  /* Composer */
+  .ac-composer {
+    flex: none;
+    border-top: 1px solid var(--border);
+    padding: 0.7rem 0.9rem 0.8rem;
+    background: var(--card);
+  }
+  .ac-composer__error {
+    margin-bottom: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--foreground);
+    background: color-mix(in srgb, var(--destructive) 7%, var(--card));
+    border: 1px solid color-mix(in srgb, var(--destructive) 38%, var(--border));
+    border-radius: 11px;
+  }
+  .ac-composer__error a { color: var(--destructive); text-decoration: underline; text-underline-offset: 2px; }
+  .ac-composer__row { display: flex; align-items: flex-end; gap: 0.45rem; }
+  #ac-input {
+    flex: 1;
+    min-width: 0;
+    resize: none;
+    max-height: 130px;
+    padding: 0.55rem 0.8rem;
+    font: inherit;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--foreground);
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  #ac-input::placeholder { color: var(--muted-foreground); }
+  #ac-input:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 20%, transparent);
+  }
+  .ac-send {
+    flex: none;
     width: 38px;
     height: 38px;
-    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     border: none;
-    border-radius: var(--radius-lg);
-    background: var(--primary);
+    border-radius: 12px;
     color: var(--primary-foreground);
-    transition: background-color 0.15s, opacity 0.15s;
+    background: linear-gradient(145deg, var(--primary), color-mix(in srgb, var(--primary) 75%, var(--primary-hover)));
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.12s ease;
   }
-  .chat-widget__send:hover:not(:disabled) { background: var(--primary-hover); }
-  .chat-widget__send:disabled { opacity: 0.45; cursor: not-allowed; }
-  .chat-widget__stop {
+  .ac-send:hover:not(:disabled) { transform: translateY(-1px); }
+  .ac-send:disabled { opacity: 0.4; cursor: not-allowed; }
+  .ac-stop {
+    flex: none;
     width: 38px;
     height: 38px;
-    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--card);
+    border-radius: 12px;
     color: var(--destructive);
+    background: var(--card);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
   }
-  .chat-widget__stop:hover { background: var(--muted); }
-  .chat-widget__stop[hidden] { display: none; }
-
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-    border: 0;
-  }
+  .ac-stop:hover { background: var(--muted); }
 
   @media (max-width: 560px) {
-    .chat-widget__fab { right: 16px; bottom: 76px; }
-    .chat-widget__panel {
+    .ac-fab { right: 16px; bottom: 76px; }
+    .ac-panel {
       right: 12px;
       left: 12px;
       width: auto;
       bottom: 142px;
       max-height: calc(100vh - 156px);
     }
+    .ac-sugg { padding-left: 0; }
+    .ac-privacy { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .chat-widget__panel { animation: none; }
-    .chat-widget__msg--typing::after { animation: none; }
+    .ac-panel, .ac-msg { animation: none; }
+    .ac-dot--busy, .ac-typing span { animation: none; }
   }
 
   @media print {
-    .chat-widget { display: none !important; }
+    .ac-chat { display: none !important; }
   }
 </style>
 
 <script>
   // ---------------------------------------------------------------------------
-  // Aegis-Beacon chat widget.
+  // Aegis Assistant chat widget.
   //
-  // The LLM runs fully in the browser on WebGPU through WebLLM
-  // (@mlc-ai/web-llm, loaded on demand). No API keys, no backend calls,
-  // no paid services. Model weights are fetched from Hugging Face once and
-  // then served from the browser's HTTP cache.
+  // 1. UI: floating launcher opens a panel with chat, model picker and states.
+  // 2. Inference: a small LLM runs fully in the browser through WebLLM on
+  //    WebGPU (library loaded lazily). No API keys, no backend.
+  // 3. Grounding: before answering, a lightweight retrieval pass searches the
+  //    build-time /wiki-index.json and the best matching pages are added to
+  //    the model context as reference notes, with source chips shown in the
+  //    reply so users can open the actual documentation.
   // ---------------------------------------------------------------------------
 
   type EngineHandle = any;
+
+  interface WikiEntry {
+    id: string;
+    title: string;
+    group: string;
+    description: string;
+    snippet: string;
+  }
+
+  interface IndexedEntry extends WikiEntry {
+    titleTokens: Set<string>;
+    bodyTokens: Set<string>;
+  }
 
   const MODELS: { id: string; label: string }[] = [
     { id: 'SmolLM2-360M-Instruct-q4f16_1-MLC', label: 'Fast' },
@@ -371,54 +567,98 @@
     { id: 'Phi-4-mini-instruct-q4f16_1-MLC', label: 'Strong' },
   ];
 
-  const SYSTEM_PROMPT =
-    'You are the Aegis-Beacon assistant embedded in the official Aegis-Beacon website. ' +
-    'Aegis-Beacon is an open-source emergency rescue beacon built on an ESP32, an SX1262 LoRa ' +
-    'radio and a NEO-6M GPS module. It transmits GPS coordinates in Morse code on the 433 MHz ISM ' +
-    'band and supports a SEARCH mode to help rescuers locate a signal. Help users build, configure, ' +
-    'use and troubleshoot the device, its firmware, the serial bridge, or the project wiki. Be ' +
-    'concise, practical and honest, and say so when you do not know something. You are a small ' +
-    'model running locally in the browser, so keep answers short and direct.';
+  // Curated hub pages used when a question matches nothing (for example a
+  // question in a language other than English): they cover the most asked
+  // topics, so the model still gets useful context to answer from.
+  const FALLBACK_HUBS = ['project-overview', 'faq', 'quick-start-guide', 'configuration-reference'];
 
-  const MAX_HISTORY = 12;
+  const SUGGESTIONS = [
+    'Who created Aegis-Beacon?',
+    'What is the total cost to build one?',
+    'How do I set the transmit frequency?',
+    'Why does it use 433 MHz?',
+  ];
+
+  const STOPWORDS = new Set(
+    'the a an and or of to for in on is are was be by with at from as about into over after under again further then once here there when where why how what which who whom this that these those you your yours i me my we our they their do does did can could will would should may might not no nor only own same so than too very just but its it s t d m ll ve re'.split(
+      ' '
+    )
+  );
+
+  const BASE_SYSTEM =
+    'You are the Aegis assistant embedded in the official Aegis-Beacon website. Aegis-Beacon is an ' +
+    'open-source emergency rescue beacon built on an ESP32, an SX1262 LoRa radio and a NEO-6M GPS ' +
+    'module; it transmits GPS coordinates in Morse code on the 433 MHz ISM band and has BEACON, ' +
+    'SEARCH, CONFIG and EMERGENCY modes. You help visitors understand, build, configure, use and ' +
+    'troubleshoot the device, its firmware, the serial bridge and the project documentation.';
+
+  const INSTRUCT_WITH_NOTES =
+    'Reference notes from the project wiki are listed below. Prefer them when they cover the ' +
+    'question and answer accurately from them. Do not invent names, numbers, features or facts ' +
+    'that are not in the notes and not part of your own reliable knowledge. If the notes do not ' +
+    'answer the question, say so plainly instead of guessing. Keep the answer short and practical.';
+
+  const INSTRUCT_NO_NOTES =
+    'You have no wiki notes for this question. Answer from your own reliable knowledge only, keep ' +
+    'it short, and be honest when you do not know something. Never invent facts about the project.';
+
+  const LANGUAGE_RULE =
+    'IMPORTANT: always reply in the same language the user wrote in. If they write in Italian, ' +
+    'answer in Italian; if in English, answer in English; and so on for other languages.';
+
+  const MAX_HISTORY = 10;
   const STORAGE_KEY = 'aegis-chat-model';
+  const INDEX_URL = '/wiki-index.json';
 
-  const fab = document.getElementById('chat-fab') as HTMLButtonElement | null;
-  const panel = document.getElementById('chat-panel') as HTMLElement | null;
-  const messagesEl = document.querySelector<HTMLElement>('[data-messages]');
-  const inputEl = document.querySelector<HTMLTextAreaElement>('[data-input]');
-  const sendBtn = document.querySelector<HTMLButtonElement>('[data-send]');
-  const stopBtn = document.querySelector<HTMLButtonElement>('[data-stop]');
-  const closeBtn = document.querySelector<HTMLButtonElement>('[data-close]');
+  const fab = document.getElementById('ac-fab') as HTMLButtonElement | null;
+  const panel = document.getElementById('ac-panel') as HTMLElement | null;
+  const messagesEl = document.getElementById('ac-messages') as HTMLElement | null;
+  const inputEl = document.getElementById('ac-input') as HTMLTextAreaElement | null;
+  const sendBtn = document.getElementById('ac-send') as HTMLButtonElement | null;
+  const stopBtn = document.getElementById('ac-stop') as HTMLButtonElement | null;
+  const closeBtn = document.getElementById('ac-close') as HTMLButtonElement | null;
   const statusEl = document.querySelector<HTMLElement>('[data-status]');
-  const progressEl = document.querySelector<HTMLElement>('[data-progress]');
+  const dotEl = document.querySelector<HTMLElement>('[data-dot]');
+  const progressEl = document.getElementById('ac-progress') as HTMLElement | null;
   const progressBar = document.querySelector<HTMLElement>('[data-progress-bar]');
   const progressText = document.querySelector<HTMLElement>('[data-progress-text]');
-  const errorEl = document.querySelector<HTMLElement>('[data-error]');
-  const modelSelect = document.querySelector<HTMLSelectElement>('[data-model-select]');
+  const errorEl = document.getElementById('ac-error') as HTMLElement | null;
+  const modelSelect = document.getElementById('ac-model') as HTMLSelectElement | null;
 
   let engine: EngineHandle | null = null;
   let state: 'idle' | 'loading' | 'ready' | 'generating' | 'error' = 'idle';
   let history: { role: 'user' | 'assistant'; content: string }[] = [];
   let pendingMessage: string | null = null;
   let open = false;
+  let index: IndexedEntry[] | null = null;
+  let suggestionsGone = false;
 
-  // ---- helpers -------------------------------------------------------------
+  const AVATAR_HTML =
+    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none" /><path d="M7.6 16.4a6.2 6.2 0 0 1 0-8.8M16.4 7.6a6.2 6.2 0 0 1 0 8.8" /></svg>';
 
-  function setStatus(text: string): void {
+  // ---- small helpers -------------------------------------------------------
+
+  function setStatus(text: string, dot: 'ok' | 'busy' | 'err' = 'busy'): void {
     if (statusEl) statusEl.textContent = text;
+    if (dotEl) {
+      dotEl.classList.remove('ac-dot--ok', 'ac-dot--busy', 'ac-dot--err');
+      dotEl.classList.add(dot === 'ok' ? 'ac-dot--ok' : dot === 'err' ? 'ac-dot--err' : 'ac-dot--busy');
+    }
   }
 
   function setState(next: typeof state): void {
     state = next;
-    const canSend = next === 'ready' || next === 'generating' || next === 'error';
-    if (sendBtn) sendBtn.disabled = !canSend;
+    if (sendBtn) sendBtn.disabled = !(next === 'ready' || next === 'generating' || next === 'error');
     if (stopBtn) stopBtn.hidden = next !== 'generating';
     if (progressEl) progressEl.hidden = next !== 'loading';
-    if (next === 'idle' || next === 'ready') {
+    if (next === 'ready') {
       if (progressBar) progressBar.style.width = '0%';
-      if (progressText) progressText.textContent = 'Preparing the model...';
+      if (progressText) progressText.textContent = 'Preparing the model';
     }
+  }
+
+  function scrollMessages(): void {
+    if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
   function showError(html: string): void {
@@ -432,19 +672,415 @@
     if (errorEl) errorEl.hidden = true;
   }
 
-  function scrollMessages(): void {
-    if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+  function autoSize(): void {
+    if (!inputEl) return;
+    inputEl.style.height = 'auto';
+    inputEl.style.height = `${Math.min(inputEl.scrollHeight, 130)}px`;
   }
 
-  function addMessage(role: 'user' | 'assistant', text: string, typing = false): HTMLElement {
-    const el = document.createElement('div');
-    el.className = `chat-widget__msg chat-widget__msg--${role}`;
-    if (typing) el.classList.add('chat-widget__msg--typing');
-    el.textContent = text;
-    messagesEl?.appendChild(el);
-    scrollMessages();
-    return el;
+  function buildAvatar(): HTMLElement {
+    const span = document.createElement('span');
+    span.className = 'ac-avatar';
+    span.innerHTML = AVATAR_HTML;
+    span.setAttribute('aria-hidden', 'true');
+    return span;
   }
+
+  // ---- message rendering ---------------------------------------------------
+
+  function addUserMessage(text: string): void {
+    const row = document.createElement('div');
+    row.className = 'ac-msg ac-msg--user';
+    const body = document.createElement('div');
+    body.className = 'ac-msg__body';
+    const bubble = document.createElement('div');
+    bubble.className = 'ac-bubble';
+    bubble.textContent = text;
+    body.appendChild(bubble);
+    row.appendChild(body);
+    messagesEl?.appendChild(row);
+    scrollMessages();
+  }
+
+  function addAssistantBubble(): { row: HTMLElement; body: HTMLElement; bubble: HTMLElement } {
+    const row = document.createElement('div');
+    row.className = 'ac-msg ac-msg--assistant';
+    const body = document.createElement('div');
+    body.className = 'ac-msg__body';
+    const bubble = document.createElement('div');
+    bubble.className = 'ac-bubble';
+    body.appendChild(bubble);
+    row.appendChild(buildAvatar());
+    row.appendChild(body);
+    messagesEl?.appendChild(row);
+    scrollMessages();
+    return { row, body, bubble };
+  }
+
+  function startTyping(bubble: HTMLElement): void {
+    bubble.classList.add('ac-typing');
+    bubble.innerHTML = '<span></span><span></span><span></span>';
+  }
+
+  function renderSources(body: HTMLElement, hits: IndexedEntry[]): void {
+    const wrap = document.createElement('div');
+    wrap.className = 'ac-sources';
+    const label = document.createElement('span');
+    label.className = 'ac-sources__label';
+    label.textContent = 'From the wiki';
+    wrap.appendChild(label);
+    for (const hit of hits) {
+      const a = document.createElement('a');
+      a.className = 'ac-source';
+      a.href = `/wiki/${hit.id}`;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.title = hit.description || hit.title;
+      a.textContent = hit.title;
+      wrap.appendChild(a);
+    }
+    body.appendChild(wrap);
+    scrollMessages();
+  }
+
+  function renderGreeting(): void {
+    const { body, bubble } = addAssistantBubble();
+    bubble.textContent =
+      "Hi, I'm the Aegis assistant. I run fully in your browser and answer from the project wiki: " +
+      'everything you write stays on this page. Pick a model above, then try a question.';
+    if (suggestionsGone) return;
+    const sugg = document.createElement('div');
+    sugg.className = 'ac-sugg';
+    const label = document.createElement('span');
+    label.className = 'ac-sugg__label';
+    label.textContent = 'Try asking';
+    const list = document.createElement('div');
+    list.className = 'ac-sugg__list';
+    for (const q of SUGGESTIONS) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ac-sugg__btn';
+      btn.textContent = q;
+      btn.addEventListener('click', () => {
+        list.remove();
+        suggestionsGone = true;
+        if (inputEl) inputEl.value = '';
+        void send(q);
+      });
+      list.appendChild(btn);
+    }
+    sugg.appendChild(label);
+    sugg.appendChild(list);
+    body.appendChild(sugg);
+    scrollMessages();
+  }
+
+  // ---- wiki retrieval ------------------------------------------------------
+
+  function tokenize(text: string): string[] {
+    const out = new Set<string>();
+    for (const token of text
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .split(/\s+/)
+      .filter(Boolean)) {
+      if (token.length > 2 && !STOPWORDS.has(token)) out.add(token);
+    }
+    return [...out];
+  }
+
+  async function ensureIndex(): Promise<void> {
+    if (index) return;
+    try {
+      const res = await fetch(INDEX_URL, { cache: 'force-cache' });
+      if (!res.ok) return;
+      const raw = (await res.json()) as WikiEntry[];
+      index = raw.map((entry) => ({
+        ...entry,
+        titleTokens: new Set(tokenize(`${entry.title} ${entry.id.replace(/[-_]/g, ' ')}`)),
+        bodyTokens: new Set(tokenize(`${entry.description} ${entry.group} ${entry.snippet}`)),
+      }));
+    } catch {
+      index = [];
+    }
+  }
+
+  /** True when two words are equal or share a long enough stem (helps matching
+   *  across languages, e.g. "frequenza" vs "frequency"). */
+  function wordsMatch(a: string, b: string): boolean {
+    if (a === b) return true;
+    if (a.length < 6 || b.length < 6) return false;
+    let n = 0;
+    const max = Math.min(a.length, b.length);
+    while (n < max && a[n] === b[n]) n += 1;
+    return n >= 6;
+  }
+
+  function retrieve(query: string): IndexedEntry[] {
+    if (!index || index.length === 0) return [];
+    const qTokens = tokenize(query);
+    if (qTokens.length === 0) return [];
+    const scored: { score: number; entry: IndexedEntry }[] = [];
+    for (const entry of index) {
+      let bodyHits = 0;
+      let titleHits = 0;
+      for (const qt of qTokens) {
+        let body = false;
+        let title = false;
+        for (const et of entry.bodyTokens) {
+          if (wordsMatch(qt, et)) {
+            body = true;
+            break;
+          }
+        }
+        for (const et of entry.titleTokens) {
+          if (wordsMatch(qt, et)) {
+            title = true;
+            break;
+          }
+        }
+        if (body) bodyHits += 1;
+        if (title) titleHits += 1;
+      }
+      if (bodyHits + titleHits === 0) continue;
+      if (bodyHits < 2 && titleHits === 0) continue;
+      const score = bodyHits * 2 + titleHits * 4;
+      scored.push({ score, entry });
+    }
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, 3).map((s) => s.entry);
+  }
+
+  function buildReferenceNotes(query: string): { notes: string; hits: IndexedEntry[] } {
+    let hits = retrieve(query);
+    const wantsFacts = query.includes('?') || query.trim().length >= 18;
+    if (hits.length === 0 && wantsFacts && index && index.length > 0) {
+      const hubs: IndexedEntry[] = [];
+      for (const id of FALLBACK_HUBS) {
+        const found = index.find((e) => e.id === id);
+        if (found) hubs.push(found);
+      }
+      hits = hubs.slice(0, 3);
+    }
+    if (hits.length === 0) return { notes: '', hits };
+    const parts = hits.map((hit, i) => {
+      const where = hit.group ? `${hit.group} wiki group` : 'the wiki';
+      const head = hit.description ? `${hit.description} ` : '';
+      const body = hit.snippet.length > 520 ? `${hit.snippet.slice(0, 519)}...` : hit.snippet;
+      return `[${i + 1}] Page "${hit.title}" (${where}). ${head}${body}`;
+    });
+    return { notes: parts.join('\n\n'), hits };
+  }
+
+  // ---- engine lifecycle ----------------------------------------------------
+
+  async function loadEngine(modelId: string): Promise<void> {
+    hideError();
+    setState('loading');
+    const label = MODELS.find((m) => m.id === modelId)?.label.toLowerCase() ?? 'local';
+    setStatus(`Loading the ${label} model...`);
+
+    const gpu = (navigator as unknown as { gpu?: unknown }).gpu;
+    if (!gpu) {
+      setState('error');
+      setStatus('WebGPU not available', 'err');
+      showError(
+        'This chat needs WebGPU to run the model on your device. Open the site in a recent Chrome, ' +
+          'Edge or Opera on desktop, or Chrome on Android, then reload. ' +
+          '<a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API" target="_blank" rel="noopener noreferrer">Learn about WebGPU</a>.'
+      );
+      return;
+    }
+
+    try {
+      const webllm = await import('@mlc-ai/web-llm');
+      if (engine) {
+        await engine.reload(modelId);
+      } else {
+        engine = await webllm.CreateMLCEngine(modelId, {
+          initProgressCallback: (report: { progress: number; text: string }) => {
+            const pct = Math.min(99, Math.round(report.progress * 100));
+            if (progressBar) progressBar.style.width = `${pct}%`;
+            const hasText = String(report.text || '').trim().length > 0;
+            if (progressText) progressText.textContent = hasText ? `Downloading model ${pct}%` : `Preparing ${pct}%`;
+            setStatus(`Downloading model ${pct}%`);
+          },
+        });
+      }
+      setState('ready');
+      setStatus('Local model ready', 'ok');
+      if (progressBar) progressBar.style.width = '100%';
+      if (pendingMessage) {
+        const msg = pendingMessage;
+        pendingMessage = null;
+        void send(msg);
+      }
+    } catch (err) {
+      console.error('WebLLM init failed:', err);
+      const msg = String((err as Error)?.message ?? err);
+      setState('error');
+      setStatus('Model unavailable', 'err');
+      if (/shader-f16|ShaderF16SupportError/i.test(msg)) {
+        showError(
+          'This browser exposes WebGPU but lacks the shader-f16 extension the model needs. Use Chrome ' +
+            'or Edge 113 or newer on desktop, then reload the page. ' +
+            '<a href="https://webllm.mlc.ai/docs/#webgpu-browser-support" target="_blank" rel="noopener noreferrer">WebGPU browser support</a>.'
+        );
+      } else {
+        showError(
+          'The local model could not be loaded. The download may have been interrupted or the browser ' +
+            'ran out of memory. Try a smaller model from the list, then reload the page.'
+        );
+      }
+    }
+  }
+
+  // ---- chat -----------------------------------------------------------------
+
+  async function send(text: string): Promise<void> {
+    const trimmed = text.trim();
+    if (!trimmed || state === 'generating') return;
+    if (inputEl) inputEl.value = '';
+    autoSize();
+    hideError();
+    if (state !== 'ready') {
+      pendingMessage = trimmed;
+      if (state === 'loading') return;
+      if (state === 'idle' || state === 'error') {
+        if (!suggestionsGone) {
+          suggestionsGone = true;
+          messagesEl?.querySelector('.ac-sugg')?.remove();
+        }
+        addUserMessage(trimmed);
+        void loadEngine(modelSelect?.value ?? readModel());
+      }
+      return;
+    }
+
+    if (!suggestionsGone) {
+      suggestionsGone = true;
+      messagesEl?.querySelector('.ac-sugg')?.remove();
+    }
+    history = [...history, { role: 'user' as const, content: trimmed }].slice(-MAX_HISTORY);
+    addUserMessage(trimmed);
+
+    setState('generating');
+    setStatus('Searching the wiki...');
+    await ensureIndex();
+    const { notes, hits } = buildReferenceNotes(trimmed);
+
+    setStatus('Thinking...');
+    const { body, bubble } = addAssistantBubble();
+    startTyping(bubble);
+    let full = '';
+
+    try {
+      const system = notes
+        ? `${BASE_SYSTEM}\n\n${INSTRUCT_WITH_NOTES}\n\nReference notes:\n${notes}\n\n${LANGUAGE_RULE}`
+        : `${BASE_SYSTEM}\n\n${INSTRUCT_NO_NOTES}\n\n${LANGUAGE_RULE}`;
+      const messages = [
+        { role: 'system', content: system },
+        ...history.map((h) => ({ role: h.role, content: h.content })),
+      ];
+      const chunks = await engine.chat.completions.create({
+        messages,
+        stream: true,
+        temperature: 0.6,
+        max_tokens: 400,
+      });
+      for await (const chunk of chunks) {
+        const delta = chunk?.choices?.[0]?.delta?.content;
+        if (typeof delta === 'string' && delta.length > 0) {
+          full += delta;
+          if (bubble.classList.contains('ac-typing')) {
+            bubble.classList.remove('ac-typing');
+            bubble.textContent = '';
+          }
+          bubble.textContent = full;
+          scrollMessages();
+        }
+      }
+    } catch (err) {
+      console.error('Generation failed:', err);
+      if (!full) bubble.remove();
+    }
+
+    if (full.trim()) {
+      history = [...history, { role: 'assistant' as const, content: full }].slice(-MAX_HISTORY);
+      if (hits.length > 0) renderSources(body, hits);
+    }
+    setState('ready');
+    setStatus('Local model ready', 'ok');
+  }
+
+  function stop(): void {
+    try {
+      engine?.interruptGenerate();
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // ---- open / close ---------------------------------------------------------
+
+  function openChat(): void {
+    if (!panel || !fab) return;
+    open = true;
+    panel.hidden = false;
+    fab.setAttribute('aria-expanded', 'true');
+    fab.setAttribute('aria-label', 'Close chat with the Aegis assistant');
+    if (modelSelect) modelSelect.value = readModel();
+    window.setTimeout(() => inputEl?.focus(), 120);
+    if (state === 'idle') void loadEngine(modelSelect?.value ?? readModel());
+    void ensureIndex();
+  }
+
+  function closeChat(): void {
+    if (!panel || !fab) return;
+    open = false;
+    panel.hidden = true;
+    fab.setAttribute('aria-expanded', 'false');
+    fab.setAttribute('aria-label', 'Open chat with the Aegis assistant');
+  }
+
+  // ---- events ---------------------------------------------------------------
+
+  fab?.addEventListener('click', () => (open ? closeChat() : openChat()));
+  closeBtn?.addEventListener('click', closeChat);
+
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && open) closeChat();
+  });
+
+  sendBtn?.addEventListener('click', () => {
+    void send(inputEl?.value ?? '');
+  });
+
+  stopBtn?.addEventListener('click', stop);
+
+  inputEl?.addEventListener('input', autoSize);
+  inputEl?.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      void send(inputEl.value);
+    }
+  });
+
+  modelSelect?.addEventListener('change', () => {
+    persistModel();
+    if (state === 'loading') return;
+    void loadEngine(modelSelect.value);
+  });
+
+  messagesEl?.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Tab' && e.shiftKey && open && inputEl) {
+      e.preventDefault();
+      inputEl.focus();
+    }
+  });
+
+  // ---- persistence ------------------------------------------------------------
 
   function persistModel(): void {
     try {
@@ -464,209 +1100,10 @@
     return MODELS[0].id;
   }
 
-  // ---- engine lifecycle ----------------------------------------------------
-
-  async function loadEngine(modelId: string): Promise<void> {
-    hideError();
-    setState('loading');
-    setStatus(`Loading ${MODELS.find((m) => m.id === modelId)?.label.toLowerCase() ?? 'local'} model...`);
-
-    const gpu = (navigator as unknown as { gpu?: unknown }).gpu;
-    if (!gpu) {
-      setState('error');
-      setStatus('WebGPU unavailable');
-      showError(
-        'This chat needs WebGPU to run the model locally. Open the site in a recent version of ' +
-          'Chrome, Edge or Opera on desktop, or Chrome on Android, then reload this page. ' +
-          '<a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API" target="_blank" rel="noopener noreferrer">Learn about WebGPU</a>.'
-      );
-      return;
-    }
-
-    try {
-      const webllm = await import('@mlc-ai/web-llm');
-      if (engine) {
-        await engine.reload(modelId);
-      } else {
-        engine = await webllm.CreateMLCEngine(modelId, {
-          initProgressCallback: (report: { progress: number; text: string }) => {
-            const pct = Math.min(99, Math.round(report.progress * 100));
-            if (progressBar) progressBar.style.width = `${pct}%`;
-            const label = String(report.text || '').trim();
-            if (progressText) {
-              progressText.textContent = label
-                ? `Downloading model: ${pct}%`
-                : `Preparing the model: ${pct}%`;
-            }
-            setStatus(`Downloading model ${pct}%`);
-          },
-        });
-      }
-      setState('ready');
-      setStatus('Ready. Runs 100% in your browser.');
-      if (progressBar) progressBar.style.width = '100%';
-      if (pendingMessage) {
-        const msg = pendingMessage;
-        pendingMessage = null;
-        void send(msg);
-      }
-    } catch (err) {
-      console.error('WebLLM init failed:', err);
-      const msg = String((err as Error)?.message ?? err);
-      setState('error');
-      setStatus('Model failed to load');
-      if (/shader-f16|ShaderF16SupportError/i.test(msg)) {
-        showError(
-          'This browser exposes WebGPU but lacks the shader-f16 extension the local model needs. ' +
-            'Use Chrome or Edge 113 or newer on desktop, enable WebGPU if it is turned off, then ' +
-            'reload the page. ' +
-            '<a href="https://webllm.mlc.ai/docs/#webgpu-browser-support" target="_blank" rel="noopener noreferrer">WebGPU browser support</a>.'
-        );
-      } else {
-        showError(
-          'The local model could not be loaded. The download may have been interrupted or the ' +
-            'browser ran out of memory. Try a smaller model from the list above, then reload the ' +
-            'page and try again.'
-        );
-      }
-    }
-  }
-
-  // ---- chat -----------------------------------------------------------------
-
-  async function send(text: string): Promise<void> {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    if (inputEl) inputEl.value = '';
-    autoSizeInput();
-    hideError();
-
-    if (state !== 'ready') {
-      pendingMessage = trimmed;
-      if (state === 'loading') return;
-      addMessage('user', trimmed);
-      void loadEngine(modelSelect?.value ?? readModel());
-      return;
-    }
-
-    history = [...history, { role: 'user' as const, content: trimmed }].slice(-MAX_HISTORY);
-    addMessage('user', trimmed);
-
-    setState('generating');
-    setStatus('Thinking...');
-    const bubble = addMessage('assistant', '', true);
-    let full = '';
-
-    try {
-      const messages = [
-        { role: 'system', content: SYSTEM_PROMPT },
-        ...history.map((h) => ({ role: h.role, content: h.content })),
-      ];
-      const chunks = await engine.chat.completions.create({
-        messages,
-        stream: true,
-        temperature: 0.7,
-        max_tokens: 512,
-      });
-      for await (const chunk of chunks) {
-        const delta = chunk?.choices?.[0]?.delta?.content;
-        if (typeof delta === 'string' && delta.length > 0) {
-          full += delta;
-          bubble.classList.remove('chat-widget__msg--typing');
-          bubble.textContent = full;
-          scrollMessages();
-        }
-      }
-    } catch (err) {
-      console.error('Generation failed:', err);
-      if (!full) {
-        bubble.remove();
-        showError('The model stopped responding. Check your browser console or try a smaller model.');
-      }
-    }
-
-    if (full.trim()) {
-      history = [...history, { role: 'assistant' as const, content: full }].slice(-MAX_HISTORY);
-    }
-    setState('ready');
-    setStatus('Ready. Runs 100% in your browser.');
-  }
-
-  function stop(): void {
-    try {
-      engine?.interruptGenerate();
-    } catch {
-      /* ignore */
-    }
-  }
-
-  function autoSizeInput(): void {
-    if (!inputEl) return;
-    inputEl.style.height = 'auto';
-    inputEl.style.height = `${Math.min(inputEl.scrollHeight, 120)}px`;
-  }
-
-  // ---- open / close ---------------------------------------------------------
-
-  function openChat(): void {
-    if (!panel || !fab) return;
-    open = true;
-    panel.hidden = false;
-    fab.setAttribute('aria-expanded', 'true');
-    fab.setAttribute('aria-label', 'Close chat with the Aegis-Beacon assistant');
-    const modelId = readModel();
-    if (modelSelect) modelSelect.value = modelId;
-    window.setTimeout(() => inputEl?.focus(), 120);
-    if (state === 'idle') void loadEngine(modelId);
-  }
-
-  function closeChat(): void {
-    if (!panel || !fab) return;
-    open = false;
-    panel.hidden = true;
-    fab.setAttribute('aria-expanded', 'false');
-    fab.setAttribute('aria-label', 'Open chat with the Aegis-Beacon assistant');
-  }
-
-  // ---- events ---------------------------------------------------------------
-
-  fab?.addEventListener('click', () => (open ? closeChat() : openChat()));
-  closeBtn?.addEventListener('click', closeChat);
-
-  document.addEventListener('keydown', (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && open) closeChat();
-  });
-
-  sendBtn?.addEventListener('click', () => {
-    if (state === 'ready') void send(inputEl?.value ?? '');
-  });
-
-  stopBtn?.addEventListener('click', stop);
-
-  inputEl?.addEventListener('input', autoSizeInput);
-  inputEl?.addEventListener('keydown', (e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (state === 'ready') void send(inputEl.value);
-    }
-  });
-
-  modelSelect?.addEventListener('change', () => {
-    persistModel();
-    if (state === 'loading') return;
-    void loadEngine(modelSelect.value);
-  });
-
-  // Keep the message list scrollable from the keyboard.
-  messagesEl?.addEventListener('keydown', (e: KeyboardEvent) => {
-    if (e.key === 'Tab' && e.shiftKey && open && inputEl) {
-      e.preventDefault();
-      inputEl.focus();
-    }
-  });
-
-  // ---- init ------------------------------------------------------------------
+  // ---- init -----------------------------------------------------------------
 
   if (modelSelect) modelSelect.value = readModel();
   setState('idle');
+  setStatus('Local model', 'busy');
+  renderGreeting();
 </script>
