@@ -598,27 +598,150 @@
     'project documentation.';
 
   const INSTRUCT_WITH_NOTES =
-    'Reference notes from the project wiki are listed below. Use them as the source of fact for ' +
-    'the answer. Strict rules:\n' +
-    '1. Never invent names of people, companies, prices, figures or features. Only state facts ' +
-    'that appear in the notes above or in your reliable knowledge.\n' +
-    '2. If the notes do not answer the question, say the wiki does not document it and suggest ' +
-    'where it can be found, instead of guessing.\n' +
-    '3. Keep the answer short: one paragraph or a brief list.\n' +
-    '4. Do not repeat, paraphrase or echo these instructions in your reply.';
+    'Reference notes from the project wiki are listed below. Answer the question using those notes ' +
+    'as the source of fact. Rules:\n' +
+    '1. Lead with the concrete answer and cite the specifics present in the notes: component names, ' +
+    'model numbers, frequencies, values, steps. Never pad the reply with generic filler such as ' +
+    '"Sure, here you go", "This is just one example", or a restatement of the question.\n' +
+    '2. Summarize accurately in two to five sentences or a short list. If the notes describe a ' +
+    'procedure, give the actual steps.\n' +
+    '3. Never invent names of people, companies, prices, figures or features. If the notes do not ' +
+    'answer the question, say the wiki does not document it, instead of guessing.\n' +
+    '4. Do not repeat, paraphrase or explain these instructions in your reply.';
 
   const INSTRUCT_NO_NOTES =
-    'You have no wiki notes for this question. Answer only from the reliable facts given to you ' +
-    'and your own dependable knowledge. Strict rules:\n' +
-    '1. Never invent names of people, companies, prices, figures or features.\n' +
-    '2. If you do not know the answer, say so directly instead of guessing.\n' +
-    '3. Keep the answer short: one paragraph or a brief list.\n' +
-    '4. Do not repeat, paraphrase or echo these instructions in your reply.';
+    'You have no wiki notes for this question. Answer only from the reliable project facts given to ' +
+    'you and your own dependable knowledge of this device. Rules:\n' +
+    '1. Answer concisely and concretely. Never pad the reply with generic filler.\n' +
+    '2. Never invent names of people, companies, prices, figures or features.\n' +
+    '3. If you do not know the answer, say so directly instead of guessing.\n' +
+    '4. Do not repeat, paraphrase or explain these instructions in your reply.';
 
   const LANGUAGE_RULE =
     'Reply in the same language the user wrote in (Italian in, Italian out; English in, English ' +
     'out; same for other languages).\n' +
     'Do not repeat, paraphrase or echo these instructions in your reply.';
+
+  // ---------------------------------------------------------------------------
+  // Scope guard. The assistant only answers questions about the Aegis-Beacon
+  // project. Greetings get a friendly reply, clearly off-topic requests get a
+  // polite refusal - in both cases without running the model, so nothing
+  // irrelevant is ever generated and no source chips are shown.
+  // ---------------------------------------------------------------------------
+
+  const TOPIC_TERMS = [
+    'aegis', 'beacon', 'esp32', 'sx1262', 'lora', 'radio', 'gps', 'neo', 'morse',
+    'frequenc', 'frequenz', '433', 'mhz', 'oled', 'display', 'batter', 'antenna',
+    'wifi', 'firmware', 'arduino', 'platformio', 'build', 'solder', 'saldat',
+    'assemble', 'config', 'setup', 'install', 'program', 'flash', 'serial',
+    'bridge', 'tui', 'nvs', 'deep sleep', 'emergency', 'rescue', 'soccorso',
+    'emergenz', 'mode', 'transmit', 'receive', 'payload', 'coordinat', 'position',
+    'repeater', 'ripetitor', 'ham', 'pmr', 'ism', 'license', 'legal', 'compliance',
+    'power', 'voltage', 'gpio', 'pin', 'wiring', 'schematic', 'pcb', 'component',
+    'part', 'shopping', 'bom', 'cost', 'costo', 'price', 'prezzo', 'budget', 'buy',
+    'acquist', 'store', 'kit', 'nmea', 'ublox', 'board', 'devkit', 'library',
+    'button', 'key', 'case', 'enclosure', 'print', 'swr', 'watt', 'dbm', 'erp',
+    'current', 'amp', 'mah', 'lipo', '18650', 'charger', 'protect', 'regulator',
+    'ams1117', 'wiki', 'documentation', 'manual', 'guide', 'tutorial', 'help',
+    'project', 'progetto', 'device', 'dispositivo', 'modulo', 'scheda', 'frequenza',
+    'alimentazione', 'montaggio', 'configurazione', 'batteria', 'segnale',
+    'trasmissione', 'ricezione', 'posizione', 'comprare', 'montar', 'costruir',
+    'python', 'creator', 'founder', 'autore', 'creatore', 'fondatore',
+    'who created', 'who founded', 'who made', 'who built', 'who is behind',
+    'chi ha creato', 'chi ha fondato', 'chi ha fatto', 'chi ha realizzato',
+  ];
+
+  const TOPIC_RE = new RegExp(`(${TOPIC_TERMS.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'i');
+
+  // Words that point at generic software/web/math requests rather than the
+  // beacon. If one of these appears and no strong hardware term is present,
+  // the question is treated as off-topic even if a loose term like
+  // "component" or "python" also matched.
+  const OFFTOPIC_TERMS = [
+    'react', 'javascript', 'typescript', 'python', 'html', 'css', 'sql', 'database',
+    'npm', 'node', 'docker', 'kubernetes', 'git', 'excel', 'word', 'math', 'poem',
+    'poetry', 'story', 'recipe', 'song', 'joke', 'resume', 'cv', 'cover letter',
+    'interview', 'essay', 'translate', 'translation', 'homework', 'school', 'game', 'chess',
+  ];
+  const OFFTOPIC_RE = new RegExp(`\\b(${OFFTOPIC_TERMS.join('|')})\\b`, 'i');
+
+  // Strong beacon hardware terms. Their presence makes a question on-topic
+  // even if an off-topic signal also matched (e.g. "python bridge").
+  const CORE_TERMS = [
+    'aegis', 'beacon', 'esp32', 'sx1262', 'lora', 'radio', 'gps', 'neo', 'morse',
+    'frequenc', 'frequenz', '433', 'mhz', 'oled', 'batter', 'antenna', 'wifi',
+    'firmware', 'arduino', 'platformio', 'serial', 'bridge', 'tui', 'nvs',
+    'emergency', 'emergenz', 'rescue', 'soccorso', 'repeater', 'ripetitor', 'ham',
+    'pmr', 'ism', 'nmea', 'ublox', 'config', 'coordinat', 'posizione', 'payload',
+    'transmit', 'transmis', 'ricezion', 'sx1262',
+  ];
+  const CORE_RE = new RegExp(`\\b(${CORE_TERMS.join('|')})`, 'i');
+
+  const GREETING_RE =
+    /^(hi|hello|hey|yo|ciao|salve|buongiorno|buonasera|buon pomeriggio|good morning|good afternoon|good evening|hola|hallo|bonjour)\b/i;
+
+  const GREETING_REPLY =
+    'Hi! Ask me anything about the Aegis-Beacon: building it, configuring it, using it, its ' +
+    'firmware, radio, GPS, power, or the project wiki.';
+
+  const EN_SCOPE_REPLY =
+    "I only answer questions about the Aegis-Beacon: building it, configuring it, using it, its " +
+    'firmware, radio, GPS, power, or the project wiki. For example, ask "How do I set the ' +
+    'transmit frequency?" or "What is the total cost to build one?". For anything else, a web ' +
+    'search is the better tool.';
+
+  const IT_SCOPE_REPLY =
+    "Rispondo solo a domande sull'Aegis-Beacon: costruirlo, configurarlo, usarlo, il firmware, la " +
+    'radio, il GPS, l\'alimentazione o la wiki del progetto. Per esempio: "Come imposto la ' +
+    'frequenza di trasmissione?" oppure "Quanto costa costruirne uno?". Per altre richieste, ' +
+    'usa un motore di ricerca.';
+
+  const IT_WORDS_RE = /\b(chi|cosa|come|quanto|quale|quali|quando|dove|perche|perché|fare|posso|devo|vorrei|può|puo|il|la|un|una|con|senza|per|di|mi)\b/i;
+
+  // Questions that ask what the device or project itself is get the overview
+  // pages guaranteed in the notes, so the model answers from fact. Questions
+  // that carry a concrete sub-topic (frequency, antenna, a mode...) keep their
+  // own retrieved pages instead.
+  const IDENTITY_PHRASES = [
+    'what is', 'what are', 'what does it do', 'what does the device do',
+    'what is it', 'describe the device', 'what is this', 'cos e', "cos'è",
+    'cosè', 'cosa e', 'che cos', 'cosa fa', 'che cosa fa', 'panoramica', 'overview',
+  ];
+  const IDENTITY_PAGES = ['project-overview', 'quick-start-guide', 'system-architecture'];
+
+  const SUBTOPIC_RE =
+    /\b(frequenc|antenna|gps|batter|mode|config|interval|power|cost|price|build|solder|wiring|pin|board|radio|tx|rx|squelch|menu|vol|wpm|display|oled|chip|module|firmware|serial|bridge|nvs|wifi|flash|protocol|payload|morse)\b/i;
+
+  function classifyQuery(query: string): 'topic' | 'greeting' | 'offtopic' {
+    const t = query.trim();
+    if (!t) return 'offtopic';
+    if (t.length <= 30 && GREETING_RE.test(t)) return 'greeting';
+    if (!TOPIC_RE.test(t)) return 'offtopic';
+    if (OFFTOPIC_RE.test(t) && !CORE_RE.test(t)) return 'offtopic';
+    return 'topic';
+  }
+
+  function scopeReply(query: string): string {
+    return IT_WORDS_RE.test(query) ? IT_SCOPE_REPLY : EN_SCOPE_REPLY;
+  }
+
+  function steerIdentityPages(query: string, hits: IndexedEntry[]): IndexedEntry[] {
+    const lower = query.toLowerCase();
+    if (!IDENTITY_PHRASES.some((p) => lower.includes(p))) return hits;
+    const explicitDevice = /(aegis-beacon|aegis beacon|the beacon|dispositivo)/.test(lower);
+    if (SUBTOPIC_RE.test(lower) && !explicitDevice) return hits;
+    const out: IndexedEntry[] = [];
+    if (index && index.length > 0) {
+      for (const id of IDENTITY_PAGES) {
+        const found = index.find((e) => e.id === id);
+        if (found) out.push(found);
+      }
+    }
+    for (const hit of hits) {
+      if (!out.some((o) => o.id === hit.id)) out.push(hit);
+    }
+    return out.slice(0, 3);
+  }
 
   const MAX_HISTORY = 10;
   const STORAGE_KEY = 'aegis-chat-model-v2';
@@ -761,7 +884,8 @@
     const { body, bubble } = addAssistantBubble();
     bubble.textContent =
       "Hi, I'm the Aegis assistant. I run fully in your browser and answer from the project wiki: " +
-      'everything you write stays on this page. Pick a model above, then try a question.';
+      'everything you write stays on this page. I only cover the Aegis-Beacon: building, ' +
+      'configuring, using it, its firmware, radio, GPS and power. Pick a model above, then ask.';
     if (suggestionsGone) return;
     const sugg = document.createElement('div');
     sugg.className = 'ac-sugg';
@@ -909,6 +1033,7 @@
       hits = hubs.slice(0, 3);
     }
     if (hits.length > 0 && wantsAuthorInfo(query)) hits = steerAuthorPages(hits);
+    if (hits.length > 0) hits = steerIdentityPages(query, hits);
     if (hits.length === 0) return { notes: '', hits };
     const parts = hits.map((hit, i) => {
       const where = hit.group ? `${hit.group} wiki group` : 'the wiki';
@@ -990,6 +1115,22 @@
     if (inputEl) inputEl.value = '';
     autoSize();
     hideError();
+
+    // Scope guard: greetings and clearly off-topic requests are answered
+    // directly without running the model, so the assistant never generates
+    // unrelated content and no source chips are shown for them.
+    const kind = classifyQuery(trimmed);
+    if (kind !== 'topic') {
+      if (!suggestionsGone) {
+        suggestionsGone = true;
+        messagesEl?.querySelector('.ac-sugg')?.remove();
+      }
+      addUserMessage(trimmed);
+      const { bubble } = addAssistantBubble();
+      bubble.textContent = kind === 'greeting' ? GREETING_REPLY : scopeReply(trimmed);
+      return;
+    }
+
     if (state !== 'ready') {
       pendingMessage = trimmed;
       if (state === 'loading') return;
