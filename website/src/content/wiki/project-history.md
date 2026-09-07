@@ -9,6 +9,8 @@ Every design decision in the beacon has a history. This page is the story of how
 
 ## The beginning
 
+Aegis-Beacon was created by Leonardo Galli (GitHub: [Leo-Galli/Aegis-Beacon](https://github.com/Leo-Galli/Aegis-Beacon)) as a personal project and is released under the MIT License.
+
 The project started with a simple observation: commercial personal locator beacons cost hundreds of euros and rely on proprietary satellite networks. The question was whether a capable rescue beacon could be built from off-the-shelf hobby parts for under thirty euros, on the license-free 433 MHz band, using nothing more exotic than Morse code.
 
 ## The first prototype

@@ -5,7 +5,7 @@ description: "The people, projects and communities the beacon builds on: librari
 
 # Acknowledgements
 
-No project is an island. The beacon stands on the shoulders of libraries, datasheets, communities and testers, and this page names them.
+Aegis-Beacon was created and is maintained by Leonardo Galli (GitHub: [Leo-Galli/Aegis-Beacon](https://github.com/Leo-Galli/Aegis-Beacon)). No project is an island: the beacon also stands on the shoulders of libraries, datasheets, communities and testers, and this page names them.
 
 ## The software stack
 
