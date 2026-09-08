@@ -93,7 +93,12 @@ const sigSvg = `<svg viewBox="0 0 ${sigX} 8" preserveAspectRatio="none" role="pr
         <span class="hero-tape__live">On air</span>
         <span class="hero-tape__meta">433.500 MHz - SOS LEO-GALLI 46.4983N 11.3558E - CW 20 WPM</span>
       </div>
-      <div class="hero-tape__signal" aria-hidden="true" set:html={sigSvg}></div>
+      <div class="hero-tape__signal" aria-hidden="true">
+        <div class="hero-tape__trace">
+          <span class="hero-tape__carrier"></span>
+          <div set:html={sigSvg}></div>
+        </div>
+      </div>
       <div class="hero-tape__ruler" aria-hidden="true">
         <span>433.400</span>
         <span>433.425</span>
