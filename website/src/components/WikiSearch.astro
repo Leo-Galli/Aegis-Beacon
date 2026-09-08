@@ -334,15 +334,23 @@ const index = entries.map((e) => ({
     background: color-mix(in srgb, var(--border) 70%, transparent);
   }
 
-  /* One result = one page: a clear title over a short description block */
+  /* One result = one page: a clear title over a short description block.
+     A hairline between consecutive results keeps page boundaries obvious
+     within a section, so each entry reads as its own block. */
   .wiki-search__result {
     display: block; padding: 0.55rem 0.65rem;
     border-radius: var(--radius-md); text-decoration: none;
     color: var(--foreground); outline: none;
     transition: background 0.12s;
   }
+  .wiki-search__result + .wiki-search__result {
+    border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    border-radius: 0;
+  }
   .wiki-search__result:hover,
   .wiki-search__result.is-selected { background: var(--muted); }
+  .wiki-search__result:hover + .wiki-search__result,
+  .wiki-search__result.is-selected + .wiki-search__result { border-top-color: transparent; }
   .wiki-search__result:focus-visible {
     background: var(--muted);
     box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--primary) 55%, transparent);

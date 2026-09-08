@@ -410,24 +410,6 @@ html.motion-ok [data-rv].is-in {
   main#main-content > *:first-child { animation: fadeIn 0.4s ease-out both; }
 }
 
-/* ─── 18. Banner showcase ─── */
-.banner-showcase {
-  position: relative; border-radius: var(--radius-2xl); overflow: hidden;
-  box-shadow: var(--shadow-lg); border: 1px solid var(--border-strong);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--card) 60%, transparent), var(--card));
-}
-.banner-img-wrap { position: relative; overflow: hidden; will-change: transform; }
-.banner-image {
-  width: 100%; height: auto; display: block;
-  transform: scale(1.1); /* headroom for the parallax shift */
-}
-.banner-overlay {
-  position: absolute; inset: auto 0 0 0; padding: 1.6rem 2rem;
-  background: linear-gradient(to top, oklch(0.12 0.01 50deg / 0.82), transparent);
-  color: #fff;
-}
-.banner-caption { font-family: var(--font-display); font-size: 1.02rem; font-weight: 500; letter-spacing: 0.02em; text-shadow: 0 1px 6px oklch(0 0 0 / 55%); }
-
 /* ─── 19. Wiki prose ─── */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -581,7 +563,7 @@ html.motion-ok [data-rv].is-in {
 }
 
 /* ─── 22. Ambient page tint (static, no animation) ─── */
-.wiki-home, .page-hero { background-attachment: scroll; }
+.wiki-home { background-attachment: scroll; }
 /* ─── 23. Misc components ─── */
 #scroll-top {
   position: fixed; bottom: 24px; right: 24px; width: 42px; height: 42px;
@@ -948,7 +930,7 @@ html.motion-ok [data-rv].is-in {
 
 /* cards: hairline-first, shadow only on hover */
 .design-card, .wiki-group-card, .wiki-tile,
-.modes-console, .spec-rail, .device-frame, .banner-showcase {
+.modes-console, .spec-rail, .device-frame {
   box-shadow: none;
 }
 .design-card { background: color-mix(in srgb, var(--card) 92%, var(--muted)); }
