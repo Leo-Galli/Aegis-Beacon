@@ -896,3 +896,195 @@ html.motion-ok [data-rv].is-in {
   .design-card::before, .design-card::after { transition: none; }
   .prose-wiki details summary::after { transition: none; }
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   Design System v4 - "precision field console" refinement
+   Decisive pass: stronger type rhythm, calmer surfaces, consistent
+   inner-page headers, and one signature console-readout moment on
+   the homepage. Applied globally so every page inherits it.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ─── 36. Shared inner-page header (page-head) ─── */
+.page-head {
+  padding: clamp(2.75rem, 6vw, 4.5rem) 0 clamp(1.25rem, 3vw, 2rem);
+  text-align: center;
+}
+.page-head .section-head__title { font-size: clamp(1.9rem, 4vw, 2.75rem); letter-spacing: -0.02em; }
+.page-head .section-head__lead {
+  max-width: 44rem; margin-inline: auto; margin-top: 1rem;
+  color: var(--muted-foreground); font-size: clamp(0.98rem, 1.2vw, 1.08rem); line-height: 1.7;
+}
+.page-head__meta {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  margin-top: 1.1rem; padding: 0.3rem 0.85rem;
+  font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted-foreground);
+  border: 1px solid var(--border); border-radius: var(--radius-full);
+  background: var(--card);
+}
+
+/* ─── 37. Calmer, more confident surfaces & rhythm ─── */
+.section-head { margin-bottom: 2.75rem; }
+.section-head__title { font-weight: 700; }
+.section-head__lead { max-width: 46rem; margin-inline: auto; }
+.section-head--left .section-head__lead { margin-inline: 0; }
+
+/* buttons: crisper geometry, less pill-ish */
+.btn { border-radius: calc(var(--radius-md) + 1px); padding: 0.72rem 1.35rem; }
+.btn-primary { box-shadow: inset 0 1px 0 rgb(255 255 255 / 18%), 0 1px 2px rgb(0 0 0 / 8%); }
+.btn-secondary { box-shadow: inset 0 1px 0 rgb(255 255 255 / 60%); }
+.dark .btn-secondary { box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%); }
+
+/* cards: hairline-first, shadow only on hover */
+.design-card, .wiki-group-card, .wiki-tile,
+.modes-console, .spec-rail, .device-frame, .banner-showcase {
+  box-shadow: none;
+}
+.design-card { background: color-mix(in srgb, var(--card) 92%, var(--muted)); }
+.design-card:hover { box-shadow: var(--shadow-md); }
+
+/* prose: keep measure human, tighten table heads */
+.prose-wiki { font-size: 0.96rem; }
+.prose-wiki p, .prose-wiki li { color: var(--muted-foreground); }
+
+/* ─── 38. Console readout panel (homepage signature) ───
+   A dark instrument panel even in light mode - the "screen" of the
+   device - carrying real firmware telemetry lines. */
+.console-panel {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 90% 70% at 85% -20%, oklch(0.28 0.09 40deg / 0.35), transparent 60%),
+    linear-gradient(180deg, oklch(0.175 0.006 50deg), oklch(0.135 0.005 50deg));
+  border: 1px solid oklch(0.3 0.01 50deg);
+  box-shadow: 0 24px 60px -24px oklch(0.1 0.01 50deg / 0.8), inset 0 1px 0 oklch(1 0 0 / 0.06);
+  color: oklch(0.92 0.005 50deg);
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+}
+.console-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath d='M0 80h160M80 0v160' stroke='%23ffffff' stroke-opacity='0.04' stroke-width='1'/%3E%3C/svg%3E");
+}
+.console-panel__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding-bottom: 0.9rem; margin-bottom: 1rem;
+  border-bottom: 1px solid oklch(1 0 0 / 0.1);
+  font-family: var(--font-mono);
+}
+.console-panel__title {
+  font-size: 0.66rem; font-weight: 600; letter-spacing: 0.18em;
+  text-transform: uppercase; color: oklch(0.75 0.01 50deg);
+}
+.console-panel__live {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  font-size: 0.62rem; letter-spacing: 0.14em; color: oklch(0.82 0.16 145deg);
+  text-transform: uppercase;
+}
+.console-panel__live::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: #22c55e; box-shadow: 0 0 8px #22c55e;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .console-panel__live::before { animation: statusPulse 2.2s ease-in-out infinite; }
+}
+.console-panel__lines {
+  display: grid; gap: 0.55rem;
+  font-family: var(--font-mono); font-size: clamp(0.72rem, 1vw, 0.84rem);
+  line-height: 1.6;
+}
+.console-panel__line { display: flex; gap: 1rem; flex-wrap: wrap; }
+.console-panel__t {
+  color: oklch(0.6 0.01 50deg); min-width: 9.5ch; flex-shrink: 0;
+}
+.console-panel__v { color: oklch(0.93 0.005 50deg); font-weight: 500; }
+.console-panel__v--ok { color: #4ade80; }
+.console-panel__v--sig { color: #fb923c; }
+.console-panel__sep {
+  border: none; border-top: 1px dashed oklch(1 0 0 / 0.14); margin: 0.35rem 0;
+}
+.console-panel__foot {
+  display: flex; flex-wrap: wrap; gap: 0.6rem 1.6rem;
+  margin-top: 1.1rem; padding-top: 0.9rem;
+  border-top: 1px solid oklch(1 0 0 / 0.1);
+  font-family: var(--font-mono); font-size: 0.68rem; color: oklch(0.66 0.008 50deg);
+}
+.console-panel__foot span b { color: oklch(0.9 0.005 50deg); font-weight: 600; }
+
+/* ─── 39. Signature split: console panel beside a short field note ─── */
+.sig-grid {
+  display: grid; grid-template-columns: 1fr; gap: clamp(1.75rem, 3.5vw, 3rem);
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .sig-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); }
+  .sig-grid--flip .sig-grid__aside { order: -1; }
+}
+.sig-grid__aside p { color: var(--muted-foreground); line-height: 1.75; margin: 0 0 1rem; }
+.sig-grid__aside p:last-child { margin-bottom: 0; }
+.sig-list { list-style: none; margin: 1.1rem 0 0; padding: 0; display: grid; gap: 0.6rem; }
+.sig-list li {
+  position: relative; padding-left: 1.6rem;
+  color: var(--muted-foreground); font-size: 0.92rem; line-height: 1.6;
+}
+.sig-list li::before {
+  content: ""; position: absolute; left: 0; top: 0.55em;
+  width: 0.5rem; height: 0.5rem; border: 1.5px solid var(--primary);
+  transform: rotate(45deg);
+}
+
+/* ─── 40. Type rhythm refinements (both themes) ─── */
+.hero-title { font-weight: 700; }
+.mode-row__name { font-weight: 600; }
+.stack-rail span { font-weight: 500; }
+.faq__question { font-size: 0.98rem; }
+
+/* dark-mode console chrome keeps identical */
+.dark .console-panel {
+  border-color: oklch(0.34 0.012 50deg);
+}
+
+@media (max-width: 560px) {
+  .console-panel__line { gap: 0.4rem; }
+  .console-panel__t { min-width: 8ch; }
+}
+
+/* ─── 41. Wiki home & article refinement ─── */
+.wiki-home__hero .hero-kicker { margin-inline: auto; }
+.wiki-home__title { font-weight: 700; }
+.wiki-tile { position: relative; }
+.wiki-tile:hover { border-color: color-mix(in srgb, var(--primary) 45%, var(--border)); }
+.wiki-group-card {
+  box-shadow: none;
+  background: color-mix(in srgb, var(--card) 94%, var(--muted));
+}
+.wiki-group-card__head h2 { position: relative; padding-left: 0.75rem; }
+.wiki-group-card__head h2::before {
+  content: "";
+  position: absolute; left: 0; top: 0.2em; bottom: 0.2em; width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 25%, transparent));
+}
+
+/* article page: page title + prose breathing */
+.wiki-page-header { margin-bottom: 2rem; }
+.wiki-page-title { font-weight: 800; }
+.wiki-main { background: var(--background); }
+.wiki-toc-item.active { color: var(--primary); }
+.wiki-nav-home--active { color: var(--primary); }
+
+/* consistent soft page tint behind inner pages that use page-head */
+main > .page-head + * { position: relative; }
+
+/* ─── 42. Console scroll reveal on the homepage sig section ─── */
+html.motion-ok [data-rv] { transition-delay: var(--rv-delay, 0ms); }
+.console-panel {
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .console-panel__live::before { animation: none; }
+}

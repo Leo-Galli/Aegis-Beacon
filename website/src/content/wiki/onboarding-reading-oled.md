@@ -11,10 +11,10 @@ The 2.42" OLED shows a lot of information in a small space. This page is the tra
 
 Every screen except EMERGENCY has an inverted header. From left to right you see the mode label, a cycle or hit counter, and the pixel-art battery icon in the top-right corner.
 
-- `[████]` = 76-100% battery
-- `[███ ]` = 51-75%
-- `[██  ]` = 26-50%
-- `[█   ]` = 11-25%
+- `[####]` = 76-100% battery
+- `[### ]` = 51-75%
+- `[##  ]` = 26-50%
+- `[#   ]` = 11-25%
 - `[!   ]` blinking = 10% or less
 - `[ C  ]` = charging detected (TP4056 STDBY pin low)
 

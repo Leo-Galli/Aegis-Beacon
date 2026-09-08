@@ -66,15 +66,45 @@ import Layout from '../layouts/Layout.astro';
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
-     FIELD - the device in context
+     CONSOLE - live firmware readout beside the field story
+     (one dark instrument moment; no repeated hero photo)
      ═══════════════════════════════════════════════════════════ -->
 <section class="section container" data-rv>
-  <div class="banner-showcase">
-    <div class="banner-img-wrap" data-parallax="0.14">
-      <img src="/banner.png" alt="Aegis-Beacon emergency radio device in the field" class="banner-image" loading="lazy" />
+  <div class="sig-grid">
+    <div class="console-panel" aria-hidden="true">
+      <div class="console-panel__head">
+        <span class="console-panel__title">Aegis-Beacon - live firmware console</span>
+        <span class="console-panel__live">TX active</span>
+      </div>
+      <div class="console-panel__lines">
+        <div class="console-panel__line"><span class="console-panel__t">MODE</span><span class="console-panel__v console-panel__v--sig">BEACON</span></div>
+        <div class="console-panel__line"><span class="console-panel__t">PAYLOAD</span><span class="console-panel__v">SOS ... --- ... LEO-GALLI 46.4983N 11.3558E</span></div>
+        <hr class="console-panel__sep" />
+        <div class="console-panel__line"><span class="console-panel__t">FREQ</span><span class="console-panel__v">433.500 MHz</span><span class="console-panel__t" style="min-width:6ch">PWR</span><span class="console-panel__v">+17 dBm</span></div>
+        <div class="console-panel__line"><span class="console-panel__t">GPS</span><span class="console-panel__v console-panel__v--ok">FIX 3D</span><span class="console-panel__t" style="min-width:6ch">BAT</span><span class="console-panel__v">3.7 V</span></div>
+        <div class="console-panel__line"><span class="console-panel__t">SLEEP</span><span class="console-panel__v">10 uA / 30 s watchdog</span><span class="console-panel__t" style="min-width:6ch">RUN</span><span class="console-panel__v">65 h+</span></div>
+      </div>
+      <div class="console-panel__foot">
+        <span>CW <b>Morse</b></span>
+        <span>Radio <b>SX1262</b></span>
+        <span>MCU <b>ESP32</b></span>
+        <span>Rx <b>any SDR</b></span>
+      </div>
     </div>
-    <div class="banner-overlay">
-      <p class="banner-caption">Aegis-Beacon v5.5, built for those who save lives</p>
+    <div class="sig-grid__aside">
+      <header class="section-head section-head--left" style="margin-bottom:1.1rem">
+        <h2 class="section-head__title">Built to be heard, not to be found on a network</h2>
+      </header>
+      <p>
+        When every other link drops, a direct radio signal still carries. The beacon
+        encodes your name and position into Morse and sweeps a preloaded list of
+        rescue frequencies, so any receiver tuned to the band can hear you.
+      </p>
+      <ul class="sig-list">
+        <li>One press in BEACON mode starts the full SOS cycle.</li>
+        <li>EMERGENCY raises power to +22 dBm and transmits continuously.</li>
+        <li>No SIM, no account, no network: only the radio in your hand.</li>
+      </ul>
     </div>
   </div>
 </section>

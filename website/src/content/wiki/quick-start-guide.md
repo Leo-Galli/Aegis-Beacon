@@ -92,7 +92,7 @@ pio run --target upload
 |----------------|----------------|
 | Inverted header | `AEGIS-BEACON v5.5` |
 | Subtitle line | Build feature flags (SX1262, GPS, BTN, BAT, SSD1309) |
-| Battery icon + % | e.g. `[███ ] 87%` |
+| Battery icon + % | e.g. `[### ] 87%` |
 | Status bar | `INITIALISING...` then mode name |
 
 If the display stays dark, check that the OLED is on 3.3 V (never 5 V), the software-SPI wiring matches the [GPIO pin map](/wiki/gpio-pin-mapping), and that contrast/`displayInit` completed in the serial log.
