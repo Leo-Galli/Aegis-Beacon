@@ -200,26 +200,26 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
 }
 .btn-cta-ghost:hover { background: color-mix(in srgb, var(--primary-foreground) 12%, transparent); border-color: color-mix(in srgb, var(--primary-foreground) 65%, transparent); transform: translateY(-1px); }
 
-/* ─── 9. Hero (asymmetric split) ─── */
+/* ─── 9. Hero (specimen plate + signal tape) ─── */
 .hero-wrap { position: relative; isolation: isolate; overflow: hidden; }
 .hero-section {
-  position: relative; padding: clamp(3rem, 7vw, 5.5rem) 0 clamp(3rem, 6vw, 4.5rem);
+  position: relative; padding: clamp(3rem, 7vw, 5.5rem) 0 clamp(2.5rem, 5vw, 3.5rem);
 }
 .hero-grid {
   display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: center;
 }
 @media (min-width: 900px) {
-  .hero-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 3.5rem; }
+  .hero-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 3.5rem; }
   .hero-copy { padding-inline-start: clamp(0rem, 2vw, 2.5rem); }
 }
-.hero-copy { display: grid; gap: 1.25rem; justify-items: start; }
-.hero-kicker {
-  display: inline-flex; align-items: center; gap: 0.6rem;
-  font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500;
-  letter-spacing: 0.06em; color: var(--primary);
+.hero-copy { display: grid; gap: 1.15rem; justify-items: start; }
+.hero-stamp {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500;
+  letter-spacing: 0.06em; color: var(--muted-foreground);
 }
-.hero-kicker::before {
-  content: ""; width: 2.25rem; height: 2px; border-radius: 1px;
+.hero-stamp::before {
+  content: ""; width: 7px; height: 7px; border-radius: 1px;
   background: var(--primary);
 }
 .hero-title {
@@ -230,53 +230,127 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
   margin: 0; color: var(--muted-foreground); font-size: clamp(0.98rem, 1.3vw, 1.1rem);
   line-height: 1.7; max-width: 44ch;
 }
-.hero-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.hero-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 0.35rem; }
 
-/* device frame + spec rail */
-.hero-device { display: grid; gap: 1rem; }
-.device-frame {
-  border: 1px solid var(--border-strong); border-radius: var(--radius-2xl);
-  overflow: hidden; background: var(--card); box-shadow: var(--shadow-lg);
+/* hairline key-spec strip under the copy */
+.hero-stats {
+  display: flex; flex-wrap: wrap; gap: 0;
+  margin: 0.85rem 0 0; padding: 0; list-style: none;
+  border-block: 1px solid var(--border);
 }
-.device-frame__bar {
+.hero-stats li {
+  display: flex; flex-direction: column; gap: 0.18rem;
+  padding: 0.7rem 1.15rem 0.7rem 0; margin-right: 1.15rem;
+}
+.hero-stats li + li { border-left: 1px solid var(--border); padding-left: 1.15rem; }
+.hero-stats span { font-size: 0.66rem; letter-spacing: 0.04em; color: var(--muted-foreground); }
+.hero-stats b {
+  font-family: var(--font-mono); font-size: 0.9rem; font-weight: 600;
+  color: var(--foreground); font-variant-numeric: tabular-nums;
+}
+
+/* specimen plate: the device as a field-manual figure */
+.hero-specimen { display: grid; gap: 0.9rem; }
+.specimen-plate {
+  position: relative;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-2xl);
+  padding: 0.65rem; background: var(--card); box-shadow: var(--shadow-lg);
+}
+.specimen-plate::before,
+.specimen-plate::after {
+  content: ""; position: absolute; width: 18px; height: 18px; pointer-events: none;
+}
+.specimen-plate::before {
+  top: -1px; left: -1px;
+  border-top: 2px solid var(--primary); border-left: 2px solid var(--primary);
+  border-top-left-radius: 6px;
+}
+.specimen-plate::after {
+  bottom: -1px; right: -1px;
+  border-bottom: 2px solid var(--primary); border-right: 2px solid var(--primary);
+  border-bottom-right-radius: 6px;
+}
+.specimen-plate__bar {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  padding: 0.55rem 1.1rem; border-bottom: 1px solid var(--border);
+  padding: 0.3rem 0.55rem 0.65rem;
+}
+.specimen-plate__fig {
+  font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em;
+  color: var(--muted-foreground);
+}
+.specimen-chip {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--success);
+}
+.specimen-chip::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--success); box-shadow: 0 0 8px var(--success);
+}
+.specimen-plate__img {
+  border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;
+  background-color: var(--muted);
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.specimen-image { width: 100%; height: auto; display: block; }
+.specimen-caption {
+  margin: 0.15rem 0 0; font-size: 0.82rem; color: var(--muted-foreground);
+  line-height: 1.6; max-width: 46ch;
+}
+
+/* signal tape: the real payload waveform + rescue-band ruler */
+.hero-tape {
+  margin-top: clamp(2.25rem, 4.5vw, 3.5rem);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-xl);
+  overflow: hidden; background: var(--card); box-shadow: var(--shadow-md);
+}
+.hero-tape__top {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: 0.6rem 1.1rem; border-bottom: 1px solid var(--border);
   background: var(--muted);
 }
-.device-frame__title {
-  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 500;
-  letter-spacing: 0.1em; color: var(--muted-foreground);
+.hero-tape__live {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--success);
 }
-.device-frame__status {
-  font-family: var(--font-mono); font-size: 0.64rem; font-weight: 600;
-  letter-spacing: 0.14em; color: var(--primary); text-transform: uppercase;
+.hero-tape__live::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--success); box-shadow: 0 0 8px var(--success);
 }
-.device-image { width: 100%; height: auto; display: block; }
-.spec-rail {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 0;
-  border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden;
-  margin: 0; background: var(--card);
+.hero-tape__meta {
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.04em;
+  color: var(--muted-foreground);
 }
-@media (min-width: 640px) { .spec-rail { grid-template-columns: repeat(6, 1fr); } }
-.spec-rail__item {
-  padding: 0.75rem 0.9rem; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+.hero-tape__signal {
+  padding: 1.1rem 1.1rem 0.7rem;
+  overflow-x: auto;
 }
-.spec-rail__item:nth-child(2n) { border-right: none; }
-@media (min-width: 640px) {
-  .spec-rail__item { border-bottom: none; }
-  .spec-rail__item:nth-child(2n) { border-right: 1px solid var(--border); }
-  .spec-rail__item:nth-child(6n) { border-right: none; }
+.hero-tape__signal svg {
+  display: block; width: 100%; height: 12px;
 }
-@media (max-width: 639px) {
-  .spec-rail__item:nth-last-child(-n+2) { border-bottom: none; }
+.hero-tape__signal rect { fill: var(--primary); }
+.hero-tape__ruler {
+  position: relative;
+  display: flex; justify-content: space-between;
+  padding: 0.5rem 1.1rem 1.05rem;
 }
-.spec-rail dt {
-  font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.12em;
-  color: var(--muted-foreground); margin-bottom: 0.3rem;
+.hero-tape__ruler::before {
+  content: ""; position: absolute; left: 1.1rem; right: 1.1rem; top: 0.5rem;
+  height: 1px; background: var(--border);
 }
-.spec-rail dd {
-  margin: 0; font-family: var(--font-mono); font-size: 0.92rem; font-weight: 600;
-  font-variant-numeric: tabular-nums; color: var(--foreground);
+.hero-tape__ruler span {
+  position: relative; padding-top: 0.9rem;
+  font-family: var(--font-mono); font-size: 0.62rem;
+  color: var(--muted-foreground); font-variant-numeric: tabular-nums;
+}
+.hero-tape__ruler span::before {
+  content: ""; position: absolute; top: 0.3rem; left: 50%;
+  width: 1px; height: 0.4rem; background: var(--border-strong);
+  transform: translateX(-50%);
 }
 
 /* ─── 10. Design cards (asymmetric) ─── */
@@ -537,13 +611,16 @@ html.motion-ok [data-rv].is-in {
 @media (max-width: 899px) {
   .hero-grid { gap: 3rem; }
   .hero-copy { justify-items: center; text-align: center; gap: 1.1rem; }
-  .hero-kicker { width: fit-content; }
+  .hero-stamp { width: fit-content; }
   .hero-title { margin-inline: auto; }
   .hero-sub { margin-inline: auto; }
-  .hero-device {
+  .hero-specimen {
     width: min(100%, 34rem); margin-inline: auto;
     justify-self: center;
   }
+  .hero-tape { overflow: hidden; }
+  .hero-tape__ruler span:nth-child(2),
+  .hero-tape__ruler span:nth-child(4) { display: none; }
 }
 @media (max-width: 560px) {
   .hero-actions {
@@ -559,7 +636,7 @@ html.motion-ok [data-rv].is-in {
   .design-card { padding: 1.3rem; }
 }
 @media (min-width: 900px) {
-  .hero-device { width: 100%; }
+  .hero-specimen { width: 100%; }
 }
 
 /* ─── 22. Ambient page tint (static, no animation) ─── */
@@ -660,53 +737,13 @@ html.motion-ok [data-rv].is-in {
 .design-card:hover::before,
 .design-card:hover::after { opacity: 0.85; }
 
-/* ─── 27. Hero live-readout strip ───
-   A mono instrument readout under the device photo: frequency,
-   coordinates, power, status. Reinforces the console identity. */
-.hero-readout {
-  display: flex; flex-wrap: wrap; gap: 0;
-  width: 100%;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--card);
-  box-shadow: var(--shadow-sm);
-}
-.hero-readout__cell {
-  display: flex; flex-direction: column; gap: 0.14rem;
-  padding: 0.55rem 0.8rem;
-  flex: 1 1 auto; min-width: 92px;
-  border-right: 1px solid var(--border);
-}
-.hero-readout__cell:last-child { border-right: none; }
-.hero-readout__label {
-  font-family: var(--font-mono);
-  font-size: 0.55rem; font-weight: 600;
-  letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--muted-foreground);
-}
-.hero-readout__value {
-  font-family: var(--font-mono);
-  font-size: 0.78rem; font-weight: 600;
-  color: var(--foreground);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.hero-readout__value--ok { color: var(--success); }
-.hero-readout__value--warn { color: var(--warning); }
-
-/* TX status LED on the device frame */
-.device-frame__status { display: inline-flex; align-items: center; }
-.device-frame__status::before {
-  content: "";
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: #22c55e;
-  margin-right: 0.45rem;
-  box-shadow: 0 0 8px #22c55e;
-}
+/* ─── 27. TX status pulse ───
+   Shared by the specimen-plate chip and the signal-tape "on air" dot.
+   Animated only when motion is allowed; static otherwise. */
 @media (prefers-reduced-motion: no-preference) {
-  .device-frame__status::before { animation: statusPulse 2.2s ease-in-out infinite; }
+  .specimen-chip::before, .hero-tape__live::before {
+    animation: statusPulse 2.2s ease-in-out infinite;
+  }
   @keyframes statusPulse { 50% { opacity: 0.35; } }
 }
 
@@ -884,7 +921,7 @@ html.motion-ok [data-rv].is-in {
 
 /* ─── 35. Reduced motion for the new touches ─── */
 @media (prefers-reduced-motion: reduce) {
-  .device-frame__status::before { animation: none; }
+  .specimen-chip::before, .hero-tape__live::before { animation: none; }
   .design-card::before, .design-card::after { transition: none; }
   .prose-wiki details summary::after { transition: none; }
 }
@@ -930,7 +967,7 @@ html.motion-ok [data-rv].is-in {
 
 /* cards: hairline-first, shadow only on hover */
 .design-card, .wiki-group-card, .wiki-tile,
-.modes-console, .spec-rail, .device-frame {
+.modes-console {
   box-shadow: none;
 }
 .design-card { background: color-mix(in srgb, var(--card) 92%, var(--muted)); }
@@ -1046,7 +1083,7 @@ html.motion-ok [data-rv].is-in {
 }
 
 /* ─── 41. Wiki home & article refinement ─── */
-.wiki-home__hero .hero-kicker { margin-inline: auto; }
+.wiki-home__hero .hero-stamp { margin-inline: auto; }
 .wiki-home__title { font-weight: 700; }
 .wiki-tile { position: relative; }
 .wiki-tile:hover { border-color: color-mix(in srgb, var(--primary) 45%, var(--border)); }

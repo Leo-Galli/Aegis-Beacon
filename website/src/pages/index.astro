@@ -1,5 +1,35 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+// Morse waveform for the hero signal tape, generated directly from the
+// payload string so it always matches the firmware's real transmission.
+const MORSE: Record<string, string> = {
+  A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.',
+  H: '....', I: '..', J: '.---', K: '-.-', L: '.-..', M: '--', N: '-.',
+  O: '---', P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-', U: '..-',
+  V: '...-', W: '.--', X: '-..-', Y: '-.--', Z: '--..',
+  '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
+  '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+  '.': '.-.-.-',
+};
+const PAYLOAD = 'SOS LEO-GALLI 46.4983N 11.3558E';
+const UNIT = 5;
+let sigX = 0;
+const sigRects: string[] = [];
+for (const ch of PAYLOAD) {
+  const code = MORSE[ch];
+  if (!code || ch === ' ') {
+    sigX += UNIT * 6;
+    continue;
+  }
+  for (const g of code) {
+    const w = g === '.' ? UNIT : UNIT * 3;
+    sigRects.push(`<rect x="${sigX}" y="2.5" width="${w}" height="3.5"/>`);
+    sigX += w + UNIT;
+  }
+  sigX += UNIT * 2;
+}
+const sigSvg = `<svg viewBox="0 0 ${sigX} 8" preserveAspectRatio="none" role="presentation">${sigRects.join('')}</svg>`;
 ---
 
 <Layout
@@ -25,41 +55,51 @@ import Layout from '../layouts/Layout.astro';
   <section class="hero-section container">
     <div class="hero-grid">
       <div class="hero-copy">
-        <p class="hero-kicker">Open-source LoRa emergency radio</p>
+        <p class="hero-stamp">Field rescue radio - 433 MHz - v5.5</p>
         <h1 class="hero-title">A rescue beacon that broadcasts your position when every network is gone.</h1>
         <p class="hero-sub">
-          Radio-location system for mountain rescue and SAR teams, built from
+          Radio-location for mountain rescue and SAR teams, built from
           off-the-shelf parts. No GSM, no subscriptions, no network to transmit.
         </p>
         <div class="hero-actions">
           <a href="/wiki" class="btn btn-primary">Read the docs</a>
           <a href="/demo" class="btn btn-secondary">Try the live demo</a>
         </div>
+        <ul class="hero-stats" aria-label="Key specifications">
+          <li><span>Bill of materials</span><b>$23-28</b></li>
+          <li><span>Band</span><b>410-525 MHz</b></li>
+          <li><span>Runtime</span><b>65h+</b></li>
+          <li><span>Range</span><b>15 km</b></li>
+          <li><span>Deep sleep</span><b>10 uA</b></li>
+        </ul>
       </div>
 
-      <div class="hero-device" data-rv="scale">
-        <div class="device-frame">
-          <div class="device-frame__bar">
-            <span class="device-frame__title">AEGIS-BEACON</span>
-            <span class="device-frame__status">TX ACTIVE</span>
+      <div class="hero-specimen" data-rv="scale">
+        <div class="specimen-plate">
+          <div class="specimen-plate__bar">
+            <span class="specimen-plate__fig">Fig. 01 - Aegis-Beacon unit</span>
+            <span class="specimen-chip">TX active</span>
           </div>
-          <img src="/banner.png" alt="Aegis-Beacon emergency radio device" class="device-image" loading="eager" width="1672" height="941" />
+          <div class="specimen-plate__img">
+            <img src="/banner.png" alt="Aegis-Beacon emergency radio device" class="specimen-image" loading="eager" width="1672" height="941" />
+          </div>
         </div>
-        <div class="hero-readout" aria-hidden="true">
-          <span class="hero-readout__cell"><span class="hero-readout__label">Freq</span><span class="hero-readout__value">433.500</span></span>
-          <span class="hero-readout__cell"><span class="hero-readout__label">Lat</span><span class="hero-readout__value">46.4983 N</span></span>
-          <span class="hero-readout__cell"><span class="hero-readout__label">Lon</span><span class="hero-readout__value">11.3558 E</span></span>
-          <span class="hero-readout__cell"><span class="hero-readout__label">Pwr</span><span class="hero-readout__value">+17 dBm</span></span>
-          <span class="hero-readout__cell"><span class="hero-readout__label">Stat</span><span class="hero-readout__value hero-readout__value--ok">TX OK</span></span>
-        </div>
-        <dl class="spec-rail">
-          <div class="spec-rail__item"><dt>BOM</dt><dd>$23-28</dd></div>
-          <div class="spec-rail__item"><dt>Band</dt><dd>410-525 MHz</dd></div>
-          <div class="spec-rail__item"><dt>Runtime</dt><dd>65h+</dd></div>
-          <div class="spec-rail__item"><dt>Range</dt><dd>15 km</dd></div>
-          <div class="spec-rail__item"><dt>Deep sleep</dt><dd>10 uA</dd></div>
-          <div class="spec-rail__item"><dt>Modes</dt><dd>4</dd></div>
-        </dl>
+        <p class="specimen-caption">Radio, GPS and display in a pocket-sized case. One button starts the beacon.</p>
+      </div>
+    </div>
+
+    <div class="hero-tape" data-rv>
+      <div class="hero-tape__top">
+        <span class="hero-tape__live">On air</span>
+        <span class="hero-tape__meta">433.500 MHz - SOS LEO-GALLI 46.4983N 11.3558E - CW 20 WPM</span>
+      </div>
+      <div class="hero-tape__signal" aria-hidden="true" set:html={sigSvg}></div>
+      <div class="hero-tape__ruler" aria-hidden="true">
+        <span>433.400</span>
+        <span>433.425</span>
+        <span>433.450</span>
+        <span>433.475</span>
+        <span>433.500</span>
       </div>
     </div>
   </section>
