@@ -355,7 +355,8 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
 @media (prefers-reduced-motion: no-preference) {
   .hero-tape__carrier {
     opacity: 1;
-    animation: carrierSweep 7s linear infinite;
+    /* duration set from the payload's real CW transmission time at 20 WPM */
+    animation: carrierSweep var(--carrier-dur, 7s) linear infinite;
   }
   @keyframes carrierSweep {
     from { left: 0%; }

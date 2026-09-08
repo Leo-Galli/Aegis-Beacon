@@ -14,21 +14,34 @@ const MORSE: Record<string, string> = {
 };
 const PAYLOAD = 'SOS LEO-GALLI 46.4983N 11.3558E';
 const UNIT = 5;
+// CW timing (PARIS standard): one unit = 1200 / WPM ms, inter-character
+// gap = 3 units, inter-word gap = 7 units. Used to time the carrier sweep
+// to the payload's real transmission duration at the configured speed.
+const WPM = 20;
 let sigX = 0;
+let sigUnits = 0;
+let prevWasChar = false;
 const sigRects: string[] = [];
 for (const ch of PAYLOAD) {
   const code = MORSE[ch];
   if (!code || ch === ' ') {
     sigX += UNIT * 6;
+    sigUnits += 7;
+    prevWasChar = false;
     continue;
   }
+  if (prevWasChar) sigUnits += 3;
+  let units = 0;
   for (const g of code) {
     const w = g === '.' ? UNIT : UNIT * 3;
     sigRects.push(`<rect x="${sigX}" y="2.5" width="${w}" height="3.5"/>`);
     sigX += w + UNIT;
+    units += g === '.' ? 1 : 3;
   }
-  sigX += UNIT * 2;
+  sigUnits += units + (code.length - 1);
+  prevWasChar = true;
 }
+const sigDurationMs = Math.round((sigUnits * 1200) / WPM);
 const sigSvg = `<svg viewBox="0 0 ${sigX} 8" preserveAspectRatio="none" role="presentation">${sigRects.join('')}</svg>`;
 ---
 
@@ -95,7 +108,7 @@ const sigSvg = `<svg viewBox="0 0 ${sigX} 8" preserveAspectRatio="none" role="pr
       </div>
       <div class="hero-tape__signal" aria-hidden="true">
         <div class="hero-tape__trace">
-          <span class="hero-tape__carrier"></span>
+          <span class="hero-tape__carrier" style={`--carrier-dur: ${sigDurationMs}ms`}></span>
           <div set:html={sigSvg}></div>
         </div>
       </div>
