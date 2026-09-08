@@ -90,6 +90,35 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </div>
   </div>
+
+  <!-- ═══ Live transmission tape ═══ -->
+  <section class="demo-tape" data-rv>
+    <header class="section-head">
+      <h2 class="section-head__title">Live transmission</h2>
+      <p class="section-head__lead">
+        The payload below, as Morse on the carrier. Edit the text or drag
+        the WPM slider and the sweep re-times itself to the real on-air duration.
+      </p>
+    </header>
+    <div class="hero-tape">
+      <div class="hero-tape__top">
+        <span class="hero-tape__live">On air</span>
+        <span class="hero-tape__meta">Payload <b id="tape-payload-label">SOS LEO-GALLI 46.4983N 11.3558E</b> - CW <b id="tape-wpm-label">12</b> WPM</span>
+      </div>
+      <div class="hero-tape__signal">
+        <div class="hero-tape__trace">
+          <span class="hero-tape__carrier" id="tape-carrier"></span>
+          <div id="tape-waveform"></div>
+        </div>
+      </div>
+      <div class="demo-tape__controls">
+        <label for="payload-input">Payload
+          <input type="text" id="payload-input" class="payload-input" value="SOS LEO-GALLI 46.4983N 11.3558E" spellcheck="false" autocomplete="off" />
+        </label>
+        <span class="demo-tape__time" id="tape-time">On air 36.9 s at 12 WPM</span>
+      </div>
+    </div>
+  </section>
 </div>
 
 <script>
@@ -109,6 +138,69 @@ import Layout from '../layouts/Layout.astro';
   let txActive = true;
 
   const MODES = ['beacon', 'search', 'config', 'emergency'];
+
+  // ── Live transmission tape ────────────────────────────────
+  // Renders the editable payload as Morse and times the carrier sweep
+  // to the real CW on-air duration at the current WPM (PARIS standard:
+  // one unit = 1200 / WPM ms, char gap 3 units, word gap 7 units).
+  const MORSE: Record<string, string> = {
+    A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.',
+    H: '....', I: '..', J: '.---', K: '-.-', L: '.-..', M: '--', N: '-.',
+    O: '---', P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-', U: '..-',
+    V: '...-', W: '.--', X: '-..-', Y: '-.--', Z: '--..',
+    '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
+    '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+    '.': '.-.-.-',
+  };
+  const tapeWaveform = document.getElementById('tape-waveform');
+  const tapeCarrier = document.getElementById('tape-carrier');
+  const tapeTime = document.getElementById('tape-time');
+  const tapePayloadLabel = document.getElementById('tape-payload-label');
+  const tapeWpmLabel = document.getElementById('tape-wpm-label');
+  const payloadInput = document.getElementById('payload-input') as HTMLInputElement;
+
+  function buildWaveform(payload: string) {
+    const UNIT = 6;
+    let x = 0;
+    let units = 0;
+    let prevChar = false;
+    const rects: string[] = [];
+    for (const ch of payload.toUpperCase()) {
+      const code = MORSE[ch];
+      if (!code || ch === ' ') {
+        x += UNIT * 6;
+        units += 7;
+        prevChar = false;
+        continue;
+      }
+      if (prevChar) units += 3;
+      let u = 0;
+      for (const g of code) {
+        const w = g === '.' ? UNIT : UNIT * 3;
+        rects.push(`<rect x="${x}" y="2.5" width="${w}" height="3.5"/>`);
+        x += w + UNIT;
+        u += g === '.' ? 1 : 3;
+      }
+      units += u + (code.length - 1);
+      prevChar = true;
+    }
+    const ms = Math.round((units * 1200) / wpm);
+    return {
+      svg: `<svg viewBox="0 0 ${x} 8" preserveAspectRatio="none" role="presentation">${rects.join('')}</svg>`,
+      ms,
+    };
+  }
+
+  function updateTape() {
+    if (!tapeWaveform || !tapeCarrier || !tapeTime) return;
+    const payload = payloadInput.value.trim() || 'SOS';
+    const { svg, ms } = buildWaveform(payload);
+    tapeWaveform.innerHTML = svg;
+    tapeCarrier.style.setProperty('--carrier-dur', ms + 'ms');
+    tapeTime.textContent = `On air ${(ms / 1000).toFixed(1)} s at ${wpm} WPM`;
+    if (tapePayloadLabel) tapePayloadLabel.textContent = payload;
+    if (tapeWpmLabel) tapeWpmLabel.textContent = String(wpm);
+  }
 
 
   function updateDisplay() {
@@ -148,6 +240,7 @@ import Layout from '../layouts/Layout.astro';
     const lineClasses = ['oled-line', 'oled-line dim', 'oled-line accent', 'oled-line', 'oled-line dim'];
     const data = lines[currentMode] || lines.beacon;
     oled.innerHTML = data.map((text, i) => `<div class="${lineClasses[i] || 'oled-line'}">${text}</div>`).join('');
+    updateTape();
   }
 
   function selectMode(mode: string) {
@@ -209,6 +302,8 @@ import Layout from '../layouts/Layout.astro';
   wpmSlider?.addEventListener('input', () => { wpm = parseInt(wpmSlider.value); document.getElementById('wpm-value')!.textContent = wpm + ' WPM'; updateDisplay(); });
   powerSlider?.addEventListener('input', () => { power = parseInt(powerSlider.value); document.getElementById('power-value')!.textContent = '+' + power + ' dBm'; updateDisplay(); });
   batterySlider?.addEventListener('input', () => { battery = parseInt(batterySlider.value); document.getElementById('battery-value')!.textContent = battery + '%'; updateDisplay(); });
+  payloadInput?.addEventListener('input', updateTape);
+  updateTape();
 </script>
 
 <style>
@@ -282,6 +377,36 @@ import Layout from '../layouts/Layout.astro';
     margin: 0.75rem 0 0; text-align: center;
     font-size: 0.7rem; color: var(--muted-foreground);
     font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em;
+  }
+
+  /* Live transmission tape */
+  .demo-tape {
+    max-width: 900px; margin: 3rem auto 0;
+  }
+  .demo-tape .hero-tape { margin-top: 0; }
+  .demo-tape__controls {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+    padding: 0.85rem 1.1rem; border-top: 1px solid var(--border);
+  }
+  .demo-tape__controls label {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    font-size: 0.78rem; font-weight: 600; color: var(--muted-foreground);
+  }
+  .payload-input {
+    padding: 0.45rem 0.7rem; font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+    background: var(--background); color: var(--foreground);
+    width: min(24rem, 100%);
+  }
+  .payload-input:focus {
+    outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+  .demo-tape__time {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    color: var(--muted-foreground); letter-spacing: 0.04em; white-space: nowrap;
   }
 </style>
 </Layout>
