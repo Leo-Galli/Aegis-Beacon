@@ -8,30 +8,32 @@
    via @fontsource — no external requests.
    ============================================================ */
 
-/* ─── 1. Color Tokens ─── */
+/* ─── 1. Color Tokens ───
+   Palette: cool technical paper, near-black ink, signal orange as the
+   only saturated accent. Deliberately not a warm cream + clay pairing. */
 :root {
   color-scheme: light;
-  --background: oklch(0.985 0 0deg);          /* near-white warm */
-  --foreground: oklch(0.16 0.008 40deg);      /* ink */
-  --card: oklch(1 0 0deg);
-  --card-foreground: oklch(0.16 0.008 40deg);
-  --primary: oklch(0.63 0.2 50deg);           /* signal orange */
-  --primary-hover: oklch(0.55 0.21 50deg);
+  --background: oklch(0.972 0.002 90deg);     /* cool paper, no warm cream */
+  --foreground: oklch(0.14 0.006 250deg);     /* cool ink */
+  --card: oklch(0.998 0 90deg);
+  --card-foreground: oklch(0.14 0.006 250deg);
+  --primary: oklch(0.6 0.185 45deg);          /* signal orange */
+  --primary-hover: oklch(0.53 0.19 45deg);
   --primary-foreground: oklch(0.99 0 0deg);   /* white on orange — AA */
-  --secondary: oklch(0.968 0.004 50deg);
-  --secondary-foreground: oklch(0.2 0.01 40deg);
-  --secondary-hover: oklch(0.94 0.006 50deg);
-  --muted: oklch(0.966 0.004 50deg);
-  --muted-foreground: oklch(0.46 0.01 40deg); /* on white: >= 7:1 */
-  --accent: oklch(0.962 0.006 50deg);
-  --accent-foreground: oklch(0.2 0.01 40deg);
-  --border: oklch(0.9 0.006 50deg);
-  --border-strong: oklch(0.82 0.012 50deg);
-  --ring: oklch(0.55 0.19 50deg);
+  --secondary: oklch(0.958 0.003 90deg);
+  --secondary-foreground: oklch(0.19 0.01 250deg);
+  --secondary-hover: oklch(0.93 0.006 90deg);
+  --muted: oklch(0.952 0.003 90deg);
+  --muted-foreground: oklch(0.42 0.012 250deg); /* on white: >= 7:1 */
+  --accent: oklch(0.945 0.006 90deg);
+  --accent-foreground: oklch(0.19 0.01 250deg);
+  --border: oklch(0.885 0.008 90deg);
+  --border-strong: oklch(0.78 0.014 90deg);
+  --ring: oklch(0.52 0.17 45deg);
   --destructive: oklch(0.55 0.2 27deg);
-  --success: oklch(0.5 0.14 152deg);
-  --warning: oklch(0.62 0.15 78deg);
-  --info: oklch(0.42 0.02 230deg);
+  --success: oklch(0.48 0.13 152deg);
+  --warning: oklch(0.6 0.14 78deg);
+  --info: oklch(0.4 0.03 230deg);
   --surface-invert: oklch(0.13 0.004 50deg);
   --surface-invert-fg: oklch(0.97 0 0deg);
 
@@ -63,29 +65,29 @@
 
 .dark {
   color-scheme: dark;
-  --background: oklch(0.145 0.004 50deg);      /* graphite */
-  --foreground: oklch(0.94 0.002 50deg);
-  --card: oklch(0.19 0.005 50deg);
-  --card-foreground: oklch(0.94 0.002 50deg);
-  --primary: oklch(0.71 0.19 50deg);           /* brighter orange for dark bg */
-  --primary-hover: oklch(0.76 0.17 50deg);
-  --primary-foreground: oklch(0.16 0.004 50deg); /* dark on orange — AA */
-  --secondary: oklch(0.235 0.006 50deg);
-  --secondary-foreground: oklch(0.93 0.003 50deg);
-  --secondary-hover: oklch(0.28 0.008 50deg);
-  --muted: oklch(0.225 0.006 50deg);
-  --muted-foreground: oklch(0.72 0.008 50deg); /* on graphite: >= 7:1 */
-  --accent: oklch(0.235 0.008 50deg);
-  --accent-foreground: oklch(0.93 0.003 50deg);
-  --border: oklch(0.27 0.008 50deg);
-  --border-strong: oklch(0.36 0.01 50deg);
-  --ring: oklch(0.72 0.18 50deg);
+  --background: oklch(0.14 0.004 250deg);      /* cool graphite */
+  --foreground: oklch(0.94 0.002 250deg);
+  --card: oklch(0.185 0.005 250deg);
+  --card-foreground: oklch(0.94 0.002 250deg);
+  --primary: oklch(0.71 0.19 45deg);           /* brighter orange for dark bg */
+  --primary-hover: oklch(0.76 0.17 45deg);
+  --primary-foreground: oklch(0.16 0.004 45deg); /* dark on orange — AA */
+  --secondary: oklch(0.23 0.006 250deg);
+  --secondary-foreground: oklch(0.93 0.003 250deg);
+  --secondary-hover: oklch(0.28 0.008 250deg);
+  --muted: oklch(0.22 0.006 250deg);
+  --muted-foreground: oklch(0.72 0.01 250deg); /* on graphite: >= 7:1 */
+  --accent: oklch(0.23 0.008 250deg);
+  --accent-foreground: oklch(0.93 0.003 250deg);
+  --border: oklch(0.27 0.01 250deg);
+  --border-strong: oklch(0.37 0.014 250deg);
+  --ring: oklch(0.72 0.18 45deg);
   --destructive: oklch(0.72 0.17 25deg);
   --success: oklch(0.74 0.14 152deg);
   --warning: oklch(0.8 0.14 80deg);
   --info: oklch(0.76 0.03 230deg);
-  --surface-invert: oklch(0.94 0.002 50deg);
-  --surface-invert-fg: oklch(0.145 0.004 50deg);
+  --surface-invert: oklch(0.94 0.002 250deg);
+  --surface-invert-fg: oklch(0.145 0.004 250deg);
 
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 30%);
   --shadow-md: 0 2px 8px -2px rgb(0 0 0 / 45%), 0 8px 20px -8px rgb(0 0 0 / 40%);
@@ -212,16 +214,20 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
 }
 .hero-copy { display: grid; gap: 1.25rem; justify-items: start; }
 .hero-kicker {
-  font-family: var(--font-mono); font-size: 0.82rem; font-weight: 500;
-  letter-spacing: 0.02em; color: var(--primary);
-  padding-bottom: 0.5rem; border-bottom: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500;
+  letter-spacing: 0.06em; color: var(--primary);
+}
+.hero-kicker::before {
+  content: ""; width: 2.25rem; height: 2px; border-radius: 1px;
+  background: var(--primary);
 }
 .hero-title {
-  margin: 0; font-size: clamp(2rem, 4.4vw, 3.15rem); font-weight: 700;
-  letter-spacing: -0.02em; line-height: 1.08; max-width: 21ch;
+  margin: 0; font-size: clamp(2.15rem, 4.6vw, 3.4rem); font-weight: 700;
+  letter-spacing: -0.025em; line-height: 1.05; max-width: 20ch;
 }
 .hero-sub {
-  margin: 0; color: var(--muted-foreground); font-size: clamp(0.98rem, 1.3vw, 1.08rem);
+  margin: 0; color: var(--muted-foreground); font-size: clamp(0.98rem, 1.3vw, 1.1rem);
   line-height: 1.7; max-width: 44ch;
 }
 .hero-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 0.5rem; }
@@ -251,20 +257,22 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
   border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden;
   margin: 0; background: var(--card);
 }
-@media (min-width: 480px) { .spec-rail { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 640px) { .spec-rail { grid-template-columns: repeat(6, 1fr); } }
 .spec-rail__item {
-  padding: 0.85rem 1rem; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 0.75rem 0.9rem; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
 }
 .spec-rail__item:nth-child(2n) { border-right: none; }
-@media (min-width: 480px) {
+@media (min-width: 640px) {
+  .spec-rail__item { border-bottom: none; }
   .spec-rail__item:nth-child(2n) { border-right: 1px solid var(--border); }
-  .spec-rail__item:nth-child(3n) { border-right: none; }
+  .spec-rail__item:nth-child(6n) { border-right: none; }
 }
-.spec-rail__item:nth-last-child(-n+2) { border-bottom: none; }
-@media (min-width: 480px) { .spec-rail__item:nth-last-child(-n+3) { border-bottom: none; } }
+@media (max-width: 639px) {
+  .spec-rail__item:nth-last-child(-n+2) { border-bottom: none; }
+}
 .spec-rail dt {
-  font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--muted-foreground); margin-bottom: 0.25rem;
+  font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--muted-foreground); margin-bottom: 0.3rem;
 }
 .spec-rail dd {
   margin: 0; font-family: var(--font-mono); font-size: 0.92rem; font-weight: 600;
@@ -281,11 +289,13 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
   .design-card--wide { grid-column: span 2; }
 }
 .design-card {
-  padding: 1.6rem; border: 1px solid var(--border); border-radius: var(--radius-xl);
-  background: var(--card); box-shadow: var(--shadow-sm);
+  position: relative;
+  padding: 1.6rem; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  background: var(--card);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 .design-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.design-card--wide { border-top: 2px solid var(--primary); }
 .design-card h3 { margin-bottom: 0.6rem; font-size: 1.08rem; }
 .design-card p { color: var(--muted-foreground); line-height: 1.65; font-size: 0.9rem; margin: 0; }
 .design-card__code {
