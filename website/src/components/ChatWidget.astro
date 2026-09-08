@@ -665,6 +665,30 @@
       it: "Il montaggio è un semplice progetto di saldatura: ESP32 DevKit V1, modulo SX1262 E22-400M30S, OLED SSD1309 da 2,42 pollici (SPI a 7 pin, non la variante I2C a 4 pin), GPS NEO-6M opzionale, una cella 18650 e un pannello di pulsanti. La guida Quick Start accompagna passo passo nell'assemblaggio e nel primo avvio.",
       sources: ['quick-start-guide', 'hardware-components', 'antenna-testing-and-tuning'],
     },
+    {
+      match: /(serial bridge|bridge seriale|aegis-serial-bridge|il bridge|what is the bridge|come funziona il bridge|bridge script|bridge\s+python|usare il bridge)/i,
+      en: 'The serial bridge is a cross-platform Python script (bridge/aegis-serial-bridge.py) that connects the beacon over USB on Windows, macOS and Linux. It auto-detects the serial port, reads the machine-readable AEGIS: lines (HELLO, POS, STATE) and forwards live GPS fixes to the website Report Position page, either streaming into an open page or opening it pre-filled. Run it with --tui for a live terminal dashboard that shows device status, the latest position and a scrolling log, and that forwards typed commands like FREQ, WPM, MODE and STATUS to the device.',
+      it: 'Il bridge seriale è uno script Python multipiattaforma (bridge/aegis-serial-bridge.py) che collega il beacon via USB su Windows, macOS e Linux. Rileva automaticamente la porta seriale, legge le righe AEGIS: (HELLO, POS, STATE) e inoltra i fix GPS in tempo reale alla pagina Report Position del sito, sia trasmettendoli in una pagina già aperta sia aprendola già compilata. Con --tui mostra una dashboard da terminale con stato del dispositivo, ultima posizione e log scorrevole, e inoltra comandi come FREQ, WPM, MODE e STATUS al dispositivo.',
+      sources: ['serial-bridge-guide', 'bridge-tui', 'position-reporting'],
+    },
+    {
+      match: /(serial command|comandi serial|aegis:(pos|hello|state|freq|wpm|mode)|serial protocol|protocollo seriale|commands over serial|send.*over serial|comando.*seriale)/i,
+      en: 'Over USB serial you can send newline-terminated commands: FREQ <MHz> sets and persists the transmit frequency (410-525 MHz), FREQ? lists the configured frequencies, WPM <5-40> sets the Morse speed, MODE <BEACON|SEARCH|CONFIG|EMERGENCY> switches mode and reboots, and POS, STATUS and HELP report position, state and the command list. The device answers in machine-readable AEGIS: lines that are plain text, one per line, throttled to at most one position report every 5 seconds.',
+      it: 'Via USB seriale puoi inviare comandi terminati da newline: FREQ <MHz> imposta e salva la frequenza di trasmissione (410-525 MHz), FREQ? elenca le frequenze configurate, WPM <5-40> imposta la velocità Morse, MODE <BEACON|SEARCH|CONFIG|EMERGENCY> cambia modalità e riavvia, mentre POS, STATUS e HELP riportano posizione, stato ed elenco comandi. Il dispositivo risponde con righe AEGIS: in testo semplice, una per riga, limitate ad almeno un report di posizione ogni 5 secondi.',
+      sources: ['serial-command-protocol', 'serial-command-automation', 'frequency-setting-over-serial'],
+    },
+    {
+      match: /(\b(report|share|send)\s+((my|a|the)\s+)?position\b|report-position|segnal\w*\s+(la\s+)?posizione|invia posizione|position.*track|track.*mappa)/i,
+      en: 'The Report Position page (/report-position) receives positions from the serial bridge or from a pasted link and draws the track on a keyless Leaflet map. It auto-fills when the bridge opens it, live-updates as new fixes arrive, offers Google Maps and OpenStreetMap links for sharing, and a copy-link button so you can send the position to a rescue team.',
+      it: 'La pagina Report Position (/report-position) riceve le posizioni dal bridge seriale o da un link incollato e disegna il percorso su una mappa Leaflet senza chiavi API. Si compila da sola quando la apre il bridge, si aggiorna in tempo reale a ogni nuovo fix, offre link a Google Maps e OpenStreetMap per condividere e un pulsante copia-link per inviare la posizione ai soccorritori.',
+      sources: ['report-position-page', 'position-reporting', 'homing-with-bridge'],
+    },
+    {
+      match: /(config dashboard|config-dashboard|captive portal|aegis-setup|192\.168\.4\.1|wifi portal|portale wifi|dashboard di config|dash.*config)/i,
+      en: 'The config dashboard is the captive portal served by the beacon in CONFIG mode: connect to the AEGIS-SETUP WiFi access point and open 192.168.4.1 in a browser. From there you can adjust every parameter - the frequency list, WPM, TX power, sleep interval, scan dwell, RSSI threshold, audio, OLED, GPS and identity - and save them to NVS without reflashing. The portal is offline-first and uses only default system fonts, since it is configured without connectivity. It also exposes a small HTTP API (/status, /save, /emergency, /factory).',
+      it: 'La dashboard di configurazione è il portale captive servito dal beacon in modalità CONFIG: connettiti alla rete WiFi AEGIS-SETUP e apri 192.168.4.1 nel browser. Da lì puoi regolare ogni parametro - elenco frequenze, WPM, potenza TX, intervallo di sleep, dwell di scansione, soglia RSSI, audio, OLED, GPS e identità - e salvarlo in NVS senza riflash. Il portale è offline-first e usa solo i font di sistema, perché si configura senza connessione. Espone anche una piccola API HTTP (/status, /save, /emergency, /factory).',
+      sources: ['config-dashboard', 'config-dashboard-offline-fonts', 'dashboard-http-api'],
+    },
   ];
 
   /** Answer a question from the curated bank when it matches; null otherwise. */
