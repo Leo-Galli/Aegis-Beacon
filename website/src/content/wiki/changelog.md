@@ -18,6 +18,7 @@ All notable changes across firmware, hardware and documentation, mirroring the a
 - **Merged reference documentation**: `DATASHEET.md` is now the single authoritative document (electrical specs, GPIO map, NVS schema, HTTP API, technology stack, global SAR frequency database, serial protocol reference, deep dives and troubleshooting), replacing the standalone FREQUENCIES.md and TECHNOLOGIES.md.
 - **SEO and legal pages**: canonical URLs, Open Graph, Twitter cards and JSON-LD structured data on every page, plus dedicated Disclaimer, Terms of Service and Privacy Policy pages.
 - **Building Effectively wiki section**: six new pages covering build strategy, quality gates, bench fixtures, rework, time planning and build logging.
+- **Hardening pass**: fixed a duplicate user message that appeared when retrying a chat question after a failed local-model load, and made the dashboard CSS extractor scope pseudo-elements on `body`/`:root` and grouped `header` selectors correctly (output-neutral for the current dashboard).
 
 ## Version 5.4
 

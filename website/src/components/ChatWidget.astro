@@ -1208,7 +1208,7 @@
       if (pendingMessage) {
         const msg = pendingMessage;
         pendingMessage = null;
-        void send(msg);
+        void send(msg, true);
       }
     } catch (err) {
       console.error('WebLLM init failed:', err);
@@ -1232,7 +1232,7 @@
 
   // ---- chat -----------------------------------------------------------------
 
-  async function send(text: string): Promise<void> {
+  async function send(text: string, userShown = false): Promise<void> {
     const trimmed = text.trim();
     if (!trimmed || state === 'generating') return;
     if (inputEl) inputEl.value = '';
@@ -1281,7 +1281,9 @@
           suggestionsGone = true;
           messagesEl?.querySelector('.ac-sugg')?.remove();
         }
-        addUserMessage(trimmed);
+        // When this call is the deferred dispatch after the engine finished
+        // loading, the user bubble was already appended on first send.
+        if (!userShown) addUserMessage(trimmed);
         void loadEngine(modelSelect?.value ?? readModel());
       }
       return;
@@ -1292,7 +1294,7 @@
       messagesEl?.querySelector('.ac-sugg')?.remove();
     }
     history = [...history, { role: 'user' as const, content: trimmed }].slice(-MAX_HISTORY);
-    addUserMessage(trimmed);
+    if (!userShown) addUserMessage(trimmed);
 
     setState('generating');
     setStatus('Searching the wiki...');

@@ -653,7 +653,7 @@ Connect at **115200 baud, 8N1**.
 
 | Version | Date | Changes                                                                                                                          |
 |---------|------|----------------------------------------------------------------------------------------------------------------------------------|
-| v5.5    | 2026 | Serial bridge protocol and commands; cross-platform bridge script with a live TUI + command forwarding; Report Position page with live streaming and track map; config dashboard on default system fonts; merged DATASHEET (specs + stack + frequency database + serial reference); SEO and legal pages (disclaimer, terms, privacy); Building Effectively wiki section |
+| v5.5    | 2026 | Serial bridge protocol and commands; cross-platform bridge script with a live TUI + command forwarding; Report Position page with live streaming and track map; config dashboard on default system fonts; merged DATASHEET (specs + stack + frequency database + serial reference); SEO and legal pages (disclaimer, terms, privacy); Building Effectively wiki section; hardening pass (chat retry de-duplication, dashboard CSS scoping robustness) |
 | v5.4    | 2026 | Battery monitor (GPIO 36 divider, 9-point Li-ion curve, pixel-art icon in all headers, CHG indicator, dashboard animated bar); improved OLED graphics across all screens |
 | v5.3    | 2026 | Replaced potentiometers with 4-button control (SW_MODE / SW_SEL / SW_UP / SW_DN); OLED adj overlay; auto-repeat; NVS save via SEL long press |
 | v5.2    | 2026 | Radio upgraded SX1276 → SX1262 (Ebyte E22-400M30S); BUSY pin GPIO 21 mandatory; `ensureSpiStarted()` helper; TCXO 1.6 V parameter |

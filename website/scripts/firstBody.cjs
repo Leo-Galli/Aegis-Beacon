@@ -145,11 +145,19 @@ function scopeCss(css, scopeClass = '.dash-frame-inner') {
       if (sel === ':root') return scopeClass;
       if (sel === 'body') return scopeClass;
       if (sel === '*') return `${scopeClass}, ${scopeClass} *`;
+      // Pseudo-elements on the root/body or standalone (::before, ::selection)
+      // must stay attached to the scope itself, not to a descendant.
+      if (sel.startsWith('body::') || sel.startsWith(':root::')) {
+        return `${scopeClass}${sel.slice(sel.indexOf('::'))}`;
+      }
       if (sel.startsWith('::-webkit-scrollbar')) return `${scopeClass}${sel}`;
+      if (sel.startsWith('::')) return `${scopeClass}${sel}`;
       return `${scopeClass} ${sel}`;
     });
 
-    if (selectorChunk === 'header') {
+    // The top bar is the only element with sticky positioning; make it static
+    // inside the scoped frame even when it shares a selector group.
+    if (selectors.some(s => /^header(\s|$|[.#:])/.test(s))) {
       ruleBody = ruleBody.replace(/position:\s*sticky;?/, 'position:relative;');
       ruleBody += ';border-radius:0;';
     }
