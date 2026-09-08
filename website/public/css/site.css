@@ -603,3 +603,296 @@ html.motion-ok [data-rv].is-in {
   nav, .theme-btn, #scroll-top, .wiki-sidebar, .wiki-toc-container, .wiki-mobile-nav, .wiki-scroll-progress-bar { display: none !important; }
   body { background: #fff; color: #000; }
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   Design System v3 - "field console" identity
+   Topographic contour motif (the mountain-rescue subject), instrument-
+   panel details, and a full pass over how wiki markdown renders.
+   All inline SVG, self-hosted type, zero emoji, no external requests.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ─── 25. Topographic contour motif ───
+   Faint contour lines like a rescue topo map. One inline SVG data URI,
+   reused with different tints and placements, kept well under the
+   visibility threshold so it reads as texture, not decoration. */
+.hero-wrap::after,
+.cta-section::after,
+.section-alt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='405' viewBox='0 0 720 405'%3E%3Cg fill='none' stroke='%23f97316' stroke-width='1'%3E%3Cellipse cx='150' cy='120' rx='55' ry='38'/%3E%3Cellipse cx='150' cy='120' rx='112' ry='80'/%3E%3Cellipse cx='150' cy='120' rx='178' ry='130' transform='rotate(10 150 120)'/%3E%3Cellipse cx='540' cy='280' rx='65' ry='44' transform='rotate(-7 540 280)'/%3E%3Cellipse cx='540' cy='280' rx='132' ry='90' transform='rotate(-7 540 280)'/%3E%3Cpath d='M-20 340 C 110 260 250 315 390 262 C 530 210 620 268 740 228'/%3E%3Cpath d='M-20 372 C 130 300 260 352 400 300 C 540 248 630 300 740 262'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 720px 405px;
+  background-position: 88% 12%;
+  background-repeat: repeat;
+  opacity: 0.07;
+}
+.cta-section::after { background-position: 12% 100%; opacity: 0.09; }
+.section-alt::after { background-position: 95% 85%; opacity: 0.05; }
+.dark .hero-wrap::after { opacity: 0.055; }
+.dark .cta-section::after { opacity: 0.07; }
+.dark .section-alt::after { opacity: 0.04; }
+
+/* keep content above the motif */
+.hero-section,
+.cta-inner,
+.section-alt > .container { position: relative; z-index: 1; }
+
+/* ─── 26. Instrument-panel corner brackets ───
+   Viewfinder ticks that appear on hover - the "sighted in" cue of
+   a field instrument, used only where the card is interactive. */
+.design-card { position: relative; }
+.design-card::before,
+.design-card::after {
+  content: "";
+  position: absolute;
+  width: 15px; height: 15px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.design-card::before {
+  top: 9px; left: 9px;
+  border-top: 2px solid var(--primary);
+  border-left: 2px solid var(--primary);
+  border-top-left-radius: 7px;
+}
+.design-card::after {
+  bottom: 9px; right: 9px;
+  border-bottom: 2px solid var(--primary);
+  border-right: 2px solid var(--primary);
+  border-bottom-right-radius: 7px;
+}
+.design-card:hover::before,
+.design-card:hover::after { opacity: 0.85; }
+
+/* ─── 27. Hero live-readout strip ───
+   A mono instrument readout under the device photo: frequency,
+   coordinates, power, status. Reinforces the console identity. */
+.hero-readout {
+  display: flex; flex-wrap: wrap; gap: 0;
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+.hero-readout__cell {
+  display: flex; flex-direction: column; gap: 0.14rem;
+  padding: 0.55rem 0.8rem;
+  flex: 1 1 auto; min-width: 92px;
+  border-right: 1px solid var(--border);
+}
+.hero-readout__cell:last-child { border-right: none; }
+.hero-readout__label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.hero-readout__value {
+  font-family: var(--font-mono);
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.hero-readout__value--ok { color: var(--success); }
+.hero-readout__value--warn { color: var(--warning); }
+
+/* TX status LED on the device frame */
+.device-frame__status { display: inline-flex; align-items: center; }
+.device-frame__status::before {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  margin-right: 0.45rem;
+  box-shadow: 0 0 8px #22c55e;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .device-frame__status::before { animation: statusPulse 2.2s ease-in-out infinite; }
+  @keyframes statusPulse { 50% { opacity: 0.35; } }
+}
+
+/* ─── 28. Code blocks with console header ───
+   rehype plugin (code-block-header.mjs) wraps each fenced block in
+   a .code-block figure with a traffic-dot bar and language label. */
+.code-block {
+  margin: 1.25rem 0;
+  border: 1px solid oklch(0.29 0.01 50deg);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: oklch(0.15 0.004 50deg);
+  box-shadow: var(--shadow-md);
+}
+.code-block__bar {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.55rem 0.95rem;
+  background: oklch(0.19 0.005 50deg);
+  border-bottom: 1px solid oklch(0.27 0.008 50deg);
+}
+.code-block__dots { display: flex; gap: 0.35rem; }
+.code-block__dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; }
+.code-block__dot--red { background: #ef4444; }
+.code-block__dot--yellow { background: #eab308; }
+.code-block__dot--green { background: #22c55e; }
+.code-block__lang {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.6rem; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: oklch(0.66 0.008 50deg);
+}
+.prose-wiki .code-block pre {
+  margin: 0;
+  border: none; border-radius: 0; box-shadow: none;
+}
+
+/* ─── 29. Wiki prose - heading signals ─── */
+.prose-wiki h2 { position: relative; padding-left: 0.9rem; }
+.prose-wiki h2::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.24em; bottom: 0.24em;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 25%, transparent));
+}
+.prose-wiki h3::before {
+  content: "";
+  display: inline-block;
+  width: 0.55rem; height: 0.55rem;
+  margin-right: 0.5rem;
+  border: 1.5px solid var(--primary);
+  border-radius: 2px;
+  transform: rotate(45deg);
+  vertical-align: 0.06em;
+}
+.prose-wiki h4 { color: var(--primary); font-weight: 700; }
+
+/* ─── 30. Wiki prose - tables ─── */
+.prose-wiki table {
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+.prose-wiki thead th {
+  background: color-mix(in srgb, var(--primary) 8%, var(--muted));
+  border-bottom: 2px solid var(--primary);
+  font-size: 0.72rem;
+}
+.prose-wiki tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--foreground) 2.5%, var(--background));
+}
+.prose-wiki td {
+  font-variant-numeric: tabular-nums;
+}
+.prose-wiki td code { white-space: nowrap; }
+
+/* ─── 31. Wiki prose - kbd, task lists, definition lists ─── */
+.prose-wiki kbd {
+  font-family: var(--font-mono);
+  font-size: 0.78em; font-weight: 500;
+  color: var(--foreground);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-sm);
+  padding: 0.1rem 0.45rem;
+  white-space: nowrap;
+}
+.prose-wiki input[type="checkbox"] {
+  accent-color: var(--primary);
+  width: 0.95rem; height: 0.95rem;
+  margin-right: 0.45rem;
+  vertical-align: -0.14em;
+}
+.prose-wiki ul.contains-task-list { list-style: none; padding-left: 0.2rem; }
+.prose-wiki li:has(> input[type="checkbox"]:checked) {
+  color: color-mix(in srgb, var(--muted-foreground) 70%, transparent);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
+}
+.prose-wiki dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.45rem 1.3rem;
+  margin: 1.25rem 0;
+  padding: 1.05rem 1.25rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+}
+.prose-wiki dt {
+  font-family: var(--font-mono);
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--primary);
+}
+.prose-wiki dd {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ─── 32. Wiki prose - blockquote blip & details chevron ─── */
+.prose-wiki blockquote { position: relative; padding-left: 1.5rem; }
+.prose-wiki blockquote::before {
+  content: "";
+  position: absolute;
+  left: 0.72rem; top: 1.05rem;
+  width: 0.38rem; height: 0.38rem;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+.prose-wiki details summary::after {
+  content: "";
+  width: 0.5rem; height: 0.5rem;
+  border-right: 2px solid var(--muted-foreground);
+  border-bottom: 2px solid var(--muted-foreground);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.prose-wiki details[open] summary::after { transform: rotate(225deg); }
+.prose-wiki details > *:not(summary) { margin-inline: 1.1rem; }
+
+/* ─── 33. Wiki prose - images & misc polish ─── */
+.prose-wiki img { box-shadow: var(--shadow-md); }
+.prose-wiki hr {
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--primary) 55%, var(--border)) 0 6px,
+    transparent 6px 14px
+  );
+}
+
+/* ─── 34. CTA console kicker ─── */
+.cta-section .cta-kicker {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: inherit; opacity: 0.85;
+  margin-bottom: 1rem;
+}
+.cta-section .cta-kicker::before {
+  content: "";
+  width: 0.45rem; height: 0.45rem;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.9;
+}
+
+/* ─── 35. Reduced motion for the new touches ─── */
+@media (prefers-reduced-motion: reduce) {
+  .device-frame__status::before { animation: none; }
+  .design-card::before, .design-card::after { transition: none; }
+  .prose-wiki details summary::after { transition: none; }
+}

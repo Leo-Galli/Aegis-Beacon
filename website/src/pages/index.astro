@@ -45,6 +45,13 @@ import Layout from '../layouts/Layout.astro';
           </div>
           <img src="/banner.png" alt="Aegis-Beacon emergency radio device" class="device-image" loading="eager" width="1200" height="600" />
         </div>
+        <div class="hero-readout" aria-hidden="true">
+          <span class="hero-readout__cell"><span class="hero-readout__label">Freq</span><span class="hero-readout__value">433.500</span></span>
+          <span class="hero-readout__cell"><span class="hero-readout__label">Lat</span><span class="hero-readout__value">46.4983 N</span></span>
+          <span class="hero-readout__cell"><span class="hero-readout__label">Lon</span><span class="hero-readout__value">11.3558 E</span></span>
+          <span class="hero-readout__cell"><span class="hero-readout__label">Pwr</span><span class="hero-readout__value">+17 dBm</span></span>
+          <span class="hero-readout__cell"><span class="hero-readout__label">Stat</span><span class="hero-readout__value hero-readout__value--ok">TX OK</span></span>
+        </div>
         <dl class="spec-rail">
           <div class="spec-rail__item"><dt>BOM</dt><dd>$23-28</dd></div>
           <div class="spec-rail__item"><dt>Band</dt><dd>410-525 MHz</dd></div>
@@ -234,6 +241,7 @@ import Layout from '../layouts/Layout.astro';
      ═══════════════════════════════════════════════════════════ -->
 <section class="cta-section" data-rv>
   <div class="cta-inner container">
+    <p class="cta-kicker">Aegis-Beacon v5.5</p>
     <h2>Built in the open, for the field</h2>
     <p>Follow the build guide, plan your bill of materials, and assemble your own rescue beacon.</p>
     <div class="cta-buttons">
