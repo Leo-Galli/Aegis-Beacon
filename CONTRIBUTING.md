@@ -1,5 +1,9 @@
 # Contributing to Aegis-Beacon
 
+[![License](https://img.shields.io/github/license/Leo-Galli/Aegis-Beacon?style=flat-square&label=License)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Leo-Galli/Aegis-Beacon?style=flat-square&label=Release)](https://github.com/Leo-Galli/Aegis-Beacon/releases)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-16a34a?style=flat-square&label=PRs)](https://github.com/Leo-Galli/Aegis-Beacon/pulls)
+
 Thank you for considering a contribution. This project is built for mountain safety, so correctness matters: a bug in the firmware or a wrong number in the documentation can have real-world consequences. Please read this guide before opening an issue or a pull request.
 
 ## Table of Contents

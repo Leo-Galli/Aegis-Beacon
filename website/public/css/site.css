@@ -203,7 +203,9 @@ code, kbd, samp, pre { font-family: var(--font-mono); }
 /* ─── 9. Hero (specimen plate + signal tape) ─── */
 .hero-wrap { position: relative; isolation: isolate; overflow: hidden; }
 .hero-section {
-  position: relative; padding: clamp(3rem, 7vw, 5.5rem) 0 clamp(2.5rem, 5vw, 3.5rem);
+  position: relative;
+  padding-block: clamp(3rem, 7vw, 5.5rem) clamp(2.5rem, 5vw, 3.5rem);
+  padding-inline: var(--container-px);
 }
 .hero-grid {
   display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: center;

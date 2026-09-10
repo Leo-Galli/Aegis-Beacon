@@ -16,6 +16,16 @@ Morse on the 433 MHz rescue band, for 65+ hours on a single 18650 cell.
 
 </div>
 
+## At a glance
+
+| | | | |
+|---|---|---|---|
+| **Radio** | Ebyte E22-400M30S (SX1262), 433 MHz, +30 dBm | **Display** | 2.42" SSD1309 OLED (128x64) |
+| **GPS** | NEO-6M, optional | **Control** | 4-button panel (MODE / SEL / UP / DN) |
+| **Runtime** | ~65 h BEACON, up to ~130 h at 30 s intervals | **Range** | ~15 km line of sight |
+| **Battery** | 18650 Li-ion, USB-C via TP4056 | **Cost** | ~$23-28 full BOM |
+| **Firmware** | Arduino (PlatformIO), single-file sketch | **License** | MIT |
+
 ## What it is
 
 Aegis-Beacon is an open-source, MIT-licensed rescue beacon that works when every
