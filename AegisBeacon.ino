@@ -8,7 +8,7 @@
 // ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝╚══════╝    ╚═════╝ ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝╚═╝  ╚═══╝
 //
 // =============================================================================
-//  PROJECT   : Aegis-Beacon v5.5 — Dual-Mode Avalanche Rescue System
+//  PROJECT   : Aegis-Beacon v6.0 — Dual-Mode Avalanche Rescue System
 //              SSD1309 2.42" OLED (SPI/U8g2) | GPS payload | Button controls
 //  MODES     : BEACON (TX SOS + name + GPS coords) ←→ SEARCH (scan + audio)
 //  TARGET HW : ESP32 DevKit V1 (30-pin)
@@ -24,7 +24,7 @@
 // =============================================================================
 //
 // ┌───────────────────────────────────────────────────────────────────────────┐
-// │                   BOM v5.5 — ~$20-28 USD                                  │
+// │                   BOM v6.0 — ~$20-28 USD                                  │
 // ├────┬──────────────────────────────┬──────────┬──────────────────────────  │
 // │Ref │ Part                         │ Cost USD │ Notes                      │
 // ├────┼──────────────────────────────┼──────────┼──────────────────────────  │
@@ -139,7 +139,7 @@
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
-// │  COMPLETE PIN MAP — ESP32 DevKit V1 (30-pin) v5.5                        │
+// │  COMPLETE PIN MAP — ESP32 DevKit V1 (30-pin) v6.0                        │
 // ├────────────┬───────────────────────────────────────────────────────────  │
 // │  GPIO  2   │  SX1262 DIO1 (TX/RX Done / Timeout IRQ)                     │
 // │  GPIO  4   │  OLED RESET                                                 │
@@ -366,7 +366,8 @@ typedef enum {
   MODE_BEACON    = 0,
   MODE_SEARCH    = 1,
   MODE_CONFIG    = 2,
-  MODE_EMERGENCY = 3
+  MODE_EMERGENCY = 3,
+  MODE_LISTEN    = 4   // CW decoder (v6.0)
 } DeviceMode;
 
 struct ScanHit {
@@ -438,6 +439,7 @@ const char* modeName(DeviceMode m) {
     case MODE_SEARCH:    return "SEARCH";
     case MODE_CONFIG:    return "CONFIG";
     case MODE_EMERGENCY: return "EMERGENCY";
+    case MODE_LISTEN:    return "LISTEN";
     default:             return "UNKNOWN";
   }
 }
@@ -450,7 +452,7 @@ void dbSep(const char* lbl = nullptr) {
 void dbBanner(const char* mode) {
   Serial.println(C_BOLD C_CYAN
     "\n╔══════════════════════════════════════════════════════════╗\n"
-    "║  AEGIS-BEACON v5.5 — SX1262 + GPS + BTN + SSD1309       ║\n"
+    "║  AEGIS-BEACON v6.0 — SX1262 + GPS + BTN + SSD1309       ║\n"
     "║      https://github.com/Leo-Galli/Aegis-Beacon           ║\n"
     "╚══════════════════════════════════════════════════════════╝" C_RESET);
   Serial.printf(C_YELLOW "    Active mode: %s\n\n" C_RESET, mode);
@@ -543,7 +545,7 @@ inline uint32_t wordGapMs()  { return dotMs() * 7; }
 
 // =============================================================================
 // ╔══════════════════════════════════════════════════════╗
-// ║         BUTTON ADJUSTMENT ENGINE (v5.5)              ║
+// ║         BUTTON ADJUSTMENT ENGINE (v6.0)              ║
 // ╚══════════════════════════════════════════════════════╝
 // Three buttons replace the two potentiometers:
 //   SW_SEL  — toggle adjustment target between VOL and WPM
@@ -755,6 +757,177 @@ uint32_t audioSearchTone(int16_t rssi) {
 }
 
 // =============================================================================
+// SYSTEM MONITORING (v6.0): battery, board temperature, RSSI history, CW decode
+// =============================================================================
+void blinkLed(uint8_t pin, int times, int ms);         // defined in LED helpers
+// Battery is measured through a 2:1 resistor divider (VBAT -> GPIO34 -> GND).
+// GPIO34 is ADC1, which keeps working even while WiFi uses ADC2.
+#define PIN_BATTERY_ADC    34
+#define BATTERY_READ_MS    5000UL
+#define BATTERY_FULL_MV    4200
+#define BATTERY_EMPTY_MV   3300
+#define BATTERY_LOW_MV     3550
+
+// CW decoder (LISTEN mode) sampling cadence and buffers
+#define CW_SAMPLE_MS       5
+#define CW_MAX_SYMBOLS     40
+#define CW_TEXT_LEN        96
+#define RSSI_HIST_LEN      120
+
+static uint32_t s_lastBattRead = 0;
+static uint16_t s_battMv       = 0;
+static bool     s_battValid    = false;
+static bool     s_battLowWarned = false;
+
+static int16_t  s_rssiHist[RSSI_HIST_LEN];
+static uint8_t  s_rssiHistIdx  = 0;
+
+static bool     s_cwCarrier    = false;
+static uint32_t s_cwMarkMs     = 0;
+static uint32_t s_cwGapMs      = 0;
+static char     s_cwSymbols[CW_MAX_SYMBOLS + 1];
+static uint8_t  s_cwSymCount   = 0;
+static char     s_cwText[CW_TEXT_LEN];
+static uint8_t  s_cwTextLen    = 0;
+static uint8_t  s_cwDecoded    = 0;   // characters decoded since power-on
+
+// Reads the battery voltage through the 2:1 divider (mV). Sampled every
+// BATTERY_READ_MS; warns once on the low threshold and resets on recovery.
+uint16_t readBatteryMv() {
+  uint32_t now = millis();
+  if (now - s_lastBattRead < BATTERY_READ_MS && s_battValid) return s_battMv;
+  s_lastBattRead = now;
+  int raw = analogReadMilliVolts(PIN_BATTERY_ADC);   // 0..3300 mV at the pin
+  if (raw <= 0) { s_battValid = false; return 0; }
+  uint32_t mv = (uint32_t)raw * 2;                   // 2:1 divider
+  s_battMv = (uint16_t)constrain(mv, 0, BATTERY_FULL_MV);
+  s_battValid = true;
+  if (s_battMv > 0 && s_battMv < BATTERY_LOW_MV && !s_battLowWarned) {
+    s_battLowWarned = true;
+    LOG_WARN("BATTERY LOW: %u mV", s_battMv);
+    Serial.printf("AEGIS:BATT:low;mv=%u\n", s_battMv);
+    blinkLed(PIN_LED_RED, 4, 100);
+  }
+  if (s_battMv >= BATTERY_LOW_MV) s_battLowWarned = false;
+  return s_battMv;
+}
+
+// Battery level as a 0..100 percentage of the useful range.
+uint8_t battPct(uint16_t mv) {
+  if (!mv) return 0;
+  return (uint8_t)constrain(map(mv, BATTERY_EMPTY_MV, BATTERY_FULL_MV, 0, 100), 0, 100);
+}
+
+// ESP32 internal silicon temperature in Celsius (0.0 if unavailable).
+float boardTempC() {
+  float t = temperatureRead();
+  return (t > 1.0f && t < 125.0f) ? t : 0.0f;
+}
+
+// Ring-buffer RSSI history used by the strip-chart traces.
+void recordRssi(int16_t rssi) {
+  s_rssiHist[s_rssiHistIdx] = rssi;
+  s_rssiHistIdx = (s_rssiHistIdx + 1) % RSSI_HIST_LEN;
+}
+
+// Small battery glyph with three level cells; flashes when low.
+void oledBattery(int16_t x, int16_t y, uint16_t mv) {
+  u8g2.drawFrame(x, y, 10, 5);
+  u8g2.drawBox(x + 10, y + 1, 2, 3);            // terminal
+  uint8_t pct = battPct(mv);
+  uint8_t cells = (pct >= 75) ? 3 : (pct >= 50) ? 2 : (pct >= 25) ? 1 : 0;
+  for (uint8_t i = 0; i < cells; i++) u8g2.drawBox(x + 2 + i * 3, y + 1, 2, 3);
+  if (mv > 0 && mv < BATTERY_LOW_MV && (millis() / 400) % 2 == 0) {
+    u8g2.drawBox(x, y, 10, 5);                  // low-battery flash
+  }
+}
+
+// ── CW decoder ───────────────────────────────────────────────────────────────
+// Maps an accumulated Morse symbol string to its character (ITU). Returns 0
+// when the symbol is not valid.
+static char cwCharFromSymbols(const char* sym) {
+  static const struct { const char* s; char c; } MORSE_MAP[] = {
+    {".-",'A'},{"-...",'B'},{"-.-.",'C'},{"-..",'D'},{".",'E'},
+    {"..-.",'F'},{"--.",'G'},{"....",'H'},{"..",'I'},{".---",'J'},
+    {"-.-",'K'},{".-..",'L'},{"--",'M'},{"-",'N'},{"---",'O'},
+    {".--.",'P'},{"--.-",'Q'},{".-.",'R'},{"...",'S'},{"-",'T'},
+    {"..-",'U'},{"...-",'V'},{".--",'W'},{"-..-",'X'},{"-.--",'Y'},{"--..",'Z'},
+    {"-----",'0'},{".----",'1'},{"..---",'2'},{"...--",'3'},{"....-",'4'},
+    {".....",'5'},{"-....",'6'},{"--...",'7'},{"---..",'8'},{"----.",'9'},
+    {".-.-.-",'.'},{"--..--",','},{"..--..",'?'},{"-....-",'-'},{".-..-.",'"'},
+    {"..--.-",'/'},{"-.-.--",'!'},{".-.-.",'+'},{"-...-",'='},
+    {".--.-.",'@'},{"...-..-",'$'},{"-.--.",'('},{"-.--.-",')'}
+  };
+  for (size_t i = 0; i < sizeof(MORSE_MAP) / sizeof(MORSE_MAP[0]); i++) {
+    if (strcmp(sym, MORSE_MAP[i].s) == 0) return MORSE_MAP[i].c;
+  }
+  return 0;
+}
+
+// Appends one decoded character to the on-screen text; streams every letter
+// over the serial bridge as AEGIS:CW:<char> and blinks the blue LED.
+void cwAppendChar(char c) {
+  if (!c) return;
+  if (c == ' ') {
+    if (s_cwTextLen == 0 || s_cwText[s_cwTextLen - 1] == ' ') return;  // collapse
+  }
+  if (s_cwTextLen < CW_TEXT_LEN - 1) {
+    s_cwText[s_cwTextLen++] = c;
+    s_cwText[s_cwTextLen] = '\0';
+  } else {
+    // Full buffer: scroll left by one word
+    char* sp = strchr(s_cwText, ' ');
+    size_t cut = (sp) ? (size_t)(sp - s_cwText) + 1 : 0;
+    if (cut >= s_cwTextLen) cut = 0;
+    memmove(s_cwText, s_cwText + cut, s_cwTextLen - cut + 1);
+    s_cwTextLen -= (uint8_t)cut;
+    if (s_cwTextLen < CW_TEXT_LEN - 1) s_cwText[s_cwTextLen++] = c;
+    s_cwText[s_cwTextLen] = '\0';
+  }
+  if (c != ' ') {
+    s_cwDecoded++;
+    Serial.printf("AEGIS:CW:%c\n", c);
+    blinkLed(PIN_LED_BLUE, 1, 40);
+  }
+}
+
+// Feeds one RSSI sample to the decoder. Called every CW_SAMPLE_MS.
+// Uses the PARIS timing model (unit = 1200 / WPM ms): marks <= 2 units are
+// dots, gaps >= 3 units end a character, gaps >= 7 units end a word.
+void cwDecodeSample(bool carrier, uint32_t now) {
+  if (carrier == s_cwCarrier) {
+    if (carrier) s_cwMarkMs += CW_SAMPLE_MS;
+    else         s_cwGapMs  += CW_SAMPLE_MS;
+    return;
+  }
+  s_cwCarrier = carrier;
+  uint32_t unit = 1200UL / cfg.wpm;
+  if (unit < 20) unit = 20;
+
+  if (carrier) {
+    // Gap ended: character or word boundary
+    if (s_cwGapMs >= 7 * unit) {
+      if (s_cwSymCount > 0) cwAppendChar(cwCharFromSymbols(s_cwSymbols));
+      s_cwSymCount = 0;
+      cwAppendChar(' ');
+    } else if (s_cwGapMs >= 3 * unit) {
+      if (s_cwSymCount > 0) cwAppendChar(cwCharFromSymbols(s_cwSymbols));
+      s_cwSymCount = 0;
+    }
+    s_cwGapMs = 0;
+  } else {
+    // Mark ended: dot or dash
+    if (s_cwSymCount < CW_MAX_SYMBOLS) {
+      s_cwSymbols[s_cwSymCount++] = (s_cwMarkMs <= 2 * unit) ? '.' : '-';
+      s_cwSymbols[s_cwSymCount] = '\0';
+    } else {
+      s_cwSymCount = 0;
+    }
+    s_cwMarkMs = 0;
+  }
+}
+
+// =============================================================================
 // ╔══════════════════════════════════════════════════════╗
 // ║              OLED DISPLAY ENGINE  (U8g2)             ║
 // ╚══════════════════════════════════════════════════════╝
@@ -873,7 +1046,7 @@ void oledSplash() {
     u8g2.setFont(u8g2_font_7x13B_tf);
     u8g2.drawStr(4, 1, "AEGIS-BEACON");
     u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.drawStr(102, 2, "v5.5");
+    u8g2.drawStr(102, 2, "v6.0");
     oledAntenna(120, 3, true);
     u8g2.setDrawColor(1);
 
@@ -1006,6 +1179,7 @@ void oledBeacon(int freqIdx, float freqMHz, int charIdx, int totalChars,
   u8g2.drawStr(0, 13, fbuf);
   u8g2.setFont(u8g2_font_5x7_tf);
   u8g2.drawStr(98, 28, "MHz");
+  oledBattery(116, 14, readBatteryMv());
 
   // ── Info line: channel / power / wpm ────────────────────────────────────
   char infobuf[28];
@@ -1099,6 +1273,7 @@ void oledSearch(int freqIdx, float freqMHz, int16_t rssi,
   u8g2.drawStr(0, 13, fbuf);
   u8g2.setFont(u8g2_font_5x7_tf);
   u8g2.drawStr(98, 28, "MHz");
+  oledBattery(116, 14, readBatteryMv());
 
   // ── Info line: channel + RSSI ───────────────────────────────────────────
   char rssibuf[22];
@@ -1107,11 +1282,15 @@ void oledSearch(int freqIdx, float freqMHz, int16_t rssi,
   u8g2.setFont(u8g2_font_5x7_tf);
   u8g2.drawStr(0, 37, rssibuf);
 
-  // ── RSSI bar: fill + threshold tick + sweep caret ───────────────────────
-  uint8_t rssiPct = rssiToPct(rssi);
+  // ── RSSI trace (oscilloscope strip) + threshold tick + sweep caret ──────
   u8g2.drawFrame(0, 43, 128, 8);
-  int16_t barFill = (int16_t)map(rssiPct, 0, 100, 0, 126);
-  if (barFill > 0) u8g2.drawBox(1, 44, barFill, 6);
+  for (uint8_t i = 0; i < RSSI_HIST_LEN; i++) {
+    uint8_t idx = (s_rssiHistIdx + RSSI_HIST_LEN - 1 - i) % RSSI_HIST_LEN;
+    int16_t v = s_rssiHist[idx];
+    if (v == 0) continue;                       // unused slot
+    int16_t y = 50 - (int16_t)map(constrain(v, -120, -40), -120, -40, 0, 6);
+    u8g2.drawPixel(127 - i, y);
+  }
   // Threshold tick (full-height marker)
   uint8_t thrPct = rssiToPct(cfg.rssiThreshold);
   int16_t thrX = (int16_t)map(thrPct, 0, 100, 0, 127);
@@ -1158,6 +1337,77 @@ void oledSearch(int freqIdx, float freqMHz, int16_t rssi,
     u8g2.drawStr(103, 53, adjLbl);
     u8g2.drawFrame(101, 52, 27, 10);
   }
+
+  u8g2.sendBuffer();
+}
+
+// ── LISTEN MODE SCREEN (CW decoder, v6.0) ────────────────────────────────────
+//  [0-11]  Inverted header: RX LISTEN | decoded char count
+//  [14-19] Frequency + battery glyph
+//  [24-33] RSSI history trace with threshold tick
+//  [35-42] RSSI / threshold readout
+//  [43-63] Decoded text window (two lines)
+void oledListen(float freqMHz, int16_t rssi, const char* text) {
+  if (!g_oledOk || !cfg.oledEnabled) return;
+  if (millis() - g_lastOledUpdate < OLED_REFRESH_MS) return;
+  g_lastOledUpdate = millis();
+
+  u8g2.clearBuffer();
+  u8g2.setDrawColor(1);
+
+  // Header with pulsing antenna (actively receiving)
+  u8g2.drawBox(0, 0, 128, 12);
+  u8g2.setDrawColor(0);
+  u8g2.setFont(u8g2_font_6x10_tf);
+  u8g2.drawStr(2, 1, "RX LISTEN");
+  char cntbuf[14];
+  snprintf(cntbuf, sizeof(cntbuf), "%d CHR", s_cwDecoded);
+  u8g2.drawStr(128 - (int16_t)strlen(cntbuf) * 6 - 2, 1, cntbuf);
+  oledAntenna(64, 3, true);
+  u8g2.setDrawColor(1);
+
+  // Frequency + battery
+  char fbuf[14];
+  snprintf(fbuf, sizeof(fbuf), "%.3f MHz", freqMHz);
+  u8g2.setFont(u8g2_font_5x7_tf);
+  u8g2.drawStr(2, 14, fbuf);
+  oledBattery(116, 14, readBatteryMv());
+
+  // RSSI history trace
+  u8g2.drawFrame(0, 24, 128, 9);
+  for (uint8_t i = 0; i < RSSI_HIST_LEN; i++) {
+    uint8_t idx = (s_rssiHistIdx + RSSI_HIST_LEN - 1 - i) % RSSI_HIST_LEN;
+    int16_t v = s_rssiHist[idx];
+    if (v == 0) continue;
+    int16_t y = 32 - (int16_t)map(constrain(v, -120, -40), -120, -40, 0, 7);
+    u8g2.drawPixel(127 - i, y);
+  }
+  uint8_t thrPct = rssiToPct(cfg.rssiThreshold);
+  int16_t thrX = (int16_t)map(thrPct, 0, 100, 0, 127);
+  u8g2.drawVLine(thrX, 23, 11);
+
+  // RSSI + threshold readout
+  char rinf[24];
+  snprintf(rinf, sizeof(rinf), "RSSI %ddBm  THR %ddBm", rssi, cfg.rssiThreshold);
+  u8g2.setFont(u8g2_font_5x7_tf);
+  u8g2.drawStr(0, 35, rinf);
+  u8g2.drawHLine(0, 43, 128);
+
+  // Decoded text window (last 42 chars, two 21-char lines)
+  size_t tl = strlen(text);
+  size_t start = (tl > 42) ? tl - 42 : 0;
+  u8g2.setFont(u8g2_font_6x10_tf);
+  char line[22];
+  size_t l1 = (tl - start < 21) ? tl - start : 21;
+  memcpy(line, text + start, l1); line[l1] = '\0';
+  u8g2.drawStr(1, 45, line);
+  if (tl - start > 21) {
+    size_t l2 = tl - start - 21; if (l2 > 21) l2 = 21;
+    memcpy(line, text + start + 21, l2); line[l2] = '\0';
+    u8g2.drawStr(1, 56, line);
+  }
+
+  if (millis() < g_adjOledShowMs) oledAdjOverlay();
 
   u8g2.sendBuffer();
 }
@@ -1379,7 +1629,7 @@ void loadConfig() {
 
   // Sanity clamps
   if (cfg.wpm < 5 || cfg.wpm > 40) cfg.wpm = DEFAULT_WPM;
-  if (cfg.lastMode > MODE_SEARCH)   cfg.lastMode = MODE_BEACON;
+  if (cfg.lastMode > MODE_LISTEN)   cfg.lastMode = MODE_BEACON;
   if (cfg.sleepSec < 1)             cfg.sleepSec = DEFAULT_SLEEP_SEC;
   if (cfg.gpsFix1Timeout < 10 || cfg.gpsFix1Timeout > 120) cfg.gpsFix1Timeout = 30;
 
@@ -1570,6 +1820,7 @@ bool transmitMessage(const char* msg, int freqIdx, float freqMHz,
 
   for (int i = 0; msg[i]; i++) {
     readPots();
+    readBatteryMv();
     digitalWrite(PIN_LED_RED, (i % 2 == 0) ? HIGH : LOW);
 
     if (interruptible && g_modeButtonPressed) {
@@ -1602,6 +1853,8 @@ ScanResult scanFrequency(float freqMHz, int freqIdx, uint32_t passNum) {
     readPots();
     readGPS();
     int16_t rssi = radio.getRSSI();
+    recordRssi(rssi);
+    readBatteryMv();
     if (rssi > maxRssi) maxRssi = rssi;
     uint32_t tf = audioSearchTone(rssi);
     if (tf) audioToneStart(tf); else audioToneStop();
@@ -1648,6 +1901,8 @@ void printStatus() {
   LOG_INFO("Boot      : #%lu  Mode: %s", g_bootCycle, modeName(g_currentMode));
   LOG_INFO("TX cycles : %lu   Scan: %lu", g_txCycles, g_scanCycles);
   LOG_INFO("Heap      : %lu B   Up: %lu s", ESP.getFreeHeap(), millis() / 1000);
+  LOG_INFO("Battery   : %s  %u mV (%u%%)", s_battValid ? "OK" : "n/a", s_battMv, battPct(s_battMv));
+  LOG_INFO("Board temp: %.1f C", boardTempC());
   LOG_INFO("OLED      : %s", g_oledOk ? "OK" : "FAIL");
   LOG_INFO("GPS       : valid=%s  sats=%d  lat=%.5f  lng=%.5f",
            g_gpsFix.valid?"YES":"NO", g_gpsFix.satellites, g_gpsFix.lat, g_gpsFix.lng);
@@ -1666,7 +1921,7 @@ const char DASHBOARD_HTML[] PROGMEM = R"HTMLDOC(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AEGIS-BEACON v5.5 // CONFIG</title>
+<title>AEGIS-BEACON v6.0 // CONFIG</title>
 <style>
 /* Self-contained UI: only fonts already installed on the device are used
    (no internet during configuration, so no web fonts). */
@@ -1779,7 +2034,7 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
 </head>
 <body>
 <header>
-  <div class="logo">AEGIS<em>-</em>BEACON <span style="font-size:.65rem;color:var(--dim);margin-left:8px;">v5.5</span></div>
+  <div class="logo">AEGIS<em>-</em>BEACON <span style="font-size:.65rem;color:var(--dim);margin-left:8px;">v6.0</span></div>
   <div class="badge">CONFIG MODE</div>
 </header>
 <main>
@@ -1879,7 +2134,7 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
 
 <!-- ── BUTTON CONTROLS ─────────────────────────────────────────────────── -->
 <div class="card pot full">
-  <div class="ct"><span class="ct-dot"></span>BUTTON CONTROLS (v5.5)</div>
+  <div class="ct"><span class="ct-dot"></span>BUTTON CONTROLS (v6.0)</div>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;align-items:start;">
     <div>
       <div style="font-family:var(--font-display);font-size:.62rem;letter-spacing:2px;color:var(--a4);margin-bottom:8px;">SW_SEL — GPIO32</div>
@@ -2412,6 +2667,7 @@ void runBeaconMode(bool emergency) {
     while (millis() - sleepStart < sleepMs) {
       readPots();
       readGPS();
+      readBatteryMv();
       serialPoll();
       serialPosReport(false);
       uint32_t remain = (sleepMs - (millis() - sleepStart)) / 1000;
@@ -2477,6 +2733,7 @@ void runSearchMode() {
     for (int fi = 0; fi < cfg.freqCount; fi++) {
       readPots();
       readGPS();
+      readBatteryMv();
       serialPoll();
       serialPosReport(false);
 
@@ -2512,13 +2769,88 @@ search_exit:
 }
 
 // =============================================================================
+// LISTEN MODE (CW decoder, v6.0)
+// =============================================================================
+// Tunes the radio to the first configured frequency and continuously samples
+// RSSI. A CW decoder measures mark/gap durations, builds Morse symbols and
+// streams the decoded characters to the OLED and the serial bridge
+// (AEGIS:CW:<char>). MODE short-press returns to BEACON.
+void runListenMode() {
+  dbSep("LISTEN MODE (CW decode)");
+  WiFi.mode(WIFI_OFF);
+  btStop();
+  if (cfg.audioEnabled) audioSweep(400, 1200, 6);
+
+  // Reset decoder state
+  s_cwCarrier = false; s_cwMarkMs = 0; s_cwGapMs = 0;
+  s_cwSymCount = 0; s_cwTextLen = 0; s_cwDecoded = 0;
+  s_cwText[0] = '\0';
+
+  float freq = (cfg.freqCount > 0) ? cfg.freqs[0] : DEFAULT_FREQ_MHZ;
+  if (!initRadioFSK(freq)) {
+    oledMessage("RADIO ERROR", "Check SPI wiring");
+    blinkLed(PIN_LED_RED, 6, 40);
+    delay(2000);
+    ESP.restart();
+  }
+  radio.startReceive();
+  LOG_MODE("Listening on %.3f MHz (threshold %d dBm)", freq, cfg.rssiThreshold);
+
+  while (true) {
+    uint32_t sampleAt = millis() + CW_SAMPLE_MS;
+    readPots();
+    readGPS();
+    readBatteryMv();
+    serialPoll();
+    serialPosReport(false);
+
+    int16_t rssi = radio.getRSSI();
+    recordRssi(rssi);
+    cwDecodeSample(rssi >= cfg.rssiThreshold, millis());
+
+    uint32_t tone = audioSearchTone(rssi);
+    if (tone) audioToneStart(tone); else audioToneStop();
+
+    static uint32_t s_lastDraw = 0;
+    if (millis() - s_lastDraw >= OLED_REFRESH_MS) {
+      s_lastDraw = millis();
+      oledListen(freq, rssi, s_cwText);
+    }
+
+    if (g_modeButtonPressed) {
+      uint8_t p = checkButton(PIN_SW_MODE, BTN_LONG_MODE_MS, g_modeButtonPressed);
+      if (p == 2) { g_emergencyActive = true; g_currentMode = MODE_EMERGENCY; goto listen_exit; }
+      if (p == 1) { g_currentMode = MODE_BEACON; cfg.lastMode = MODE_BEACON; saveConfig(); goto listen_exit; }
+    }
+    if (g_selButtonPressed) {
+      uint8_t p = checkButton(PIN_SW_SEL, BTN_LONG_CFG_MS, g_selButtonPressed);
+      if (p == 2) { g_currentMode = MODE_CONFIG; goto listen_exit; }
+      if (p == 1) {
+        g_adjTarget = (g_adjTarget == 0) ? 1 : 0;
+        g_adjOledShowMs = millis() + ADJ_SHOW_MS;
+      }
+    }
+
+    while (millis() < sampleAt) { delay(1); esp_task_wdt_reset(); }
+    esp_task_wdt_reset();
+  }
+
+listen_exit:
+  audioToneStop();
+  radio.standby();
+  ledModeIndicate(g_currentMode);
+  delay(300);
+  ESP.restart();
+}
+
+// =============================================================================
 // ╔══════════════════════════════════════════════════════════════════════════╗
 // ║           SERIAL BRIDGE PROTOCOL (companion to bridge/)                  ║
 // ╚══════════════════════════════════════════════════════════════════════════╝
 // Machine-readable "AEGIS:" lines (never ANSI-colored, one per line) for the
 // cross-platform bridge script (bridge/aegis-serial-bridge.py):
 //
-//   AEGIS:HELLO:ver=5.5;mode=BEACON;freq=433.500;wpm=12;vol=64
+//   AEGIS:HELLO:ver=6.0;mode=BEACON;freq=433.500;wpm=12;vol=64
 //   AEGIS:POS:lat=45.123456;lng=11.123456;alt=412;sats=8;freq=433.500;mode=BEACON;fix=1;age=87;payload=SOS PSN N4553 E01130
 //   AEGIS:STATE:mode=SEARCH;freq=433.500;wpm=12;vol=64;heap=184320;boot=1;tx=0;hits=0;gpsFix=1;sats=8
 //   AEGIS:FREQ:0=433.500   AEGIS:WPM:14   AEGIS:MODE:SEARCH   AEGIS:ERR:<message>
@@ -2590,12 +2922,18 @@ void processSerialCommand(const char* cmd) {
   if (!*s) return;
 
   if (striEq(s, "HELP") || striEq(s, "?")) {
-    Serial.println("AEGIS:HELP:FREQ <MHz> | FREQ? | WPM <5-40> | MODE <BEACON|SEARCH|CONFIG|EMERGENCY> | POS | STATUS | HELP");
+    Serial.println("AEGIS:HELP:FREQ <MHz> | FREQ? | WPM <5-40> | MODE <BEACON|SEARCH|CONFIG|EMERGENCY|LISTEN> | POS | STATUS | BATT | HELP");
+    return;
+  }
+  if (striEq(s, "BATT")) {
+    uint16_t mv = readBatteryMv();
+    Serial.printf("AEGIS:BATT:mv=%u;pct=%u\n", mv, battPct(mv));
     return;
   }
   if (striEq(s, "POS")) { serialPosReport(true); return; }
   if (striEq(s, "STATUS")) {
-    Serial.printf("AEGIS:STATE:mode=%s;freq=%.3f;wpm=%d;vol=%d;heap=%lu;boot=%lu;tx=%lu;hits=%u;gpsFix=%d;sats=%u\n",
+    uint16_t mv = readBatteryMv();
+    Serial.printf("AEGIS:STATE:mode=%s;freq=%.3f;wpm=%d;vol=%d;heap=%lu;boot=%lu;tx=%lu;hits=%u;gpsFix=%d;sats=%u;batt=%u;temp=%.1f;up=%lu\n",
                   modeName(g_currentMode),
                   (cfg.freqCount > 0) ? cfg.freqs[0] : DEFAULT_FREQ_MHZ,
                   cfg.wpm, cfg.audioVolume,
@@ -2604,7 +2942,10 @@ void processSerialCommand(const char* cmd) {
                   (unsigned long)g_txCycles,
                   (unsigned int)g_scanHitCount,
                   g_gpsFix.valid ? 1 : 0,
-                  g_gpsFix.satellites);
+                  g_gpsFix.satellites,
+                  (unsigned int)mv,
+                  boardTempC(),
+                  (unsigned long)(millis() / 1000));
     return;
   }
   if (striStarts(s, "FREQ?")) {
@@ -2641,6 +2982,7 @@ void processSerialCommand(const char* cmd) {
     else if (striEq(m, "SEARCH"))     { g_currentMode = MODE_SEARCH;    cfg.lastMode = MODE_SEARCH; }
     else if (striEq(m, "CONFIG"))     { g_currentMode = MODE_CONFIG; }
     else if (striEq(m, "EMERGENCY"))  { g_currentMode = MODE_EMERGENCY; g_emergencyActive = true; }
+    else if (striEq(m, "LISTEN"))     { g_currentMode = MODE_LISTEN;    cfg.lastMode = MODE_LISTEN; }
     else {
       Serial.printf("AEGIS:ERR:unknown mode '%s' (BEACON|SEARCH|CONFIG|EMERGENCY)\n", m);
       return;
@@ -2768,7 +3110,7 @@ void setup() {
 
   LOG_MODE("Starting: %s", modeName(g_currentMode));
   ledModeIndicate(g_currentMode);
-  Serial.printf("AEGIS:HELLO:ver=5.5;mode=%s;freq=%.3f;wpm=%d;vol=%d\n",
+  Serial.printf("AEGIS:HELLO:ver=6.0;mode=%s;freq=%.3f;wpm=%d;vol=%d\n",
                 modeName(g_currentMode),
                 (cfg.freqCount > 0) ? cfg.freqs[0] : DEFAULT_FREQ_MHZ,
                 cfg.wpm, cfg.audioVolume);
@@ -2797,6 +3139,7 @@ void setup() {
     case MODE_EMERGENCY: runBeaconMode(true);  break;
     case MODE_SEARCH:    runSearchMode();      break;
     case MODE_CONFIG:    runConfigMode();      break;
+    case MODE_LISTEN:    runListenMode();      break;
     default:
       LOG_ERR("Unknown mode %d — fallback BEACON", g_currentMode);
       runBeaconMode(false);
@@ -2812,7 +3155,7 @@ void loop() {
 }
 
 // =============================================================================
-// END — AEGIS-BEACON v5.5
+// END — AEGIS-BEACON v6.0
 // https://github.com/Leo-Galli/Aegis-Beacon
 // =============================================================================
 //
@@ -2823,7 +3166,7 @@ void loop() {
 // │  [AUDIO] Audio   [OLED ] Display  [BTN  ] Button  [CFG  ] NVS save       │
 // │  [MORSE] Per-symbol*  [RF   ] RadioLib code*   (* = DEBUG_VERBOSE 1)     │
 // │                                                                          │
-// │  BUTTON WIRING QUICK REFERENCE (v5.5):                                   │
+// │  BUTTON WIRING QUICK REFERENCE (v6.0):                                   │
 // │   SW_MODE : GPIO33 → GND  (short=mode toggle, long2s=emergency)          │
 // │   SW_SEL  : GPIO32 → GND  (short=VOL/WPM select, long3s=config)          │
 // │   SW_UP   : GPIO35 → GND  (increment selected parameter)                 │

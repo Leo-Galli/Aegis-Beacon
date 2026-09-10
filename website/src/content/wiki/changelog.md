@@ -7,7 +7,17 @@ description: "Version history of Aegis-Beacon firmware and hardware, aligned wit
 
 All notable changes across firmware, hardware and documentation, mirroring the authoritative [DATASHEET](../../../DATASHEET.md) at the repository root.
 
-## Version 5.5 (Current)
+## Version 6.0 (Current)
+
+- **LISTEN mode**: the beacon can now receive and decode live Morse CW. The radio stays on the first configured frequency, samples RSSI every 5 ms, measures mark and gap durations with the PARIS timing model, accumulates symbols and streams every decoded character to the OLED and over serial as `AEGIS:CW:<char>`. Full ITU table (A-Z, 0-9, punctuation); entered with `MODE LISTEN`.
+- **Battery monitor**: live pack voltage through a 2:1 divider on GPIO 34 (ADC1). `readBatteryMv()` / `battPct()` map 3300-4200 mV to 0-100%; a battery glyph with three level cells appears on BEACON, SEARCH and LISTEN; below 3550 mV the glyph flashes, the red LED blinks and `AEGIS:BATT:low` is emitted once. New `BATT` serial command.
+- **Board temperature**: the ESP32 internal silicon sensor is reported as `temp=` in the extended `AEGIS:STATE` line and in the STATUS debug block.
+- **RSSI history strip-chart**: a 120-sample ring buffer (`RSSI_HIST_LEN`) powers an oscilloscope-style trace on the SEARCH RSSI band and a dedicated trace frame on the LISTEN screen, replacing the plain fill bar.
+- **OLED engine rework**: pulsing antenna glyphs (splash, BEACON, SEARCH, LISTEN headers), satellite glyph and 4-cell lock meter on GPS WAIT, segmented TX progress bar with blinking caret, sweep caret on the SEARCH bar, distress corner brackets and blinking TX light on EMERGENCY, WiFi glyph and checklist on CONFIG, centered double-frame message dialogs.
+- **Serial protocol**: new `AEGIS:BATT:`, `AEGIS:BATT:low`, `AEGIS:CW:` lines; `AEGIS:STATE` extended with `batt`, `temp`, `up`; `AEGIS:HELLO` version bumped to 6.0; `HELP` lists `BATT` and `LISTEN`.
+- **Migration**: the NVS schema is unchanged; flashing v6.0 over v5.5 preserves all settings.
+
+## Version 5.5
 
 - **Serial bridge protocol**: machine-readable `AEGIS:POS:`, `AEGIS:HELLO:` and `AEGIS:STATE:` lines on USB serial, printed plain (never ANSI-colored) and throttled to at most one position report every 5 seconds.
 - **Serial commands**: `FREQ <MHz>` (set and persist the desired frequency), `FREQ?`, `WPM <5-40>`, `MODE <BEACON|SEARCH|CONFIG|EMERGENCY>`, `POS`, `STATUS`, `HELP`.

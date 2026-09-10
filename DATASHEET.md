@@ -1,12 +1,12 @@
 <!-- Aegis-Beacon DATASHEET -->
-# DATASHEET — Aegis-Beacon v5.5
+# DATASHEET — Aegis-Beacon v6.0
 
 <div align="center">
 
 ### Dual-Mode Avalanche Rescue System
-**Revision: 5.5 | Date: 2026 | Author: Leonardo Galli**
+**Revision: 6.0 | Date: 2026 | Author: Leonardo Galli**
 
-[![Revision](https://img.shields.io/badge/Revision-5.5.0-f97316?style=flat-square)](https://github.com/Leo-Galli/Aegis-Beacon)
+[![Revision](https://img.shields.io/badge/Revision-6.0.0-f97316?style=flat-square)](https://github.com/Leo-Galli/Aegis-Beacon)
 [![Hardware](https://img.shields.io/badge/Hardware-ESP32_DevKit_V1-ef4444?style=flat-square)](https://www.espressif.com/)
 [![Radio](https://img.shields.io/badge/Radio-SX1262_+30dBm-3b82f6?style=flat-square)](https://www.semtech.com/)
 [![Status](https://img.shields.io/badge/Status-Production_Ready-22c55e?style=flat-square)]()
@@ -18,9 +18,9 @@
 
 ## 1. General Description
 
-Aegis-Beacon v5.5 is an open-source, ultra-low-cost emergency rescue beacon for avalanche survival, backcountry SAR operations, and off-grid emergency communication. The device combines a 433 MHz CW radio transmitter with a passive RSSI scanner, a 2.42" SSD1309 OLED status display, a NEO-6M GPS module, a 4-button physical control panel, a live battery monitor, and a 3.5mm audio alert output into a pocketable, battery-powered unit buildable for approximately $23–28 USD.
+Aegis-Beacon v6.0 is an open-source, ultra-low-cost emergency rescue beacon for avalanche survival, backcountry SAR operations, and off-grid emergency communication. The device combines a 433 MHz CW radio transmitter with a passive RSSI scanner, a live CW decoder (LISTEN mode), a 2.42" SSD1309 OLED status display, a NEO-6M GPS module, a 4-button physical control panel, a live battery monitor, a board temperature sensor, and a 3.5mm audio alert output into a pocketable, battery-powered unit buildable for approximately $23–28 USD.
 
-The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled by the RadioLib driver stack, and exposes a WiFi captive-portal dashboard for field configuration without any additional tools. v5.5 adds a machine-readable serial protocol with commands, a cross-platform bridge script that forwards GPS fixes to the website's Report Position page, and a config dashboard that runs on default system fonts. v5.4 was a full hardware revision from v4.0 (ESP32-C3 + SX1276); all GPIO assignments, libraries, and the NVS schema have changed.
+The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled by the RadioLib driver stack, and exposes a WiFi captive-portal dashboard for field configuration without any additional tools. v6.0 adds the LISTEN mode with a real-time Morse CW decoder (symbols and characters are streamed to the OLED and the serial bridge), the live battery monitor with low-battery warning, the RSSI history strip-chart on the SEARCH screen, board temperature reporting, and the extended `AEGIS:STATE` / `AEGIS:BATT` / `AEGIS:CW` serial lines. v5.5 introduced the machine-readable serial protocol, the cross-platform bridge script, and the offline-font config dashboard. v5.4 was a full hardware revision from v4.0 (ESP32-C3 + SX1276); all GPIO assignments, libraries, and the NVS schema have changed.
 
 ---
 
@@ -241,27 +241,27 @@ The last known GPS fix is stored in RTC RAM (`g_rtcLat`, `g_rtcLng`, `g_rtcFixVa
 
 ### 7.1 Battery Icon
 
-A pixel-art 18×9 px battery icon appears in the top-right corner of every screen header.
+A compact 13×5 px battery glyph appears in the top-right of the BEACON, SEARCH and LISTEN screens, next to the large frequency.
 
-| Fill level | Battery %  | Icon state                   |
-|------------|------------|------------------------------|
-| 4 segments | 76–100%    | Full                         |
-| 3 segments | 51–75%     | Three-quarters               |
-| 2 segments | 26–50%     | Half                         |
-| 1 segment  | 11–25%     | Low                          |
-| Blinking ! | 0–10%      | Critical — blinks every 500 ms |
-| Letter C   | Charging   | `CHG` — TP4056 STDBY detected |
+| Fill level | Battery %  | Icon state                        |
+|------------|------------|-----------------------------------|
+| 3 cells    | 75–100%    | Full                              |
+| 2 cells    | 50–74%     | Three-quarters                    |
+| 1 cell     | 25–49%     | Half                              |
+| 0 cells    | 0–24%      | Low / empty                       |
+| Flashing frame | below `BATTERY_LOW_MV` (3550 mV) | Low-battery flash every 400 ms, plus red LED blink and `AEGIS:BATT:low` once |
 
 ### 7.2 Screen Layouts
 
 | Mode          | Content                                                                                             |
 |---------------|-----------------------------------------------------------------------------------------------------|
-| **BOOT**      | Inverted header "AEGIS-BEACON v5.5" · feature flags · battery icon + % · INITIALISING progress bar |
-| **BEACON**    | Header "TX BEACON" + cycle# + bat icon · Large frequency (logisoso24) · GPS fix dot · Info line (CH/PWR/WPM) · TX progress bar · Payload scroll · GPS state + bat% + sleep countdown + ADJ indicator |
-| **SEARCH**    | Header "RX SEARCH" + hit count + bat icon · Large frequency · RSSI value · RSSI fill bar + threshold tick · Signal label / last hit / scan pass + bat% + ADJ indicator |
-| **EMERGENCY** | Alternating inverse · Giant "SOS" (logisoso32) · "EMERGENCY BEACON TX" · Freq + power · GPS coords or cycle + bat% |
-| **GPS WAIT**  | Header "ACQUIRING GPS FIX" + bat icon · Large satellite count · Progress bar · Status line · Coordinates or "MODE: skip wait" |
-| **CONFIG**    | Header "CONFIGURATION MODE" · WiFi SSID · URL · 3-step connection instructions                     |
+| **BOOT**      | Double frame · Inverted header "AEGIS-BEACON v6.0" + pulsing antenna glyph · feature flags · animated INITIALISING progress bar |
+| **BEACON**    | Header "TX BEACON" + antenna glyph (arcs pulse on TX) + cycle# · Large frequency (logisoso24) · battery glyph · Info line (CH/PWR/WPM) · segmented TX progress bar + blinking caret · Payload scroll / status row + ADJ indicator |
+| **SEARCH**    | Header "RX SEARCH" + passive antenna glyph + hit count · Large frequency · battery glyph · Info line (CH/RSSI) · RSSI history strip-chart + threshold tick + sweep caret · Signal label / last hit / scan pass + ADJ indicator |
+| **EMERGENCY** | Alternating inverse · Corner distress brackets + blinking TX light · Giant "SOS" (logisoso32) · "EMERGENCY BEACON TX" · Freq + power · GPS coords or cycle |
+| **GPS WAIT**  | Header "ACQUIRING GPS FIX" · satellite glyph + big count · 4-cell lock meter + blinking fix dot · Timeout progress bar · Status line · Coordinates or "MODE: skip wait" |
+| **CONFIG**    | Header "CONFIGURATION MODE" with WiFi glyph · boxed AP details (SSID + URL) · 3-step checklist |
+| **LISTEN**    | Header "RX LISTEN" + antenna glyph + decoded char count · Frequency + battery glyph · RSSI history trace + threshold tick · RSSI/THR readout · Decoded text window (2 lines) |
 
 ---
 
@@ -272,28 +272,28 @@ A pixel-art 18×9 px battery icon appears in the top-right corner of every scree
 | Connection              | Value   | Notes                                               |
 |-------------------------|---------|-----------------------------------------------------|
 | BAT+ (TP4056 BAT+ rail) | → R3a   | First 100 kΩ resistor                               |
-| R3a junction            | GPIO 36 | ADC1_CH0 (SVP) — input-only, no pull needed         |
-| GPIO 36                 | → R3b   | Second 100 kΩ resistor                              |
+| R3a junction            | GPIO 34 | ADC1_CH6 — input-only, no pull needed               |
+| GPIO 34                 | → R3b   | Second 100 kΩ resistor                              |
 | R3b                     | → GND   | Completes divider                                   |
-| TP4056 STDBY            | GPIO 39 | Optional — LOW when charging; SVN input-only        |
 
-Divider formula: `VOUT = VBAT / 2`. At full charge (4.2 V): VOUT = 2.1 V (safely within 3.3 V ADC range).
+Divider formula: `VOUT = VBAT / 2`. At full charge (4.2 V): VOUT = 2.1 V (safely within 3.3 V ADC range). GPIO 34 is on ADC1, which keeps working while WiFi uses ADC2 (used during CONFIG mode).
 
 ### 8.2 Software
 
 | Parameter                   | Value         | Constant          |
 |-----------------------------|---------------|-------------------|
-| ADC pin                     | GPIO 36       | `PIN_BAT_ADC`     |
-| Charging detection pin      | GPIO 39       | `PIN_BAT_CHRG`    |
-| ADC samples averaged        | 32            | `BAT_SAMPLES`     |
-| Read interval               | 5000 ms       | `BAT_READ_MS`     |
-| ADC full-scale reference    | 3900 mV       | `BAT_VREF_MV`     |
-| Divider ratio               | ×2            | `BAT_DIV_RATIO`   |
-| Full charge voltage         | 4200 mV       | `BAT_FULL_MV`     |
-| Empty cutoff voltage        | 3000 mV       | `BAT_EMPTY_MV`    |
-| ADC range guard             | 2500–4500 mV  | Ignores readings outside range |
+| ADC pin                     | GPIO 34       | `PIN_BATTERY_ADC` |
+| Read interval               | 5000 ms       | `BATTERY_READ_MS` |
+| Voltage scaling             | ×2 (divider)  | `analogReadMilliVolts` |
+| Full charge voltage         | 4200 mV       | `BATTERY_FULL_MV` |
+| Empty cutoff voltage        | 3300 mV       | `BATTERY_EMPTY_MV`|  
+| Low-battery threshold       | 3550 mV       | `BATTERY_LOW_MV`  |
+| Percentage mapping          | Linear 3300–4200 mV → 0–100% | `battPct()` |
+| Serial reports              | `AEGIS:BATT:mv=..;pct=..` and `AEGIS:BATT:low;mv=..` | throttled to `BATTERY_READ_MS` |
 
-### 8.3 Piecewise Li-Ion Discharge Curve (9-point)
+### 8.3 Optional Piecewise Li-Ion Discharge Curve (9-point)
+
+The linear mapping is used by default. For a more accurate state of charge, the 9-point Li-Ion curve below can replace it; the hardware divider and thresholds are unchanged.
 
 | VBAT    | %   |   | VBAT    | %  |
 |---------|-----|---|---------|----|
@@ -305,11 +305,7 @@ Divider formula: `VOUT = VBAT / 2`. At full charge (4.2 V): VOUT = 2.1 V (safely
 
 ### 8.4 Calibration
 
-If readings differ from a multimeter measurement, adjust the ADC reference constant:
-
-```cpp
-#define BAT_VREF_MV   3900   // Increase if readings are too low, decrease if too high
-```
+If readings differ from a multimeter measurement, adjust the divider scaling factor in `readBatteryMv()` (multiply by 2.0–2.2 depending on resistor tolerance).
 
 ---
 
@@ -507,6 +503,9 @@ The device serves a single-page captive-portal dashboard on `http://192.168.4.1`
 | **SEARCH**     | No | Yes | Off  | RSSI bar + hits + bat    | Variable pitch (440–2200 Hz) | No (continuous) |
 | **CONFIG**     | No | No | AP   | SSID + IP + instructions | Silent                   | No                 |
 | **EMERGENCY**  | Yes | No | Off  | Full-screen SOS + coords | Continuous 1760 Hz       | No                 |
+| **LISTEN**     | No | Yes | Off  | RSSI trace + decoded text | Variable pitch (440–2200 Hz) | No (continuous) |
+
+**LISTEN mode specifics:** the radio stays on the first configured frequency, samples RSSI every 5 ms, measures Morse mark/gap durations with the PARIS timing model (unit = 1200 / WPM ms), accumulates symbols into characters and streams each decoded character to the OLED and the serial bridge as `AEGIS:CW:<char>`. MODE short-press returns to BEACON; SEL long-press enters CONFIG.
 
 **EMERGENCY mode specifics:** TX power maximum (+22 dBm RadioLib / +30 dBm E22 PA), message repeated 3× per frequency, full payload always transmitted (name + GPS if enabled), flag persisted in RTC RAM across power cycles. Cleared by entering CONFIG mode and saving.
 
@@ -653,6 +652,7 @@ Connect at **115200 baud, 8N1**.
 
 | Version | Date | Changes                                                                                                                          |
 |---------|------|----------------------------------------------------------------------------------------------------------------------------------|
+| v6.0    | 2026 | LISTEN mode with live CW Morse decoder (symbol/char timing, decoded text on OLED + `AEGIS:CW:` serial stream); live battery monitor with low-battery warning (`AEGIS:BATT:`); board temperature reporting; RSSI history strip-chart on SEARCH and LISTEN screens; battery glyph on BEACON/SEARCH/LISTEN; extended `AEGIS:STATE` (batt, temp, up); new `BATT` serial command; `MODE LISTEN`; redesigned OLED screens (antenna glyph, carets, distress brackets, WiFi glyph, centered dialogs) |
 | v5.5    | 2026 | Serial bridge protocol and commands; cross-platform bridge script with a live TUI + command forwarding; Report Position page with live streaming and track map; config dashboard on default system fonts; merged DATASHEET (specs + stack + frequency database + serial reference); SEO and legal pages (disclaimer, terms, privacy); Building Effectively wiki section; hardening pass (chat retry de-duplication, dashboard CSS scoping robustness) |
 | v5.4    | 2026 | Battery monitor (GPIO 36 divider, 9-point Li-ion curve, pixel-art icon in all headers, CHG indicator, dashboard animated bar); improved OLED graphics across all screens |
 | v5.3    | 2026 | Replaced potentiometers with 4-button control (SW_MODE / SW_SEL / SW_UP / SW_DN); OLED adj overlay; auto-repeat; NVS save via SEL long press |
@@ -1009,7 +1009,7 @@ The firmware prints machine-readable `AEGIS:` lines on USB serial (115200 baud, 
 
 | Line | Example | Meaning |
 |------|---------|---------|
-| `AEGIS:HELLO:` | `AEGIS:HELLO:ver=5.5;mode=BEACON;freq=433.500;wpm=12;vol=64` | Emitted at boot after the banner |
+| `AEGIS:HELLO:` | `AEGIS:HELLO:ver=6.0;mode=BEACON;freq=433.500;wpm=12;vol=64` | Emitted at boot after the banner |
 | `AEGIS:POS:` | `AEGIS:POS:lat=45.123456;lng=11.123456;alt=412;sats=8;freq=433.500;mode=BEACON;fix=1;age=87;payload=SOS PSN N4553 E01130` | Position report (see below) |
 | `AEGIS:STATE:` | `AEGIS:STATE:mode=SEARCH;freq=433.500;wpm=12;vol=64;heap=184320;boot=1;tx=0;hits=0;gpsFix=1;sats=8` | Response to `STATUS` |
 | `AEGIS:FREQ:n=` | `AEGIS:FREQ:0=433.500` | One line per configured frequency (response to `FREQ?`) |
@@ -3961,7 +3961,7 @@ scan that beacon's transmit frequency. The bridge logs everything.
 
 | Constant | Default | Meaning |
 | --- | --- | --- |
-| `FIRMWARE_VERSION` | "5.5.0" | Version string in HELLO handshake |
+| `FIRMWARE_VERSION` | "6.0.0" | Version string in HELLO handshake |
 | `DEFAULT_FREQ_BCN` | 433500000 | Beacon frequency (Hz) |
 | `DEFAULT_FREQ_RX` | 433475000 | Search frequency 1 (Hz) |
 | `DEFAULT_FREQ_RX2` | 433525000 | Search frequency 2 (Hz) |
@@ -10048,12 +10048,81 @@ Bordered, full-width halves at the article bottom.
 | --- | --- |
 | Wiki pages | 440+ |
 | Datasheet sections | 500+ |
-| Firmware version | 5.5.0 |
+| Firmware version | 6.0.0 |
 | License | MIT |
 | Primary band | 433 MHz |
 | Max TX | +22 dBm |
 | GPS | 2.5 m CEP |
 | Range (SF9) | 6–15 km LOS |
+
+---
+
+## 556. v6.0 — LISTEN Mode and CW Decoder
+
+LISTEN mode turns the beacon into a Morse CW receiver: the radio stays on the first configured frequency and the firmware measures the received signal in real time.
+
+| Parameter            | Value            | Notes                                            |
+|----------------------|------------------|--------------------------------------------------|
+| Radio configuration  | FSK RX, 9.7 kHz  | Same as SEARCH mode                              |
+| Sample cadence       | 5 ms             | `CW_SAMPLE_MS`                                   |
+| Carrier threshold    | `rssiThreshold`  | RSSI at or above the threshold counts as a mark  |
+| Timing model         | PARIS            | unit = 1200 / WPM ms                             |
+| Dot classification   | mark ≤ 2 units   |                                                  |
+| Dash classification  | mark > 2 units   |                                                  |
+| Character gap        | ≥ 3 units        | Flushes the pending symbol                       |
+| Word gap             | ≥ 7 units        | Flushes the pending symbol + space               |
+| Symbol buffer        | 40 elements      | `CW_MAX_SYMBOLS`                                 |
+| Text buffer          | 96 chars         | `CW_TEXT_LEN`, scrolls one word when full        |
+| Decode table         | ITU full         | A–Z, 0–9, . , ? - " / ! + = @ $ ( )              |
+
+Decoded characters are shown live on the OLED (two-line window) and streamed one per line over the serial bridge as `AEGIS:CW:<char>`; the blue LED blinks on every decoded character and the OLED header counts decoded characters. Enter the mode with the serial command `MODE LISTEN`; MODE short-press returns to BEACON, SEL long-press enters CONFIG.
+
+## 557. v6.0 — System Monitoring: Temperature and RSSI History
+
+### 557.1 Board temperature
+
+| Parameter        | Value                              | Notes                        |
+|------------------|------------------------------------|------------------------------|
+| Sensor           | ESP32 internal silicon sensor      | `temperatureRead()`          |
+| Range reported   | 1–125 °C (0.0 means unavailable)   | `boardTempC()`               |
+| Reported via     | `AEGIS:STATE` (`temp=`) and STATUS |                              |
+
+### 557.2 RSSI history strip-chart
+
+| Parameter        | Value            | Notes                                        |
+|------------------|------------------|----------------------------------------------|
+| Ring buffer      | 120 samples      | `RSSI_HIST_LEN`                              |
+| Sample source    | SEARCH + LISTEN  | `recordRssi()` per loop iteration            |
+| Rendering        | SEARCH RSSI band | Replaces the solid fill with an oscilloscope-style trace |
+| Rendering        | LISTEN screen    | Dedicated trace frame with threshold tick    |
+
+## 558. v6.0 — Serial Protocol Additions
+
+| Line                        | Example                                                          | Meaning                                   |
+|-----------------------------|-----------------------------------------------------------------|-------------------------------------------|
+| `AEGIS:BATT:`              | `AEGIS:BATT:mv=3710;pct=52`                                     | Battery voltage and percentage on request (`BATT` command) |
+| `AEGIS:BATT:low;mv=..`     | `AEGIS:BATT:low;mv=3510`                                        | Emitted once when the battery drops below `BATTERY_LOW_MV` |
+| `AEGIS:CW:<char>`          | `AEGIS:CW:S`                                                    | One line per decoded Morse character in LISTEN mode |
+| `AEGIS:STATE` (extended)   | `...;batt=3710;temp=42.1;up=312`                                | `STATUS` command now appends battery mV, board temperature and uptime seconds |
+| `AEGIS:HELP` (extended)    | includes `BATT` and `LISTEN`                                     | Updated command list                        |
+| `AEGIS:HELLO`              | `AEGIS:HELLO:ver=6.0;mode=BEACON;freq=433.500;wpm=12;vol=64`    | Version bumped to 6.0                      |
+
+## 559. v6.0 — OLED Graphics Rework
+
+Every screen was reworked with shared vector glyphs (no bitmap fonts):
+
+| Glyph / element      | Used on                         | Behaviour                                   |
+|----------------------|---------------------------------|---------------------------------------------|
+| Antenna mast + arcs  | Splash title bar, BEACON/SEARCH/LISTEN headers | Arcs pulse at ~240 ms while TX or actively receiving |
+| Satellite            | GPS WAIT                        | Static glyph next to the live satellite count |
+| 4-cell lock meter    | GPS WAIT                        | One cell lights per satellite toward `GPS_MIN_SATS` |
+| Battery glyph        | BEACON / SEARCH / LISTEN        | 3 level cells + low-battery flashing frame   |
+| Segmented TX bar + caret | BEACON                     | Caret blinks at the current character position |
+| RSSI strip-chart     | SEARCH / LISTEN                 | 120-sample oscilloscope trace + threshold tick |
+| Sweep caret          | SEARCH                          | 3 px box sweeping the bar while no signal is detected |
+| Distress brackets + TX light | EMERGENCY               | Corner brackets on the non-inverted frame + blinking light |
+| WiFi glyph + checklist | CONFIG                        | Boxed AP details + 3-step checklist with box bullets |
+| Centered dialogs     | `oledMessage`                   | Lines centered horizontally, double frame   |
 
 ---
 

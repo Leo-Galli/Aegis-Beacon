@@ -520,6 +520,9 @@ html.motion-ok [data-rv].is-in {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .prose-wiki { max-width: 720px; }
+.prose-wiki h1, .prose-wiki h2, .prose-wiki h3, .prose-wiki h4 {
+  scroll-margin-top: calc(var(--header-h) + 1.25rem);
+}
 .prose-wiki h2 {
   margin-top: 2.4rem; margin-bottom: 0.8rem; padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border); letter-spacing: -0.01em;
@@ -529,9 +532,16 @@ html.motion-ok [data-rv].is-in {
   border-bottom-color: color-mix(in srgb, var(--primary) 55%, var(--border));
   color: var(--foreground);
 }
+.prose-wiki h2:target, .prose-wiki h3:target {
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
+  border-radius: var(--radius-md);
+}
 .prose-wiki h3 { margin-top: 1.8rem; margin-bottom: 0.55rem; }
 .prose-wiki h4 { margin-top: 1.4rem; margin-bottom: 0.5rem; font-family: var(--font-body); }
 .prose-wiki p { line-height: 1.75; color: var(--muted-foreground); margin-bottom: 1rem; }
+.prose-wiki > p:first-of-type {
+  font-size: 1.0625rem; line-height: 1.7; color: color-mix(in srgb, var(--foreground) 82%, var(--muted-foreground));
+}
 .prose-wiki strong { color: var(--foreground); font-weight: 600; }
 .prose-wiki a { color: var(--primary); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--primary) 30%, transparent); text-underline-offset: 3px; }
 .prose-wiki a:hover { text-decoration-color: currentColor; }
@@ -542,27 +552,36 @@ html.motion-ok [data-rv].is-in {
 .prose-wiki li::marker { color: var(--primary); }
 .prose-wiki code {
   font-family: var(--font-mono); font-size: 0.82em;
-  background: var(--muted); padding: 0.14rem 0.42rem;
+  background: color-mix(in srgb, var(--primary) 7%, var(--muted)); padding: 0.14rem 0.42rem;
   border-radius: var(--radius-sm); color: var(--primary); border: 1px solid var(--border);
   word-break: break-word;
 }
 .prose-wiki pre {
+  position: relative;
   background: oklch(0.15 0.004 50deg); border: 1px solid oklch(0.28 0.01 50deg);
-  border-radius: var(--radius-lg); padding: 1.15rem; overflow-x: auto; margin: 1.25rem 0;
+  border-top: 2px solid color-mix(in srgb, var(--primary) 55%, oklch(0.28 0.01 50deg));
+  border-radius: var(--radius-lg); padding: 1.15rem 1.25rem; overflow-x: auto; margin: 1.25rem 0;
   color: oklch(0.92 0.005 50deg); box-shadow: var(--shadow-md);
+  tab-size: 2;
 }
 .prose-wiki pre code { background: none; padding: 0; border: none; color: inherit; }
 .prose-wiki blockquote {
-  border-left: 3px solid var(--primary); padding: 0.8rem 1.1rem;
+  position: relative;
+  border-left: 3px solid var(--primary); padding: 0.85rem 1.1rem 0.85rem 1.4rem;
   margin: 1.2rem 0; background: var(--muted); border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
   color: var(--muted-foreground);
+}
+.prose-wiki blockquote::before {
+  content: ""; position: absolute; top: 0.85rem; left: 1.1rem;
+  width: 0.4rem; height: 0.4rem; transform: rotate(45deg);
+  background: color-mix(in srgb, var(--primary) 60%, transparent);
 }
 .prose-wiki table {
   width: 100%; border-collapse: collapse; margin: 1.4rem 0; font-size: 0.875rem;
   border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;
 }
 .prose-wiki thead { background: var(--muted); }
-.prose-wiki th { font-weight: 700; text-align: left; padding: 0.7rem 0.95rem; border-bottom: 1px solid var(--border); color: var(--foreground); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-display); }
+.prose-wiki th { font-weight: 700; text-align: left; padding: 0.7rem 0.95rem; border-bottom: 1px solid var(--border); color: var(--foreground); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-display); white-space: nowrap; }
 .prose-wiki td { padding: 0.6rem 0.95rem; border-bottom: 1px solid color-mix(in srgb, var(--foreground) 6%, var(--background)); color: var(--muted-foreground); }
 .prose-wiki tr:last-child td { border-bottom: none; }
 .prose-wiki tbody tr:hover td { background: var(--muted); }
@@ -574,8 +593,17 @@ html.motion-ok [data-rv].is-in {
 .prose-wiki details summary {
   padding: 0.85rem 1.1rem; font-weight: 600; cursor: pointer;
   display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
-  background: var(--muted);
+  background: var(--muted); list-style: none;
+  transition: background 0.15s;
 }
+.prose-wiki details summary::-webkit-details-marker { display: none; }
+.prose-wiki details summary:hover { background: color-mix(in srgb, var(--primary) 6%, var(--muted)); }
+.prose-wiki details summary::after {
+  content: ""; width: 0.45rem; height: 0.45rem; flex-shrink: 0;
+  border-right: 2px solid var(--muted-foreground); border-bottom: 2px solid var(--muted-foreground);
+  transform: rotate(45deg); transition: transform 0.2s; margin-top: -0.2rem;
+}
+.prose-wiki details[open] summary::after { transform: rotate(-135deg); margin-top: 0.15rem; }
 .prose-wiki details[open] summary { border-bottom: 1px solid var(--border); }
 .prose-wiki details > *:not(summary) { margin-inline: 1.1rem; }
 

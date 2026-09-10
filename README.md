@@ -39,6 +39,7 @@ hears it up to 15 km line-of-sight away.
 |------------|-----------------------------------------------------------------------|
 | BEACON     | Morse SOS + name + GPS on configured frequencies, deep-sleep between TX |
 | SEARCH     | Scans all frequencies, measures RSSI, alerts with a rising tone       |
+| LISTEN     | Live Morse CW decoder: decodes incoming text on the OLED and over USB |
 | CONFIG     | WiFi captive-portal dashboard for field configuration, no reflash     |
 | EMERGENCY  | Max power, continuous transmission with name + GPS, no deep sleep      |
 
