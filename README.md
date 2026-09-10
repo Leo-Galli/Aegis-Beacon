@@ -20,7 +20,7 @@ Morse on the 433 MHz rescue band, for 65+ hours on a single 18650 cell.
 
 | | | | |
 |---|---|---|---|
-| **Radio** | Ebyte E22-400M30S (SX1262), 433 MHz, +30 dBm | **Display** | 2.42" SSD1309 OLED (128x64) |
+| **Radio** | Ebyte E22-400M30S (SX1262), 433 MHz, +30 dBm | **Display** | Selectable: OLED, TFT color, LCD (16x2 or 20x4) |
 | **GPS** | NEO-6M, optional | **Control** | 4-button panel (MODE / SEL / UP / DN) |
 | **Runtime** | ~65 h BEACON, up to ~130 h at 30 s intervals | **Range** | ~15 km line of sight |
 | **Battery** | 18650 Li-ion, USB-C via TP4056 | **Cost** | ~$23-28 full BOM |
@@ -32,8 +32,8 @@ Aegis-Beacon is an open-source, MIT-licensed rescue beacon that works when every
 network is gone. No GSM, no WiFi, no subscription: it speaks direct
 peer-to-peer radio. In BEACON mode it sends a Morse SOS with your callsign and
 GPS coordinates across a sweep of 433 MHz rescue frequencies; in EMERGENCY mode
-it transmits continuously at maximum power. A rescuer with a cheap SDR receiver
-hears it up to 15 km line-of-sight away.
+it transmits continuously at maximum power. Supports multiple display types
+(OLED, TFT, LCD) selected at compile time.
 
 | Mode       | Purpose                                                               |
 |------------|-----------------------------------------------------------------------|
@@ -46,10 +46,10 @@ hears it up to 15 km line-of-sight away.
 ## Build one
 
 Full BOM cost is **$23-28**, assembled from off-the-shelf parts: an
-ESP32 DevKit V1, an Ebyte E22-400M30S (SX1262, +30 dBm), a 2.42" SSD1309 OLED,
-an optional NEO-6M GPS, and a 18650 cell. No specialized tools beyond a
-soldering iron. Plan the exact shopping list for your budget with the
-interactive [BOM builder](https://aegis-beacon.vercel.app/builder).
+ESP32 DevKit V1, an Ebyte E22-400M30S (SX1262, +30 dBm), a display
+(OLED, TFT, or LCD), an optional NEO-6M GPS, and a 18650 cell. No specialized
+tools beyond a soldering iron. Plan the exact shopping list for your budget
+with the interactive [BOM builder](https://aegis-beacon.vercel.app/builder).
 
 ## Documentation
 

@@ -211,10 +211,39 @@
 #include <DNSServer.h>
 #include <WebServer.h>
 #include <ArduinoJson.h>
-#include <U8g2lib.h>
 #include <TinyGPSPlus.h>
 #include "esp_sleep.h"
 #include "esp_task_wdt.h"
+
+// =============================================================================
+//  DISPLAY TYPE SELECTION — choose your screen by number
+// -----------------------------------------------------------------------------
+//  Set DISPLAY_TYPE to the display you have soldered on, then flash:
+//
+//    1  SSD1309 2.42" 128x64 OLED  (U8g2, 4-wire soft SPI)   [DEFAULT]
+//    2  ST7735 1.8" TFT 128x160    (Adafruit GFX, soft SPI)  [MULTICOLOR]
+//    3  HD44780 LCD 16x2            (4-bit parallel)          [MONO]
+//    4  HD44780 LCD 20x4            (4-bit parallel)          [MONO]
+//
+//  Multicolor detection: type 2 renders with a signal-orange accent; types
+//  1, 3 and 4 are monochrome and render pure black and white. Every screen
+//  (splash, beacon, search, listen, emergency, config, GPS wait, messages)
+//  adapts to the selected driver automatically.
+// =============================================================================
+#ifndef DISPLAY_TYPE
+#define DISPLAY_TYPE 1
+#endif
+
+#if DISPLAY_TYPE == 1
+  #include <U8g2lib.h>
+#elif DISPLAY_TYPE == 2
+  #include <Adafruit_GFX.h>
+  #include <Adafruit_ST7735.h>
+#elif DISPLAY_TYPE == 3 || DISPLAY_TYPE == 4
+  #include <LiquidCrystal.h>
+#else
+  #error "DISPLAY_TYPE must be 1 (OLED), 2 (TFT), 3 (LCD 16x2) or 4 (LCD 20x4)"
+#endif
 
 // =============================================================================
 // DEBUG SYSTEM
@@ -271,12 +300,24 @@
 #define PIN_LORA_TXEN  -1   // TX enable — N/C on E22 (internal pull)
 #define PIN_LORA_RXEN  -1   // RX enable — N/C on E22 (internal pull)
 
-// ── OLED SSD1309 2.42" — software SPI (U8g2) ────────────────────────────────
+// ── DISPLAY PINS ─────────────────────────────────────────────────────────────
+// Shared soft-SPI bus for the OLED (SSD1309) and the TFT (ST7735): only one
+// display is mounted at a time, so both may use the same five GPIOs.
 #define PIN_OLED_SCK   15
 #define PIN_OLED_SDA   13
 #define PIN_OLED_RES   4
 #define PIN_OLED_DC    16
 #define PIN_OLED_CS    17
+
+// HD44780 LCD (16x2 / 20x4), 4-bit mode — six GPIOs.
+// NOTE: PIN_LCD_D7 defaults to GPIO12 (shared with GPS TX). If you use the
+// GPS module together with an LCD, move PIN_LCD_D7 to a free GPIO.
+#define PIN_LCD_RS    16
+#define PIN_LCD_EN    17
+#define PIN_LCD_D4    13
+#define PIN_LCD_D5    15
+#define PIN_LCD_D6    4
+#define PIN_LCD_D7    12
 
 // ── GPS NEO-6M — UART2 ───────────────────────────────────────────────────────
 #define PIN_GPS_RX     22   // input-only GPIO (SVP), GPS TX → ESP RX
@@ -490,7 +531,8 @@ SPIClass lora_spi(VSPI);
 SX1262 radio = new Module(PIN_LORA_CS, PIN_LORA_DIO1, PIN_LORA_RST,
                            PIN_LORA_BUSY, lora_spi);
 
-// U8g2: SSD1309 2.42" 128×64 — full-frame buffer, software SPI
+#if DISPLAY_TYPE == 1
+// SSD1309 2.42" 128×64 — full-frame buffer, software SPI
 U8G2_SSD1309_128X64_NONAME0_F_4W_SW_SPI u8g2(
   U8G2_R0,
   PIN_OLED_SCK,
@@ -499,6 +541,19 @@ U8G2_SSD1309_128X64_NONAME0_F_4W_SW_SPI u8g2(
   PIN_OLED_DC,
   PIN_OLED_RES
 );
+#elif DISPLAY_TYPE == 2
+// ST7735 1.8" TFT 128×160 — software SPI (color, signal-orange accent)
+Adafruit_ST7735 tft = Adafruit_ST7735(
+  PIN_OLED_CS,
+  PIN_OLED_DC,
+  PIN_OLED_SDA,
+  PIN_OLED_SCK,
+  PIN_OLED_RES
+);
+#else
+// HD44780 character LCD (16x2 or 20x4), 4-bit parallel
+LiquidCrystal lcd(PIN_LCD_RS, PIN_LCD_EN, PIN_LCD_D4, PIN_LCD_D5, PIN_LCD_D6, PIN_LCD_D7);
+#endif
 
 TinyGPSPlus gps;
 HardwareSerial gpsSerial(2);   // Serial2 on ESP32
@@ -831,15 +886,23 @@ void recordRssi(int16_t rssi) {
 }
 
 // Small battery glyph with three level cells; flashes when low.
+// (pixel displays only; the LCD renderers show battery as text)
+// Forward declarations for the Disp primitive layer (defined below).
+static void dispFrame(int16_t x, int16_t y, int16_t w, int16_t h);
+static void dispBox(int16_t x, int16_t y, int16_t w, int16_t h);
 void oledBattery(int16_t x, int16_t y, uint16_t mv) {
-  u8g2.drawFrame(x, y, 10, 5);
-  u8g2.drawBox(x + 10, y + 1, 2, 3);            // terminal
+#if DISPLAY_TYPE >= 3
+  (void)x; (void)y; (void)mv;
+#else
+  dispFrame(x, y, 10, 5);
+  dispBox(x + 10, y + 1, 2, 3);            // terminal
   uint8_t pct = battPct(mv);
   uint8_t cells = (pct >= 75) ? 3 : (pct >= 50) ? 2 : (pct >= 25) ? 1 : 0;
-  for (uint8_t i = 0; i < cells; i++) u8g2.drawBox(x + 2 + i * 3, y + 1, 2, 3);
+  for (uint8_t i = 0; i < cells; i++) dispBox(x + 2 + i * 3, y + 1, 2, 3);
   if (mv > 0 && mv < BATTERY_LOW_MV && (millis() / 400) % 2 == 0) {
-    u8g2.drawBox(x, y, 10, 5);                  // low-battery flash
+    dispBox(x, y, 10, 5);                  // low-battery flash
   }
+#endif
 }
 
 // ── CW decoder ───────────────────────────────────────────────────────────────
@@ -929,271 +992,370 @@ void cwDecodeSample(bool carrier, uint32_t now) {
 
 // =============================================================================
 // ╔══════════════════════════════════════════════════════╗
-// ║              OLED DISPLAY ENGINE  (U8g2)             ║
+// ║              DISPLAY ENGINE  (Disp layer)            ║
 // ╚══════════════════════════════════════════════════════╝
 // =============================================================================
+// One rendering API, three backends, selected at compile time:
+//
+//   DISPLAY_TYPE 1 : SSD1309 2.42" 128x64 OLED (U8g2, soft SPI)   [mono]
+//   DISPLAY_TYPE 2 : ST7735 1.8" TFT 128x160   (Adafruit GFX)      [color]
+//   DISPLAY_TYPE 3 : HD44780 LCD 16x2           (LiquidCrystal)     [mono]
+//   DISPLAY_TYPE 4 : HD44780 LCD 20x4           (LiquidCrystal)     [mono]
+//
+// The pixel backends share the exact same screen layouts. Multicolor
+// detection: dispHasColor() is true only for the ST7735 TFT; screens use a
+// signal-orange accent there and pure black/white on every other panel.
+// Character LCDs render the same screens as compact text lines.
+// =============================================================================
 
-bool initOled() {
-  LOG_OLED("Initialising SSD1309 2.42\" via U8g2 (soft SPI)");
-  u8g2.begin();
-  u8g2.setContrast(220);
-  u8g2.setFontPosTop();
-  u8g2.setDrawColor(1);
-  if (cfg.oledInvert) u8g2.sendF("c", 0xa7);
-  LOG_OK("OLED ready — SSD1309 128x64");
-  return true;
-}
+#if DISPLAY_TYPE == 1
+  #define DISP_W 128
+  #define DISP_H 64
+#elif DISPLAY_TYPE == 2
+  #define DISP_W 128
+  #define DISP_H 160
+#elif DISPLAY_TYPE == 3
+  #define DISP_COLS 16
+  #define DISP_ROWS 2
+#else
+  #define DISP_COLS 20
+  #define DISP_ROWS 4
+#endif
 
-// Segmented horizontal bar: x,y = top-left  w = total width  h = height
+// ── Primitive layer: pixel backends (OLED + TFT) ────────────────────────────
+#if DISPLAY_TYPE == 1
+  // U8g2 backend (SSD1309 2.42")
+  static bool dispHasColor() { return false; }
+  static void dispSetColor(bool on)   { u8g2.setDrawColor(on ? 1 : 0); }
+  static void dispSetAccent()         { u8g2.setDrawColor(1); }   // mono: accent = fg
+  static void dispClear()             { u8g2.clearBuffer(); }
+  static void dispShow()              { u8g2.sendBuffer(); }
+  static void dispFrame(int16_t x,int16_t y,int16_t w,int16_t h) { u8g2.drawFrame(x,y,w,h); }
+  static void dispBox(int16_t x,int16_t y,int16_t w,int16_t h)   { u8g2.drawBox(x,y,w,h); }
+  static void dispHLine(int16_t x,int16_t y,int16_t w)           { u8g2.drawHLine(x,y,w); }
+  static void dispVLine(int16_t x,int16_t y,int16_t h)           { u8g2.drawVLine(x,y,h); }
+  static void dispLine(int16_t x0,int16_t y0,int16_t x1,int16_t y1) { u8g2.drawLine(x0,y0,x1,y1); }
+  static void dispPixel(int16_t x,int16_t y)                     { u8g2.drawPixel(x,y); }
+  static void dispDisc(int16_t x,int16_t y,int16_t r)            { u8g2.drawDisc(x,y,r,U8G2_DRAW_ALL); }
+  static void dispCircle(int16_t x,int16_t y,int16_t r)          { u8g2.drawCircle(x,y,r,U8G2_DRAW_ALL); }
+  static void dispSetFont(uint8_t lvl) {
+    switch (lvl) {
+      case 0: u8g2.setFont(u8g2_font_5x7_tf); break;
+      case 1: u8g2.setFont(u8g2_font_6x10_tf); break;
+      case 2: u8g2.setFont(u8g2_font_7x13B_tf); break;
+      case 3: u8g2.setFont(u8g2_font_logisoso24_tf); break;
+      default: u8g2.setFont(u8g2_font_logisoso32_tf); break;
+    }
+  }
+  static void dispText(int16_t x, int16_t y, const char* s)      { u8g2.drawStr(x, y, s); }
+  static uint16_t dispTextW(const char* s)                       { return u8g2.getStrWidth(s); }
+  static void dispContrast(uint8_t v)                            { u8g2.setContrast(v); }
+  static void dispSleep() { u8g2.setPowerSave(1); }
+  static void dispWake()  { u8g2.setPowerSave(0); }
+  static void dispSetInvert(bool inv) { u8g2.sendF("c", inv ? 0xa7 : 0xa6); }
+#elif DISPLAY_TYPE == 2
+  // Adafruit GFX backend (ST7735 1.8" TFT 128x160, multicolor)
+  static uint16_t g_gfxColor = ST77XX_WHITE;
+  static bool dispHasColor() { return true; }
+  static void dispSetColor(bool on)   { g_gfxColor = on ? ST77XX_WHITE : ST77XX_BLACK; }
+  static void dispSetAccent()         { g_gfxColor = 0xFD20; }   // signal orange
+  static void dispClear()             { tft.fillScreen(ST77XX_BLACK); }
+  static void dispShow()              { }
+  static void dispFrame(int16_t x,int16_t y,int16_t w,int16_t h) { tft.drawRect(x,y,w,h,g_gfxColor); }
+  static void dispBox(int16_t x,int16_t y,int16_t w,int16_t h)   { tft.fillRect(x,y,w,h,g_gfxColor); }
+  static void dispHLine(int16_t x,int16_t y,int16_t w)           { tft.drawFastHLine(x,y,w,g_gfxColor); }
+  static void dispVLine(int16_t x,int16_t y,int16_t h)           { tft.drawFastVLine(x,y,h,g_gfxColor); }
+  static void dispLine(int16_t x0,int16_t y0,int16_t x1,int16_t y1) { tft.drawLine(x0,y0,x1,y1,g_gfxColor); }
+  static void dispPixel(int16_t x,int16_t y)                     { tft.drawPixel(x,y,g_gfxColor); }
+  static void dispDisc(int16_t x,int16_t y,int16_t r)            { tft.fillCircle(x,y,r,g_gfxColor); }
+  static void dispCircle(int16_t x,int16_t y,int16_t r)          { tft.drawCircle(x,y,r,g_gfxColor); }
+  static uint8_t g_gfxScale = 1;
+  static void dispSetFont(uint8_t lvl) { g_gfxScale = (lvl==0)?1:(lvl==1)?2:(lvl==2)?3:(lvl==3)?4:5; }
+  static void dispText(int16_t x, int16_t y, const char* s) {
+    tft.setTextColor(g_gfxColor);
+    tft.setTextSize(g_gfxScale);
+    tft.setCursor(x, y + 8 * g_gfxScale - 2);   // approximate baseline from top-left
+    tft.print(s);
+  }
+  static uint16_t dispTextW(const char* s) { return (uint16_t)(strlen(s) * 6 * g_gfxScale); }
+  static void dispContrast(uint8_t v) { (void)v; }
+  static void dispSleep() { tft.enableSleep(true); }
+  static void dispWake()  { tft.enableSleep(false); }
+  static void dispSetInvert(bool inv) { tft.invertDisplay(inv); }
+#else
+  // Character LCD backend (HD44780 16x2 / 20x4) — text renderers below
+  static bool dispHasColor() { return false; }
+  static void dispSetColor(bool on)   { (void)on; }
+  static void dispSetAccent()         { }
+  static void dispClear()             { lcd.clear(); }
+  static void dispShow()              { }
+  static void dispFrame(int16_t x,int16_t y,int16_t w,int16_t h) { (void)x;(void)y;(void)w;(void)h; }
+  static void dispBox(int16_t x,int16_t y,int16_t w,int16_t h)   { (void)x;(void)y;(void)w;(void)h; }
+  static void dispHLine(int16_t x,int16_t y,int16_t w)           { (void)x;(void)y;(void)w; }
+  static void dispVLine(int16_t x,int16_t y,int16_t h)           { (void)x;(void)y;(void)h; }
+  static void dispLine(int16_t x0,int16_t y0,int16_t x1,int16_t y1) { (void)x0;(void)y0;(void)x1;(void)y1; }
+  static void dispPixel(int16_t x,int16_t y)                     { (void)x;(void)y; }
+  static void dispDisc(int16_t x,int16_t y,int16_t r)            { (void)x;(void)y;(void)r; }
+  static void dispCircle(int16_t x,int16_t y,int16_t r)          { (void)x;(void)y;(void)r; }
+  static void dispSetFont(uint8_t lvl)                           { (void)lvl; }
+  static void dispText(int16_t x, int16_t y, const char* s)      { (void)x;(void)y;(void)s; }
+  static uint16_t dispTextW(const char* s)                       { return (uint16_t)strlen(s); }
+  static void dispContrast(uint8_t v)                            { (void)v; }
+  static void dispSleep() { lcd.noDisplay(); }
+  static void dispWake()  { lcd.display(); }
+  static void dispSetInvert(bool inv)                            { (void)inv; }
+#endif
+
+#if DISPLAY_TYPE <= 2
 void oledSegBar(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t pct) {
   const int8_t SEG_W = 6;
   const int8_t GAP   = 2;
   int16_t filled = (int16_t)((long)w * pct / 100);
-  u8g2.drawFrame(x, y, w, h);
+  dispFrame(x, y, w, h);
   int16_t sx = x + 2;
   while (sx + SEG_W <= x + filled - 1) {
-    u8g2.drawBox(sx, y + 2, SEG_W, h - 4);
+    dispBox(sx, y + 2, SEG_W, h - 4);
     sx += SEG_W + GAP;
   }
 }
-
-// ── ADJUSTMENT OVERLAY ───────────────────────────────────────────────────────
-// Draw a small overlay bar at bottom showing current VOL or WPM being edited.
-// Called from beacon/search screens when g_adjOledShowMs is in the future.
+#endif
+#if DISPLAY_TYPE <= 2
 void oledAdjOverlay() {
   if (millis() >= g_adjOledShowMs) return;
 
   // Inverted bottom 12 px
-  u8g2.setDrawColor(1);
-  u8g2.drawBox(0, 52, 128, 12);
-  u8g2.setDrawColor(0);
+  dispSetColor(true);
+  dispBox(0, 52, 128, 12);
+  dispSetColor(false);
 
   if (g_adjTarget == 0) {
     // Volume: show label + bar
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.drawStr(1, 53, "VOL");
+    dispSetFont(0);
+    dispText(1, 53, "VOL");
     // Bar: 86 px wide, starts at x=22
     uint8_t pct = (uint8_t)map(cfg.audioVolume, ADJ_VOL_MIN, ADJ_VOL_MAX, 0, 100);
     int16_t fillW = (int16_t)map(pct, 0, 100, 0, 86);
-    u8g2.drawFrame(22, 54, 88, 8);
-    if (fillW > 2) u8g2.drawBox(23, 55, fillW, 6);
+    dispFrame(22, 54, 88, 8);
+    if (fillW > 2) dispBox(23, 55, fillW, 6);
     // Numeric value
     char vbuf[8];
     snprintf(vbuf, sizeof(vbuf), "%3d%%", cfg.audioVolume * 100 / 255);
-    u8g2.drawStr(113, 53, vbuf);
+    dispText(113, 53, vbuf);
   } else {
     // WPM: show label + bar
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.drawStr(1, 53, "WPM");
+    dispSetFont(0);
+    dispText(1, 53, "WPM");
     uint8_t pct = (uint8_t)map(cfg.wpm, ADJ_WPM_MIN, ADJ_WPM_MAX, 0, 100);
     int16_t fillW = (int16_t)map(pct, 0, 100, 0, 86);
-    u8g2.drawFrame(22, 54, 88, 8);
-    if (fillW > 2) u8g2.drawBox(23, 55, fillW, 6);
+    dispFrame(22, 54, 88, 8);
+    if (fillW > 2) dispBox(23, 55, fillW, 6);
     char wbuf[8];
     snprintf(wbuf, sizeof(wbuf), "%3d", cfg.wpm);
-    u8g2.drawStr(113, 53, wbuf);
+    dispText(113, 53, wbuf);
   }
 
-  u8g2.setDrawColor(1);
+  dispSetColor(true);
 }
-
+#endif
+#if DISPLAY_TYPE <= 2
 uint8_t rssiToPct(int16_t rssi) {
   return (uint8_t)constrain(map(rssi, -120, -40, 0, 100), 0, 100);
 }
-
-// ── SHARED GLYPHS ────────────────────────────────────────────────────────────
-// Compact antenna mast with radiating arcs (headers, splash). `active` pulses
-// the arcs like a live transmission; passive mode draws the bare mast.
+#endif
+#if DISPLAY_TYPE <= 2
 static void oledAntenna(int16_t x, int16_t y, bool active) {
-  u8g2.drawLine(x, y + 9, x, y + 1);          // mast
-  u8g2.drawLine(x - 2, y + 9, x + 2, y + 9);  // base
-  u8g2.drawDisc(x + 1, y, 1, U8G2_DRAW_ALL);  // whip tip
+  dispLine(x, y + 9, x, y + 1);          // mast
+  dispLine(x - 2, y + 9, x + 2, y + 9);  // base
+  dispDisc(x + 1, y, 1);  // whip tip
   if (active) {
     bool pulse = ((millis() / 240) & 1) == 0;
-    u8g2.drawCircle(x + 2, y + 1, 2, U8G2_DRAW_UPPER_RIGHT);
-    u8g2.drawCircle(x + 2, y + 1, pulse ? 4 : 3, U8G2_DRAW_UPPER_RIGHT);
+    dispCircle(x + 2, y + 1, 2);
+    dispCircle(x + 2, y + 1, pulse ? 4 : 3);
   }
 }
-
-// Small satellite glyph (GPS wait screen).
+#endif
+#if DISPLAY_TYPE <= 2
 static void oledSat(int16_t x, int16_t y) {
-  u8g2.drawBox(x, y + 2, 5, 4);                  // body
-  u8g2.drawLine(x - 2, y, x - 2, y + 7);         // panel arms
-  u8g2.drawLine(x + 6, y, x + 6, y + 7);
-  u8g2.drawLine(x - 4, y + 1, x - 1, y + 1);     // panels
-  u8g2.drawLine(x + 5, y + 1, x + 8, y + 1);
-  u8g2.drawLine(x + 2, y - 2, x + 2, y + 1);     // antenna
-  u8g2.drawDisc(x + 2, y - 3, 1, U8G2_DRAW_ALL);
+  dispBox(x, y + 2, 5, 4);                  // body
+  dispLine(x - 2, y, x - 2, y + 7);         // panel arms
+  dispLine(x + 6, y, x + 6, y + 7);
+  dispLine(x - 4, y + 1, x - 1, y + 1);     // panels
+  dispLine(x + 5, y + 1, x + 8, y + 1);
+  dispLine(x + 2, y - 2, x + 2, y + 1);     // antenna
+  dispDisc(x + 2, y - 3, 1);
 }
-
-// ── BOOT SPLASH ──────────────────────────────────────────────────────────────
-// Animated boot screen: pulsing antenna in the title bar, feature flags and a
-// live segmented progress bar. ~1 s of motion at power-on.
+#endif
 void oledSplash() {
+#if DISPLAY_TYPE >= 3
+  lcdSplash();
+  return;
+#else
+
   if (!g_oledOk || !cfg.oledEnabled) return;
   for (uint8_t f = 0; f <= 10; f++) {
     uint8_t pct = (uint8_t)((uint32_t)f * 100 / 10);
-    u8g2.clearBuffer();
-    u8g2.setDrawColor(1);
+    dispClear();
+    dispSetColor(true);
 
     // Outer double frame
-    u8g2.drawFrame(0, 0, 128, 64);
-    u8g2.drawFrame(2, 2, 124, 60);
+    dispFrame(0, 0, 128, 64);
+    dispFrame(2, 2, 124, 60);
 
     // Title bar (inverted) with pulsing antenna glyph
-    u8g2.drawBox(0, 0, 128, 14);
-    u8g2.setDrawColor(0);
-    u8g2.setFont(u8g2_font_7x13B_tf);
-    u8g2.drawStr(4, 1, "AEGIS-BEACON");
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.drawStr(102, 2, "v6.0");
+    dispBox(0, 0, 128, 14);
+    dispSetColor(false);
+    dispSetFont(2);
+    dispText(4, 1, "AEGIS-BEACON");
+    dispSetFont(0);
+    dispText(102, 2, "v6.0");
     oledAntenna(120, 3, true);
-    u8g2.setDrawColor(1);
+    dispSetColor(true);
 
     // Subtitle + feature flags
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.drawStr(6, 19, "AVALANCHE RESCUE SYSTEM");
+    dispSetFont(0);
+    dispText(6, 19, "AVALANCHE RESCUE SYSTEM");
     char feats[40] = "";
     if (cfg.gpsEnabled)  strlcat(feats, " GPS", sizeof(feats));
     if (cfg.nameEnabled) strlcat(feats, " ID", sizeof(feats));
     strlcat(feats, " BTN-CTRL", sizeof(feats));
-    u8g2.drawStr(6, 30, feats);
-    u8g2.drawHLine(4, 39, 120);
+    dispText(6, 30, feats);
+    dispHLine(4, 39, 120);
 
     // Boot progress
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.drawStr(6, 43, "INITIALISING");
+    dispSetFont(0);
+    dispText(6, 43, "INITIALISING");
     char pb[8];
     snprintf(pb, sizeof(pb), "%3d%%", pct);
-    u8g2.drawStr(96, 43, pb);
+    dispText(96, 43, pb);
     oledSegBar(6, 53, 116, 6, pct);
 
-    u8g2.sendBuffer();
+    dispShow();
     delay(90);
     esp_task_wdt_reset();
   }
+#endif
 }
-
-// ── GPS WAIT SCREEN ───────────────────────────────────────────────────────────
-// Satellite glyph + big count, a 4-cell lock meter, and a timeout progress bar.
 void oledGpsWait(uint8_t sats, uint32_t elapsedSec, uint32_t timeoutSec) {
+#if DISPLAY_TYPE >= 3
+  lcdGpsWait(sats, elapsedSec, timeoutSec);
+  return;
+#else
+
   if (!g_oledOk || !cfg.oledEnabled) return;
   if (millis() - g_lastOledUpdate < OLED_REFRESH_MS) return;
   g_lastOledUpdate = millis();
 
-  u8g2.clearBuffer();
-  u8g2.setDrawColor(1);
+  dispClear();
+  dispSetColor(true);
 
   // Header bar
-  u8g2.drawBox(0, 0, 128, 12);
-  u8g2.setDrawColor(0);
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(8, 1, "ACQUIRING GPS FIX");
-  u8g2.setDrawColor(1);
-  u8g2.drawHLine(0, 13, 128);
+  dispBox(0, 0, 128, 12);
+  dispSetColor(false);
+  dispSetFont(1);
+  dispText(8, 1, "ACQUIRING GPS FIX");
+  dispSetColor(true);
+  dispHLine(0, 13, 128);
 
   // Satellite glyph + large count
   oledSat(4, 16);
-  u8g2.setFont(u8g2_font_logisoso24_tf);
+  dispSetFont(3);
   char satbuf[4];
   snprintf(satbuf, sizeof(satbuf), "%d", sats);
-  u8g2.drawStr(18, 13, satbuf);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(58, 22, "SATS");
+  dispText(18, 13, satbuf);
+  dispSetFont(0);
+  dispText(58, 22, "SATS");
 
   // Lock meter: one cell lights per satellite toward the fix threshold
   uint8_t need = (GPS_MIN_SATS > 0) ? GPS_MIN_SATS : 4;
   for (uint8_t i = 0; i < 4; i++) {
     int16_t bx = 92 + i * 9;
-    if (sats >= (i + 1) * need / 4) u8g2.drawBox(bx, 18, 7, 7);
-    else                            u8g2.drawFrame(bx, 18, 7, 7);
+    if (sats >= (i + 1) * need / 4) dispBox(bx, 18, 7, 7);
+    else                            dispFrame(bx, 18, 7, 7);
   }
   // Blinking GPS dot: solid = fix locked
-  if (g_gpsFix.valid) u8g2.drawBox(121, 19, 5, 5);
-  else if ((millis() / 400) % 2 == 0) u8g2.drawFrame(121, 19, 5, 5);
+  if (g_gpsFix.valid) dispBox(121, 19, 5, 5);
+  else if ((millis() / 400) % 2 == 0) dispFrame(121, 19, 5, 5);
 
   // Timeout progress bar
   uint8_t pct = (uint8_t)constrain(elapsedSec * 100 / timeoutSec, 0, 100);
-  u8g2.drawFrame(0, 38, 128, 7);
+  dispFrame(0, 38, 128, 7);
   int16_t fillW = (int16_t)map(pct, 0, 100, 0, 126);
-  if (fillW > 0) u8g2.drawBox(1, 39, fillW, 5);
+  if (fillW > 0) dispBox(1, 39, fillW, 5);
 
   // Status text
-  u8g2.setFont(u8g2_font_5x7_tf);
+  dispSetFont(0);
   if (sats >= GPS_MIN_SATS) {
     char okbuf[20];
     snprintf(okbuf, sizeof(okbuf), "FIX OK  %d sats", sats);
-    u8g2.drawStr(0, 47, okbuf);
+    dispText(0, 47, okbuf);
   } else {
     uint32_t rem = (elapsedSec < timeoutSec) ? timeoutSec - elapsedSec : 0;
     char waitbuf[24];
     snprintf(waitbuf, sizeof(waitbuf), "TIMEOUT IN %lus", rem);
-    u8g2.drawStr(0, 47, waitbuf);
+    dispText(0, 47, waitbuf);
   }
 
   // Coordinates or hint
   if (g_gpsFix.valid) {
     char coordbuf[28];
     snprintf(coordbuf, sizeof(coordbuf), "%.4f  %.4f", g_gpsFix.lat, g_gpsFix.lng);
-    u8g2.drawStr(0, 56, coordbuf);
+    dispText(0, 56, coordbuf);
   } else {
-    u8g2.drawStr(0, 56, "MODE: skip wait");
+    dispText(0, 56, "MODE: skip wait");
   }
 
-  u8g2.sendBuffer();
+  dispShow();
+#endif
 }
-
-// ── BEACON MODE SCREEN ────────────────────────────────────────────────────────
-// 128×64 layout:
-//  [ 0-11] Inverted header: TX BEACON | antenna glyph | cycle counter
-//  [13-37] Large frequency + MHz label
-//  [37-43] Channel / power / WPM info line
-//  [44-51] Segmented TX progress bar with live caret
-//  [52-63] Status row OR adj overlay OR TRANSMITTING flash
 void oledBeacon(int freqIdx, float freqMHz, int charIdx, int totalChars,
                 uint32_t cycleNum, uint32_t sleepRemainSec, bool transmitting,
                 const char* payload) {
+#if DISPLAY_TYPE >= 3
+  lcdBeacon(freqIdx, freqMHz, charIdx, totalChars, cycleNum, sleepRemainSec, transmitting, payload);
+  return;
+#else
+
   if (!g_oledOk || !cfg.oledEnabled) return;
   if (millis() - g_lastOledUpdate < OLED_REFRESH_MS && !transmitting) return;
   g_lastOledUpdate = millis();
 
-  u8g2.clearBuffer();
+  dispClear();
 
   // ── Header bar ──────────────────────────────────────────────────────────
-  u8g2.setDrawColor(1);
-  u8g2.drawBox(0, 0, 128, 12);
-  u8g2.setDrawColor(0);
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(2, 1, "TX BEACON");
+  dispSetColor(true);
+  dispBox(0, 0, 128, 12);
+  dispSetColor(false);
+  dispSetFont(1);
+  dispText(2, 1, "TX BEACON");
   char cyclbuf[14];
   snprintf(cyclbuf, sizeof(cyclbuf), "#%lu", cycleNum);
-  u8g2.drawStr(128 - (int16_t)strlen(cyclbuf) * 6 - 2, 1, cyclbuf);
+  dispText(128 - (int16_t)strlen(cyclbuf) * 6 - 2, 1, cyclbuf);
   // Antenna glyph on the bar: arcs pulse while transmitting
   oledAntenna(64, 3, transmitting);
-  u8g2.setDrawColor(1);
+  dispSetColor(true);
 
   // ── Large frequency ──────────────────────────────────────────────────────
   char fbuf[12];
   snprintf(fbuf, sizeof(fbuf), "%.3f", freqMHz);
-  u8g2.setFont(u8g2_font_logisoso24_tf);
-  u8g2.drawStr(0, 13, fbuf);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(98, 28, "MHz");
+  dispSetFont(3);
+  dispText(0, 13, fbuf);
+  dispSetFont(0);
+  dispText(98, 28, "MHz");
   oledBattery(116, 14, readBatteryMv());
 
   // ── Info line: channel / power / wpm ────────────────────────────────────
   char infobuf[28];
   snprintf(infobuf, sizeof(infobuf), "CH%d/%d +%ddBm %dWPM",
            freqIdx + 1, cfg.freqCount, cfg.powerDbm, cfg.wpm);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(0, 37, infobuf);
+  dispSetFont(0);
+  dispText(0, 37, infobuf);
 
   // ── TX progress bar (segmented) + blinking caret ────────────────────────
   uint8_t pct = (totalChars > 0) ? (uint8_t)((uint32_t)charIdx * 100 / totalChars) : 0;
   oledSegBar(0, 44, 128, 7, pct);
   if (transmitting && totalChars > 0) {
     int16_t caretX = 1 + (int16_t)map((long)charIdx, 0, totalChars, 0, 125);
-    if ((millis() / 180) % 2 == 0) u8g2.drawBox(caretX, 45, 2, 5);
+    if ((millis() / 180) % 2 == 0) dispBox(caretX, 45, 2, 5);
   }
 
   // ── Bottom area ──────────────────────────────────────────────────────────
@@ -1203,20 +1365,20 @@ void oledBeacon(int freqIdx, float freqMHz, int charIdx, int totalChars,
     oledAdjOverlay();
   } else if (transmitting && (millis() / 300) % 2 == 0) {
     // Flashing TRANSMITTING bar with payload preview
-    u8g2.drawBox(0, 52, 128, 12);
-    u8g2.setDrawColor(0);
-    u8g2.setFont(u8g2_font_6x10_tf);
+    dispBox(0, 52, 128, 12);
+    dispSetColor(false);
+    dispSetFont(1);
     char plbuf[22];
     uint8_t plLen = (uint8_t)strlen(payload);
     int16_t startChar = (int16_t)charIdx - 10;
     if (startChar < 0) startChar = 0;
     if (startChar + 21 > plLen) startChar = (plLen > 21) ? plLen - 21 : 0;
     snprintf(plbuf, sizeof(plbuf), "%-21.21s", payload + startChar);
-    u8g2.drawStr(1, 53, plbuf);
-    u8g2.setDrawColor(1);
+    dispText(1, 53, plbuf);
+    dispSetColor(true);
   } else {
     // Status row: GPS state + sleep countdown + adj target
-    u8g2.setFont(u8g2_font_5x7_tf);
+    dispSetFont(0);
     char statusbuf[32] = "";
     if (cfg.gpsEnabled) {
       strlcat(statusbuf, g_gpsFix.valid ? "GPS:OK" : "GPS:--", sizeof(statusbuf));
@@ -1228,77 +1390,75 @@ void oledBeacon(int freqIdx, float freqMHz, int charIdx, int totalChars,
     else
       strlcpy(slpbuf, "STANDBY", sizeof(slpbuf));
     strlcat(statusbuf, slpbuf, sizeof(statusbuf));
-    u8g2.drawStr(0, 53, statusbuf);
+    dispText(0, 53, statusbuf);
 
     const char* adjLbl = (g_adjTarget == 0) ? "VOL" : "WPM";
-    u8g2.drawStr(103, 53, adjLbl);
-    u8g2.drawFrame(101, 52, 27, 10);
+    dispText(103, 53, adjLbl);
+    dispFrame(101, 52, 27, 10);
   }
 
-  u8g2.sendBuffer();
+  dispShow();
+#endif
 }
-
-// ── SEARCH MODE SCREEN ────────────────────────────────────────────────────────
-// 128×64 layout:
-//  [ 0-11] Inverted header: RX SEARCH | antenna glyph | hit counter
-//  [13-37] Large frequency + MHz label
-//  [37-43] Channel + RSSI info line
-//  [43-51] RSSI bar, threshold tick and sweeping scan caret
-//  [52-63] Detected flash / last hit / scanning status OR adj overlay
 void oledSearch(int freqIdx, float freqMHz, int16_t rssi,
                 uint32_t passNum, bool detected) {
+#if DISPLAY_TYPE >= 3
+  lcdSearch(freqIdx, freqMHz, rssi, passNum, detected);
+  return;
+#else
+
   if (!g_oledOk || !cfg.oledEnabled) return;
   if (millis() - g_lastOledUpdate < OLED_REFRESH_MS) return;
   g_lastOledUpdate = millis();
 
-  u8g2.clearBuffer();
+  dispClear();
 
   // ── Header bar ──────────────────────────────────────────────────────────
-  u8g2.setDrawColor(1);
-  u8g2.drawBox(0, 0, 128, 12);
-  u8g2.setDrawColor(0);
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(2, 1, "RX SEARCH");
+  dispSetColor(true);
+  dispBox(0, 0, 128, 12);
+  dispSetColor(false);
+  dispSetFont(1);
+  dispText(2, 1, "RX SEARCH");
   char hitsbuf[12];
   snprintf(hitsbuf, sizeof(hitsbuf), "HIT:%d", g_scanHitCount);
-  u8g2.drawStr(128 - (int16_t)strlen(hitsbuf) * 6 - 2, 1, hitsbuf);
+  dispText(128 - (int16_t)strlen(hitsbuf) * 6 - 2, 1, hitsbuf);
   // Passive antenna glyph while scanning (no arcs)
   oledAntenna(64, 3, false);
-  u8g2.setDrawColor(1);
+  dispSetColor(true);
 
   // ── Large frequency ──────────────────────────────────────────────────────
   char fbuf[12];
   snprintf(fbuf, sizeof(fbuf), "%.3f", freqMHz);
-  u8g2.setFont(u8g2_font_logisoso24_tf);
-  u8g2.drawStr(0, 13, fbuf);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(98, 28, "MHz");
+  dispSetFont(3);
+  dispText(0, 13, fbuf);
+  dispSetFont(0);
+  dispText(98, 28, "MHz");
   oledBattery(116, 14, readBatteryMv());
 
   // ── Info line: channel + RSSI ───────────────────────────────────────────
   char rssibuf[22];
   snprintf(rssibuf, sizeof(rssibuf), "CH%d/%d  RSSI %ddBm",
            freqIdx + 1, cfg.freqCount, rssi);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(0, 37, rssibuf);
+  dispSetFont(0);
+  dispText(0, 37, rssibuf);
 
   // ── RSSI trace (oscilloscope strip) + threshold tick + sweep caret ──────
-  u8g2.drawFrame(0, 43, 128, 8);
+  dispFrame(0, 43, 128, 8);
   for (uint8_t i = 0; i < RSSI_HIST_LEN; i++) {
     uint8_t idx = (s_rssiHistIdx + RSSI_HIST_LEN - 1 - i) % RSSI_HIST_LEN;
     int16_t v = s_rssiHist[idx];
     if (v == 0) continue;                       // unused slot
     int16_t y = 50 - (int16_t)map(constrain(v, -120, -40), -120, -40, 0, 6);
-    u8g2.drawPixel(127 - i, y);
+    dispPixel(127 - i, y);
   }
   // Threshold tick (full-height marker)
   uint8_t thrPct = rssiToPct(cfg.rssiThreshold);
   int16_t thrX = (int16_t)map(thrPct, 0, 100, 0, 127);
-  u8g2.drawVLine(thrX, 42, 10);
+  dispVLine(thrX, 42, 10);
   // Scanning caret sweeps the bar while no signal is detected
   if (!detected) {
     int16_t sx = 1 + (int16_t)((millis() / 110) % 126);
-    u8g2.drawBox(sx, 44, 3, 6);
+    dispBox(sx, 44, 3, 6);
   }
 
   // ── Bottom area ──────────────────────────────────────────────────────────
@@ -1308,235 +1468,403 @@ void oledSearch(int freqIdx, float freqMHz, int16_t rssi,
     oledAdjOverlay();
   } else if (detected && (millis() / 280) % 2 == 0) {
     // Detected: inverted signal strength label
-    u8g2.drawBox(0, 52, 128, 12);
-    u8g2.setDrawColor(0);
-    u8g2.setFont(u8g2_font_6x10_tf);
+    dispBox(0, 52, 128, 12);
+    dispSetColor(false);
+    dispSetFont(1);
     const char* lbl = (rssi >= -60) ? "  ** STRONG SIGNAL **  " :
                       (rssi >= -80) ? "   *  MEDIUM SIGNAL  *  " :
                                       "     WEAK SIGNAL      ";
     int16_t ax = (128 - (int16_t)strlen(lbl) * 6) / 2;
     if (ax < 0) ax = 0;
-    u8g2.drawStr(ax, 53, lbl);
-    u8g2.setDrawColor(1);
+    dispText(ax, 53, lbl);
+    dispSetColor(true);
   } else if (g_scanHitCount > 0) {
     // Last hit detail
     ScanHit& h = g_scanHits[g_scanHitCount - 1];
     char lastbuf[28];
     snprintf(lastbuf, sizeof(lastbuf), "LAST %.3fMHz %ddBm %s",
              h.freq, h.rssi, h.label);
-    u8g2.setFont(u8g2_font_5x7_tf);
-    u8g2.drawStr(0, 53, lastbuf);
+    dispSetFont(0);
+    dispText(0, 53, lastbuf);
   } else {
     // Scanning status + adj target
-    u8g2.setFont(u8g2_font_5x7_tf);
+    dispSetFont(0);
     char scanbuf[28];
     snprintf(scanbuf, sizeof(scanbuf), "SCAN #%lu  THR:%ddBm", passNum, cfg.rssiThreshold);
-    u8g2.drawStr(0, 53, scanbuf);
+    dispText(0, 53, scanbuf);
 
     const char* adjLbl = (g_adjTarget == 0) ? "VOL" : "WPM";
-    u8g2.drawStr(103, 53, adjLbl);
-    u8g2.drawFrame(101, 52, 27, 10);
+    dispText(103, 53, adjLbl);
+    dispFrame(101, 52, 27, 10);
   }
 
-  u8g2.sendBuffer();
+  dispShow();
+#endif
 }
-
-// ── LISTEN MODE SCREEN (CW decoder, v6.0) ────────────────────────────────────
-//  [0-11]  Inverted header: RX LISTEN | decoded char count
-//  [14-19] Frequency + battery glyph
-//  [24-33] RSSI history trace with threshold tick
-//  [35-42] RSSI / threshold readout
-//  [43-63] Decoded text window (two lines)
 void oledListen(float freqMHz, int16_t rssi, const char* text) {
+#if DISPLAY_TYPE >= 3
+  lcdListen(freqMHz, rssi, text);
+  return;
+#else
+
   if (!g_oledOk || !cfg.oledEnabled) return;
   if (millis() - g_lastOledUpdate < OLED_REFRESH_MS) return;
   g_lastOledUpdate = millis();
 
-  u8g2.clearBuffer();
-  u8g2.setDrawColor(1);
+  dispClear();
+  dispSetColor(true);
 
   // Header with pulsing antenna (actively receiving)
-  u8g2.drawBox(0, 0, 128, 12);
-  u8g2.setDrawColor(0);
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(2, 1, "RX LISTEN");
+  dispBox(0, 0, 128, 12);
+  dispSetColor(false);
+  dispSetFont(1);
+  dispText(2, 1, "RX LISTEN");
   char cntbuf[14];
   snprintf(cntbuf, sizeof(cntbuf), "%d CHR", s_cwDecoded);
-  u8g2.drawStr(128 - (int16_t)strlen(cntbuf) * 6 - 2, 1, cntbuf);
+  dispText(128 - (int16_t)strlen(cntbuf) * 6 - 2, 1, cntbuf);
   oledAntenna(64, 3, true);
-  u8g2.setDrawColor(1);
+  dispSetColor(true);
 
   // Frequency + battery
   char fbuf[14];
   snprintf(fbuf, sizeof(fbuf), "%.3f MHz", freqMHz);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(2, 14, fbuf);
+  dispSetFont(0);
+  dispText(2, 14, fbuf);
   oledBattery(116, 14, readBatteryMv());
 
   // RSSI history trace
-  u8g2.drawFrame(0, 24, 128, 9);
+  dispFrame(0, 24, 128, 9);
   for (uint8_t i = 0; i < RSSI_HIST_LEN; i++) {
     uint8_t idx = (s_rssiHistIdx + RSSI_HIST_LEN - 1 - i) % RSSI_HIST_LEN;
     int16_t v = s_rssiHist[idx];
     if (v == 0) continue;
     int16_t y = 32 - (int16_t)map(constrain(v, -120, -40), -120, -40, 0, 7);
-    u8g2.drawPixel(127 - i, y);
+    dispPixel(127 - i, y);
   }
   uint8_t thrPct = rssiToPct(cfg.rssiThreshold);
   int16_t thrX = (int16_t)map(thrPct, 0, 100, 0, 127);
-  u8g2.drawVLine(thrX, 23, 11);
+  dispVLine(thrX, 23, 11);
 
   // RSSI + threshold readout
   char rinf[24];
   snprintf(rinf, sizeof(rinf), "RSSI %ddBm  THR %ddBm", rssi, cfg.rssiThreshold);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(0, 35, rinf);
-  u8g2.drawHLine(0, 43, 128);
+  dispSetFont(0);
+  dispText(0, 35, rinf);
+  dispHLine(0, 43, 128);
 
   // Decoded text window (last 42 chars, two 21-char lines)
   size_t tl = strlen(text);
   size_t start = (tl > 42) ? tl - 42 : 0;
-  u8g2.setFont(u8g2_font_6x10_tf);
+  dispSetFont(1);
   char line[22];
   size_t l1 = (tl - start < 21) ? tl - start : 21;
   memcpy(line, text + start, l1); line[l1] = '\0';
-  u8g2.drawStr(1, 45, line);
+  dispText(1, 45, line);
   if (tl - start > 21) {
     size_t l2 = tl - start - 21; if (l2 > 21) l2 = 21;
     memcpy(line, text + start + 21, l2); line[l2] = '\0';
-    u8g2.drawStr(1, 56, line);
+    dispText(1, 56, line);
   }
 
   if (millis() < g_adjOledShowMs) oledAdjOverlay();
 
-  u8g2.sendBuffer();
+  dispShow();
+#endif
 }
-
-// ── EMERGENCY SCREEN ──────────────────────────────────────────────────────────
 void oledEmergency(float freqMHz, uint32_t cycleNum) {
+#if DISPLAY_TYPE >= 3
+  lcdEmergency(freqMHz, cycleNum);
+  return;
+#else
+
   if (!g_oledOk || !cfg.oledEnabled) return;
   if (millis() - g_lastOledUpdate < 200) return;
   g_lastOledUpdate = millis();
 
-  u8g2.clearBuffer();
+  dispClear();
   bool inv = (millis() / 500) % 2;
 
   if (inv) {
-    u8g2.drawBox(0, 0, 128, 64);
-    u8g2.setDrawColor(0);
+    dispBox(0, 0, 128, 64);
+    dispSetColor(false);
   } else {
-    u8g2.setDrawColor(1);
+    dispSetColor(true);
     // Border double-frame when not inverted
-    u8g2.drawFrame(0, 0, 128, 64);
-    u8g2.drawFrame(2, 2, 124, 60);
+    dispFrame(0, 0, 128, 64);
+    dispFrame(2, 2, 124, 60);
     // Corner brackets — distress scope frame
-    u8g2.drawLine(4, 8, 4, 4);          u8g2.drawLine(4, 4, 8, 4);       // TL
-    u8g2.drawLine(120, 4, 124, 4);      u8g2.drawLine(124, 4, 124, 8);   // TR
-    u8g2.drawLine(4, 56, 4, 60);        u8g2.drawLine(4, 60, 8, 60);     // BL
-    u8g2.drawLine(120, 60, 124, 60);    u8g2.drawLine(124, 56, 124, 60); // BR
+    dispLine(4, 8, 4, 4);          dispLine(4, 4, 8, 4);       // TL
+    dispLine(120, 4, 124, 4);      dispLine(124, 4, 124, 8);   // TR
+    dispLine(4, 56, 4, 60);        dispLine(4, 60, 8, 60);     // BL
+    dispLine(120, 60, 124, 60);    dispLine(124, 56, 124, 60); // BR
   }
 
   // Blinking TX light (top-right, opposite phase of the inversion)
   if ((millis() / 250) % 2 == 0) {
-    u8g2.setDrawColor(inv ? 1 : 0);
-    u8g2.drawBox(114, 3, 8, 3);
-    u8g2.setDrawColor(inv ? 0 : 1);
+    dispSetColor(inv ? true : false);
+    dispBox(114, 3, 8, 3);
+    dispSetColor(inv ? false : true);
   }
 
   // Giant SOS centred
-  u8g2.setFont(u8g2_font_logisoso32_tf);
-  u8g2.drawStr(14, 1, "SOS");
+  dispSetFont(4);
+  dispText(14, 1, "SOS");
 
   // Separator
-  u8g2.drawHLine(4, 35, 120);
+  dispHLine(4, 35, 120);
 
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(4, 37, "EMERGENCY BEACON TX");
+  dispSetFont(1);
+  dispText(4, 37, "EMERGENCY BEACON TX");
 
   char fbuf[22];
   snprintf(fbuf, sizeof(fbuf), "%.3f MHz  +22dBm", freqMHz);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(4, 48, fbuf);
+  dispSetFont(0);
+  dispText(4, 48, fbuf);
 
   if (g_gpsFix.valid || g_rtcFixValid) {
     double lat = g_gpsFix.valid ? g_gpsFix.lat : g_rtcLat;
     double lng = g_gpsFix.valid ? g_gpsFix.lng : g_rtcLng;
     char coordbuf[24];
     snprintf(coordbuf, sizeof(coordbuf), "%.3f  %.3f", lat, lng);
-    u8g2.drawStr(4, 57, coordbuf);
+    dispText(4, 57, coordbuf);
   } else {
     char cbuf[20];
     snprintf(cbuf, sizeof(cbuf), "CYCLE #%lu  NO GPS", cycleNum);
-    u8g2.drawStr(4, 57, cbuf);
+    dispText(4, 57, cbuf);
   }
 
-  u8g2.setDrawColor(1);
-  u8g2.sendBuffer();
+  dispSetColor(true);
+  dispShow();
+#endif
 }
-
-// ── CONFIG MODE SCREEN ────────────────────────────────────────────────────────
-// Captive-portal instructions: WiFi glyph in the header, boxed AP details and
-// a checklist of the three steps.
 void oledConfig() {
+#if DISPLAY_TYPE >= 3
+  lcdConfig();
+  return;
+#else
+
   if (!g_oledOk || !cfg.oledEnabled) return;
-  u8g2.clearBuffer();
+  dispClear();
 
   // Header with WiFi glyph
-  u8g2.setDrawColor(1);
-  u8g2.drawBox(0, 0, 128, 11);
-  u8g2.setDrawColor(0);
-  u8g2.drawDisc(7, 5, 1, U8G2_DRAW_ALL);
-  u8g2.drawCircle(7, 5, 2, U8G2_DRAW_UPPER_LEFT | U8G2_DRAW_UPPER_RIGHT);
-  u8g2.drawCircle(7, 5, 4, U8G2_DRAW_UPPER_LEFT | U8G2_DRAW_UPPER_RIGHT);
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.drawStr(16, 1, "CONFIGURATION MODE");
-  u8g2.setDrawColor(1);
+  dispSetColor(true);
+  dispBox(0, 0, 128, 11);
+  dispSetColor(false);
+  dispDisc(7, 5, 1);
+  dispCircle(7, 5, 2);
+  dispCircle(7, 5, 4);
+  dispSetFont(1);
+  dispText(16, 1, "CONFIGURATION MODE");
+  dispSetColor(true);
 
   // Boxed access-point details
-  u8g2.drawFrame(2, 13, 124, 19);
-  u8g2.setFont(u8g2_font_5x7_tf);
-  u8g2.drawStr(6, 15, "WIFI AP:");
-  u8g2.drawStr(48, 15, AP_SSID);
+  dispFrame(2, 13, 124, 19);
+  dispSetFont(0);
+  dispText(6, 15, "WIFI AP:");
+  dispText(48, 15, AP_SSID);
   char urlbuf[24];
   snprintf(urlbuf, sizeof(urlbuf), "URL: http://%s", AP_IP);
-  u8g2.drawStr(6, 25, urlbuf);
+  dispText(6, 25, urlbuf);
 
-  u8g2.drawHLine(0, 35, 128);
+  dispHLine(0, 35, 128);
 
   // Checklist with box bullets
-  u8g2.drawFrame(2, 38, 4, 4);
-  u8g2.drawStr(10, 37, "Connect to WiFi network");
-  u8g2.drawFrame(2, 46, 4, 4);
-  u8g2.drawStr(10, 45, "Open your browser");
-  u8g2.drawFrame(2, 54, 4, 4);
-  u8g2.drawStr(10, 53, "Go to the URL above");
+  dispFrame(2, 38, 4, 4);
+  dispText(10, 37, "Connect to WiFi network");
+  dispFrame(2, 46, 4, 4);
+  dispText(10, 45, "Open your browser");
+  dispFrame(2, 54, 4, 4);
+  dispText(10, 53, "Go to the URL above");
 
-  u8g2.sendBuffer();
+  dispShow();
+#endif
 }
-
-// ── GENERIC MESSAGE ───────────────────────────────────────────────────────────
 void oledMessage(const char* l1, const char* l2 = nullptr,
                  const char* l3 = nullptr, bool inv = false) {
+#if DISPLAY_TYPE >= 3
+  lcdMessage(l1, l2, l3, inv);
+  return;
+#else
+
   if (!g_oledOk || !cfg.oledEnabled) return;
-  u8g2.clearBuffer();
-  if (inv) { u8g2.drawBox(0, 0, 128, 64); u8g2.setDrawColor(0); }
+  dispClear();
+  if (inv) { dispBox(0, 0, 128, 64); dispSetColor(false); }
   else {
-    u8g2.setDrawColor(1);
+    dispSetColor(true);
     // Double frame, like every other screen
-    u8g2.drawFrame(0, 0, 128, 64);
-    u8g2.drawFrame(2, 2, 124, 60);
+    dispFrame(0, 0, 128, 64);
+    dispFrame(2, 2, 124, 60);
   }
-  u8g2.setFont(u8g2_font_7x13_tf);
+  dispSetFont(2);
   // Centered lines
-  if (l1) u8g2.drawStr((128 - u8g2.getStrWidth(l1)) / 2,  4, l1);
-  if (l2) u8g2.drawStr((128 - u8g2.getStrWidth(l2)) / 2, 24, l2);
-  if (l3) u8g2.drawStr((128 - u8g2.getStrWidth(l3)) / 2, 44, l3);
-  u8g2.setDrawColor(1);
-  u8g2.sendBuffer();
+  if (l1) dispText((128 - dispTextW(l1)) / 2,  4, l1);
+  if (l2) dispText((128 - dispTextW(l2)) / 2, 24, l2);
+  if (l3) dispText((128 - dispTextW(l3)) / 2, 44, l3);
+  dispSetColor(true);
+  dispShow();
+#endif
+}
+void oledSleep() { if (g_oledOk) dispSleep(); }
+void oledWake()  { if (g_oledOk) dispWake(); }
+
+// ── LCD text renderers (16x2 / 20x4) ─────────────────────────────────────────
+#if DISPLAY_TYPE >= 3
+// Write one text line; pads to the full row width. `center` pads both sides.
+static void lcdLine(uint8_t row, const char* s, bool center = false) {
+  if (row >= DISP_ROWS) return;
+  char buf[21];
+  snprintf(buf, sizeof(buf), "%-20.20s", s);
+  uint8_t col = center ? (uint8_t)((DISP_COLS - (uint8_t)strlen(buf)) / 2) : 0;
+  if (col > DISP_COLS) col = 0;
+  lcd.setCursor(col, row);
+  lcd.print(buf);
 }
 
-void oledSleep() { if (g_oledOk) u8g2.setPowerSave(1); }
-void oledWake()  { if (g_oledOk) u8g2.setPowerSave(0); }
+static void lcdSplash() {
+  char pb[8]; snprintf(pb, sizeof(pb), "INIT.. %3d%%", 40);
+  lcdLine(0, "AEGIS-BEACON v6.0", true);
+  if (DISP_ROWS >= 2) lcdLine(1, pb, true);
+  if (DISP_ROWS >= 4) lcdLine(3, "AVALANCHE RESCUE", true);
+}
+
+static void lcdGpsWait(uint8_t sats, uint32_t elapsedSec, uint32_t timeoutSec) {
+  char l0[20]; snprintf(l0, sizeof(l0), "GPS FIX  sats:%d", sats);
+  lcdLine(0, l0);
+  if (sats >= GPS_MIN_SATS) {
+    char l1[20]; snprintf(l1, sizeof(l1), "FIX OK  %d sats", sats);
+    lcdLine(1, l1);
+  } else {
+    uint32_t rem = (elapsedSec < timeoutSec) ? timeoutSec - elapsedSec : 0;
+    char l1[20]; snprintf(l1, sizeof(l1), "TIMEOUT in %lus", (unsigned long)rem);
+    lcdLine(1, l1);
+  }
+  if (DISP_ROWS >= 4 && g_gpsFix.valid) {
+    char lc[20]; snprintf(lc, sizeof(lc), "%.4f %.4f", g_gpsFix.lat, g_gpsFix.lng);
+    lcdLine(2, lc, true);
+  }
+}
+
+static void lcdBeacon(int freqIdx, float freqMHz, int charIdx, int totalChars,
+                      uint32_t cycleNum, uint32_t sleepRemainSec, bool transmitting,
+                      const char* payload) {
+  char l0[20]; snprintf(l0, sizeof(l0), "%.3f MHz  +%ddBm", freqMHz, cfg.powerDbm);
+  lcdLine(0, l0);
+  char l1[20];
+  if (transmitting) snprintf(l1, sizeof(l1), "TX #%lu %d/%d", (unsigned long)cycleNum, charIdx, totalChars);
+  else if (sleepRemainSec > 0) snprintf(l1, sizeof(l1), "TX #%lu SLP %lus", (unsigned long)cycleNum, (unsigned long)sleepRemainSec);
+  else snprintf(l1, sizeof(l1), "TX #%lu STANDBY", (unsigned long)cycleNum);
+  lcdLine(1, l1);
+  if (DISP_ROWS >= 4) {
+    uint8_t pct = (totalChars > 0) ? (uint8_t)((uint32_t)charIdx * 100 / totalChars) : 0;
+    char bar[21];
+    uint8_t n = (uint8_t)(pct * (DISP_COLS - 2) / 100);
+    for (uint8_t i = 0; i < n && i < 20; i++) bar[i] = '#';
+    bar[n] = '\0';
+    char l2[20]; snprintf(l2, sizeof(l2), "[%s]", bar);
+    lcdLine(2, l2);
+    char l3[20]; snprintf(l3, sizeof(l3), "CH%d/%d %dWPM", freqIdx + 1, cfg.freqCount, cfg.wpm);
+    lcdLine(3, l3);
+  }
+}
+
+static void lcdSearch(int freqIdx, float freqMHz, int16_t rssi,
+                      uint32_t passNum, bool detected) {
+  char l0[20]; snprintf(l0, sizeof(l0), "%.3f MHz  RSSI %ddBm", freqMHz, rssi);
+  lcdLine(0, l0);
+  if (detected) lcdLine(1, "*** DETECTED ***", true);
+  else {
+    char l1[20]; snprintf(l1, sizeof(l1), "SCAN #%lu HIT:%d", (unsigned long)passNum, g_scanHitCount);
+    lcdLine(1, l1);
+  }
+  if (DISP_ROWS >= 4 && g_scanHitCount > 0) {
+    ScanHit& h = g_scanHits[g_scanHitCount - 1];
+    char l2[20]; snprintf(l2, sizeof(l2), "LAST %.3f %ddBm", h.freq, h.rssi);
+    lcdLine(2, l2);
+    char l3[20]; snprintf(l3, sizeof(l3), "THR %ddBm", cfg.rssiThreshold);
+    lcdLine(3, l3);
+  }
+}
+
+static void lcdListen(float freqMHz, int16_t rssi, const char* text) {
+  char l0[20]; snprintf(l0, sizeof(l0), "RX LISTEN %.3f", freqMHz);
+  lcdLine(0, l0);
+  char l1[20]; snprintf(l1, sizeof(l1), "RSSI %ddBm %d CHR", rssi, s_cwDecoded);
+  lcdLine(1, l1);
+  if (DISP_ROWS >= 4) {
+    size_t tl = strlen(text);
+    size_t start = (tl > 40) ? tl - 40 : 0;
+    char l2[20]; snprintf(l2, sizeof(l2), "%-19.19s", text + start);
+    lcdLine(2, l2);
+    if (tl - start > 19) {
+      char l3[20]; snprintf(l3, sizeof(l3), "%-19.19s", text + start + 19);
+      lcdLine(3, l3);
+    }
+  }
+}
+
+static void lcdEmergency(float freqMHz, uint32_t cycleNum) {
+  bool inv = (millis() / 500) % 2;
+  lcdLine(0, inv ? "*** SOS ***" : "  * SOS *  ", true);
+  char l1[20]; snprintf(l1, sizeof(l1), "%.3f MHz +22dBm", freqMHz);
+  lcdLine(1, l1);
+  if (DISP_ROWS >= 4) {
+    if (g_gpsFix.valid || g_rtcFixValid) {
+      double lat = g_gpsFix.valid ? g_gpsFix.lat : g_rtcLat;
+      double lng = g_gpsFix.valid ? g_gpsFix.lng : g_rtcLng;
+      char l2[20]; snprintf(l2, sizeof(l2), "%.3f %.3f", lat, lng);
+      lcdLine(2, l2, true);
+    } else {
+      char l2[20]; snprintf(l2, sizeof(l2), "CYCLE #%lu", (unsigned long)cycleNum);
+      lcdLine(2, l2, true);
+    }
+  }
+}
+
+static void lcdConfig() {
+  lcdLine(0, "CONFIG MODE", true);
+  if (DISP_ROWS >= 2) { char l1[20]; snprintf(l1, sizeof(l1), "AP: %s", AP_SSID); lcdLine(1, l1); }
+  if (DISP_ROWS >= 3) { char l2[20]; snprintf(l2, sizeof(l2), "http://%s", AP_IP); lcdLine(2, l2, true); }
+  if (DISP_ROWS >= 4) lcdLine(3, "1 wifi 2 browser 3 url", true);
+}
+
+static void lcdMessage(const char* l1, const char* l2, const char* l3, bool inv) {
+  (void)inv;
+  lcdLine(0, l1 ? l1 : "", true);
+  if (DISP_ROWS >= 2) lcdLine(1, l2 ? l2 : "", true);
+  if (DISP_ROWS >= 3) lcdLine(2, l3 ? l3 : "", true);
+}
+#endif
+
+bool initOled() {
+#if DISPLAY_TYPE == 1
+  LOG_OLED("Initialising SSD1309 2.42\" via U8g2 (soft SPI)");
+  u8g2.begin();
+  u8g2.setFontPosTop();
+  u8g2.setDrawColor(1);
+  dispContrast(220);
+  if (cfg.oledInvert) dispSetInvert(true);
+  LOG_OK("Display ready — SSD1309 128x64");
+  return true;
+#elif DISPLAY_TYPE == 2
+  LOG_OLED("Initialising ST7735 1.8\" TFT via Adafruit GFX (soft SPI)");
+  tft.initR(INITR_BLACKTAB);
+  tft.setRotation(0);
+  tft.fillScreen(ST77XX_BLACK);
+  if (cfg.oledInvert) dispSetInvert(true);
+  LOG_OK("Display ready — ST7735 128x160 (color)");
+  return true;
+#else
+#if DISPLAY_TYPE == 3
+  LOG_OLED("Initialising HD44780 LCD 16x2 (4-bit)");
+#else
+  LOG_OLED("Initialising HD44780 LCD 20x4 (4-bit)");
+#endif
+  lcd.begin(DISP_COLS, DISP_ROWS);
+  lcd.clear();
+  LOG_OK("Display ready — LCD %dx%d", DISP_COLS, DISP_ROWS);
+  return true;
+#endif
+}
 
 // =============================================================================
 // LED HELPERS
