@@ -30,17 +30,39 @@ const updatedAt = benchmarkData.updatedAt as string | null;
 const firmwareRuns = runs.filter((r) => r.kind === 'firmware');
 const websiteRuns = runs.filter((r) => r.kind === 'website-build');
 
-const latestPerRunner = [...new Set(firmwareRuns.map((r) => r.runner))]
-  .map((runner) =>
-    firmwareRuns
+// Per-runner stats: full history (oldest first), latest, best / median / worst
+const runnerStats = [...new Set(firmwareRuns.map((r) => r.runner))]
+  .map((runner) => {
+    const all = firmwareRuns
       .filter((r) => r.runner === runner)
-      .sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0]
-  )
-  .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+      .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    const latest = all[all.length - 1];
+    const times = all.map((r) => r.buildMs).sort((a, b) => a - b);
+    const median = times[Math.floor(times.length / 2)] ?? latest.buildMs;
+    return {
+      runner,
+      cpuModel: latest.cpuModel,
+      cpuCount: latest.cpuCount,
+      latest,
+      all,
+      best: times[0] ?? latest.buildMs,
+      median,
+      worst: times[times.length - 1] ?? latest.buildMs,
+      maxTime: Math.max(...all.map((r) => r.buildMs), 1),
+    };
+  })
+  // Slowest runner first: it becomes the 1.00x baseline
+  .sort((a, b) => b.latest.buildMs - a.latest.buildMs);
 
-const latestWebsite = websiteRuns.sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0] ?? null;
+const baseline = runnerStats[0];
+const slowestMs = baseline?.latest.buildMs ?? 1;
+const slowestLabel = baseline?.runner ?? 'baseline';
 
-const history = runs.slice().sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 15);
+const latestWebsite = websiteRuns.slice().sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0] ?? null;
+
+const history = runs.slice().sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+
+const runnerFamilies = new Set(runs.map((r) => r.runner)).size;
 
 function fmtDate(iso: string): string {
   return new Date(iso).toLocaleString('en-GB', {
@@ -66,6 +88,11 @@ function fmtBytes(n: number | null): string {
 function fmtPct(n: number | null): string {
   return n == null ? 'n/a' : n.toFixed(1) + '%';
 }
+
+function cpuLabel(model: string): string {
+  if (model && model !== 'unknown') return model;
+  return 'ARM64 virtual CPU';
+}
 ---
 
 <Layout
@@ -80,8 +107,8 @@ function fmtPct(n: number | null): string {
         Every push to main compiles the firmware with PlatformIO and builds the
         website on the four processor families GitHub Actions offers: Intel x64
         Linux, ARM64 Linux, Intel x64 Windows and Apple Silicon macOS. The
-        numbers below are recorded from those real runs and refreshed
-        automatically on each commit and push.
+        numbers below come from those real runs and refresh automatically on
+        each commit and push.
       </p>
       <div class="bench-actions">
         <a href="/wiki/benchmark-methodology" class="btn btn-primary">Read the methodology</a>
@@ -102,43 +129,109 @@ function fmtPct(n: number | null): string {
         </div>
       ) : (
         <>
+          <div class="bench-summary" data-rv role="list" aria-label="Benchmark summary">
+            <div role="listitem">
+              <span class="bench-summary__num">{runs.length}</span>
+              <span class="bench-summary__lbl">Total runs recorded</span>
+            </div>
+            <div role="listitem">
+              <span class="bench-summary__num">{runnerFamilies}</span>
+              <span class="bench-summary__lbl">Processor families</span>
+            </div>
+            <div role="listitem">
+              <span class="bench-summary__num">{firmwareRuns.length}</span>
+              <span class="bench-summary__lbl">Firmware compiles</span>
+            </div>
+            <div role="listitem">
+              <span class="bench-summary__num">{websiteRuns.length}</span>
+              <span class="bench-summary__lbl">Website builds</span>
+            </div>
+            <div role="listitem">
+              <span class="bench-summary__num">{slowestMs >= 60000 ? (slowestMs / 60000).toFixed(1) : (slowestMs / 1000).toFixed(1)}</span>
+              <span class="bench-summary__lbl">Slowest build (s or min)</span>
+            </div>
+          </div>
+
           <section class="bench-block" data-rv>
             <header class="bench-block__head">
               <h2>Latest firmware build per runner</h2>
               <p>
                 Wall-clock compile time plus flash and RAM usage of the ESP32
-                firmware, measured on each processor family.
+                firmware, measured on each processor family. Relative speed is
+                computed against the slowest runner of this run, which is shown
+                as 1.00x.
               </p>
             </header>
             <div class="bench-grid">
               {
-                latestPerRunner.map((r) => (
-                  <article class="bench-card">
-                    <div class="bench-card__top">
-                      <span class="bench-card__runner">{r.runner}</span>
-                      <span class="bench-card__time">{fmtMs(r.buildMs)}</span>
-                    </div>
-                    <p class="bench-card__cpu">{r.cpuModel}</p>
-                    <dl class="bench-card__metrics">
-                      <div>
-                        <dt>Flash</dt>
-                        <dd>{fmtPct(r.flashPct)} <small>({fmtBytes(r.flashBytes)} of {fmtBytes(r.flashLimit)})</small></dd>
+                runnerStats.map((s) => {
+                  const rel = (slowestMs / s.latest.buildMs).toFixed(2);
+                  return (
+                    <article class="bench-card">
+                      <div class="bench-card__top">
+                        <span class="bench-card__runner">{s.runner}</span>
+                        <span class="bench-card__time">{fmtMs(s.latest.buildMs)}</span>
                       </div>
-                      <div>
-                        <dt>RAM</dt>
-                        <dd>{fmtPct(r.ramPct)} <small>({fmtBytes(r.ramBytes)} of {fmtBytes(r.ramLimit)})</small></dd>
+                      <p class="bench-card__cpu">
+                        {cpuLabel(s.cpuModel)}
+                        {s.cpuCount > 0 && <span class="bench-card__cores">{s.cpuCount} cores</span>}
+                      </p>
+
+                      <div class="bench-card__rel">
+                        <strong>{rel}x</strong>
+                        <span>vs {slowestLabel} baseline</span>
                       </div>
-                      <div>
-                        <dt>Commit</dt>
-                        <dd><code>{r.shortSha}</code></dd>
-                      </div>
-                      <div>
-                        <dt>PlatformIO</dt>
-                        <dd>{r.pioVersion ? r.pioVersion.replace('PlatformIO Core, ', '') : 'n/a'}</dd>
-                      </div>
-                    </dl>
-                  </article>
-                ))
+
+                      <dl class="bench-card__metrics">
+                        <div>
+                          <dt>Flash</dt>
+                          <dd>{fmtPct(s.latest.flashPct)} <small>({fmtBytes(s.latest.flashBytes)} of {fmtBytes(s.latest.flashLimit)})</small></dd>
+                        </div>
+                        <div class="bench-meter-wrap">
+                          <div class="bench-meter" aria-hidden="true">
+                            <span style={`width: ${s.latest.flashPct ?? 0}%`}></span>
+                          </div>
+                        </div>
+                        <div>
+                          <dt>RAM</dt>
+                          <dd>{fmtPct(s.latest.ramPct)} <small>({fmtBytes(s.latest.ramBytes)} of {fmtBytes(s.latest.ramLimit)})</small></dd>
+                        </div>
+                        <div class="bench-meter-wrap">
+                          <div class="bench-meter" aria-hidden="true">
+                            <span style={`width: ${s.latest.ramPct ?? 0}%`}></span>
+                          </div>
+                        </div>
+                        <div>
+                          <dt>History</dt>
+                          <dd>{s.all.length} runs, best {fmtMs(s.best)}, median {fmtMs(s.median)}</dd>
+                        </div>
+                        <div>
+                          <dt>Commit</dt>
+                          <dd><code>{s.latest.shortSha}</code></dd>
+                        </div>
+                        <div>
+                          <dt>PlatformIO</dt>
+                          <dd>{s.latest.pioVersion ? s.latest.pioVersion.replace('PlatformIO Core, ', '') : 'n/a'}</dd>
+                        </div>
+                      </dl>
+
+                      {
+                        s.all.length > 1 && (
+                          <div class="bench-trend" aria-label={`Build time trend for ${s.runner}`}>
+                            <svg viewBox="0 0 120 32" role="img" aria-label="Build time trend">
+                              <title>Build time trend for {s.runner}</title>
+                              {s.all.map((r, i) => {
+                                const h = Math.max(2, Math.round((r.buildMs / s.maxTime) * 28));
+                                const x = 2 + i * ((116 - 4) / Math.max(1, s.all.length - 1)) - (s.all.length === 1 ? 2 : 0);
+                                return <rect x={x} y={30 - h} width="4" height={h} rx="1" data-time={r.buildMs} />;
+                              })}
+                            </svg>
+                          </div>
+                        )
+                      }
+                    </article>
+                  );
+                })
               }
             </div>
           </section>
@@ -150,7 +243,7 @@ function fmtPct(n: number | null): string {
                   <h2>Website build</h2>
                   <p>
                     Full static build of the Astro site, timed on the Linux x64
-                    runner.
+                    runner. {websiteRuns.length} builds recorded.
                   </p>
                 </header>
                 <div class="bench-grid bench-grid--single">
@@ -159,11 +252,18 @@ function fmtPct(n: number | null): string {
                       <span class="bench-card__runner">{latestWebsite.runner}</span>
                       <span class="bench-card__time">{fmtMs(latestWebsite.buildMs)}</span>
                     </div>
-                    <p class="bench-card__cpu">{latestWebsite.cpuModel}</p>
+                    <p class="bench-card__cpu">
+                      {cpuLabel(latestWebsite.cpuModel)}
+                      {latestWebsite.cpuCount > 0 && <span class="bench-card__cores">{latestWebsite.cpuCount} cores</span>}
+                    </p>
                     <dl class="bench-card__metrics">
                       <div>
                         <dt>Pages built</dt>
-                        <dd>{latestWebsite.pages}</dd>
+                        <dd>{latestWebsite.pages ?? 'n/a'}</dd>
+                      </div>
+                      <div>
+                        <dt>History</dt>
+                        <dd>{websiteRuns.length} runs</dd>
                       </div>
                       <div>
                         <dt>Commit</dt>
@@ -178,11 +278,11 @@ function fmtPct(n: number | null): string {
 
           <section class="bench-block" data-rv>
             <header class="bench-block__head">
-              <h2>Recent history</h2>
+              <h2>Full history</h2>
               <p>
-                The most recent recorded runs. Flash and RAM figures are
-                deterministic for a given commit; build times vary with runner
-                load, so compare them only within the same runner.
+                Every recorded run. Flash and RAM figures are deterministic for
+                a given commit; build times vary with runner load, so compare
+                them only within the same runner.
               </p>
             </header>
             <div class="bench-table-wrap">
@@ -193,9 +293,11 @@ function fmtPct(n: number | null): string {
                     <th>Commit</th>
                     <th>Kind</th>
                     <th>Runner</th>
+                    <th>CPU</th>
+                    <th>Cores</th>
                     <th>Build time</th>
                     <th>Flash</th>
-                    <th>RAM</th>
+                    <th>RAM / Pages</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -206,6 +308,8 @@ function fmtPct(n: number | null): string {
                         <td><code>{r.shortSha}</code></td>
                         <td>{r.kind === 'firmware' ? 'firmware' : 'website'}</td>
                         <td>{r.runner}</td>
+                        <td class="bench-table__cpu">{cpuLabel(r.cpuModel)}</td>
+                        <td>{r.cpuCount > 0 ? r.cpuCount : 'n/a'}</td>
                         <td>{fmtMs(r.buildMs)}</td>
                         <td>{r.kind === 'firmware' ? fmtPct(r.flashPct) : 'n/a'}</td>
                         <td>{r.kind === 'firmware' ? fmtPct(r.ramPct) : (r.pages != null ? r.pages + ' pages' : 'n/a')}</td>
@@ -216,6 +320,17 @@ function fmtPct(n: number | null): string {
               </table>
             </div>
           </section>
+
+          <p class="bench-note" data-rv>
+            Methodology: every push to main runs the Benchmarks workflow
+            (<a href="https://github.com/Leo-Galli/Aegis-Beacon/blob/main/.github/workflows/benchmarks.yml" target="_blank" rel="noopener">benchmarks.yml</a>),
+            which compiles the firmware and builds the site on the four runner
+            families. Results are merged, deduplicated and recorded with the
+            workflow run id, then published to this page. The full procedure is
+            documented in the
+            <a href="/wiki/benchmark-methodology">benchmark methodology</a>
+            wiki page.
+          </p>
         </>
       )
     }
@@ -224,7 +339,7 @@ function fmtPct(n: number | null): string {
 
 <style>
   .bench { padding-block: clamp(3rem, 6vw, 5rem); }
-  .bench-head { max-width: 52rem; margin-bottom: 3rem; }
+  .bench-head { max-width: 52rem; margin-bottom: 2.5rem; }
   .bench-head h1 { margin: 0.9rem 0 0; font-size: clamp(2rem, 4vw, 2.8rem); letter-spacing: -0.02em; }
   .bench-lead { margin: 1rem 0 0; color: var(--muted-foreground); line-height: 1.7; max-width: 62ch; }
   .bench-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 1.5rem; }
@@ -235,15 +350,33 @@ function fmtPct(n: number | null): string {
   }
   .bench-empty h2 { margin: 0 0 0.6rem; }
   .bench-empty p { margin: 0; color: var(--muted-foreground); line-height: 1.7; }
+
+  .bench-summary {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px; overflow: hidden; border: 1px solid var(--border);
+    border-radius: var(--radius-xl); background: var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .bench-summary > div {
+    background: var(--card); padding: 1.1rem 1.25rem;
+    display: flex; flex-direction: column; gap: 0.25rem;
+  }
+  .bench-summary__num {
+    font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700;
+    color: var(--foreground); line-height: 1.1;
+  }
+  .bench-summary__lbl { font-size: 0.72rem; color: var(--muted-foreground); line-height: 1.4; }
+
   .bench-block { margin-top: 3.5rem; }
   .bench-block__head { max-width: 52rem; margin-bottom: 1.5rem; }
   .bench-block__head h2 { margin: 0; }
   .bench-block__head p { margin: 0.5rem 0 0; color: var(--muted-foreground); line-height: 1.65; }
-  .bench-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .bench-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
   .bench-grid--single { max-width: 380px; }
   .bench-card {
     border: 1px solid var(--border); border-radius: var(--radius-xl);
     background: var(--card); padding: 1.25rem 1.35rem; box-shadow: var(--shadow-sm);
+    display: flex; flex-direction: column;
   }
   .bench-card__top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
   .bench-card__runner {
@@ -251,18 +384,56 @@ function fmtPct(n: number | null): string {
     letter-spacing: 0.08em; color: var(--primary);
   }
   .bench-card__time { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 600; }
-  .bench-card__cpu { margin: 0.6rem 0 1rem; font-size: 0.85rem; color: var(--muted-foreground); line-height: 1.5; min-height: 2.6em; }
+  .bench-card__cpu { margin: 0.6rem 0 0.75rem; font-size: 0.85rem; color: var(--muted-foreground); line-height: 1.5; min-height: 2.4em; }
+  .bench-card__cores {
+    display: inline-block; margin-left: 0.5rem; padding: 0.05rem 0.4rem;
+    font-size: 0.65rem; font-family: var(--font-mono);
+    border: 1px solid var(--border); border-radius: 999px; color: var(--muted-foreground);
+    vertical-align: 1px;
+  }
+  .bench-card__rel {
+    display: flex; align-items: baseline; gap: 0.45rem; flex-wrap: wrap;
+    padding: 0.55rem 0.7rem; margin-bottom: 0.9rem;
+    background: color-mix(in srgb, var(--primary) 6%, var(--background));
+    border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--border));
+    border-radius: var(--radius-lg);
+  }
+  .bench-card__rel strong { font-family: var(--font-mono); font-size: 1rem; color: var(--primary); }
+  .bench-card__rel span { font-size: 0.72rem; color: var(--muted-foreground); }
   .bench-card__metrics { display: grid; gap: 0.45rem; margin: 0; }
   .bench-card__metrics > div { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.85rem; }
   .bench-card__metrics dt { color: var(--muted-foreground); }
-  .bench-card__metrics dd { margin: 0; font-family: var(--font-mono); font-size: 0.82rem; text-align: right; }
+  .bench-card__metrics dd { margin: 0; font-family: var(--font-mono); font-size: 0.8rem; text-align: right; }
   .bench-card__metrics small { color: var(--muted-foreground); font-weight: 400; }
+  .bench-meter-wrap { padding: 0.15rem 0; }
+  .bench-meter {
+    width: 100%; height: 5px; border-radius: 3px;
+    background: var(--muted); border: 1px solid var(--border); overflow: hidden;
+  }
+  .bench-meter span {
+    display: block; height: 100%; border-radius: 2px;
+    background: var(--primary); transition: width 0.3s ease;
+  }
+  .bench-trend { margin-top: 0.9rem; border-top: 1px solid var(--border); padding-top: 0.6rem; }
+  .bench-trend svg { display: block; width: 100%; height: 32px; }
+  .bench-trend rect { fill: color-mix(in srgb, var(--primary) 75%, transparent); }
+  .bench-trend rect:last-child { fill: var(--primary); }
+
   .bench-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--card); }
-  .bench-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 720px; }
+  .bench-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 860px; }
   .bench-table th, .bench-table td { padding: 0.7rem 1rem; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
   .bench-table th { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; color: var(--muted-foreground); background: var(--muted); }
   .bench-table tr:last-child td { border-bottom: 0; }
   .bench-table td code { font-size: 0.78rem; }
+  .bench-table__cpu { max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+
+  .bench-note {
+    margin: 2.5rem 0 0; max-width: 52rem; font-size: 0.8rem;
+    color: var(--muted-foreground); line-height: 1.7;
+  }
+  .bench-note a { color: var(--foreground); text-decoration: underline; text-underline-offset: 2px; }
+  .bench-note a:hover { color: var(--primary); }
+
   @media (max-width: 560px) {
     .bench-actions { flex-direction: column; }
     .bench-actions .btn { width: 100%; }

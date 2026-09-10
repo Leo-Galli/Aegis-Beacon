@@ -6,6 +6,7 @@ interface Part {
   name: string;
   desc: string;
   price: number;
+  low: number;
   qty: number;
   max: number;
   essential: boolean;
@@ -14,17 +15,17 @@ interface Part {
 }
 
 const parts: Part[] = [
-  { id: 'esp32', name: 'ESP32-WROOM-32', desc: 'Dual-core MCU with WiFi and BT', price: 8.5, qty: 1, max: 3, essential: true, source: 'AliExpress', query: 'ESP32 WROOM-32 devkit' },
-  { id: 'radio', name: 'E22-400M30S', desc: 'SX1262 LoRa module, +30 dBm', price: 5.2, qty: 1, max: 3, essential: true, source: 'AliExpress', query: 'E22-400M30S SX1262 433MHz' },
-  { id: 'oled', name: 'SSD1309 OLED 2.42"', desc: '7-pin SPI 128 x 64 display', price: 3.8, qty: 1, max: 2, essential: true, source: 'AliExpress', query: 'SSD1309 OLED 2.42 SPI' },
-  { id: 'gps', name: 'NEO-6M GPS', desc: 'UART GPS module with antenna', price: 2.9, qty: 1, max: 2, essential: true, source: 'AliExpress', query: 'NEO-6M GPS module UART' },
-  { id: 'charger', name: 'TP4056 Charger', desc: 'Li-Ion USB-C charging board', price: 0.8, qty: 1, max: 3, essential: true, source: 'AliExpress', query: 'TP4056 USB-C charger 18650' },
-  { id: 'cell', name: '18650 Battery', desc: '3.7 V 3000 mAh protected cell', price: 2.5, qty: 1, max: 4, essential: true, source: 'Local Store', query: '18650 3000mAh protected battery' },
-  { id: 'antenna', name: 'SMA Connector + Antenna', desc: '433 MHz quarter-wave whip', price: 1.2, qty: 1, max: 2, essential: true, source: 'AliExpress', query: '433MHz SMA antenna whip' },
-  { id: 'switches', name: 'Tactile Switches', desc: '6 x 6 mm momentary push buttons', price: 0.15, qty: 4, max: 20, essential: true, source: 'AliExpress', query: '6x6mm tactile push button' },
-  { id: 'buzzer', name: 'Passive Buzzer', desc: 'Piezo for Morse audio feedback', price: 0.4, qty: 1, max: 3, essential: false, source: 'AliExpress', query: 'passive piezo buzzer 3V' },
-  { id: 'passives', name: 'Resistors & Capacitors', desc: 'Pull-ups, decoupling and bias kit', price: 0.3, qty: 1, max: 5, essential: true, source: 'Local Store', query: 'resistor capacitor assortment kit' },
-  { id: 'case', name: '3D-Printed Enclosure', desc: 'Optional rugged case (printed locally)', price: 2.0, qty: 1, max: 2, essential: false, source: '3D Print', query: 'ESP32 OLED 18650 enclosure STL' },
+  { id: 'esp32', name: 'ESP32-WROOM-32', desc: 'Dual-core MCU with WiFi and BT', price: 8.5, low: 6.0, qty: 1, max: 3, essential: true, source: 'AliExpress', query: 'ESP32 WROOM-32 devkit' },
+  { id: 'radio', name: 'E22-400M30S', desc: 'SX1262 LoRa module, +30 dBm', price: 5.2, low: 4.0, qty: 1, max: 3, essential: true, source: 'AliExpress', query: 'E22-400M30S SX1262 433MHz' },
+  { id: 'oled', name: 'SSD1309 OLED 2.42"', desc: '7-pin SPI 128 x 64 display', price: 3.8, low: 2.8, qty: 1, max: 2, essential: true, source: 'AliExpress', query: 'SSD1309 OLED 2.42 SPI' },
+  { id: 'gps', name: 'NEO-6M GPS', desc: 'UART GPS module with antenna', price: 2.9, low: 2.2, qty: 1, max: 2, essential: true, source: 'AliExpress', query: 'NEO-6M GPS module UART' },
+  { id: 'charger', name: 'TP4056 Charger', desc: 'Li-Ion USB-C charging board', price: 0.8, low: 0.6, qty: 1, max: 3, essential: true, source: 'AliExpress', query: 'TP4056 USB-C charger 18650' },
+  { id: 'cell', name: '18650 Battery', desc: '3.7 V 3000 mAh protected cell', price: 2.5, low: 1.8, qty: 1, max: 4, essential: true, source: 'Local Store', query: '18650 3000mAh protected battery' },
+  { id: 'antenna', name: 'SMA Connector + Antenna', desc: '433 MHz quarter-wave whip', price: 1.2, low: 0.8, qty: 1, max: 2, essential: true, source: 'AliExpress', query: '433MHz SMA antenna whip' },
+  { id: 'switches', name: 'Tactile Switches', desc: '6 x 6 mm momentary push buttons', price: 0.15, low: 0.08, qty: 4, max: 20, essential: true, source: 'AliExpress', query: '6x6mm tactile push button' },
+  { id: 'buzzer', name: 'Passive Buzzer', desc: 'Piezo for Morse audio feedback', price: 0.4, low: 0.3, qty: 1, max: 3, essential: false, source: 'AliExpress', query: 'passive piezo buzzer 3V' },
+  { id: 'passives', name: 'Resistors & Capacitors', desc: 'Pull-ups, decoupling and bias kit', price: 0.3, low: 0.2, qty: 1, max: 5, essential: true, source: 'Local Store', query: 'resistor capacitor assortment kit' },
+  { id: 'case', name: '3D-Printed Enclosure', desc: 'Optional rugged case (printed locally)', price: 2.0, low: 1.5, qty: 1, max: 2, essential: false, source: '3D Print', query: 'ESP32 OLED 18650 enclosure STL' },
 ];
 
 const partById = new Map(parts.map((p) => [p.id, p]));
@@ -95,6 +96,10 @@ const payPlans: PayPlan[] = [
           <span>$15</span>
           <span>$60</span>
         </div>
+        <p class="budget-hint" id="budget-hint">
+          The essential minimum is <strong id="budget-min">$25.80</strong>.
+          Below that, no optional part can be dropped to fit.
+        </p>
       </div>
 
       <div class="components-card" data-rv style="--rv-delay: 120ms">
@@ -145,9 +150,12 @@ const payPlans: PayPlan[] = [
                   </label>
                 )}
               </div>
-              <div class="comp-price">${part.price.toFixed(2)}</div>
+              <div class="comp-price">
+                <span class="comp-price-main">${part.price.toFixed(2)}</span>
+                {part.low < part.price && <span class="comp-price-low">from ${part.low.toFixed(2)}</span>}
+              </div>
               <div class="comp-qty">
-                <input type="number" value={part.qty} min="0" max={part.max} class="qty-input" aria-label={`Quantity of ${part.name}`}>
+                <input type="number" value={part.qty} min={part.essential ? 1 : 0} max={part.max} class="qty-input" aria-label={`Quantity of ${part.name}`}>
               </div>
               <div class="comp-total">${(part.price * part.qty).toFixed(2)}</div>
             </div>
@@ -218,6 +226,10 @@ const payPlans: PayPlan[] = [
           </div>
           <div class="plan-details">
             <div class="plan-total-label">Amount per payment</div>
+            <div class="plan-total-row">
+              <span id="plan-total-desc">Total to pay</span>
+              <strong id="plan-total">$28.20</strong>
+            </div>
             <div class="plan-lines" id="plan-lines" aria-live="polite"></div>
             <p class="plan-method" id="plan-method"></p>
             <p class="plan-note">
@@ -370,10 +382,18 @@ const payPlans: PayPlan[] = [
     if (currentPlan <= 1) {
       push('Pay the full total at checkout', '$' + (totalCents / 100).toFixed(2));
     } else {
-      const base = Math.ceil(totalCents / currentPlan);
-      const first = totalCents - base * (currentPlan - 1);
+      // Split so the first payment absorbs the remainder and no payment is empty
+      const base = Math.max(1, Math.ceil(totalCents / currentPlan));
+      const first = Math.max(0, totalCents - base * (currentPlan - 1));
       push('First payment, today', '$' + (first / 100).toFixed(2));
       push('Next ' + (currentPlan - 1) + ' payments', 'each $' + (base / 100).toFixed(2));
+    }
+    if (planTotal) planTotal.textContent = '$' + (totalCents / 100).toFixed(2);
+    const descEl = document.getElementById('plan-total-desc');
+    if (descEl) {
+      descEl.textContent = currentPlan <= 1
+        ? 'Total to pay'
+        : 'Split into ' + currentPlan + ' payments';
     }
 
     planButtons.forEach((b) => b.setAttribute('aria-pressed', b.dataset.plan === String(currentPlan) ? 'true' : 'false'));
@@ -396,7 +416,10 @@ const payPlans: PayPlan[] = [
 
   function qtyOf(row: HTMLElement): number {
     const input = row.querySelector<HTMLInputElement>('.qty-input');
-    return Math.max(0, parseInt(input?.value || '1', 10) || 0);
+    const qty = Math.max(0, parseInt(input?.value || '1', 10) || 0);
+    // Essential parts can never be zero: they are required for the build
+    if (row.dataset.essential === 'true') return Math.max(1, qty);
+    return qty;
   }
 
   function updateTotals(announce = false) {
@@ -419,6 +442,8 @@ const payPlans: PayPlan[] = [
     if (essentialTotalEl) essentialTotalEl.textContent = '$' + essentials.toFixed(2);
     if (grandTotal) grandTotal.textContent = '$' + total.toFixed(2);
     if (budgetDisplay) budgetDisplay.textContent = '$' + (slider?.value || '30');
+    const budgetMin = document.getElementById('budget-min');
+    if (budgetMin) budgetMin.textContent = '$' + essentials.toFixed(2);
 
     if (budgetStatus) {
       const budget = parseInt(slider?.value || '30', 10);
@@ -628,7 +653,17 @@ const payPlans: PayPlan[] = [
     font-size: 0.68rem; color: var(--muted-foreground); cursor: pointer;
   }
   .comp-toggle input { accent-color: var(--primary); cursor: pointer; }
-  .comp-price { font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; }
+  .comp-price {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem;
+    display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3;
+  }
+  .comp-price-main { font-weight: 600; color: var(--foreground); }
+  .comp-price-low { font-size: 0.68rem; color: var(--muted-foreground); white-space: nowrap; }
+  .budget-hint {
+    margin: 0.9rem 0 0; font-size: 0.75rem; color: var(--muted-foreground);
+    line-height: 1.5;
+  }
+  .budget-hint strong { color: var(--foreground); font-family: 'JetBrains Mono', monospace; }
   .qty-input {
     width: 100%; padding: 0.375rem; font-size: 0.8125rem;
     border: 1px solid var(--border); border-radius: var(--radius-md);
@@ -747,6 +782,14 @@ const payPlans: PayPlan[] = [
   .plan-seg-tag { font-size: 0.8125rem; color: var(--muted-foreground); line-height: 1.35; }
   .plan-seg.is-active .plan-seg-tag { color: var(--foreground); }
 
+  .plan-total-row {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+    padding: 0.5rem 0; border-bottom: 1px solid var(--border); margin-bottom: 0.4rem;
+    font-size: 0.8125rem; color: var(--muted-foreground);
+  }
+  .plan-total-row strong {
+    font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: var(--foreground);
+  }
   .plan-lines { display: flex; flex-direction: column; margin-bottom: 0.9rem; }
   .plan-line {
     display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
