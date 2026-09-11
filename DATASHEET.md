@@ -262,7 +262,7 @@ A compact 13×5 px battery glyph appears in the top-right of the BEACON, SEARCH 
 | 0 cells    | 0–24%      | Low / empty                       |
 | Flashing frame | below `BATTERY_LOW_MV` (3550 mV) | Low-battery flash every 400 ms, plus red LED blink and `AEGIS:BATT:low` once |
 
-### 7.2 Screen Layouts
+### 7.2 Screen Layouts — Pixel Displays
 
 | Mode          | Content                                                                                             |
 |---------------|-----------------------------------------------------------------------------------------------------|
@@ -273,6 +273,86 @@ A compact 13×5 px battery glyph appears in the top-right of the BEACON, SEARCH 
 | **GPS WAIT**  | Header "ACQUIRING GPS FIX" · satellite glyph + big count · 4-cell lock meter + blinking fix dot · Timeout progress bar · Status line · Coordinates or "MODE: skip wait" |
 | **CONFIG**    | Header "CONFIGURATION MODE" with WiFi glyph · boxed AP details (SSID + URL) · 3-step checklist |
 | **LISTEN**    | Header "RX LISTEN" + antenna glyph + decoded char count · Frequency + battery glyph · RSSI history trace + threshold tick · RSSI/THR readout · Decoded text window (2 lines) |
+
+### 7.3 ST7735 TFT (Type 2)
+
+| Parameter                  | Value       | Notes                                     |
+|----------------------------|-------------|-------------------------------------------|
+| Module                     | ST7735      | 1.8" 128×160 px colour                   |
+| Interface                  | Software SPI| Same 5 GPIOs as the OLED bus             |
+| SCK / SDA / RESET / DC / CS | GPIO 15/13/4/16/17 | Identical to the OLED                   |
+| LED/BL                     | 3V3         | Backlight always on                       |
+| Driver library             | Adafruit GFX + ST7735 | `INITR_BLACKTAB`, rotation 0     |
+| Framebuffer orientation    | 128×160     | UI uses the full panel height            |
+| Accent colour              | 0xFD20      | Signal orange for active elements        |
+| Background                 | ST77XX_BLACK| All screens start black                   |
+| Invert mode                | NVS toggle  | `oledInvert` passed to `tft.invertDisplay()` |
+
+The TFT receives the same screen layouts as the OLED. Where the OLED uses a single foreground colour, the TFT replaces it with the signal-orange accent so the active element is always visible.
+
+### 7.4 HD44780 LCD 16x2 (Type 3)
+
+| Parameter                  | Value       | Notes                                     |
+|----------------------------|-------------|-------------------------------------------|
+| Module                     | HD44780     | 16×2 characters                           |
+| Interface                  | 4-bit parallel | 6 GPIOs                                |
+| RS                         | GPIO 16     |                                           |
+| EN                         | GPIO 17     |                                           |
+| D4 / D5 / D6 / D7          | GPIO 13/15/4/12 | Same bus for the 20x4                |
+| Constructor                | LiquidCrystal | `lcd(PIN_LCD_RS, PIN_LCD_EN, PIN_LCD_D4, PIN_LCD_D5, PIN_LCD_D6, PIN_LCD_D7)` |
+| Initialisation             | `lcd.begin(16, 2)` | Automatic from `DISP_COLS` / `DISP_ROWS` |
+| V0 (contrast)              | 10k divider wiper | Adjust until text is clear          |
+| Power                      | 5V + 3.3V logic | Most modules accept 3.3V logic levels |
+| R/W                        | GND         | Write-only                                |
+| Backlight                  | 5V via 100Ω / GND | A and K                                 |
+| Rendering style            | Text only   | No graphics, bars rendered as hash chars |
+| Screen layouts             | Same as 20x4, without rows 3 and 4 | See Section 7.5 |
+
+### 7.5 HD44780 LCD 20x4 (Type 4)
+
+| Parameter                  | Value       | Notes                                     |
+|----------------------------|-------------|-------------------------------------------|
+| Module                     | HD44780     | 20×4 characters                           |
+| Interface                  | 4-bit parallel | Same 6 GPIOs as the 16x2              |
+| RS / EN / D4 / D5 / D6 / D7 | GPIO 16/17/13/15/4/12 | Identical to the 16x2      |
+| Constructor                | LiquidCrystal | Same call as the 16x2                   |
+| Initialisation             | `lcd.begin(20, 4)` | Automatic from `DISP_COLS` / `DISP_ROWS` |
+| D7 conflict                | GPIO 12     | Shared with GPS TX; move D7 if both used |
+
+The 20x4 is the most informative character display. Every LCD renderer already checks `DISP_ROWS >= 4` before using a third or fourth row, so the 16x2 and 20x4 are served by the same functions.
+
+### 7.6 LCD Screen Layouts
+
+| Mode          | Row 1               | Row 2                          | Row 3 (20x4 only)              | Row 4 (20x4 only)             |
+|---------------|---------------------|--------------------------------|--------------------------------|-------------------------------|
+| **BOOT**      | AEGIS-BEACON v6.0   | INIT..  40% (centred)          | —                              | AVALANCHE RESCUE (centred)     |
+| **BEACON**    | 433.500 MHz +17dBm  | TX #1 3/18 / SLP 10s / STANDBY | [##########] progress bar       | CH1/1 13WPM                    |
+| **SEARCH**    | 433.500 MHz RSSI -90dBm | *** DETECTED *** or SCAN #1 HIT:0 | LAST 433.500 -78dBm            | THR -90dBm                     |
+| **LISTEN**    | RX LISTEN 433.500   | RSSI -82dBm 14 CHR             | sliding decoded text (19 chars)| sliding decoded text (19 chars)|
+| **GPS WAIT**  | GPS FIX  sats:4     | FIX OK  4 sats / TIMEOUT in 27s | 45.8831 12.5003 (centred)      | —                              |
+| **EMERGENCY** | *** SOS *** (centred, flashing) | 433.500 MHz +22dBm         | 45.883 12.500 / CYCLE #1 (centred) | —                              |
+| **CONFIG**    | CONFIG MODE (centred) | AP: AegisBeacon               | http://192.168.4.1 (centred)   | 1 wifi 2 browser 3 url (centred)|
+
+### 7.7 LCD 20x4 — Detailed Notes
+
+The 20x4 is the best character display for development and for field use when you want coordinates or decoded Morse visible without changing mode.
+
+- Four rows let every mode show a header, a primary status, a secondary detail, and a progress or numeric line.
+- Twenty columns mean a full coordinate pair or a longer decoded CW line fits on a single row.
+- The driver is identical to the 16x2, so the same hardware, the same constructor, and the same contrast setup work for both.
+- The 16x2 and 20x4 use the same bus. You can switch between them by changing one number and rewiring nothing, as long as only one character display is connected at a time.
+- GPS and the 20x4 share GPIO 12 for D7 and GPS TX. If both are used at the same time, move D7 to another GPIO and update `PIN_LCD_D7` before compiling.
+
+Limitations:
+- Text only. No bars, glyphs, or icons. Progress is shown as a bar of hash characters.
+- Contrast must be adjusted on V0.
+- GPS and D7 share GPIO 12.
+
+Contrast:
+Use a 10k potentiometer between 5V and GND with the wiper on V0. If text is faint or missing, adjust the pot before suspecting a wiring fault.
+
+Boot detection:
+The firmware probes the wired bus at boot and stores the result in NVS under the `disp` key. The captive-portal display card shows the detected screen.
 
 ---
 
