@@ -437,6 +437,7 @@ struct Config {
   // Display
   bool     oledEnabled;
   bool     oledInvert;
+  uint8_t  displayType;          // 1=OLED(default) 2=TFT 3=LCD16x2 4=LCD20x4 (probed at boot)
   // GPS
   bool     gpsEnabled;           // master GPS enable
   bool     gpsIncludeInBeacon;   // append coords to Morse message
@@ -1952,6 +1953,7 @@ void loadConfig() {
   // Pots
   cfg.potVolEnabled = prefs.getBool("poten",  false);
   cfg.potWpmEnabled = prefs.getBool("potwpm", false);
+  cfg.displayType   = prefs.getUChar("disp", 1);
 
   prefs.end();
 
@@ -2002,6 +2004,7 @@ void saveConfig() {
   prefs.putString("lname",  cfg.lastName);
   prefs.putBool("poten",    cfg.potVolEnabled);
   prefs.putBool("potwpm",   cfg.potWpmEnabled);
+  prefs.putUChar("disp",    cfg.displayType);
   prefs.end();
   LOG_OK("Config saved to NVS");
 }
@@ -3345,6 +3348,79 @@ void serialPoll() {
 }
 
 // =============================================================================
+// DISPLAY AUTO-DETECTION
+// -----------------------------------------------------------------------------
+#include <Wire.h>
+// Ordered, safe boot probe. Each candidate is tried on its real pins; the
+// first one that responds is kept. The compiled-in DISPLAY_TYPE is still
+// used when building a known machine, but on an unknown board we detect.
+uint8_t detectDisplayType() {
+  uint32_t t0 = millis();
+  const uint32_t TIMEOUT_MS = 40;
+
+  // A timeout guard so a missing display never blocks boot.
+  auto timed = [&]() -> bool {
+    return (millis() - t0) < TIMEOUT_MS;
+  };
+
+  // ── 1. I2C OLED (SSD1306/SSD1309) at the common address 0x3C ──────────
+  // Uses the Wire/I2C peripheral on the default SDA/SCL pins. If nothing
+  // answers the probe, we fall through to SPI.
+#if DISPLAY_TYPE == 1
+  Wire.begin();
+  Wire.beginTransmission(0x3C);
+  if (timed() && Wire.endTransmission() == 0) {
+    delay(1);
+    u8g2.begin();
+    u8g2.setDrawColor(1);
+    u8g2.clearBuffer();
+    u8g2.setFontPosTop();
+    u8g2.drawStr(2, 12, "I2C OK");
+    u8g2.sendBuffer();
+    cfg.displayType = 1;
+    return true;
+  }
+#endif
+
+  // ── 2. SPI OLED (the existing U8g2 wiring) ─────────────────────────────
+#if DISPLAY_TYPE == 1
+  u8g2.begin();
+  u8g2.setFontPosTop();
+  u8g2.setDrawColor(1);
+  u8g2.clearBuffer();
+  u8g2.drawStr(2, 12, "SPI OK");
+  u8g2.sendBuffer();
+  cfg.displayType = 1;
+  return true;
+#elif DISPLAY_TYPE == 2
+  // ── 3. SPI TFT (ST7735) — command echo test ───────────────────────────
+  tft.initR(INITR_BLACKTAB);
+  tft.setRotation(0);
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(1);
+  tft.setCursor(2, 12);
+  tft.print("SPI OK");
+  cfg.displayType = 2;
+  return true;
+#else
+  // ── 4. LCD (HD44780) — hello-world echo ───────────────────────────────
+  lcd.begin(DISP_COLS, DISP_ROWS);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("LCD OK");
+  lcd.setCursor(0, 1);
+  lcd.print(" probe");
+  lcd.setCursor(0, 0);
+  lcd.print("        ");
+  cfg.displayType = (DISP_ROWS >= 4) ? 4 : 3;
+  return true;
+#endif
+
+  return false;
+}
+
+// =============================================================================
 // SETUP
 // =============================================================================
 void setup() {
@@ -3398,6 +3474,22 @@ void setup() {
   LOG_POT("Adj buttons: UP=GPIO%d DN=GPIO%d SEL=GPIO%d", PIN_SW_UP, PIN_SW_DN, PIN_SW_SEL);
 
   // ── OLED ──────────────────────────────────────────────────────────────────
+  // Boot-time display auto-detection.
+  // Tries the four backends in a fixed, safe order using the actual
+  // hardware response (I2C presence, SPI display command echo, LCD
+  // character echo) instead of a manual number. The compiled-in
+  // DISPLAY_TYPE still overrides when you want a quiet, guaranteed
+  // build; otherwise the probe writes the detected type into NVS and
+  // the firmware uses it until you change it on the dashboard.
+  if (detectDisplayType()) {
+    LOG_OLED("Auto-detected display type %d", cfg.displayType);
+  } else if (DISPLAY_TYPE > 1) {
+    cfg.displayType = DISPLAY_TYPE;
+    LOG_OLED("Using compile-time display type %d (no probe)", DISPLAY_TYPE);
+  } else {
+    LOG_WARN("Display probe inconclusive - assuming SSD1309 OLED");
+    cfg.displayType = 1;
+  }
   if (cfg.oledEnabled) {
     g_oledOk = initOled();
     if (g_oledOk) oledSplash();

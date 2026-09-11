@@ -192,11 +192,11 @@
 
 <!-- ── DISPLAY ─────────────────────────────────────────────────────────── -->
 <div class="card">
-  <div class="ct"><span class="ct-dot"></span>DISPLAY (SSD1309 2.42")</div>
+  <div class="ct"><span class="ct-dot"></span>DISPLAY</div>
   <div class="form-row">
     <label class="tog-wrap">
       <span class="tog-cb"><input type="checkbox" id="oledEn" checked><span class="tog-slider"></span></span>
-      <span class="tog-lbl">OLED ENABLED</span>
+      <span class="tog-lbl">DISPLAY ENABLED</span>
     </label>
   </div>
   <div class="form-row">
@@ -205,12 +205,27 @@
       <span class="tog-lbl">INVERT DISPLAY</span>
     </label>
   </div>
-  <div class="info-box">
-    OLED: SSD1309 2.42" 128×64 (sw SPI)<br>
-    SCK=GPIO15  SDA=GPIO13  RES=GPIO4<br>
-    DC=GPIO16   CS=GPIO17<br>
-    Driver: U8g2 full-frame buffer
+  <div class="form-row">
+    <label>DETECTED SCREEN <span id="dispTypeVal">—</span></label>
+    <input type="range" id="dispType" min="1" max="4" value="1" step="1" oninput="document.getElementById('dispTypeVal').textContent=dispTypeLabel(this.value)">
   </div>
+  <div class="info-box" id="dispInfo">
+    <b id="dispInfoTitle">1 - SSD1309 OLED (default)</b><br>
+    2.42" 128x64, 7-pin SPI: SCK=GPIO15, SDA=GPIO13, RES=GPIO4, DC=GPIO16, CS=GPIO17. Black and white, U8g2 full-frame buffer.
+  </div>
+  <div class="info-box">
+    <b>2 - ST7735 TFT (color)</b><br>
+    1.8" 128x160, 7-pin SPI on the same GPIOs as the OLED. Signal-orange accent, black background, Adafruit GFX. Best with a TFT that has the red tab.
+  </div>
+  <div class="info-box">
+    <b>3 - HD44780 LCD 16x2</b><br>
+    Character LCD, 4-bit parallel: RS=GPIO16, EN=GPIO17, D4=GPIO13, D5=GPIO15, D6=GPIO4, D7=GPIO12. Monochrome text screens, no graphics.
+  </div>
+  <div class="info-box">
+    <b>4 - HD44780 LCD 20x4</b><br>
+    Same wiring as the 16x2, wider display. Same text-only rendering. If you also use GPS, move D7 off GPIO12 - it is shared with GPS TX.
+  </div>
+</div>
 <div class="card ok full">
   <div class="ct"><span class="ct-dot"></span>DEVICE STATUS</div>
   <div class="stat-grid" id="statGrid">
@@ -255,6 +270,15 @@
 
 </main>
 <script>
+// ── Display helpers ─────────────────────────────────────────────────────────
+const DISP_LABELS = {
+  1: '1 - SSD1309 OLED (default)',
+  2: '2 - ST7735 TFT (color)',
+  3: '3 - HD44780 LCD 16x2',
+  4: '4 - HD44780 LCD 20x4'
+};
+window.dispTypeLabel = (v) => DISP_LABELS[v] || v;
+
 // ── Morse table ──────────────────────────────────────────────────────────────
 const MORSE={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',0:'-----',1:'.----',2:'..---',3:'...--',4:'....-',5:'.....',6:'-....',7:'--...',8:'---..',9:'----.'};
 const toMorse=(s)=>{return s.toUpperCase().split('').map(c=>MORSE[c]||' ').join('  ');};
@@ -327,8 +351,13 @@ window.fetchStatus=()=>{
     document.getElementById('sWpm').textContent=d.wpm+' WPM';
     document.getElementById('sVol').textContent=Math.round(d.vol*100/255)+'%';
     // Update knobs
+    document.getElementById('dispType').value = d.dispType;
+    document.getElementById('dispType').dispatchEvent(new Event('input'));
+    document.getElementById('dispTypeVal').textContent = dispTypeLabel(d.dispType);
+    document.getElementById('dispInfoTitle').textContent = dispTypeLabel(d.dispType) + ' - detected';
     updateKnob('volKnobMarker','volKnobVal',Math.round(d.vol*100/255),0,100,'%');
     updateKnob('wpmKnobMarker','wpmKnobVal',d.wpm,5,40,' WPM');
+    { const el = document.createElement('style'); el.textContent = `.tog-cb input:checked+.tog-slider::before{transform:translateX(20px);background:var(--a1);box-shadow:var(--glow1)}`; document.head.appendChild(el); }
     // GPS coords display
     if(d.gpsFix) document.getElementById('gpsCoordDisplay').textContent=d.gpsLat.toFixed(4)+'  '+d.gpsLng.toFixed(4);
     // Scan hits
@@ -347,8 +376,7 @@ fetchStatus();
 setInterval(fetchStatus,4000);
 
 // ── Save ────────────────────────────────────────────────────────────────────
-window.saveConfig=()=>{
-  const data={
+window.saveConfig=()=>{    const data={
     msg:document.getElementById('msg').value,
     wpm:parseInt(document.getElementById('wpm').value),
     pwr:parseInt(document.getElementById('pwr').value),
@@ -361,6 +389,7 @@ window.saveConfig=()=>{
     avol:parseInt(document.getElementById('vol').value),
     olen:document.getElementById('oledEn').checked?1:0,
     olinv:document.getElementById('oledInv').checked?1:0,
+    dispType:parseInt(document.getElementById('dispType').value,10) || 1,
     gpsen:document.getElementById('gpsEn').checked?1:0,
     gpsbeac:document.getElementById('gpsBeacon').checked?1:0,
     gpstmo:parseInt(document.getElementById('gpsTmo').value),

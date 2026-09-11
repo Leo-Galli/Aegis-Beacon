@@ -832,12 +832,20 @@
   const SUBTOPIC_RE =
     /\b(frequenc|antenna|gps|batter|mode|config|interval|power|cost|price|build|solder|wiring|pin|board|radio|tx|rx|squelch|menu|vol|wpm|display|oled|chip|module|firmware|serial|bridge|nvs|wifi|flash|protocol|payload|morse)\b/i;
 
+  // Strict on-topic gate. A question is only on-topic when it contains a
+  // real project term (a hardware or product word), not just any word that
+  // happens to appear in a glossary. Off-topic software/web/math terms win
+  // unless a strong beacon term is present.
   function classifyQuery(query: string): 'topic' | 'greeting' | 'offtopic' {
     const t = query.trim();
     if (!t) return 'offtopic';
     if (t.length <= 30 && GREETING_RE.test(t)) return 'greeting';
     if (!TOPIC_RE.test(t)) return 'offtopic';
     if (OFFTOPIC_RE.test(t) && !CORE_RE.test(t)) return 'offtopic';
+    // For short queries (likely a keyword search) require at least one
+    // core hardware/product term, not just a generic one like "config" or
+    // "mode". That stops things like "config json" from entering scope.
+    if (t.length <= 22 && !CORE_RE.test(t)) return 'offtopic';
     return 'topic';
   }
 
@@ -1145,24 +1153,28 @@
         if (title) titleHits += 1;
       }
       if (bodyHits + titleHits === 0) continue;
-      if (bodyHits < 2 && titleHits === 0) continue;
-      // Sections that are closer to the start of the query get a small bonus
-      // over page-level entries, and section matches outrank the intro.
+      // Only return a page when it matches the query clearly enough to be
+      // useful: either the title or the body text shares at least two of the
+      // query's concepts, or the title mentions the query's main topic.
+      if (bodyHits < 2 && titleHits < 2) continue;
       const sectionBonus = entry.section ? 1.5 : 0;
       const score = bodyHits * 2 + titleHits * 4 + sectionBonus;
       scored.push({ score, entry });
     }
     scored.sort((a, b) => b.score - a.score);
 
-    // Deduplicate by page: keep the best-matching section per page so the
-    // notes cover three different pages instead of three passages of one.
+    // Return at most two tight sources. Three is only useful when the question
+    // is genuinely open-ended (a real question mark, or a long factual query);
+    // otherwise extra weak pages just clutter the answer.
+    const openEnded = query.includes('?') || query.trim().length >= 22;
+    const limit = openEnded ? 3 : 2;
     const seen = new Set<string>();
     const top: IndexedEntry[] = [];
     for (const { entry } of scored) {
       if (seen.has(entry.id)) continue;
       seen.add(entry.id);
       top.push(entry);
-      if (top.length === 3) break;
+      if (top.length === limit) break;
     }
     return top;
   }
