@@ -96,6 +96,86 @@
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
+// │  ST7735 1.8" TFT 128x160 (DISPLAY_TYPE 2)                                 │
+// ├────────────────────────────────────────────────────────────────────────────┤
+// │  Il costruttore nel codice è software SPI:                                  │
+// │    Adafruit_ST7735 tft = Adafruit_ST7735(CS, DC, MOSI, SCLK, RST)          │
+// │  sugli stessi pin dell'OLED.                                                │
+// ├────────────────┬─────────────────┬─────────────────────────────────────  │
+// │  Pin modulo   │ Collega a         │ Note                                │
+// ├────────────────┼─────────────────┼─────────────────────────────────────  │
+// │  VCC          │ 3V3 ESP32         │ non 5V, resta a 3.3V come tutto il  │
+// │               │                   │ resto della scheda                  │
+// │  GND          │ GND               │                                      │
+// │  GND (2°)     │ GND               │ stesso nodo di massa                 │
+// │  NC x3        │ non collegare     │ tipicamente MISO/SDO inutilizzato    │
+// │               │                   │ (SPI è solo scrittura) e/o pin di    │
+// │               │                   │ retroilluminazione già cablata sul   │
+// │               │                   │ modulo. Se uno di questi è in realtà │
+// │               │                   │ LED/BLK e lo schermo resta spento,  │
+// │               │                   │ prova a portarlo a 3V3 (con          │
+// │               │                   │ resistenza se non presente a bordo).│
+// │  CLK          │ GPIO 15           │ PIN_OLED_SCK                         │
+// │  SDA          │ GPIO 13           │ PIN_OLED_SDA (MOSI)                  │
+// │  RS           │ GPIO 16           │ PIN_OLED_DC — su questo modulo       │
+// │               │                   │ "RS" = Data/Command                  │
+// │  RST          │ GPIO 4            │ PIN_OLED_RES                         │
+// │  CS           │ GPIO 17           │ PIN_OLED_CS                          │
+// └────────────────┴─────────────────┴─────────────────────────────────────  ┘
+//  Compila con -D DISPLAY_TYPE=2.
+//  IMPORTANTE: OLED e TFT condividono il bus SPI. Non possono essere \
+//  connessi contemporaneamente. Disconnetti l'OLED prima di collegare il TFT.
+//
+// ┌──────────────────────────────────────────────────────────────────────────┐
+// │  LCD HD44780 16x2 / 20x4 (DISPLAY_TYPE 3 / 4)                             │
+// ├────────────────────────────────────────────────────────────────────────────┤
+// │  Il codice usa LiquidCrystal in modalità 4-bit parallela,                  │
+// │  pin: RS=16, EN=17, D4=13, D5=15, D6=4, D7=12.                            │
+// ├────────────────────────────────────────────────────────────────────────────┤
+// │  Header completo a 16 pin (pin LCD -> Collega a):                          │
+// ├────────────────┬─────────────────┬─────────────────────────────────────  │
+// │  1  VSS       │ GND               │                                      │
+// │  2  VDD       │ 5V                │ alimentazione logica del display     │
+// │  3  V0        │ potenziometro     │ regola il contrasto; in alternativa  │
+// │               │ 10k tra VDD e GND,│ resistenza fissa ~2k verso GND       │
+// │               │ cursore su V0      │                                      │
+// │  4  RS        │ GPIO 16           │                                      │
+// │  5  RW        │ GND               │ LiquidCrystal scrive sempre, RW va   │
+// │               │                   │ fisso a massa                        │
+// │  6  E         │ GPIO 17           │                                      │
+// │  7-10 D0-D3  │ non collegare     │ modalità 4-bit, non usati            │
+// │  11 D4        │ GPIO 13           │                                      │
+// │  12 D5        │ GPIO 15           │                                      │
+// │  13 D6        │ GPIO 4            │                                      │
+// │  14 D7        │ GPIO 12           │ condiviso con GPS TX — se usi GPS    │
+// │               │                   │ insieme all'LCD sposta questo pin    │
+// │               │                   │ (PIN_LCD_D7 nel codice) su un GPIO   │
+// │               │                   │ libero                                │
+// │  15 LED+ (A) │ 5V (con resistenza│ retroilluminazione                  │
+// │               │ ~220 se non già    │                                      │
+// │               │ presente sul       │                                      │
+// │               │ modulo)            │                                      │
+// │  16 LED- (K) │ GND               │                                      │
+// └────────────────┴─────────────────┴─────────────────────────────────────  ┘
+//
+//  Configurazione "a 7 pin": sono gli stessi identici segnali (RS, EN, D4, D5,
+//  D6, D7 + un riferimento comune), solo che sul modulo mancano i pin non
+//  essenziali perché già cablati a bordo — tipicamente RW è già fissato a GND
+//  internamente e/o il contrasto è fisso con resistore integrato. Collega
+//  semplicemente i pin che trovi etichettati RS/E/D4-D7 agli stessi GPIO della
+//  tabella sopra, più VCC e GND; se manca un pin V0 non devi fare nulla, il
+//  contrasto è già impostato dal produttore (a volte fisso troppo chiaro/scuro,
+//  in quel caso non è regolabile senza modificare il modulo).
+//
+//  Adattatore I2C a 4 pin (GND, VCC, SDA, SCL):
+//    NON è compatibile con questo firmware così com'è. Il codice pilota l'LCD in
+//    parallela con LiquidCrystal, non con Wire/I2C. Se hai il backpack PCF8574
+//    collegato, o cambi modulo (via parallela vera), oppure serve modificare il
+//    codice per usare LiquidCrystal_I2C (richiede un DISPLAY_TYPE aggiuntivo, la
+//    lib nel platformio.ini, e riscrivere i dispXxx() del backend LCD per usare
+//    l'indirizzo I2C invece dei 6 GPIO).
+//
+// ┌──────────────────────────────────────────────────────────────────────────┐
 // │  GPS WIRING — NEO-6M <-> ESP32 DevKit V1 (UART2)                           │
 // ├────────────────┬─────────────────┬─────────────────────────────────────  │
 // │  GPS Pin       │  ESP32 GPIO     │  Notes                                │
@@ -3449,12 +3529,23 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(PIN_SW_SEL),  isrSelButton,  FALLING);
 
   // ── Watchdog ─────────────────────────────────────────────────────────────
-  esp_task_wdt_init(WDT_TIMEOUT_SEC, true);
+  // WDT init (covered above in the setup block); kept here only as a no-op
+  // guard for builds that define their own WDT_TIMEOUT_SEC path.
+  esp_task_wdt_reset();
   esp_task_wdt_add(NULL);
 
   // ── Audio ─────────────────────────────────────────────────────────────────
-  ledcSetup(AUDIO_CHANNEL, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
-  ledcAttachPin(PIN_AUDIO, AUDIO_CHANNEL);
+  // LEDC audio init for ESP32 Arduino core 3.x: ledcSetup/ledcAttachPin
+  // were removed. ledcAttach(pin, freq, resolution_bits) configures + attaches.
+  // LEDC audio init - compatible with ESP32 Arduino core 2.x and 3.x.
+  // Core 3.1+ removed ledcSetup/ledcAttachPin in favour of ledcAttach(pin, freq, bits).
+  #if ESP_ARDUINO_VERSION >= 0x03010000
+    ledcAttach(PIN_AUDIO, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
+  #else
+    ledcSetup(AUDIO_CHANNEL, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
+    ledcAttachPin(PIN_AUDIO, AUDIO_CHANNEL);
+  #endif
+
   ledcWrite(AUDIO_CHANNEL, 0);
   dacWrite(PIN_AUDIO, 128);   // mid-rail — no startup click
   LOG_AUDIO("LEDC GPIO%d (DAC1) ch%d @ %d Hz %d-bit", PIN_AUDIO, AUDIO_CHANNEL, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
