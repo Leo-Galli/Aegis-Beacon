@@ -131,6 +131,7 @@ export const WIKI_NAV: WikiGroup[] = [
       { id: 'oled-panel-specs', label: 'OLED Panel Specs' },
       { id: 'oled-spi-vs-i2c', label: 'OLED SPI vs I2C' },
       { id: 'display-selection-guide', label: 'Display Selection Guide' },
+      { id: 'display-type-gpio-reference', label: 'Display GPIO and Pin Reference' },
       { id: 'tft-display-st7735', label: 'ST7735 TFT Display' },
       { id: 'lcd-display-hd44780', label: 'HD44780 LCD Displays' },
       { id: 'radio-library-and-sx1262', label: '"Radio Library and SX1262"' },

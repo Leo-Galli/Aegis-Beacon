@@ -532,12 +532,12 @@ html.motion-ok [data-rv].is-in {
 /* ─── 19. Wiki prose ─── */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-.prose-wiki { max-width: 720px; }
+.prose-wiki { max-width: 760px; }
 .prose-wiki h1, .prose-wiki h2, .prose-wiki h3, .prose-wiki h4 {
   scroll-margin-top: calc(var(--header-h) + 1.25rem);
 }
 .prose-wiki h2 {
-  margin-top: 2.4rem; margin-bottom: 0.8rem; padding-bottom: 0.5rem;
+  margin-top: 2.4rem; margin-bottom: 0.9rem; padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border); letter-spacing: -0.01em;
   transition: border-color 0.5s ease, color 0.5s ease;
 }
@@ -549,19 +549,19 @@ html.motion-ok [data-rv].is-in {
   background: color-mix(in srgb, var(--primary) 7%, transparent);
   border-radius: var(--radius-md);
 }
-.prose-wiki h3 { margin-top: 1.8rem; margin-bottom: 0.55rem; }
-.prose-wiki h4 { margin-top: 1.4rem; margin-bottom: 0.5rem; font-family: var(--font-body); }
-.prose-wiki p { line-height: 1.75; color: var(--muted-foreground); margin-bottom: 1rem; }
+.prose-wiki h3 { margin-top: 2rem; margin-bottom: 0.6rem; }
+.prose-wiki h4 { margin-top: 1.6rem; margin-bottom: 0.55rem; font-family: var(--font-body); }
+.prose-wiki p { line-height: 1.75; color: var(--muted-foreground); margin-bottom: 1.1rem; }
 .prose-wiki > p:first-of-type {
-  font-size: 1.0625rem; line-height: 1.7; color: color-mix(in srgb, var(--foreground) 82%, var(--muted-foreground));
+  font-size: 1.0625rem; line-height: 1.7; color: color-mix(in srgb, var(--foreground) 84%, var(--muted-foreground));
 }
 .prose-wiki strong { color: var(--foreground); font-weight: 600; }
 .prose-wiki a { color: var(--primary); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--primary) 30%, transparent); text-underline-offset: 3px; }
 .prose-wiki a:hover { text-decoration-color: currentColor; }
-.prose-wiki ul, .prose-wiki ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+.prose-wiki ul, .prose-wiki ol { padding-left: 1.5rem; margin-bottom: 1.1rem; }
 .prose-wiki ul { list-style-type: disc; }
 .prose-wiki ol { list-style-type: decimal; }
-.prose-wiki li { line-height: 1.75; color: var(--muted-foreground); margin-bottom: 0.3rem; }
+.prose-wiki li { line-height: 1.75; color: var(--muted-foreground); margin-bottom: 0.35rem; }
 .prose-wiki li::marker { color: var(--primary); }
 .prose-wiki code {
   font-family: var(--font-mono); font-size: 0.82em;
@@ -571,9 +571,9 @@ html.motion-ok [data-rv].is-in {
 }
 .prose-wiki pre {
   position: relative;
-  background: oklch(0.15 0.004 50deg); border: 1px solid oklch(0.28 0.01 50deg);
-  border-top: 2px solid color-mix(in srgb, var(--primary) 55%, oklch(0.28 0.01 50deg));
-  border-radius: var(--radius-lg); padding: 1.15rem 1.25rem; overflow-x: auto; margin: 1.25rem 0;
+  background: oklch(0.14 0.004 50deg); border: 1px solid oklch(0.26 0.01 50deg);
+  border-top: 2px solid color-mix(in srgb, var(--primary) 55%, oklch(0.26 0.01 50deg));
+  border-radius: var(--radius-lg); padding: 1.2rem 1.3rem; overflow-x: auto; margin: 1.4rem 0;
   color: oklch(0.92 0.005 50deg); box-shadow: var(--shadow-md);
   tab-size: 2;
 }
@@ -581,7 +581,7 @@ html.motion-ok [data-rv].is-in {
 .prose-wiki blockquote {
   position: relative;
   border-left: 3px solid var(--primary); padding: 0.85rem 1.1rem 0.85rem 1.4rem;
-  margin: 1.2rem 0; background: var(--muted); border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  margin: 1.3rem 0; background: var(--muted); border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
   color: var(--muted-foreground);
 }
 .prose-wiki blockquote::before {
@@ -590,21 +590,21 @@ html.motion-ok [data-rv].is-in {
   background: color-mix(in srgb, var(--primary) 60%, transparent);
 }
 .prose-wiki table {
-  width: 100%; border-collapse: collapse; margin: 1.4rem 0; font-size: 0.875rem;
+  width: 100%; border-collapse: collapse; margin: 1.6rem 0; font-size: 0.875rem;
   border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;
 }
 .prose-wiki thead { background: var(--muted); }
-.prose-wiki th { font-weight: 700; text-align: left; padding: 0.7rem 0.95rem; border-bottom: 1px solid var(--border); color: var(--foreground); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-display); white-space: nowrap; }
-.prose-wiki td { padding: 0.6rem 0.95rem; border-bottom: 1px solid color-mix(in srgb, var(--foreground) 6%, var(--background)); color: var(--muted-foreground); }
+.prose-wiki th { font-weight: 700; text-align: left; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); color: var(--foreground); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-display); white-space: nowrap; }
+.prose-wiki td { padding: 0.65rem 1rem; border-bottom: 1px solid color-mix(in srgb, var(--foreground) 6%, var(--background)); color: var(--muted-foreground); }
 .prose-wiki tr:last-child td { border-bottom: none; }
 .prose-wiki tbody tr:hover td { background: var(--muted); }
-.prose-wiki hr { border: none; height: 1px; background: var(--border); margin: 1.75rem 0; }
-.prose-wiki img { max-width: 100%; border-radius: var(--radius-lg); margin: 1.25rem 0; border: 1px solid var(--border); }
+.prose-wiki hr { border: none; height: 1px; background: var(--border); margin: 1.9rem 0; }
+.prose-wiki img { max-width: 100%; border-radius: var(--radius-lg); margin: 1.4rem 0; border: 1px solid var(--border); }
 .prose-wiki > :first-child { margin-top: 0; }
 .prose-wiki > :last-child { margin-bottom: 0; }
-.prose-wiki details { margin: 1.2rem 0; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--card); overflow: hidden; }
+.prose-wiki details { margin: 1.3rem 0; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--card); overflow: hidden; }
 .prose-wiki details summary {
-  padding: 0.85rem 1.1rem; font-weight: 600; cursor: pointer;
+  padding: 0.9rem 1.1rem; font-weight: 600; cursor: pointer;
   display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
   background: var(--muted); list-style: none;
   transition: background 0.15s;
@@ -619,6 +619,11 @@ html.motion-ok [data-rv].is-in {
 .prose-wiki details[open] summary::after { transform: rotate(-135deg); margin-top: 0.15rem; }
 .prose-wiki details[open] summary { border-bottom: 1px solid var(--border); }
 .prose-wiki details > *:not(summary) { margin-inline: 1.1rem; }
+
+/* Wider table override for pinout and reference tables */
+.prose-wiki table.wider { max-width: 100%; }
+.prose-wiki table.wider th,
+.prose-wiki table.wider td { white-space: nowrap; }
 
 /* wiki alerts (rendered from Obsidian callouts) */
 .wiki-alert {

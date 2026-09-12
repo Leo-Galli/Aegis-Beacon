@@ -38,36 +38,15 @@ Important: The OLED and TFT share the same SPI bus. You cannot have both connect
 
 ## Color Scheme
 
-When `dispHasColor()` returns true, the firmware applies these colors:
-
-| Element | Color | Usage |
-|---------|-------|-------|
-| Background | Black | All screens |
-| Text | White | Default foreground |
-| Beacon TX header | Red (#F800) | Transmitting state |
-| Beacon standby | Blue (#001F) | Standby state |
-| Frequency | Yellow (#FFE0) | Large frequency display |
-| Battery OK | Green (#07E0) | Above 50% charge |
-| Battery medium | Yellow (#FFE0) | 25-50% charge |
-| Battery low | Red (#F800) | Below 25% charge |
-| GPS lock | Green (#07E0) | Fix acquired |
-| Emergency screen | Red background, yellow text | Distress mode |
-| RSSI strong | Green (#07E0) | Above threshold |
-| Progress bar | Cyan (#07FF) | TX progress |
-| Signal Orange accent | #FD20 | Aegis-Beacon branding |
+When `dispHasColor()` returns true, the firmware starts every screen black and draws the active element in a signal-orange accent (`0xFD20`). The rest of the UI is rendered in white where a foreground colour is needed. The accent is the one colour change that matters on this panel: it marks the element you are most likely to need to read quickly (the active mode state, the frequency readout, the transmitting indicator, the RSSI threshold, and the distress cues on the emergency screen). |
 
 ## UI Layout
 
-The 128x64 pixel UI area is centered vertically on the 128x160 TFT, with 48-pixel margins top and bottom. This preserves the exact same layout as the OLED version.
-
-On color displays, additional visual elements appear:
-- Top status bar showing mode, temperature, and battery
-- Color-coded satellite count in GPS wait screen
-- Gradient RSSI trace with threshold color changes
+The TFT receives the same screen layouts as the OLED, drawn across the full 128x160 pixel panel. The UI is not centred in a smaller box; it fills the panel. Where the OLED uses a single foreground colour, the TFT replaces it with a signal-orange accent for the active element so the important part is always visible against the black background.
 
 ## Performance
 
-The ST7735 uses the Adafruit GFX library which renders directly to the display (no frame buffer), keeping RAM usage comparable to the OLED version. SPI clock speed is the same as the OLED.
+The ST7735 uses the Adafruit GFX library and renders directly to the display. It does not keep a full frame buffer in RAM the way the OLED does, so RAM usage is comparable to the OLED build while the panel itself is larger. The SPI clock is the same software SPI clock used by the OLED.
 
 ## Comparison with OLED
 
