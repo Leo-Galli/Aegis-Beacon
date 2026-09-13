@@ -680,9 +680,9 @@ html.motion-ok [data-rv].is-in {
 }
 .aegis-device {
   position: relative; z-index: 1;
-  width: 100%; max-width: 16.5rem; margin-inline: auto;
-  aspect-ratio: 300 / 708;
-  filter: drop-shadow(0 16px 28px rgb(0 0 0 / 18%));
+  width: 100%; max-width: 17rem; margin-inline: auto;
+  aspect-ratio: 300 / 540;
+  filter: drop-shadow(0 18px 32px rgb(0 0 0 / 22%));
 }
 .aegis-device__art {
   display: block; width: 100%; height: auto;
@@ -690,10 +690,10 @@ html.motion-ok [data-rv].is-in {
 }
 .aegis-device__oled-slot {
   position: absolute; z-index: 2;
-  left: 13.33%; top: 50.28%; width: 73.33%; height: 16.38%;
-  overflow: hidden; border-radius: 2.5%;
-  background: #050608;
-  box-shadow: inset 0 2px 10px rgb(0 0 0 / 62%);
+  left: 16%; top: 24.81%; width: 68%; height: 19.63%;
+  overflow: hidden; border-radius: 2%;
+  background: #030405;
+  box-shadow: inset 0 3px 12px rgb(0 0 0 / 70%);
 }
 .oled-canvas {
   display: block; width: 100%; height: 100%;
@@ -709,30 +709,30 @@ html.motion-ok [data-rv].is-in {
     linear-gradient(320deg, rgb(255 255 255 / 5%) 0%, transparent 28%);
 }
 .aegis-device__led-slot {
-  position: absolute; z-index: 2; width: 3.33%; height: 1.41%;
+  position: absolute; z-index: 2;
   display: flex; align-items: center; justify-content: center;
   pointer-events: none;
 }
-.aegis-device__led-slot--tx { left: 17.67%; top: 71.75%; }
-.aegis-device__led-slot--rx { left: 29.67%; top: 71.75%; }
+.aegis-device__led-slot--tx { left: 20.33%; top: 62.78%; width: 4.67%; height: 2.59%; }
+.aegis-device__led-slot--rx { left: 75%; top: 62.78%; width: 4.67%; height: 2.59%; }
 .aegis-device__led {
-  width: 72%; height: 72%; border-radius: 50%;
+  width: 100%; height: 100%; border-radius: 50%;
   background: #14181c;
-  box-shadow: inset 0 1px 2px rgb(0 0 0 / 55%);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 60%);
   transition: box-shadow 0.12s, background 0.12s;
 }
 .aegis-device__led--tx.aegis-device__led--on {
-  background: #ef4444;
-  box-shadow: 0 0 10px #ef4444cc, inset 0 0 3px rgb(255 255 255 / 35%);
+  background: #ff2d2d;
+  box-shadow: 0 0 14px #ff2d2d, 0 0 28px #ff2d2d88, inset 0 0 4px rgb(255 255 255 / 40%);
 }
 .aegis-device__led--rx.aegis-device__led--on {
-  background: #3b82f6;
-  box-shadow: 0 0 10px #3b82f6cc, inset 0 0 3px rgb(255 255 255 / 35%);
+  background: #3b8bff;
+  box-shadow: 0 0 14px #3b8bff, 0 0 28px #3b8bff88, inset 0 0 4px rgb(255 255 255 / 40%);
 }
 .aegis-device__keys {
   position: absolute;
-  left: 12%; top: 75.71%; width: 79.33%; height: 7.34%;
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 4.2%;
+  left: 13.33%; top: 49.63%; width: 74.67%; height: 9.26%;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 5.5%;
   padding: 0; z-index: 3;
 }
 .aegis-key {
@@ -756,29 +756,29 @@ html.motion-ok [data-rv].is-in {
 .aegis-key__cap {
   position: relative; z-index: 1;
   display: flex; align-items: center; justify-content: center;
-  width: 88%; height: 88%;
-  font-family: var(--font-mono); font-size: clamp(0.38rem, 2.1vw, 0.52rem);
+  width: 90%; height: 90%;
+  font-family: var(--font-mono); font-size: clamp(0.38rem, 2.1vw, 0.5rem);
   font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; text-align: center;
-  color: #2a3038;
-  background: linear-gradient(180deg, #e4e9ee 0%, #b8c0c9 48%, #9aa3ad 100%);
-  border: 1px solid #8a929c;
-  border-radius: 14%;
+  color: #e8ecf0;
+  background: linear-gradient(180deg, #4a525a 0%, #323840 55%, #282e36 100%);
+  border: 1px solid #5a626a;
+  border-radius: 12%;
   box-shadow:
-    0 2px 0 #5f6770,
-    0 4px 8px rgb(0 0 0 / 20%),
-    inset 0 1px 0 rgb(255 255 255 / 58%);
+    0 2px 0 #1a1e24,
+    0 4px 10px rgb(0 0 0 / 28%),
+    inset 0 1px 0 rgb(255 255 255 / 12%);
   transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.1s;
 }
 .aegis-key:hover .aegis-key__cap {
-  color: #121418;
-  background: linear-gradient(180deg, #f0f3f6 0%, #c8ced6 48%, #aeb6bf 100%);
+  color: #fff;
+  background: linear-gradient(180deg, #565e68 0%, #3a424a 55%, #303840 100%);
 }
 .aegis-key.is-pressed .aegis-key__cap,
 .aegis-key.is-holding .aegis-key__cap {
   transform: translateY(2px);
-  background: linear-gradient(180deg, #9aa3ad 0%, #7a828c 100%);
-  box-shadow: inset 0 2px 5px rgb(0 0 0 / 35%);
-  color: #121418;
+  background: linear-gradient(180deg, #282e36 0%, #1e242c 100%);
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 45%);
+  color: #fff;
 }
 .aegis-device__toast {
   position: absolute; z-index: 4;

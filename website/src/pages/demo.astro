@@ -283,11 +283,11 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
     })
     if (mode === 'listen' && !cwText) cwText = ''
     if (fromHardware) {
-      if (mode === 'emergency') showToast('EMERGENCY — SOS beacon TX (+22 dBm)', 'emergency')
-      else if (mode === 'config') showToast('CONFIG — WiFi portal 192.168.4.1')
-      else if (prev === 'emergency' && mode === 'beacon') showToast('Emergency cleared — BEACON')
-      else if (mode === 'search') showToast('SEARCH — RSSI scan')
-      else if (mode === 'beacon' && prev === 'search') showToast('BEACON — Morse TX')
+      if (mode === 'emergency') showToast('EMERGENCY | SOS beacon TX (+22 dBm)', 'emergency')
+      else if (mode === 'config') showToast('CONFIG | WiFi portal 192.168.4.1')
+      else if (prev === 'emergency' && mode === 'beacon') showToast('Emergency cleared | BEACON')
+      else if (mode === 'search') showToast('SEARCH | RSSI scan')
+      else if (mode === 'beacon' && prev === 'search') showToast('BEACON | Morse TX')
     }
     renderOled()
     updateTape()
