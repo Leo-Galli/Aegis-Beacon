@@ -20,7 +20,7 @@
 
 Aegis-Beacon v6.0 is an open-source, ultra-low-cost emergency rescue beacon for avalanche survival, backcountry SAR operations, and off-grid emergency communication. The device combines a 433 MHz CW radio transmitter with a passive RSSI scanner, a live CW decoder (LISTEN mode), a selectable status display (SSD1309 OLED, ST7735 TFT color, or HD44780 character LCD), a NEO-6M GPS module, a 4-button physical control panel, a live battery monitor, a board temperature sensor, and a 3.5mm audio alert output into a pocketable, battery-powered unit buildable for approximately $23–28 USD.
 
-The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled by the RadioLib driver stack, and exposes a WiFi captive-portal dashboard for field configuration without any additional tools. v6.0 adds the LISTEN mode with a real-time Morse CW decoder (symbols and characters are streamed to the OLED and the serial bridge), the live battery monitor with low-battery warning, the RSSI history strip-chart on the SEARCH screen, board temperature reporting, the extended `AEGIS:STATE` / `AEGIS:BATT` / `AEGIS:CW` serial lines, and multi-display support (OLED, TFT, LCD 16x2, LCD 20x4) selected by `DISPLAY_TYPE`. v5.5 introduced the machine-readable serial protocol, the cross-platform bridge script, and the offline-font config dashboard. v5.4 was a full hardware revision from v4.0 (ESP32-C3 + SX1276); all GPIO assignments, libraries, and the NVS schema have changed.
+The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled by the RadioLib driver stack, and exposes a WiFi captive-portal dashboard for field configuration without any additional tools. v6.0 adds the LISTEN mode with a real-time Morse CW decoder (symbols and characters are streamed to the OLED and the serial bridge), the live battery monitor with low-battery warning, the RSSI history strip-chart on the SEARCH screen, board temperature reporting, the extended `AEGIS:STATE` / `AEGIS:BATT` / `AEGIS:CW` serial lines, and multi-display support (OLED, TFT, LCD 16x2, LCD 20x4, and both LCD sizes over a PCF8574 I2C backpack) selected by `DISPLAY_TYPE`. v5.5 introduced the machine-readable serial protocol, the cross-platform bridge script, and the offline-font config dashboard. v5.4 was a full hardware revision from v4.0 (ESP32-C3 + SX1276); all GPIO assignments, libraries, and the NVS schema have changed.
 
 ---
 
@@ -220,7 +220,7 @@ The last known GPS fix is stored in RTC RAM (`g_rtcLat`, `g_rtcLng`, `g_rtcFixVa
 
 ## 7. Display — Multi-Display Support (v6.0)
 
-Aegis-Beacon v6.0 supports four display types, selected at compile time via `DISPLAY_TYPE`. Change the number in `AegisBeacon.ino` to match your hardware.
+Aegis-Beacon v6.0 supports six display types, selected at compile time via `DISPLAY_TYPE`. Change the number in `AegisBeacon.ino` to match your hardware.
 
 | Type | Number | Resolution | Color | Library | Interface |
 |------|--------|-----------|-------|---------|-----------|
@@ -228,6 +228,10 @@ Aegis-Beacon v6.0 supports four display types, selected at compile time via `DIS
 | ST7735 1.8" TFT | 2 | 128x160 | Full color | Adafruit GFX | SPI |
 | HD44780 LCD 16x2 | 3 | 16x2 chars | Monochrome | LiquidCrystal | Parallel |
 | HD44780 LCD 20x4 | 4 | 20x4 chars | Monochrome | LiquidCrystal | Parallel |
+| HD44780 LCD 16x2 I2C | 5 | 16x2 chars | Monochrome | LiquidCrystal_I2C | PCF8574 backpack |
+| HD44780 LCD 20x4 I2C | 6 | 20x4 chars | Monochrome | LiquidCrystal_I2C | PCF8574 backpack |
+| HD44780 LCD 16x2 I2C | 5 | 16x2 chars | Monochrome | LiquidCrystal_I2C | PCF8574 backpack |
+| HD44780 LCD 20x4 I2C | 6 | 20x4 chars | Monochrome | LiquidCrystal_I2C | PCF8574 backpack |
 
 ### 7.0 SSD1309 OLED (Default)
 
@@ -508,22 +512,20 @@ The 7-pin version is not a different interface; it is just the same parallel bus
 
 If you cannot find a V0 pin on a 7-pin board, assume the contrast is fixed onboard. If the module also has no separate backlight resistor, it usually already includes one, so LED+ can go straight to 5V.
 
-#### Adattatore I2C a 4 pin (GND, VCC, SDA, SCL)
+#### I2C backpack (GND, VCC, SDA, SCL) - DISPLAY_TYPE 5 / 6
 
-An I2C backpack (typically a PCF8574 on a 4-pin GND/VCC/SDA/SCL header) is **not compatible with this firmware as shipped**.
+The PCF8574 I2C backpack is supported as `DISPLAY_TYPE 5` (16x2) or `DISPLAY_TYPE 6` (20x4). The firmware drives it through `LiquidCrystal_I2C` on the Wire peripheral, so a backpack build needs four wires instead of seven.
 
-The current code drives the LCD in parallel mode with `LiquidCrystal` on six GPIOs. It does not use `Wire` or any I2C LCD library.
+| Backpack pin | Connect to | Notes |
+|--------------|------------|-------|
+| GND          | GND        |       |
+| VCC          | 5V         | HD44780 logic runs at 5 V; the backpack takes the same rail |
+| SDA          | GPIO 13    | `PIN_LCD_I2C_SDA`, shared with the OLED bus (only one display is mounted) |
+| SCL          | GPIO 15    | `PIN_LCD_I2C_SCL`, shared with the OLED bus |
 
-If you have only an I2C backpack, you have three options:
+GPIO 21/22 (the usual I2C pair) are taken by the radio BUSY line and GPS RX; GPIO 0 is a strapping pin and GPIO 1/3 are the USB serial, so the bus reuses the OLED/TFT pins 13/15. A backpack build also removes the GPIO 12 conflict with GPS TX, because the parallel D7 line does not exist.
 
-1. **Use a different display** that the firmware supports natively: the OLED, the TFT, or a parallel LCD.
-2. **Add a parallel LCD** instead of the I2C module. That is the direct path: same firmware, no code change.
-3. **Modify the firmware** to support an I2C LCD. That would require:
-   - a new `DISPLAY_TYPE` value,
-   - adding a `LiquidCrystal_I2C` library to `platformio.ini`,
-   - rewriting the LCD backend `dispXxx()` functions to talk to the I2C address instead of the six GPIO pins.
-
-If you want that I2C variant, it is a real extension rather than a drop-in change, and it needs a dedicated backend.
+The address defaults to 0x27 and the boot probe also tries 0x3F (PCF8574A); the first that answers wins. Override at compile time with `-D LCD_I2C_ADDR=0x3F` if your backpack uses a different address. Sleep on the backpack also switches the backlight off, since the display-enable bit and the backlight flag share the same PCF8574 port.
 
 #### Pin conflict: LCD D7 and GPS TX
 

@@ -1,15 +1,15 @@
 ---
 title: "HD44780 LCD Displays"
-description: "HD44780 character LCD modules (16x2 and 20x4) on the Aegis-Beacon: full pin tables for the 16-pin header, the 7-pin variant, the I2C-backpack incompatibility, the LiquidCrystal constructor, the contrast circuit, the GPIO 12 conflict with GPS, and when each screen makes sense."
+description: "HD44780 character LCD modules (16x2 and 20x4) on the Aegis-Beacon: full pin tables for the 16-pin header, the 7-pin variant, the PCF8574 I2C backpack types 5 and 6, the LiquidCrystal constructor, the contrast circuit, the GPIO 12 conflict with GPS, and when each screen makes sense."
 order: 14
 group: "Hardware & Components"
 ---
 
 # HD44780 LCD Displays
 
-The HD44780 is the most widely available character display. The beacon supports both the 16x2 and the 20x4 through `DISPLAY_TYPE` 3 and 4. They use the same six-GPIO 4-bit parallel bus and the same `LiquidCrystal` constructor, so the only difference between the two is the module itself and how many rows the firmware can use.
+The HD44780 is the most widely available character display. The beacon supports both the 16x2 and the 20x4 through `DISPLAY_TYPE` 3 and 4 on the six-GPIO 4-bit parallel bus, and both sizes again through `DISPLAY_TYPE` 5 and 6 on a PCF8574 I2C backpack with only two GPIOs.
 
-This page covers every pinout you are likely to encounter: the full 16-pin header, the smaller 7-pin variant, the I2C backpack that is **not** compatible with this firmware as shipped, and the exact controller code that drives the display.
+This page covers every pinout you are likely to encounter: the full 16-pin header, the smaller 7-pin variant, the I2C backpack (types 5 and 6), and the exact controller code that drives the display.
 
 ## Which screen are you wiring?
 
@@ -17,8 +17,10 @@ This page covers every pinout you are likely to encounter: the full 16-pin heade
 |---------|--------------|---------|------|-----------|------------|
 | HD44780 16x2 | 3 | 16 | 2 | 4-bit parallel | 16, 17, 13, 15, 4, 12 |
 | HD44780 20x4 | 4 | 20 | 4 | 4-bit parallel | 16, 17, 13, 15, 4, 12 |
+| HD44780 16x2 I2C | 5 | 16 | 2 | PCF8574 backpack | 13 (SDA), 15 (SCL) |
+| HD44780 20x4 I2C | 6 | 20 | 4 | PCF8574 backpack | 13 (SDA), 15 (SCL) |
 
-The two character displays share the same six GPIOs. You swap one for the other by changing `DISPLAY_TYPE` and physically replacing the module. No other firmware change is required.
+The two parallel types share the same six GPIOs; the two I2C types share two. You swap any of them by changing `DISPLAY_TYPE` and rewiring the display. No other firmware change is required.
 
 ---
 
@@ -258,22 +260,36 @@ If you cannot find a V0 pin on a 7-pin board, assume the contrast is fixed onboa
 
 ---
 
-## Adattatore I2C a 4 pin (GND, VCC, SDA, SCL)
+## I2C backpack (GND, VCC, SDA, SCL) - DISPLAY_TYPE 5 / 6
 
-An I2C backpack (typically a PCF8574 on a 4-pin GND/VCC/SDA/SCL header) is **not compatible with this firmware as shipped**.
+The PCF8574 I2C backpack is fully supported as `DISPLAY_TYPE 5` (16x2) or `DISPLAY_TYPE 6` (20x4). The firmware talks to the backpack through the `LiquidCrystal_I2C` library on the Wire peripheral, so a backpack build needs only four wires instead of seven.
 
-The current code drives the LCD in parallel mode with `LiquidCrystal` on six GPIOs. It does not use `Wire` or any I2C LCD library.
+### Why SDA=GPIO13 and SCL=GPIO15
 
-If you have only an I2C backpack, you have three options:
+Only one display is ever mounted, so the I2C bus reuses the OLED/TFT soft-SPI pins. GPIO 21 and 22, the usual ESP32 I2C pair, are taken by the radio BUSY line and GPS RX; GPIO 0 is a strapping pin; GPIO 1 and 3 are the USB serial. 13/15 is the cleanest pair left.
 
-1. **Use a different display** that the firmware supports natively: the OLED, the TFT, or a parallel LCD.
-2. **Add a parallel LCD** instead of the I2C module. That is the direct path: same firmware, no code change.
-3. **Modify the firmware** to support an I2C LCD. That would require:
-   - a new `DISPLAY_TYPE` value,
-   - adding a `LiquidCrystal_I2C` library to `platformio.ini`,
-   - rewriting the LCD backend `dispXxx()` functions to talk to the I2C address instead of the six GPIO pins.
+| Backpack pin | Connect to | Notes |
+|---|---|---|
+| GND | GND | |
+| VCC | 5V | The HD44780 logic runs at 5V; the PCF8574 is usually powered from the same rail |
+| SDA | GPIO 13 | `PIN_LCD_I2C_SDA`, same pin as OLED SDA |
+| SCL | GPIO 15 | `PIN_LCD_I2C_SCL`, same pin as OLED SCK |
 
-If you want that I2C variant, it is a real extension rather than a drop-in change, and it needs a dedicated backend. Tell me which backpack you have (PCF8574, address, module silkscreen) and I can write the concrete variant.
+A 4-wire connection also removes the GPIO 12 conflict with GPS TX entirely, because the parallel D7 line does not exist.
+
+### The I2C address
+
+Most backpacks answer at **0x27**; some, built on the PCF8574A, answer at **0x3F**. The firmware defaults to 0x27 and the boot probe tries both addresses, taking whichever answers first. If your backpack uses another address, override it at compile time:
+
+```bash
+pio run -e esp32dev -D LCD_I2C_ADDR=0x3F
+```
+
+### What changes in the firmware
+
+- `lcd.init()` + `lcd.backlight()` replace `lcd.begin()`, and `Wire.begin(PIN_LCD_I2C_SDA, PIN_LCD_I2C_SCL)` must run first.
+- Sleep now also switches the backlight off (`noBacklight()`), because the display-enable bit and the backlight flag live in the same PCF8574 port.
+- Everything else, every renderer and every screen, is identical to the parallel types.
 
 ---
 

@@ -21,8 +21,10 @@ All pin numbers below come from `AegisBeacon.ino`. If you remap any pin there, u
 | ST7735 1.8" TFT | 2 | Software SPI (7-pin) | 15, 13, 4, 16, 17 | 3.3 V |
 | HD44780 LCD 16x2 | 3 | 4-bit parallel (6 GPIOs) | 16, 17, 13, 15, 4, 12 | 5 V + 3.3 V logic |
 | HD44780 LCD 20x4 | 4 | 4-bit parallel (6 GPIOs) | 16, 17, 13, 15, 4, 12 | 5 V + 3.3 V logic |
+| HD44780 LCD 16x2 I2C | 5 | PCF8574 I2C backpack | 13 (SDA), 15 (SCL) | 5 V |
+| HD44780 LCD 20x4 I2C | 6 | PCF8574 I2C backpack | 13 (SDA), 15 (SCL) | 5 V |
 
-The two SPI displays use the same five GPIOs. The two character displays use the same six GPIOs. You switch between screens by changing `DISPLAY_TYPE` and, for the LCD, by rewiring the display itself.
+The two SPI displays use the same five GPIOs. The two parallel character displays use the same six GPIOs. The two I2C types use two GPIOs, the same pair as the SPI bus. You switch between screens by changing `DISPLAY_TYPE` and rewiring the display itself.
 
 ---
 

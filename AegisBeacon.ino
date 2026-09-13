@@ -170,12 +170,12 @@
 //  modifying the module).
 //
 //  4-pin I2C adapter (GND, VCC, SDA, SCL):
-//    NOT compatible with this firmware as it stands. The code drives the
-//    LCD in parallel with LiquidCrystal, not with Wire/I2C. If you have a
-//    PCF8574 backpack attached, either change the module (true parallel) or
-//    the code must be changed to LiquidCrystal_I2C (which requires an extra
-//    DISPLAY_TYPE, the library in platformio.ini, and rewriting the LCD
-//    dispXxx() backend to use the I2C address instead of the 6 GPIOs).
+//    Fully supported as DISPLAY_TYPE 5 (16x2) or 6 (20x4) via the
+//    LiquidCrystal_I2C library. SDA=GPIO13, SCL=GPIO15 (the OLED/TFT bus
+//    pins, see the defines below). Most backpacks answer at 0x27, some at
+//    0x3F; the boot probe tries both. Compile with -D DISPLAY_TYPE=5 or 6.
+//    A backpack build needs four wires and removes the D7/GPS-TX conflict
+//    on GPIO 12 entirely.
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
 // │  GPS WIRING — NEO-6M <-> ESP32 DevKit V1 (UART2)                           │
@@ -308,6 +308,8 @@
 //    2  ST7735 1.8" TFT 128x160    (Adafruit GFX, soft SPI)  [MULTICOLOR]
 //    3  HD44780 LCD 16x2            (4-bit parallel)          [MONO]
 //    4  HD44780 LCD 20x4            (4-bit parallel)          [MONO]
+//    5  HD44780 LCD 16x2 via PCF8574 I2C backpack            [MONO]
+//    6  HD44780 LCD 20x4 via PCF8574 I2C backpack            [MONO]
 //
 //  Multicolor detection: type 2 renders with a signal-orange accent; types
 //  1, 3 and 4 are monochrome and render pure black and white. Every screen
@@ -325,8 +327,11 @@
   #include <Adafruit_ST7735.h>
 #elif DISPLAY_TYPE == 3 || DISPLAY_TYPE == 4
   #include <LiquidCrystal.h>
+#elif DISPLAY_TYPE == 5 || DISPLAY_TYPE == 6
+  #include <Wire.h>
+  #include <LiquidCrystal_I2C.h>
 #else
-  #error "DISPLAY_TYPE must be 1 (OLED), 2 (TFT), 3 (LCD 16x2) or 4 (LCD 20x4)"
+  #error "DISPLAY_TYPE must be 1 (OLED), 2 (TFT), 3 (LCD 16x2), 4 (LCD 20x4), 5 (LCD I2C 16x2) or 6 (LCD I2C 20x4)"
 #endif
 
 // =============================================================================
@@ -428,6 +433,21 @@
 #define PIN_LCD_D5    15
 #define PIN_LCD_D6    4
 #define PIN_LCD_D7    12
+
+// HD44780 LCD via PCF8574 I2C backpack (types 5/6) — two GPIOs only.
+// The bus reuses the OLED/TFT soft-SPI pins (SDA=13, SCL=15) because only
+// one display is ever mounted: types 1/2 drive those GPIOs as SPI, types
+// 5/6 as I2C. GPIO 21/22 (the usual I2C pair) are taken by the radio BUSY
+// line and GPS RX; GPIO 0 is a strapping pin and GPIO 1/3 are the USB
+// serial, so 13/15 is the cleanest pair available.
+// LCD_I2C_ADDR is the PCF8574 default; most backpacks answer on 0x27,
+// some on 0x3F — the boot probe (detectDisplayType) tries both and the
+// detected value is used for this build.
+#define PIN_LCD_I2C_SDA  13   // reuses PIN_OLED_SDA - exclusive with types 1/2
+#define PIN_LCD_I2C_SCL  15   // reuses PIN_OLED_SCK - exclusive with types 1/2
+#ifndef LCD_I2C_ADDR
+#define LCD_I2C_ADDR     0x27
+#endif
 
 // ── GPS NEO-6M — UART2 ───────────────────────────────────────────────────────
 #define PIN_GPS_RX     22   // input-only GPIO (SVP), GPS TX → ESP RX
@@ -565,7 +585,7 @@ struct Config {
   // Display
   bool     oledEnabled;
   bool     oledInvert;
-  uint8_t  displayType;          // 1=OLED(default) 2=TFT 3=LCD16x2 4=LCD20x4 (probed at boot)
+  uint8_t  displayType;          // 1=OLED(default) 2=TFT 3=LCD16x2 4=LCD20x4 5=LCD16x2-I2C 6=LCD20x4-I2C (probed at boot)
   // GPS
   bool     gpsEnabled;           // master GPS enable
   bool     gpsIncludeInBeacon;   // append coords to Morse message
@@ -679,9 +699,22 @@ Adafruit_ST7735 tft = Adafruit_ST7735(
   PIN_OLED_SCK,
   PIN_OLED_RES
 );
-#else
+#elif DISPLAY_TYPE == 3 || DISPLAY_TYPE == 4
 // HD44780 character LCD (16x2 or 20x4), 4-bit parallel
 LiquidCrystal lcd(PIN_LCD_RS, PIN_LCD_EN, PIN_LCD_D4, PIN_LCD_D5, PIN_LCD_D6, PIN_LCD_D7);
+#endif
+
+#if DISPLAY_TYPE == 5 || DISPLAY_TYPE == 6
+// HD44780 character LCD over a PCF8574 I2C backpack (16x2 = type 5,
+// 20x4 = type 6). Same DISP_COLS/DISP_ROWS geometry as the parallel
+// types, driven through Wire on two GPIOs instead of six. The sizes
+// are spelled out here because this object is declared before the
+// shared DISP_COLS/DISP_ROWS geometry block; the renderers use those.
+#if DISPLAY_TYPE == 5
+LiquidCrystal_I2C lcd(LCD_I2C_ADDR, 16, 2);
+#else
+LiquidCrystal_I2C lcd(LCD_I2C_ADDR, 20, 4);
+#endif
 #endif
 
 TinyGPSPlus gps;
@@ -1156,6 +1189,8 @@ void cwDecodeSample(bool carrier, uint32_t now) {
 //   DISPLAY_TYPE 2 : ST7735 1.8" TFT 128x160   (Adafruit GFX)      [color]
 //   DISPLAY_TYPE 3 : HD44780 LCD 16x2           (LiquidCrystal)     [mono]
 //   DISPLAY_TYPE 4 : HD44780 LCD 20x4           (LiquidCrystal)     [mono]
+//   DISPLAY_TYPE 5 : HD44780 LCD 16x2 via PCF8574 I2C backpack      [mono]
+//   DISPLAY_TYPE 6 : HD44780 LCD 20x4 via PCF8574 I2C backpack      [mono]
 //
 // The pixel backends share the exact same screen layouts. Multicolor
 // detection: dispHasColor() is true only for the ST7735 TFT; screens use a
@@ -1169,7 +1204,7 @@ void cwDecodeSample(bool carrier, uint32_t now) {
 #elif DISPLAY_TYPE == 2
   #define DISP_W 128
   #define DISP_H 160
-#elif DISPLAY_TYPE == 3
+#elif DISPLAY_TYPE == 3 || DISPLAY_TYPE == 5
   #define DISP_COLS 16
   #define DISP_ROWS 2
 #else
@@ -1241,7 +1276,9 @@ void cwDecodeSample(bool carrier, uint32_t now) {
   static void dispWake()  { tft.initR(INITR_BLACKTAB); tft.setRotation(0); tft.fillScreen(ST77XX_BLACK); }
   static void dispSetInvert(bool inv) { tft.invertDisplay(inv); }
 #else
-  // Character LCD backend (HD44780 16x2 / 20x4) — text renderers below
+  // Character LCD backend (HD44780 16x2 / 20x4, parallel or I2C backpack).
+  // LiquidCrystal and LiquidCrystal_I2C expose the same clear/display API,
+  // so the text renderers below are shared verbatim by types 3-6.
   static bool dispHasColor() { return false; }
   static void dispSetColor(bool on)   { (void)on; }
   static void dispSetAccent()         { }
@@ -1259,8 +1296,16 @@ void cwDecodeSample(bool carrier, uint32_t now) {
   static void dispText(int16_t x, int16_t y, const char* s)      { (void)x;(void)y;(void)s; }
   static uint16_t dispTextW(const char* s)                       { return (uint16_t)strlen(s); }
   static void dispContrast(uint8_t v)                            { (void)v; }
+#if DISPLAY_TYPE == 5 || DISPLAY_TYPE == 6
+  // On the I2C backpack the display-on bit lives in the PCF8574 port;
+  // noDisplay()/display() mirror it, and the backlight flag rides on the
+  // same port, so sleep keeps the panel dark including the LEDs.
+  static void dispSleep() { lcd.noDisplay(); lcd.noBacklight(); }
+  static void dispWake()  { lcd.display(); lcd.backlight(); }
+#else
   static void dispSleep() { lcd.noDisplay(); }
   static void dispWake()  { lcd.display(); }
+#endif
   static void dispSetInvert(bool inv)                            { (void)inv; }
 #endif
 
@@ -2010,6 +2055,17 @@ bool initOled() {
   tft.fillScreen(ST77XX_BLACK);
   if (cfg.oledInvert) dispSetInvert(true);
   LOG_OK("Display ready — ST7735 128x160 (color)");
+  return true;
+#elif DISPLAY_TYPE == 5 || DISPLAY_TYPE == 6
+  LOG_OLED("Initialising HD44780 LCD %dx%d via PCF8574 I2C (0x%02X)", DISP_COLS, DISP_ROWS, LCD_I2C_ADDR);
+  // The backpack init differs from the parallel LiquidCrystal one:
+  // Wire must be up on the custom pins before lcd.init() pokes the
+  // PCF8574, and the backlight flag starts cleared until backlight().
+  Wire.begin(PIN_LCD_I2C_SDA, PIN_LCD_I2C_SCL);
+  lcd.init();
+  lcd.backlight();
+  lcd.clear();
+  LOG_OK("Display ready — LCD %dx%d (I2C)", DISP_COLS, DISP_ROWS);
   return true;
 #else
 #if DISPLAY_TYPE == 3
@@ -2768,7 +2824,8 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
     OLED: SSD1309 2.42" 128×64 (sw SPI)<br>
     SCK=GPIO15  SDA=GPIO13  RES=GPIO4<br>
     DC=GPIO16   CS=GPIO17<br>
-    Driver: U8g2 full-frame buffer
+    TFT: same 5 pins, I2C LCD: SDA=GPIO13 SCL=GPIO15<br>
+    Drivers: U8g2 / Adafruit GFX / LiquidCrystal(+I2C)
   </div>
 <div class="card ok full">
   <div class="ct"><span class="ct-dot"></span>DEVICE STATUS</div>
@@ -3626,6 +3683,27 @@ uint8_t detectDisplayType() {
   tft.print("SPI OK");
   cfg.displayType = 2;
   return true;
+#elif DISPLAY_TYPE == 5 || DISPLAY_TYPE == 6
+  // ── 4b. LCD over PCF8574 I2C backpack — presence probe ────────────────
+  // Two addresses are common on cheap backpacks: 0x27 (PCF8574) and
+  // 0x3F (PCF8574A). Whichever answers first wins; the geometry (16x2
+  // vs 20x4) is not electrically detectable, so it follows DISPLAY_TYPE.
+  Wire.begin(PIN_LCD_I2C_SDA, PIN_LCD_I2C_SCL);
+  const uint8_t probeAddrs[2] = { LCD_I2C_ADDR, (LCD_I2C_ADDR == 0x27) ? 0x3F : 0x27 };
+  for (uint8_t i = 0; i < 2; i++) {
+    Wire.beginTransmission(probeAddrs[i]);
+    if (timed() && Wire.endTransmission() == 0) {
+      lcd.init();
+      lcd.backlight();
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("LCD OK");
+      cfg.displayType = (DISP_ROWS >= 4) ? 6 : 5;
+      LOG_OLED("I2C backpack answered at 0x%02X", probeAddrs[i]);
+      return true;
+    }
+  }
+  return false;
 #else
   // ── 4. LCD (HD44780) — hello-world echo ───────────────────────────────
   lcd.begin(DISP_COLS, DISP_ROWS);
@@ -3717,12 +3795,12 @@ void setup() {
 
   // ── OLED ──────────────────────────────────────────────────────────────────
   // Boot-time display auto-detection.
-  // Tries the four backends in a fixed, safe order using the actual
-  // hardware response (I2C presence, SPI display command echo, LCD
-  // character echo) instead of a manual number. The compiled-in
-  // DISPLAY_TYPE still overrides when you want a quiet, guaranteed
-  // build; otherwise the probe writes the detected type into NVS and
-  // the firmware uses it until you change it on the dashboard.
+  // Tries the backends in a fixed, safe order using the actual hardware
+  // response (I2C presence for the OLED or the PCF8574 backpack, SPI
+  // display command echo, LCD character echo) instead of a manual number.
+  // The compiled-in DISPLAY_TYPE still overrides when you want a quiet,
+  // guaranteed build; otherwise the probe writes the detected type into
+  // NVS and the firmware uses it until you change it on the dashboard.
   if (detectDisplayType()) {
     LOG_OLED("Auto-detected display type %d", cfg.displayType);
   } else if (DISPLAY_TYPE > 1) {

@@ -9,6 +9,10 @@ All notable changes across firmware, hardware and documentation, mirroring the a
 
 ## Version 6.0 (Current)
 
+- **I2C LCD backpack support**: new `DISPLAY_TYPE 5` (16x2) and `6` (20x4) drive an HD44780 over a
+  PCF8574 I2C backpack through `LiquidCrystal_I2C` on SDA=GPIO13/SCL=GPIO15 (the OLED bus pins),
+  with an address probe (0x27/0x3F) at boot, backlight tied to sleep, and no GPIO 12 conflict with
+  GPS TX. See [HD44780 LCD Displays](lcd-display-hd44780).
 - **Benchmark demo mode**: a compile-time `BENCHMARK_DEMO` flag runs the full UI and Morse timing on a bench board with no radio, battery divider or GPS attached: radio init and keying become stubs, RSSI reads a virtual -120 dBm floor, the battery ADC and GPS UART are never touched and deep sleep is replaced by an idle loop. See [Benchmark Demo Mode](benchmark-demo-mode).
 - **ST7735 wake fix**: waking the TFT from power-down re-initialises the panel (`initR` + rotation + clear) instead of relying on the unreliable soft-SPI power-up register sequence; the type 2 display now always comes back after a sleep.
 - **LISTEN mode**: the beacon can now receive and decode live Morse CW. The radio stays on the first configured frequency, samples RSSI every 5 ms, measures mark and gap durations with the PARIS timing model, accumulates symbols and streams every decoded character to the OLED and over serial as `AEGIS:CW:<char>`. Full ITU table (A-Z, 0-9, punctuation); entered with `MODE LISTEN`.

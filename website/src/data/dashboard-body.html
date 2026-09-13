@@ -207,7 +207,7 @@
   </div>
   <div class="form-row">
     <label>DETECTED SCREEN <span id="dispTypeVal">—</span></label>
-    <input type="range" id="dispType" min="1" max="4" value="1" step="1" oninput="document.getElementById('dispTypeVal').textContent=dispTypeLabel(this.value)">
+    <input type="range" id="dispType" min="1" max="6" value="1" step="1" oninput="document.getElementById('dispTypeVal').textContent=dispTypeLabel(this.value)">
   </div>
   <div class="info-box" id="dispInfo">
     <b id="dispInfoTitle">1 - SSD1309 OLED (default)</b><br>
@@ -224,6 +224,14 @@
   <div class="info-box">
     <b>4 - HD44780 LCD 20x4</b><br>
     Same wiring as the 16x2, wider display. Same text-only rendering. If you also use GPS, move D7 off GPIO12 - it is shared with GPS TX.
+  </div>
+  <div class="info-box">
+    <b>5 - HD44780 LCD 16x2 via I2C backpack</b><br>
+    PCF8574 backpack, 4 wires only: SDA=GPIO13, SCL=GPIO15 (same pins as the OLED bus), 5V and GND. Most backpacks answer at address 0x27, some at 0x3F - the boot probe tries both.
+  </div>
+  <div class="info-box">
+    <b>6 - HD44780 LCD 20x4 via I2C backpack</b><br>
+    Same I2C wiring as type 5, wider display. Uses the same two GPIOs, so it also frees GPIO12 that the parallel types share with GPS TX.
   </div>
 </div>
 <div class="card ok full">
@@ -275,7 +283,9 @@ const DISP_LABELS = {
   1: '1 - SSD1309 OLED (default)',
   2: '2 - ST7735 TFT (color)',
   3: '3 - HD44780 LCD 16x2',
-  4: '4 - HD44780 LCD 20x4'
+  4: '4 - HD44780 LCD 20x4',
+  5: '5 - HD44780 LCD 16x2 (I2C)',
+  6: '6 - HD44780 LCD 20x4 (I2C)'
 };
 window.dispTypeLabel = (v) => DISP_LABELS[v] || v;
 

@@ -7,7 +7,7 @@ group: "Hardware & Components"
 
 ## Display Selection
 
-Aegis-Beacon v6.0 supports four display types, selected at compile time via the `DISPLAY_TYPE` define at the top of `AegisBeacon.ino`. Change the number to match your hardware, then flash.
+Aegis-Beacon v6.0 supports six display types, selected at compile time via the `DISPLAY_TYPE` define at the top of `AegisBeacon.ino`. Change the number to match your hardware, then flash.
 
 ## Supported Displays
 
@@ -115,6 +115,34 @@ The firmware derives the resolution from `DISPLAY_TYPE` at compile time and defi
 // DISPLAY_TYPE 2: DISP_W=128, DISP_H=160
 // DISPLAY_TYPE 3: DISP_COLS=16, DISP_ROWS=2
 // DISPLAY_TYPE 4: DISP_COLS=20, DISP_ROWS=4
+// DISPLAY_TYPE 5: DISP_COLS=16, DISP_ROWS=2 (I2C backpack)
+// DISPLAY_TYPE 6: DISP_COLS=20, DISP_ROWS=4 (I2C backpack)
+```
+
+## LCD via I2C backpack (DISPLAY_TYPE 5 / 6)
+
+The PCF8574 I2C backpack drives either character LCD with four wires:
+
+| Backpack pin | Connect to | Notes |
+|---|---|---|
+| GND | GND | |
+| VCC | 5V | Display logic; the PCF8574 shares the rail |
+| SDA | GPIO 13 | `PIN_LCD_I2C_SDA`, same pin as OLED SDA |
+| SCL | GPIO 15 | `PIN_LCD_I2C_SCL`, same pin as OLED SCK |
+
+The bus reuses the OLED/TFT pins because only one display is ever mounted.
+GPIO 21/22 are taken by the radio BUSY line and GPS RX, GPIO 0 is a
+strapping pin and GPIO 1/3 are the USB serial, so 13/15 is the cleanest
+pair left. A backpack build also removes the GPIO 12 conflict with GPS TX
+entirely, because the parallel D7 line does not exist.
+
+Compile with `-D DISPLAY_TYPE=5` (16x2) or `-D DISPLAY_TYPE=6` (20x4).
+Most backpacks answer at I2C address 0x27, some (PCF8574A) at 0x3F; the
+boot probe tries both and takes whichever answers. Override with
+`-D LCD_I2C_ADDR=0x3F` if your module differs. Sleep on these types also
+switches the backlight off, since the display-enable bit and the backlight
+flag share the same PCF8574 port.
+
 ```
 
 `DISP_COLS` and `DISP_ROWS` are used by the character-LCD renderers to keep every line inside the visible area and to centre longer text. `DISP_W` and `DISP_H` are used by the pixel renderers only.
