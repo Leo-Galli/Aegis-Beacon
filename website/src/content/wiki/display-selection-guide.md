@@ -37,7 +37,7 @@ Change the number to match your display and reflash.
 
 Only one display is mounted at a time. The OLED and the TFT share an identical 5-pin SPI bus, so the two screens are drop-in replacements for each other. The character LCDs use a separate 6-pin 4-bit parallel bus.
 
-### OLED (DISPLAY_TYPE 1) — SSD1309 128x64, SPI
+### OLED (DISPLAY_TYPE 1) - SSD1309 128x64, SPI
 
 | Display pin | ESP32 GPIO | Notes |
 |-------------|-----------|-------|
@@ -49,7 +49,7 @@ Only one display is mounted at a time. The OLED and the TFT share an identical 5
 | DC (A0) | GPIO 16 | data/command select |
 | CS | GPIO 17 | chip select (active low) |
 
-### TFT (DISPLAY_TYPE 2) — ST7735 128x160, SPI
+### TFT (DISPLAY_TYPE 2) - ST7735 128x160, SPI
 
 | Display pin | ESP32 GPIO | Notes |
 |-------------|-----------|-------|
@@ -64,7 +64,7 @@ Only one display is mounted at a time. The OLED and the TFT share an identical 5
 
 The TFT driver is `Adafruit_ST7735`, initialised with `INITR_BLACKTAB`. Rotation is set to 0 so the 128-wide by 160-tall panel fills the framebuffer naturally. The TFT uses the same five GPIOs as the OLED, so the two are physically interchangeable.
 
-### LCD (DISPLAY_TYPE 3) — HD44780 16x2, 4-bit parallel
+### LCD (DISPLAY_TYPE 3) - HD44780 16x2, 4-bit parallel
 
 | Display pin | ESP32 GPIO | Notes |
 |-------------|-----------|-------|
@@ -83,7 +83,7 @@ The TFT driver is `Adafruit_ST7735`, initialised with `INITR_BLACKTAB`. Rotation
 
 `LiquidCrystal lcd(PIN_LCD_RS, PIN_LCD_EN, PIN_LCD_D4, PIN_LCD_D5, PIN_LCD_D6, PIN_LCD_D7)`.
 
-### LCD (DISPLAY_TYPE 4) — HD44780 20x4, 4-bit parallel
+### LCD (DISPLAY_TYPE 4) - HD44780 20x4, 4-bit parallel
 
 Same six GPIOs as the 16x2, identical constructor call. The only difference is that `lcd.begin(20, 4)` is used automatically and every screen renderer has a third and fourth line available.
 
@@ -214,5 +214,5 @@ If the display shows nothing:
 3. For OLED: ensure SPI pins are on GPIO 15/13/4/16/17 (software SPI, not hardware)
 4. For LCD: adjust the contrast potentiometer until text is visible
 5. For TFT: ensure LED/BL is connected to 3V3 for backlight
-6. Run `Serial Monitor` at 115200 baud to see boot messages — the firmware reports display init status
+6. Run `Serial Monitor` at 115200 baud to see boot messages - the firmware reports display init status
 7. For LCD + GPS: if D7 is on GPIO 12 and you also use GPS, move D7 to a free GPIO and recompile

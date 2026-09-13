@@ -36,9 +36,9 @@ the latest fix.
 | Clock and uptime | Current local time and how long the bridge has been running |
 | Device | Serial port and baud rate, plus connection state (connected / reconnecting) |
 | Position | The most recent GPS fix received from the beacon (lat, lng) |
-| Share | The public site link for the latest fix — paste it anywhere to share the position |
+| Share | The public site link for the latest fix - paste it anywhere to share the position |
 | Page | Whether the Report Position page is open and live-streaming into the bridge |
-| Local track | The last 8 fixes, with timestamps — the path the device took, newest last |
+| Local track | The last 8 fixes, with timestamps - the path the device took, newest last |
 | Live log | A rolling window of the newest device and bridge messages |
 
 The log is the same stream you would see in plain mode, capped to fit the
@@ -78,7 +78,7 @@ https://aegis-beacon.vercel.app/report-position?lat=45.531240&lng=12.304560&alt=
 
 That link opens the official site's report page pre-filled with the
 coordinates. Paste it into a chat, an incident log or a coordination channel
-and anyone who opens it sees the position on a map — no app, no account, no
+and anyone who opens it sees the position on a map - no app, no account, no
 API key needed on their side.
 
 The same link is logged as `[bridge] share link: ...` in the live log, so it
@@ -117,7 +117,7 @@ make the terminal bigger to see more.
 The bridge can run for hours during a multi-beacon session. The dashboard
 turns it from a log you have to scroll through into a live instrument panel:
 you can see at a glance whether the device is connected, whether the position
-is fresh, and whether the site page is receiving the stream — the three
+is fresh, and whether the site page is receiving the stream - the three
 things that actually matter during a field exercise.
 
 ## Related pages

@@ -279,16 +279,47 @@ A compact 13×5 px battery glyph appears in the top-right of the BEACON, SEARCH 
 | Parameter                  | Value       | Notes                                     |
 |----------------------------|-------------|-------------------------------------------|
 | Module                     | ST7735      | 1.8" 128×160 px colour                   |
+| Controller                 | ST7735 / ST7735S | Compatible variants only            |
+| Resolution                 | 128×160     | Full panel used                          |
+| Color depth                | 16-bit RGB  | 65K colours                              |
 | Interface                  | Software SPI| Same 5 GPIOs as the OLED bus             |
-| SCK / SDA / RESET / DC / CS | GPIO 15/13/4/16/17 | Identical to the OLED                   |
-| LED/BL                     | 3V3         | Backlight always on                       |
+| SCK / SDA / DC / RST / CS  | GPIO 15/13/16/4/17 | `Adafruit_ST7735(CS, DC, MOSI, SCLK, RST)` |
+| LED / BL                    | 3V3         | Backlight always on                       |
 | Driver library             | Adafruit GFX + ST7735 | `INITR_BLACKTAB`, rotation 0     |
-| Framebuffer orientation    | 128×160     | UI uses the full panel height            |
 | Accent colour              | 0xFD20      | Signal orange for active elements        |
 | Background                 | ST77XX_BLACK| All screens start black                   |
 | Invert mode                | NVS toggle  | `oledInvert` passed to `tft.invertDisplay()` |
+| Compile flag               | `-D DISPLAY_TYPE=2` | Required for TFT build              |
 
-The TFT receives the same screen layouts as the OLED. Where the OLED uses a single foreground colour, the TFT replaces it with the signal-orange accent so the active element is always visible.
+The TFT receives the same screen layouts as the OLED, drawn across the full 128×160 panel. Where the OLED uses a single foreground colour, the TFT replaces it with the signal-orange accent so the active element is always visible.
+
+#### TFT pin table (module pin → ESP32 pin)
+
+| Module pin | Connect to              | Notes                                                                                        |
+|------------|-------------------------|----------------------------------------------------------------------------------------------|
+| VCC        | 3V3 ESP32               | Not 5V. The panel stays at 3.3 V like the rest of the board.                                 |
+| GND        | GND                     |                                                                                              |
+| GND (2nd)  | GND                     | Same ground node.                                                                            |
+| NC x3      | Do not connect          | Usually unused MISO/SDO (SPI is write-only) and/or a backlight pin already wired on the      |
+|            |                         | module. If one of them is actually LED/BLK and the screen stays dark, try tying it to 3V3    |
+|            |                         | (through a resistor if the module has none onboard).                                         |
+| CLK        | GPIO 15                 | `PIN_OLED_SCK`                                                                               |
+| SDA        | GPIO 13                 | `PIN_OLED_SDA` (MOSI)                                                                        |
+| RS         | GPIO 16                 | `PIN_OLED_DC` — on this module "RS" is Data/Command                                          |
+| RST        | GPIO 4                  | `PIN_OLED_RES`                                                                               |
+| CS         | GPIO 17                 | `PIN_OLED_CS`                                                                                |
+
+The OLED and the TFT share the same SPI bus. You cannot have both connected simultaneously. Disconnect the OLED before connecting the TFT.
+
+#### NC pins and LED/BL behaviour
+
+- **MISO/SDO**: the firmware writes to the panel over SPI; it does not read back from the display. That pin is not used.
+- **Extra unconnected pins**: some modules expose more pins than the active set. If they are marked NC, leave them disconnected.
+- **Backlight pin that is not labeled**: on some modules the backlight is connected to a pin that is not clearly labeled LED/BL. If the screen stays dark even though the SPI wiring looks correct, check whether the backlight enable is on a pin you have not connected. If so, tie that pin to 3V3, ideally through a resistor if the module does not already include one.
+
+If the module already has a backlight resistor onboard, you can tie LED/BL directly to 3V3. If not, add a current-limiting resistor.
+
+---
 
 ### 7.4 HD44780 LCD 16x2 (Type 3)
 
@@ -306,7 +337,63 @@ The TFT receives the same screen layouts as the OLED. Where the OLED uses a sing
 | R/W                        | GND         | Write-only                                |
 | Backlight                  | 5V via 100Ω / GND | A and K                                 |
 | Rendering style            | Text only   | No graphics, bars rendered as hash chars |
-| Screen layouts             | Same as 20x4, without rows 3 and 4 | See Section 7.5 |
+| Screen layouts             | Same as 20x4, without rows 3 and 4 | See Section 7.6 |
+| D7 conflict                | GPIO 12     | Shared with GPS TX; move D7 if both used |
+
+#### 16-pin header pin table
+
+| LCD pin | Connect to | Notes |
+|---------|-----------|------|
+| 1 VSS   | GND       | |
+| 2 VDD   | 5V        | Display logic supply |
+| 3 V0    | 10 kΩ potentiometer between VDD and GND, wiper on V0 | Sets the contrast; alternatively a fixed ~2 kΩ resistor toward GND |
+| 4 RS    | GPIO 16   | |
+| 5 RW    | GND       | LiquidCrystal only writes; keep RW tied to ground |
+| 6 E     | GPIO 17   | |
+| 7-10 D0-D3 | Do not connect | 4-bit mode, unused |
+| 11 D4   | GPIO 13   | |
+| 12 D5   | GPIO 15   | |
+| 13 D6   | GPIO 4    | |
+| 14 D7   | GPIO 12   | Shared with GPS TX — if you use GPS together with the LCD, move this pin (`PIN_LCD_D7` in the code) to a free GPIO |
+| 15 LED+ (A) | 5V (through a ~220 Ω resistor if the module has none onboard) | Backlight |
+| 16 LED- (K) | GND    | |
+
+#### NC pins, GND pins, and unused signals
+
+The character displays have signals that the firmware does not connect:
+
+- **D0–D3 (pins 7–10)**: not used. The firmware runs in 4-bit mode, so it only drives D4–D7. Leave them disconnected.
+- **RW (pin 5)**: tied to GND by the firmware. The firmware never reads from the display. Connecting RW to GND saves a GPIO and is the recommended wiring.
+- **Extra GND pin on some modules**: some breakout boards expose a second GND pin. Tie it to the same GND node as the first one.
+- **Backlight LED+/LED- (A/K)**: driven from 5V and GND through a current-limiting resistor if the module does not already include one.
+
+#### Contrast
+
+V0 needs a contrast voltage. The standard circuit is a 10 kΩ potentiometer between VDD (5V) and GND, with the wiper on V0. Twist the pot until the text is clear.
+
+If you do not want a potentiometer, a fixed resistor of about 2 kΩ toward GND is a rough starting point on many modules, but the potentiometer is the reliable choice because the correct V0 varies from module to module.
+
+If the display shows a faint rectangle but no text, adjust V0. That is a contrast issue, not a dead module.
+
+#### Backlight
+
+Backlight current is the dominant draw on the character displays:
+
+- Logic current is small, about 1–2 mA.
+- Backlight current is typically 20–40 mA depending on the module and the series resistor.
+- If the module does not already include a current-limiting resistor on the A line, add about 220 Ω between 5V and LED+.
+- On battery builds, raise the series resistor to reduce current, or switch the backlight off in bright environments.
+
+#### What the 16x2 shows
+
+On a 16x2, every screen is reduced to two lines. Typical contents:
+
+- **Row 1**: frequency and mode.
+- **Row 2**: status — TX progress, RSSI, or coordinates.
+
+The firmware keeps both lines inside the visible area and centres longer text where appropriate.
+
+---
 
 ### 7.5 HD44780 LCD 20x4 (Type 4)
 
@@ -321,6 +408,50 @@ The TFT receives the same screen layouts as the OLED. Where the OLED uses a sing
 
 The 20x4 is the most informative character display. Every LCD renderer already checks `DISP_ROWS >= 4` before using a third or fourth row, so the 16x2 and 20x4 are served by the same functions.
 
+#### 20x4 pin table
+
+The 20x4 uses the same 16-pin header, the same six GPIOs, and the same constructor call as the 16x2. The only difference is the number of visible rows and columns, which the firmware derives automatically.
+
+| LCD pin | Connect to | Notes |
+|---------|-----------|------|
+| 1 VSS   | GND       | |
+| 2 VDD   | 5V        | Display logic supply |
+| 3 V0    | 10 kΩ potentiometer between VDD and GND, wiper on V0 | Sets the contrast; alternatively a fixed ~2 kΩ resistor toward GND |
+| 4 RS    | GPIO 16   | |
+| 5 RW    | GND       | LiquidCrystal only writes; keep RW tied to ground |
+| 6 E     | GPIO 17   | |
+| 7-10 D0-D3 | Do not connect | 4-bit mode, unused |
+| 11 D4   | GPIO 13   | |
+| 12 D5   | GPIO 15   | |
+| 13 D6   | GPIO 4    | |
+| 14 D7   | GPIO 12   | Shared with GPS TX — if you use GPS together with the LCD, move this pin (`PIN_LCD_D7` in the code) to a free GPIO |
+| 15 LED+ (A) | 5V (through a ~220 Ω resistor if the module has none onboard) | Backlight |
+| 16 LED- (K) | GND    | |
+
+#### Contrast, backlight, NC pins, and power
+
+The contrast, backlight, NC pins, and power notes are the same as the 16x2:
+
+- **D0–D3 (pins 7–10)**: not used. Leave them disconnected.
+- **RW (pin 5)**: tied to GND. The firmware never reads from the display.
+- **Extra GND pin on some modules**: tie it to the same GND node as the first one.
+- **Backlight LED+/LED- (A/K)**: 5V and GND, with a series resistor if the module does not already include one.
+- **V0**: 10 kΩ potentiometer between VDD and GND, wiper on V0, unless the module has a fixed internal contrast resistor.
+- **Logic current**: about 1–2 mA.
+- **Backlight current**: typically 20–40 mA; the main battery cost of the character displays.
+
+#### What the 20x4 shows
+
+On a 20x4, every screen that has a third or fourth meaningful line uses it. The extra rows give you a header, a primary status, a secondary detail, and a progress or numeric line where the firmware provides one. Typical extra content:
+
+- Coordinates on the GPS wait and emergency screens.
+- Decoded Morse text on the LISTEN screen.
+- Scan history and threshold on the SEARCH screen.
+- Progress bar and channel/WPM info on the BEACON screen.
+- Connection instructions on the CONFIG screen.
+
+---
+
 ### 7.6 LCD Screen Layouts
 
 | Mode          | Row 1               | Row 2                          | Row 3 (20x4 only)              | Row 4 (20x4 only)             |
@@ -333,6 +464,8 @@ The 20x4 is the most informative character display. Every LCD renderer already c
 | **EMERGENCY** | *** SOS *** (centred, flashing) | 433.500 MHz +22dBm         | 45.883 12.500 / CYCLE #1 (centred) | —                              |
 | **CONFIG**    | CONFIG MODE (centred) | AP: AegisBeacon               | http://192.168.4.1 (centred)   | 1 wifi 2 browser 3 url (centred)|
 
+---
+
 ### 7.7 LCD 20x4 — Detailed Notes
 
 The 20x4 is the best character display for development and for field use when you want coordinates or decoded Morse visible without changing mode.
@@ -343,16 +476,90 @@ The 20x4 is the best character display for development and for field use when yo
 - The 16x2 and 20x4 use the same bus. You can switch between them by changing one number and rewiring nothing, as long as only one character display is connected at a time.
 - GPS and the 20x4 share GPIO 12 for D7 and GPS TX. If both are used at the same time, move D7 to another GPIO and update `PIN_LCD_D7` before compiling.
 
-Limitations:
-- Text only. No bars, glyphs, or icons. Progress is shown as a bar of hash characters.
-- Contrast must be adjusted on V0.
-- GPS and D7 share GPIO 12.
+#### LCD variant you actually receive: 7-pin, 16-pin, fixed contrast
 
-Contrast:
-Use a 10k potentiometer between 5V and GND with the wiper on V0. If text is faint or missing, adjust the pot before suspecting a wiring fault.
+Not every HD44780 breakout looks like the full 16-pin header. The signals are the same; what changes is which pins are broken out to the board edge.
 
-Boot detection:
-The firmware probes the wired bus at boot and stores the result in NVS under the `disp` key. The captive-portal display card shows the detected screen.
+**7-pin variant**: Some modules expose only the essential pins: RS, EN, D4, D5, D6, D7, plus VCC and GND. That is the same set of signals as the 16-pin header, minus the pins the firmware does not use anyway (D0–D3, the second GND, and sometimes a separately broken-out RW or backlight).
+
+On a 7-pin module:
+- Connect RS, EN, D4, D5, D6, D7 to the same GPIOs as the 16-pin table above.
+- Connect VCC and GND.
+- If the module has no V0 pin, the contrast is already set internally, usually by a fixed resistor on the board.
+- If the module has a fixed internal contrast that is too light or too dark, you cannot adjust it without modifying the module itself. That is a module-level limitation, not a firmware one.
+
+**16-pin module with RW already tied internally**: Some boards label pin 5 as RW but tie it to GND on the PCB. In that case you still do not need an extra wire for RW; just follow the silkscreen and tie the module’s GND pin to the ESP32 GND rail.
+
+**Backlight already on the module**: If the module has a built-in current-limiting resistor on the A line, you can connect LED+ directly to 5V. If it does not, add about 220 Ω between 5V and LED+.
+
+**Fixed-contrast modules**: A few cheap modules ship with a fixed contrast resistor and no user-accessible V0. If the text is barely visible on one of those, your options are:
+- Use a different module with a user-adjustable V0.
+- Modify the module if you are comfortable lifting or bridging the contrast resistor.
+- Accept the fixed contrast and choose the module accordingly next time.
+
+#### Configurazione "a 7 pin"
+
+If you have a module that exposes only seven connections, the mapping is the same essential set of signals:
+
+- RS, EN, D4, D5, D6, D7 to the same GPIOs as the full table.
+- VCC and GND.
+
+The 7-pin version is not a different interface; it is just the same parallel bus with fewer broken-out pins. The firmware does not care whether the board is 16-pin, 7-pin, or anything in between, as long as the six signals it drives are present and wired to the correct GPIOs.
+
+If you cannot find a V0 pin on a 7-pin board, assume the contrast is fixed onboard. If the module also has no separate backlight resistor, it usually already includes one, so LED+ can go straight to 5V.
+
+#### Adattatore I2C a 4 pin (GND, VCC, SDA, SCL)
+
+An I2C backpack (typically a PCF8574 on a 4-pin GND/VCC/SDA/SCL header) is **not compatible with this firmware as shipped**.
+
+The current code drives the LCD in parallel mode with `LiquidCrystal` on six GPIOs. It does not use `Wire` or any I2C LCD library.
+
+If you have only an I2C backpack, you have three options:
+
+1. **Use a different display** that the firmware supports natively: the OLED, the TFT, or a parallel LCD.
+2. **Add a parallel LCD** instead of the I2C module. That is the direct path: same firmware, no code change.
+3. **Modify the firmware** to support an I2C LCD. That would require:
+   - a new `DISPLAY_TYPE` value,
+   - adding a `LiquidCrystal_I2C` library to `platformio.ini`,
+   - rewriting the LCD backend `dispXxx()` functions to talk to the I2C address instead of the six GPIO pins.
+
+If you want that I2C variant, it is a real extension rather than a drop-in change, and it needs a dedicated backend.
+
+#### Pin conflict: LCD D7 and GPS TX
+
+The 16x2 and 20x4 both default D7 to GPIO 12, which is also the GPS TX line (`PIN_GPS_TX`). That is the one default conflict worth fixing.
+
+To move D7:
+
+1. Pick a free GPIO. GPIO 14 and GPIO 2 are common choices on the 30-pin DevKit V1, but check that the pin you choose is not already used by your specific radio/boot configuration.
+2. In `AegisBeacon.ino`, change `#define PIN_LCD_D7` to the new GPIO.
+3. Recompile and flash.
+
+If you publish a derivative build with a different default pin, update any pin tables you distribute so they match the firmware you actually ship.
+
+#### Limitations
+
+- Text only. No graphics, no icons, no RSSI trace.
+- Fixed character grid. No proportional fonts.
+- Refresh is slower than the pixel displays because of the parallel interface.
+- Requires 5 V on VDD.
+- Outdoor readability without the backlight is limited.
+
+#### When to use which character screen
+
+Use the **16x2** when:
+- You only need frequency, mode, and one status line.
+- You want the cheapest character display.
+- You are building the GPS-less version and do not need extra detail lines.
+- You want the smallest possible character display footprint.
+
+Use the **20x4** when:
+- You want coordinates or decoded Morse visible without changing mode.
+- You want scan history and threshold visible at the same time.
+- You are doing bench testing and want more information on screen.
+- You want one or two more facts per screen than the 16x2 gives you.
+
+Use the **OLED** or **TFT** instead when you want the full graphical UI, battery glyph, RSSI trace, satellite lock meter, or animated antenna glyphs. The character displays are the low-cost, text-only option.
 
 ---
 

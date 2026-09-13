@@ -439,6 +439,13 @@
 #define AUDIO_CHANNEL  0
 #define AUDIO_FREQ_HZ  40000
 #define AUDIO_RES_BITS 8
+// LEDC handle passed to ledcWrite/ledcWriteTone: core 3.x addresses the PWM
+// through the GPIO pin, core 2.x uses the raw channel number.
+#if ESP_ARDUINO_VERSION >= 0x03000000
+  #define AUDIO_LEDC_TARGET PIN_AUDIO
+#else
+  #define AUDIO_LEDC_TARGET AUDIO_CHANNEL
+#endif
 
 // =============================================================================
 // TIMING CONSTANTS
@@ -851,23 +858,37 @@ void buildMorsePayload(char* out, size_t outLen) {
 // ╚══════════════════════════════════════════════════════╝
 // =============================================================================
 
+// Re-assert LEDC on the audio pin. dacWrite() detaches the pad from every
+// output signal (DAC parking included), so PWM must be re-attached before
+// the next note or it stays silent. Cheap and idempotent.
+static inline void audioPwmAttach() {
+#if ESP_ARDUINO_VERSION >= 0x03000000
+  ledcAttach(PIN_AUDIO, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
+#else
+  ledcSetup(AUDIO_CHANNEL, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
+  ledcAttachPin(PIN_AUDIO, AUDIO_CHANNEL);
+#endif
+}
+
 static inline void audioDacSilence() {
-  ledcWrite(AUDIO_CHANNEL, 0);
+  ledcWrite(AUDIO_LEDC_TARGET, 0);
   dacWrite(PIN_AUDIO, 128);   // mid-rail parking — no click
 }
 
 void audioTone(uint32_t freqHz, uint32_t durationMs) {
   if (!cfg.audioEnabled || freqHz == 0) return;
-  ledcWriteTone(AUDIO_CHANNEL, freqHz);
-  ledcWrite(AUDIO_CHANNEL, cfg.audioVolume / 2);
+  audioPwmAttach();
+  ledcWriteTone(AUDIO_LEDC_TARGET, freqHz);
+  ledcWrite(AUDIO_LEDC_TARGET, cfg.audioVolume / 2);
   delay(durationMs);
   audioDacSilence();
 }
 
 void audioToneStart(uint32_t freqHz) {
   if (!cfg.audioEnabled || freqHz == 0) { audioDacSilence(); return; }
-  ledcWriteTone(AUDIO_CHANNEL, freqHz);
-  ledcWrite(AUDIO_CHANNEL, cfg.audioVolume / 2);
+  audioPwmAttach();
+  ledcWriteTone(AUDIO_LEDC_TARGET, freqHz);
+  ledcWrite(AUDIO_LEDC_TARGET, cfg.audioVolume / 2);
 }
 
 void audioToneStop() {
@@ -877,9 +898,10 @@ void audioToneStop() {
 void audioSweep(uint32_t fromHz, uint32_t toHz, uint32_t stepMs = 8) {
   if (!cfg.audioEnabled) return;
   int32_t step = (toHz > fromHz) ? 40 : -40;
+  audioPwmAttach();
   for (int32_t f = (int32_t)fromHz; (toHz > fromHz) ? f < (int32_t)toHz : f > (int32_t)toHz; f += step) {
-    ledcWriteTone(AUDIO_CHANNEL, (uint32_t)f);
-    ledcWrite(AUDIO_CHANNEL, cfg.audioVolume / 3);
+    ledcWriteTone(AUDIO_LEDC_TARGET, (uint32_t)f);
+    ledcWrite(AUDIO_LEDC_TARGET, cfg.audioVolume / 3);
     delay(stepMs);
   }
   audioDacSilence();
@@ -3529,26 +3551,30 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(PIN_SW_SEL),  isrSelButton,  FALLING);
 
   // ── Watchdog ─────────────────────────────────────────────────────────────
-  // WDT init (covered above in the setup block); kept here only as a no-op
-  // guard for builds that define their own WDT_TIMEOUT_SEC path.
-  esp_task_wdt_reset();
+  // Task watchdog: WDT_TIMEOUT_SEC budget, panic on expiry. Core 3.x (IDF 5)
+  // configures via struct and the Arduino runtime already starts the TWDT,
+  // so reconfigure with an init fallback; core 2.x keeps the classic init.
+  #if ESP_ARDUINO_VERSION >= 0x03000000
+    esp_task_wdt_config_t wdtCfg;
+    wdtCfg.timeout_ms     = WDT_TIMEOUT_SEC * 1000U;
+    wdtCfg.idle_core_mask = 0;
+    wdtCfg.trigger_panic  = true;
+    if (esp_task_wdt_reconfigure(&wdtCfg) != ESP_OK) {
+      esp_task_wdt_init(&wdtCfg);
+    }
+  #else
+    esp_task_wdt_init(WDT_TIMEOUT_SEC, true);
+  #endif
   esp_task_wdt_add(NULL);
 
   // ── Audio ─────────────────────────────────────────────────────────────────
-  // LEDC audio init for ESP32 Arduino core 3.x: ledcSetup/ledcAttachPin
-  // were removed. ledcAttach(pin, freq, resolution_bits) configures + attaches.
-  // LEDC audio init - compatible with ESP32 Arduino core 2.x and 3.x.
-  // Core 3.1+ removed ledcSetup/ledcAttachPin in favour of ledcAttach(pin, freq, bits).
-  #if ESP_ARDUINO_VERSION >= 0x03010000
-    ledcAttach(PIN_AUDIO, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
-  #else
-    ledcSetup(AUDIO_CHANNEL, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
-    ledcAttachPin(PIN_AUDIO, AUDIO_CHANNEL);
-  #endif
+  // LEDC audio PWM on PIN_AUDIO (DAC1). audioPwmAttach() picks the right
+  // API for the core in use (ledcAttach on 3.x, ledcSetup+ledcAttachPin on
+  // 2.x) and every write goes through AUDIO_LEDC_TARGET.
+  audioPwmAttach();
+  ledcWrite(AUDIO_LEDC_TARGET, 0);
 
-  ledcWrite(AUDIO_CHANNEL, 0);
-  dacWrite(PIN_AUDIO, 128);   // mid-rail — no startup click
-  LOG_AUDIO("LEDC GPIO%d (DAC1) ch%d @ %d Hz %d-bit", PIN_AUDIO, AUDIO_CHANNEL, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
+  LOG_AUDIO("LEDC audio on GPIO%d (DAC1) @ %d Hz %d-bit", PIN_AUDIO, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
 
   // ── Load config (needed before OLED init for oledEnabled/invert) ──────────
   loadConfig();

@@ -80,7 +80,7 @@ U8G2_SSD1309_128X64_NONAME0_F_4W_SW_SPI u8g2(
 
 ---
 
-## Display type 2 — ST7735 1.8" TFT
+## Display type 2 - ST7735 1.8" TFT
 
 Color screen. Same 5 GPIOs as the OLED.
 
@@ -136,7 +136,7 @@ Adafruit_ST7735 tft = Adafruit_ST7735(
 
 ---
 
-## Display type 3 — HD44780 LCD 16x2
+## Display type 3 - HD44780 LCD 16x2
 
 Character display, 4-bit parallel bus on 6 GPIOs.
 
@@ -178,7 +178,7 @@ lcd.begin(16, 2);   // from DISP_COLS / DISP_ROWS
 | D4 | GPIO 13 | Data bit 4 |
 | D5 | GPIO 15 | Data bit 5 |
 | D6 | GPIO 4 | Data bit 6 |
-| D7 | GPIO 12 | Data bit 7 — shared with GPS TX |
+| D7 | GPIO 12 | Data bit 7 - shared with GPS TX |
 | A (backlight +) | 5V via 100Ω | Backlight anode |
 | K (backlight -) | GND | Backlight cathode |
 
@@ -198,7 +198,7 @@ lcd.begin(16, 2);   // from DISP_COLS / DISP_ROWS
 
 ---
 
-## Display type 4 — HD44780 LCD 20x4
+## Display type 4 - HD44780 LCD 20x4
 
 Character display, same 6 GPIOs as the 16x2, same constructor call.
 
@@ -242,7 +242,7 @@ lcd.begin(20, 4);   // from DISP_COLS / DISP_ROWS
 | D4 | GPIO 13 | Data bit 4 |
 | D5 | GPIO 15 | Data bit 5 |
 | D6 | GPIO 4 | Data bit 6 |
-| D7 | GPIO 12 | Data bit 7 — shared with GPS TX |
+| D7 | GPIO 12 | Data bit 7 - shared with GPS TX |
 | A (backlight +) | 5V via 100Ω | Backlight anode |
 | K (backlight -) | GND | Backlight cathode |
 
@@ -272,10 +272,10 @@ You cannot mix SPI and LCD simultaneously without changing pins in the firmware,
 
 | Combination | Possible with default pins? |
 |-------------|-----------------------------|
-| OLED + Radio (VSPI) | Yes — different buses |
-| TFT + Radio (VSPI) | Yes — different buses |
-| OLED + TFT | No — same bus, one at a time |
-| LCD 16x2 + LCD 20x4 | No — same bus, one at a time |
+| OLED + Radio (VSPI) | Yes - different buses |
+| TFT + Radio (VSPI) | Yes - different buses |
+| OLED + TFT | No - same bus, one at a time |
+| LCD 16x2 + LCD 20x4 | No - same bus, one at a time |
 | LCD + GPS | Yes, but D7 on GPIO 12 conflicts with GPS TX for the 20x4 use case. Move D7 if both are needed. |
 
 ---
@@ -313,4 +313,4 @@ Backlight current on the LCDs is much higher than on the OLED. If battery runtim
 - [ ] Only one display connected at a time.
 - [ ] OLED is the 7-pin SPI version, not the 4-pin I2C version.
 - [ ] TFT backlight (LED/BL) tied to 3.3 V.
-- [ ] Serial monitor at 115200 shows the display init line if you want confirmation: `OLED ready — SSD1309 128x64`, `Display ready — ST7735 128x160 (color)`, or `Display ready — LCD 20x4`.
+- [ ] Serial monitor at 115200 shows the display init line if you want confirmation: `OLED ready - SSD1309 128x64`, `Display ready - ST7735 128x160 (color)`, or `Display ready - LCD 20x4`.

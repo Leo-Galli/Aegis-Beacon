@@ -168,7 +168,7 @@ When reporting bugs, please include:
 
 This project is built by human engineers. **AI-generated or AI-assisted code is not tolerated** in the firmware, the website source, or any script in this repository. The safety-critical nature of the device (radio, GPS, emergency mode, rescue logic) means every line must be written, reviewed and understood by a person. Do not submit code produced by an assistant, and do not ask an assistant to write, rewrite, or patch code for you.
 
-AI use is acceptable only for **images and media** — for example generating a diagram, illustration or banner — and even then only when strictly necessary and clearly derived from the project's own content. Any such asset must be noted in the pull request body.
+AI use is acceptable only for **images and media** - for example generating a diagram, illustration or banner - and even then only when strictly necessary and clearly derived from the project's own content. Any such asset must be noted in the pull request body.
 
 Pull requests containing AI-generated code, or commits carrying AI or bot attribution such as `Co-authored-by: ...` or generator signatures, will be rejected without review.
 

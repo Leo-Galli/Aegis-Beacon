@@ -101,6 +101,6 @@ The repeat count multiplies the transmission time. Lower repeat count and shorte
 
 ## Related Pages
 
-- [CONFIG Mode](/wiki/mode-config) — how the payload is used during beaconing.
-- [NEO-6M GPS Module](/wiki/nx130-gps-module) — the GPS side of the coordinate.
-- [Morse Code Engine](/wiki/morse-code-engine) — how the payload is converted to Morse.
+- [CONFIG Mode](/wiki/mode-config) - how the payload is used during beaconing.
+- [NEO-6M GPS Module](/wiki/nx130-gps-module) - the GPS side of the coordinate.
+- [Morse Code Engine](/wiki/morse-code-engine) - how the payload is converted to Morse.

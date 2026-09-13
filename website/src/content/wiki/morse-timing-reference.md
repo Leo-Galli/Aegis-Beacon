@@ -58,7 +58,7 @@ Counting units:
 - I: dot + intra + dot + inter = 1 + 1 + 1 + 3 = 6 units.
 - S: dot + intra + dot + intra + dot + inter = 1 + 1 + 1 + 1 + 1 + 3 = 8 units.
 
-Total = 14 + 8 + 10 + 6 + 8 = 46 units of symbol and intra/inter gaps, plus the word gap after PARIS if another word follows. The definition of PARIS-standard is that the word PARIS plus the word gap equals 50 units, so the word gap here is 4 units? No — the convention is that PARIS itself is 50 units including the word gap that would follow it. The exact accounting varies by implementation; the firmware uses 50 units per word with the standard dot/dash/gap ratios above.
+Total = 14 + 8 + 10 + 6 + 8 = 46 units of symbol and intra/inter gaps, plus the word gap after PARIS if another word follows. The definition of PARIS-standard is that the word PARIS plus the word gap equals 50 units, so the word gap here is 4 units? No - the convention is that PARIS itself is 50 units including the word gap that would follow it. The exact accounting varies by implementation; the firmware uses 50 units per word with the standard dot/dash/gap ratios above.
 
 ## Transmission Time Estimates
 
@@ -82,6 +82,6 @@ If battery life matters, shorten the payload and consider a higher WPM. If copya
 
 ## Related Pages
 
-- [Morse Code Engine](/wiki/morse-code-engine) — the implementation behind these timings.
-- [CONFIG Payload Format](/wiki/config-payload-format) — what is being timed.
-- [Configuration Reference](/wiki/configuration-reference) — the WPM range and default.
+- [Morse Code Engine](/wiki/morse-code-engine) - the implementation behind these timings.
+- [CONFIG Payload Format](/wiki/config-payload-format) - what is being timed.
+- [Configuration Reference](/wiki/configuration-reference) - the WPM range and default.

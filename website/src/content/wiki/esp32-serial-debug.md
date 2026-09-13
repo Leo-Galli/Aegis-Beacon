@@ -91,11 +91,11 @@ The number is milliseconds since power-on. The category is a short tag. The mess
 
 | Pattern | Meaning |
 |---|---|
-| Mode printed, no beacon | Radio TX not occurring — check power, antenna, mode |
+| Mode printed, no beacon | Radio TX not occurring - check power, antenna, mode |
 | GPS satellites zero | Module not in open sky, or wrong wiring |
 | Save logged, then config matches | NVS write succeeded |
 | Button logged but no action | Button recognized but action disabled or out of range |
-| Error before boot banner | Early init failure — check wiring and power |
+| Error before boot banner | Early init failure - check wiring and power |
 
 ## Capturing Logs
 
@@ -105,6 +105,6 @@ For field debugging where USB is not practical, the OLED and the web dashboard s
 
 ## Related Pages
 
-- [Serial Debug System](/wiki/serial-debug-system) — the full debug interface and what to connect.
-- [GPS Integration](/wiki/gps-integration) — GPS log events and fix behavior.
-- [Dashboard HTTP API](/wiki/dashboard-http-api) — the web dashboard's `/status` endpoint mirrors much of this state.
+- [Serial Debug System](/wiki/serial-debug-system) - the full debug interface and what to connect.
+- [GPS Integration](/wiki/gps-integration) - GPS log events and fix behavior.
+- [Dashboard HTTP API](/wiki/dashboard-http-api) - the web dashboard's `/status` endpoint mirrors much of this state.

@@ -62,7 +62,7 @@ TinyGPS++ parses NMEA sentences from the GPS and exposes structured fields. The 
 
 A sentence like `$GPGGA,...` carries fix quality, satellites, latitude, longitude, altitude. `$GPRMC` carries date, time, position, speed, and fix validity.
 
-The firmware does not forward raw NMEA anywhere — it reads TinyGPS++ fields and uses them directly for display and optional payload.
+The firmware does not forward raw NMEA anywhere - it reads TinyGPS++ fields and uses them directly for display and optional payload.
 
 ## What 'Fix' Means Here
 
@@ -72,7 +72,7 @@ A fix in this firmware is:
 - Satellite count is at least `GPS_MIN_SATS` (default 3).
 - We have waited no longer than `GPS_FIX_TIMEOUT_S` (default 60 s) for the first fix.
 
-If the module never sees enough satellites, the beacon still operates — GPS is optional. The payload only includes coordinates when the user enabled "Include GPS in beacon" and the module has a fix.
+If the module never sees enough satellites, the beacon still operates - GPS is optional. The payload only includes coordinates when the user enabled "Include GPS in beacon" and the module has a fix.
 
 ## Payload Coordinate Format
 
@@ -107,7 +107,7 @@ On first use in a new area, NEO-6M can take a long time to acquire satellites. E
 
 ## Power
 
-The NEO-6M draws a modest amount of current. In a battery-powered beacon, GPS is the largest single optional drain when enabled. The firmware lets you disable the module entirely when you do not need position — for example when you are in a known location and only need to beacon your message.
+The NEO-6M draws a modest amount of current. In a battery-powered beacon, GPS is the largest single optional drain when enabled. The firmware lets you disable the module entirely when you do not need position - for example when you are in a known location and only need to beacon your message.
 
 ## Troubleshooting
 
@@ -120,7 +120,7 @@ The NEO-6M draws a modest amount of current. In a battery-powered beacon, GPS is
 
 ## Related Pages
 
-- [GPS Integration](/wiki/gps-integration) — wiring, fix, and payload format.
-- [GPS Coordinate Accuracy](/wiki/gps-coordinate-accuracy) — how accurate the short-form coordinates are.
-- [GPS Troubleshooting](/wiki/gps-troubleshooting) — common GPS failures.
-- [GPS Module Variants](/wiki/gps-module-variants) — NEO-6M vs alternatives.
+- [GPS Integration](/wiki/gps-integration) - wiring, fix, and payload format.
+- [GPS Coordinate Accuracy](/wiki/gps-coordinate-accuracy) - how accurate the short-form coordinates are.
+- [GPS Troubleshooting](/wiki/gps-troubleshooting) - common GPS failures.
+- [GPS Module Variants](/wiki/gps-module-variants) - NEO-6M vs alternatives.
