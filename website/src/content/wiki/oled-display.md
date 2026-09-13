@@ -41,7 +41,7 @@ The SSD1309 2.42" OLED provides real-time status information across all operatin
 
 ```
 +----------------------------------+
-| AEGIS-BEACON v5.5          [87%]|  <-- Inverted header with battery
+| AEGIS-BEACON v6.0          [87%]|  <-- Inverted header with battery
 | Emergency Radio System           |
 |                                  |
 | [Features enabled]               |
@@ -79,6 +79,20 @@ The SSD1309 2.42" OLED provides real-time status information across all operatin
 |                                  |
 | HIT: 434.500 MHz -87dBm         |  <-- Last detection
 | SCAN:12 BAT:87%          [ADJ]  |  <-- Status bar
++----------------------------------+
+```
+
+### LISTEN Screen
+
+```
++----------------------------------+
+| RX LISTEN                  12 CHR|  <-- Inverted header + count
+|                                  |
+| 433.500 MHz               [87%]  |
+| [#########...........]           |  <-- RSSI strip-chart
+| RSSI -72dBm  THR -90dBm         |
+| SOS DE LEO-GALLI 46.49          |  <-- Decoded text (2 lines)
+| 83N 11.3558E                    |
 +----------------------------------+
 ```
 

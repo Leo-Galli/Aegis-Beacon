@@ -1,13 +1,13 @@
 ---
 title: "Operating Modes"
-description: "BEACON, SEARCH, CONFIG and EMERGENCY: what each mode does, when to use it and how to switch"
+description: "BEACON, SEARCH, LISTEN, CONFIG and EMERGENCY: what each mode does, when to use it and how to switch"
 ---
 
 # Operating Modes
 
 ## Overview
 
-The Aegis-Beacon has four operating modes, each designed for specific scenarios. Use the MODE button to switch between BEACON and SEARCH modes.
+The Aegis-Beacon has five operating modes, each designed for specific scenarios. Use the MODE button to switch between BEACON and SEARCH. LISTEN is entered via serial or the config portal boot mode setting.
 
 ## BEACON Mode
 
@@ -85,6 +85,36 @@ The Aegis-Beacon has four operating modes, each designed for specific scenarios.
 
 **Blue LED blinks** slowly during scan, fast on detection.
 
+## LISTEN Mode
+
+> [!INFO]
+> **Real-time CW decoder.** Stays on one frequency and prints decoded Morse text on the OLED.
+
+### Operation
+
+1. Disables WiFi and Bluetooth
+2. Opens continuous receive on the first configured frequency
+3. Decodes incoming Morse using the configured WPM (PARIS timing)
+4. Shows RSSI strip-chart, threshold, and the last 42 decoded characters
+5. Streams each character over USB serial as `AEGIS:CW:<char>`
+6. Emits variable-pitch audio (same rising tone as SEARCH)
+
+### Controls
+
+| Button | Action |
+|--------|--------|
+| MODE short | Return to BEACON |
+| MODE long (2 s) | Enter EMERGENCY |
+| SEL short | Toggle VOL / WPM adjustment target |
+| SEL long (3 s) | Enter CONFIG |
+| UP / DN | Adjust the selected parameter live |
+
+### LED Indicator
+
+**Blue LED blinks** on each decoded character.
+
+See [LISTEN Mode](/wiki/mode-listen) for the full screen layout and serial output format.
+
 ## CONFIG Mode
 
 > [!INFO]
@@ -145,6 +175,7 @@ Enter CONFIG mode and save -- clears the emergency flag.
 |------|-------|-------|-------|-----|
 | **BEACON** | +17 dBm | Yes (10-300s) | Morse clicks | Optional |
 | **SEARCH** | Rx only | No | Rising tone | No |
+| **LISTEN** | Rx only | No | Rising tone | No |
 | **CONFIG** | WiFi AP | No | Silent | No |
 | **EMERGENCY** | +22/+30 dBm | No | Continuous | Yes |
 
@@ -156,6 +187,7 @@ Enter CONFIG mode and save -- clears the emergency flag.
 | BEACON | 10s | On | ~45 hours |
 | BEACON | 30s | Off | ~130 hours |
 | SEARCH | Continuous | Off | ~44 hours |
+| LISTEN | Continuous | Off | ~44 hours |
 | EMERGENCY | Continuous | On | ~12 hours |
 
 > [!NOTE]

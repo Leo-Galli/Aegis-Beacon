@@ -5,22 +5,35 @@ description: How the web demo mirrors the real firmware, what you can learn from
 
 # Using the Interactive Demo
 
-The website includes a full interactive simulation of the beacon at `/demo`. It mirrors the firmware behavior closely enough to teach you the device before you own one.
+The website includes a full interactive simulation of the beacon at `/demo`. It mirrors firmware v6.0 behavior closely enough to teach you the device before you own one.
 
 ## What the demo shows
 
-- A realistic OLED screen with the same layouts the real device shows.
-- Four mode buttons (BEACON, SEARCH, CONFIG, EMERGENCY) and four device keys (MODE, SEL, UP, DN).
-- Live controls for Morse speed, TX power, sleep interval, repeat count, and the search parameters.
+- A physical mockup of the handheld case (antenna, OLED bezel, status LEDs, speaker grille, four tact switches).
+- Firmware-accurate OLED layouts for all five operating modes.
+- Five mode selectors (BEACON, SEARCH, LISTEN, CONFIG, EMERGENCY) and four device keys (MODE, SEL, UP, DN).
+- Live controls for Morse speed, TX power, RSSI, sleep interval, and the search threshold.
 - A payload preview that builds the Morse message as you type your name and coordinates.
+- LISTEN mode with a simulated CW decode stream on the OLED.
 
 ## Things to try
 
-1. Switch between the four modes and watch the OLED layout change.
-2. Press MODE repeatedly to cycle modes the way the physical button does.
-3. In CONFIG mode, select VOL or WPM with SEL, then adjust with UP/DN.
-4. Activate EMERGENCY and observe that it forces maximum power and ignores sleep.
-5. Type a name and watch the payload preview expand to `SOS DE NAME PSN ...`.
+1. Switch between the five modes and watch the OLED layout change to match the wiki screen reference.
+2. Press MODE briefly to toggle BEACON and SEARCH (from LISTEN, MODE returns to BEACON).
+3. Hold MODE for 2 seconds to enter EMERGENCY (alternating inverse SOS screen).
+4. In any field mode, press SEL briefly to toggle the VOL/WPM adjustment target, then UP/DN to change values.
+5. Hold SEL for 3 seconds to open CONFIG (WiFi portal instructions on the OLED).
+6. Enter LISTEN, raise RSSI above the threshold, and watch characters decode from the payload field.
+7. Type a name and watch the payload preview expand to `SOS DE NAME PSN ...`.
+
+## Button map (matches hardware)
+
+| Button | Short press | Long press |
+|--------|-------------|------------|
+| MODE | Toggle BEACON/SEARCH (LISTEN returns to BEACON) | 2 s: EMERGENCY |
+| SEL | Toggle VOL / WPM target | 3 s: CONFIG |
+| UP | Increment selected parameter | - |
+| DN | Decrement selected parameter | - |
 
 ## What the demo does not show
 

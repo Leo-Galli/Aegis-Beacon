@@ -2,108 +2,114 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Firmware Demo | Aegis-Beacon" description="Interactive simulation of the Aegis-Beacon firmware: cycle BEACON, SEARCH, CONFIG and EMERGENCY modes, adjust WPM and TX power, and watch the OLED update live.">
+<Layout title="Firmware Demo | Aegis-Beacon" description="Interactive simulation of the Aegis-Beacon firmware v6.0: BEACON, SEARCH, LISTEN, CONFIG and EMERGENCY modes with a physical device mockup and firmware-accurate OLED layouts.">
 
 <div class="demo-page container">
-  <!-- Section Head -->
   <header class="section-head page-head">
     <h1 class="section-head__title">Firmware Simulation</h1>
     <p class="section-head__lead">
-      Terminal-style simulation of the Aegis-Beacon OLED display and firmware behavior.
-      Adjust parameters and watch the display update in real time.
+      Physical mockup of the Aegis-Beacon with firmware v6.0 OLED layouts.
+      Press the hardware keys or use the panel to explore every operating mode.
     </p>
   </header>
 
   <div class="demo-layout">
-    <!-- ═══ Terminal Window ═══ -->
-    <div class="terminal-window" data-rv style="--rv-delay: 0ms">
-      <div class="terminal-bar">
-        <span class="terminal-dot terminal-dot--red"></span>
-        <span class="terminal-dot terminal-dot--yellow"></span>
-        <span class="terminal-dot terminal-dot--green"></span>
-        <span class="terminal-title">aegis-beacon, firmware v6.0</span>
-      </div>
-      <div class="terminal-body">
-        <!-- OLED Screen -->
-        <div class="oled-screen" id="oled" style="padding: 1.25rem; min-height: 160px; display: flex; flex-direction: column; gap: 0.375rem;">
-          <div class="oled-line">SOS ... --- ...</div>
-          <div class="oled-line dim">N45 53.12 E09 12.45</div>
-          <div class="oled-line accent">433.500 MHz</div>
-          <div class="oled-line">TX: +17 dBm</div>
-          <div class="oled-line dim">BAT: 87% 4.12V</div>
+    <div class="aegis-device-wrap" data-rv style="--rv-delay: 0ms">
+      <article class="aegis-device" aria-label="Aegis-Beacon hardware simulation">
+        <div class="aegis-device__antenna" aria-hidden="true"></div>
+        <div class="aegis-device__case">
+          <span class="aegis-device__screw aegis-device__screw--tl" aria-hidden="true"></span>
+          <span class="aegis-device__screw aegis-device__screw--tr" aria-hidden="true"></span>
+          <span class="aegis-device__screw aegis-device__screw--bl" aria-hidden="true"></span>
+          <span class="aegis-device__screw aegis-device__screw--br" aria-hidden="true"></span>
+          <p class="aegis-device__badge">Aegis-Beacon v6.0</p>
+          <div class="aegis-device__oled-bezel">
+            <div class="oled-screen" id="oled" role="img" aria-live="polite" aria-label="OLED display simulation"></div>
+          </div>
+          <div class="aegis-device__status" aria-hidden="true">
+            <span class="aegis-device__led aegis-device__led--tx" id="led-tx" title="TX LED"></span>
+            <span class="aegis-device__led aegis-device__led--rx" id="led-rx" title="RX LED"></span>
+            <span class="aegis-device__grille"></span>
+          </div>
+          <div class="aegis-device__keys">
+            <button class="aegis-key" data-key="mode" type="button" aria-label="MODE button">MODE</button>
+            <button class="aegis-key" data-key="sel" type="button" aria-label="SEL button">SEL</button>
+            <button class="aegis-key" data-key="up" type="button" aria-label="UP button">UP</button>
+            <button class="aegis-key" data-key="dn" type="button" aria-label="DN button">DN</button>
+          </div>
         </div>
-
-        <!-- Device Buttons -->
-        <div style="display: flex; gap: 0.5rem; justify-content: center;">
-          <button class="key-btn" data-key="mode" type="button">MODE</button>
-          <button class="key-btn" data-key="sel" type="button">SEL</button>
-          <button class="key-btn" data-key="up" type="button">UP</button>
-          <button class="key-btn" data-key="dn" type="button">DN</button>
-        </div>
-        <p class="key-hint">MODE cycles modes, SEL selects, UP/DN adjust</p>
-      </div>
+      </article>
+      <p class="aegis-device__hint">
+        MODE short: BEACON/SEARCH toggle (LISTEN returns to BEACON). MODE hold 2 s: EMERGENCY.
+        SEL short: VOL/WPM. SEL hold 3 s: CONFIG.
+      </p>
     </div>
 
-    <!-- ═══ Controls Panel ═══ -->
     <div class="controls-panel" data-rv style="--rv-delay: 120ms">
       <div class="controls-panel__header">
-        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.06em;">$ config --interactive</span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.06em;">Simulation controls</span>
       </div>
 
       <div class="control-group">
         <label class="control-label">Operating Mode</label>
         <div class="mode-buttons">
-          <button class="mode-btn active" data-mode="beacon">BEACON</button>
-          <button class="mode-btn" data-mode="search">SEARCH</button>
-          <button class="mode-btn" data-mode="config">CONFIG</button>
-          <button class="mode-btn" data-mode="emergency">EMERGENCY</button>
+          <button class="mode-btn active" data-mode="beacon" type="button">BEACON</button>
+          <button class="mode-btn" data-mode="search" type="button">SEARCH</button>
+          <button class="mode-btn" data-mode="listen" type="button">LISTEN</button>
+          <button class="mode-btn" data-mode="config" type="button">CONFIG</button>
+          <button class="mode-btn" data-mode="emergency" type="button">EMERGENCY</button>
         </div>
       </div>
 
       <div class="control-group">
-        <label class="control-label">Frequency</label>
+        <label class="control-label" for="freq-select">Frequency</label>
         <select id="freq-select" class="select-input">
-          <option value="433.500">433.500 MHz</option>
-          <option value="433.775">433.775 MHz</option>
-          <option value="434.050">434.050 MHz</option>
-          <option value="434.325">434.325 MHz</option>
-          <option value="434.600">434.600 MHz</option>
+          <option value="433.500">433.500 MHz (CH1)</option>
+          <option value="433.775">433.775 MHz (CH2)</option>
+          <option value="434.050">434.050 MHz (CH3)</option>
+          <option value="434.325">434.325 MHz (CH4)</option>
+          <option value="434.600">434.600 MHz (CH5)</option>
         </select>
       </div>
 
       <div class="control-group">
-        <label class="control-label">Morse Speed (WPM)</label>
-        <input type="range" id="wpm-slider" min="5" max="25" value="12" class="range-input">
-        <span id="wpm-value" class="range-value">12 WPM</span>
+        <label class="control-label" for="wpm-slider">Morse Speed (WPM)</label>
+        <input type="range" id="wpm-slider" min="5" max="40" value="13" class="range-input">
+        <span id="wpm-value" class="range-value">13 WPM</span>
       </div>
 
       <div class="control-group">
-        <label class="control-label">TX Power</label>
+        <label class="control-label" for="power-slider">TX Power</label>
         <input type="range" id="power-slider" min="0" max="22" value="17" class="range-input">
         <span id="power-value" class="range-value">+17 dBm</span>
       </div>
 
       <div class="control-group">
-        <label class="control-label">Battery Level</label>
+        <label class="control-label" for="rssi-slider">RSSI (SEARCH/LISTEN)</label>
+        <input type="range" id="rssi-slider" min="-120" max="-40" value="-72" class="range-input">
+        <span id="rssi-value" class="range-value">-72 dBm</span>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="battery-slider">Battery Level</label>
         <input type="range" id="battery-slider" min="0" max="100" value="87" class="range-input">
         <span id="battery-value" class="range-value">87%</span>
       </div>
     </div>
   </div>
 
-  <!-- ═══ Live transmission tape ═══ -->
   <section class="demo-tape" data-rv>
     <header class="section-head">
       <h2 class="section-head__title">Live transmission</h2>
       <p class="section-head__lead">
-        The payload below, as Morse on the carrier. Edit the text or drag
-        the WPM slider and the sweep re-times itself to the real on-air duration.
+        Payload as Morse on the carrier. Edit the text or drag WPM and the sweep
+        re-times to the real on-air duration (PARIS standard).
       </p>
     </header>
     <div class="hero-tape">
       <div class="hero-tape__top">
         <span class="hero-tape__live">On air</span>
-        <span class="hero-tape__meta">Payload <b id="tape-payload-label">SOS LEO-GALLI 46.4983N 11.3558E</b> - CW <b id="tape-wpm-label">12</b> WPM</span>
+        <span class="hero-tape__meta">Payload <b id="tape-payload-label">SOS LEO-GALLI 46.4983N 11.3558E</b> - CW <b id="tape-wpm-label">13</b> WPM</span>
       </div>
       <div class="hero-tape__signal">
         <div class="hero-tape__trace">
@@ -115,7 +121,7 @@ import Layout from '../layouts/Layout.astro';
         <label for="payload-input">Payload
           <input type="text" id="payload-input" class="payload-input" value="SOS LEO-GALLI 46.4983N 11.3558E" spellcheck="false" autocomplete="off" />
         </label>
-        <span class="demo-tape__time" id="tape-time">On air 36.9 s at 12 WPM</span>
+        <span class="demo-tape__time" id="tape-time">On air 36.9 s at 13 WPM</span>
       </div>
     </div>
   </section>
@@ -123,26 +129,47 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   const oled = document.getElementById('oled');
+  const ledTx = document.getElementById('led-tx');
+  const ledRx = document.getElementById('led-rx');
   const modes = document.querySelectorAll('.mode-btn');
   const freqSelect = document.getElementById('freq-select') as HTMLSelectElement;
   const wpmSlider = document.getElementById('wpm-slider') as HTMLInputElement;
   const powerSlider = document.getElementById('power-slider') as HTMLInputElement;
+  const rssiSlider = document.getElementById('rssi-slider') as HTMLInputElement;
   const batterySlider = document.getElementById('battery-slider') as HTMLInputElement;
+  const payloadInput = document.getElementById('payload-input') as HTMLInputElement;
 
-  let currentMode = 'beacon';
+  type Mode = 'beacon' | 'search' | 'listen' | 'config' | 'emergency';
+  type AdjTarget = 'vol' | 'wpm';
+
+  let currentMode: Mode = 'beacon';
   let currentFreq = '433.500';
-  let wpm = 12;
+  let channelIdx = 0;
+  let wpm = 13;
   let power = 17;
   let battery = 87;
-  let selTarget: 'wpm' | 'pwr' = 'wpm';
+  let rssi = -72;
+  let rssiThreshold = -90;
+  let adjTarget: AdjTarget = 'wpm';
+  let vol = 80;
+  let adjOverlayUntil = 0;
   let txActive = true;
+  let cycleNum = 12;
+  let hitCount = 3;
+  let scanPass = 12;
+  let txProgress = 67;
+  let sleepRemain = 8;
+  let gpsFix = true;
+  let cwText = '';
+  let cwDecoded = 0;
+  let cwCharIdx = 0;
+  let rssiHistory: number[] = [];
+  let tickMs = 0;
 
-  const MODES = ['beacon', 'search', 'config', 'emergency'];
+  const COORDS = '46.4983 11.3558';
+  const AP_SSID = 'AegisBeacon';
+  const AP_IP = '192.168.4.1';
 
-  // ── Live transmission tape ────────────────────────────────
-  // Renders the editable payload as Morse and times the carrier sweep
-  // to the real CW on-air duration at the current WPM (PARIS standard:
-  // one unit = 1200 / WPM ms, char gap 3 units, word gap 7 units).
   const MORSE: Record<string, string> = {
     A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.',
     H: '....', I: '..', J: '.---', K: '-.-', L: '.-..', M: '--', N: '-.',
@@ -152,12 +179,179 @@ import Layout from '../layouts/Layout.astro';
     '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
     '.': '.-.-.-',
   };
+
   const tapeWaveform = document.getElementById('tape-waveform');
   const tapeCarrier = document.getElementById('tape-carrier');
   const tapeTime = document.getElementById('tape-time');
   const tapePayloadLabel = document.getElementById('tape-payload-label');
   const tapeWpmLabel = document.getElementById('tape-wpm-label');
-  const payloadInput = document.getElementById('payload-input') as HTMLInputElement;
+
+  const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+  const battSegments = (pct: number) => {
+    if (pct <= 10) return `<span class="oled-batt is-low" aria-label="Battery ${pct}%"><span></span><span></span><span></span><span></span></span>`;
+    const n = pct >= 76 ? 4 : pct >= 51 ? 3 : pct >= 26 ? 2 : 1;
+    return `<span class="oled-batt" aria-hidden="true">${[1, 2, 3, 4].map(i => `<span style="opacity:${i <= n ? 1 : 0.2}"></span>`).join('')}</span>`;
+  };
+
+  const thrPct = () => clamp(Math.round(((rssiThreshold + 120) / 80) * 100), 0, 100);
+
+  const signalLabel = (val: number) => {
+    if (val >= -60) return '  ** STRONG SIGNAL **  ';
+    if (val >= -80) return '   *  MEDIUM SIGNAL  *  ';
+    return '     WEAK SIGNAL      ';
+  };
+
+  const showAdjOverlay = () => tickMs < adjOverlayUntil;
+
+  const renderAdjOverlay = () => {
+    const label = adjTarget === 'vol' ? 'VOL' : 'WPM';
+    const val = adjTarget === 'vol' ? String(vol) : String(wpm);
+    return `<div class="oled-adj">${label} ${val}</div>`;
+  };
+
+  const renderBeacon = () => {
+    const payload = payloadInput?.value.trim().toUpperCase() || 'SOS';
+    const showTxBar = txActive && (Math.floor(tickMs / 300) % 2 === 0);
+    const foot = showTxBar
+      ? `<div class="oled-foot oled-foot--inv">${payload.slice(0, 21)}</div>`
+      : `<div class="oled-foot">GPS:${gpsFix ? 'OK' : '--'}  SLP ${sleepRemain}s <span style="float:right;border:1px solid currentColor;padding:0 0.2em">${adjTarget === 'vol' ? 'VOL' : 'WPM'}</span></div>`;
+    return `
+      <div class="oled-hdr">
+        <span class="oled-hdr__title">TX BEACON</span>
+        <span class="oled-hdr__ant ${txActive ? 'is-live' : ''}"></span>
+        <span class="oled-hdr__meta">#${cycleNum}</span>
+        ${battSegments(battery)}
+      </div>
+      <div class="oled-body">
+        <div class="oled-freq">${currentFreq}<small>MHz</small></div>
+        <div class="oled-info">CH${channelIdx + 1}/5 +${power}dBm ${wpm}WPM</div>
+        <div class="oled-bar"><div class="oled-bar__fill" style="width:${txProgress}%"></div></div>
+        ${foot}
+      </div>
+      ${showAdjOverlay() ? renderAdjOverlay() : ''}
+    `;
+  };
+
+  const renderSearch = () => {
+    const detected = rssi >= rssiThreshold;
+    const foot = detected && (Math.floor(tickMs / 280) % 2 === 0)
+      ? `<div class="oled-foot oled-foot--inv">${signalLabel(rssi)}</div>`
+      : hitCount > 0
+        ? `<div class="oled-foot">LAST ${currentFreq}MHz ${rssi}dBm HIT</div>`
+        : `<div class="oled-foot">SCAN #${scanPass} THR:${rssiThreshold}dBm <span style="float:right;border:1px solid currentColor;padding:0 0.2em">${adjTarget === 'vol' ? 'VOL' : 'WPM'}</span></div>`;
+    return `
+      <div class="oled-hdr">
+        <span class="oled-hdr__title">RX SEARCH</span>
+        <span class="oled-hdr__ant"></span>
+        <span class="oled-hdr__meta">HIT:${hitCount}</span>
+        ${battSegments(battery)}
+      </div>
+      <div class="oled-body">
+        <div class="oled-freq">${currentFreq}<small>MHz</small></div>
+        <div class="oled-info">CH${channelIdx + 1}/5  RSSI ${rssi}dBm</div>
+        <div class="oled-trace"><canvas id="oled-trace" width="128" height="8"></canvas></div>
+        ${foot}
+      </div>
+      ${showAdjOverlay() ? renderAdjOverlay() : ''}
+    `;
+  };
+
+  const renderListen = () => {
+    const start = cwText.length > 42 ? cwText.length - 42 : 0;
+    const slice = cwText.slice(start);
+    const line1 = slice.slice(0, 21);
+    const line2 = slice.slice(21, 42);
+    return `
+      <div class="oled-hdr">
+        <span class="oled-hdr__title">RX LISTEN</span>
+        <span class="oled-hdr__ant is-live"></span>
+        <span class="oled-hdr__meta">${cwDecoded} CHR</span>
+        ${battSegments(battery)}
+      </div>
+      <div class="oled-body">
+        <div class="oled-info">${currentFreq} MHz</div>
+        <div class="oled-trace" style="height:0.75em"><canvas id="oled-trace" width="128" height="9"></canvas></div>
+        <div class="oled-info">RSSI ${rssi}dBm  THR ${rssiThreshold}dBm</div>
+        <div class="oled-cw">${line1 || '...'}</div>
+        ${line2 ? `<div class="oled-cw">${line2}</div>` : ''}
+      </div>
+      ${showAdjOverlay() ? renderAdjOverlay() : ''}
+    `;
+  };
+
+  const renderConfig = () => `
+    <div class="oled-hdr">
+      <span class="oled-hdr__title">CONFIGURATION MODE</span>
+    </div>
+    <div class="oled-body">
+      <div class="oled-config-box">
+        WIFI AP: ${AP_SSID}<br>
+        URL: http://${AP_IP}
+      </div>
+      <ul class="oled-checklist">
+        <li>Connect to WiFi network</li>
+        <li>Open your browser</li>
+        <li>Go to the URL above</li>
+      </ul>
+    </div>
+  `;
+
+  const renderEmergency = () => `
+    <div class="oled-body" style="padding-top:0.35em">
+      <div class="oled-emg-sos ${Math.floor(tickMs / 500) % 2 ? 'oled-blink' : ''}">SOS</div>
+      <div class="oled-emg-rule"></div>
+      <div class="oled-emg-line">EMERGENCY BEACON TX</div>
+      <div class="oled-emg-line">${currentFreq} MHz  +22dBm</div>
+      <div class="oled-emg-line">${gpsFix ? COORDS : `CYCLE #${cycleNum}  NO GPS`}</div>
+    </div>
+  `;
+
+  const drawTrace = () => {
+    const canvas = document.getElementById('oled-trace') as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = '#22c55e';
+    for (let i = 0; i < rssiHistory.length; i++) {
+      const v = rssiHistory[i];
+      if (v === 0) continue;
+      const y = h - 1 - Math.round(((clamp(v, -120, -40) + 120) / 80) * (h - 1));
+      ctx.fillRect(w - 1 - i, y, 1, 1);
+    }
+    const tx = Math.round((thrPct() / 100) * (w - 1));
+    ctx.fillRect(tx, 0, 1, h);
+  };
+
+  const updateLeds = () => {
+    if (!ledTx || !ledRx) return;
+    ledTx.classList.toggle('aegis-device__led--on', currentMode === 'beacon' || currentMode === 'emergency');
+    ledRx.classList.toggle('aegis-device__led--on', currentMode === 'search' || currentMode === 'listen');
+    if (currentMode === 'beacon' && txActive) {
+      ledTx.classList.toggle('aegis-device__led--on', Math.floor(tickMs / 180) % 2 === 0);
+    }
+  };
+
+  const renderOled = () => {
+    if (!oled) return;
+    const invert = currentMode === 'emergency' && Math.floor(tickMs / 500) % 2 === 1;
+    oled.classList.toggle('oled-screen--invert', invert);
+
+    const html = {
+      beacon: renderBeacon(),
+      search: renderSearch(),
+      listen: renderListen(),
+      config: renderConfig(),
+      emergency: renderEmergency(),
+    }[currentMode];
+
+    oled.innerHTML = html;
+    drawTrace();
+    updateLeds();
+  };
 
   function buildWaveform(payload: string) {
     const UNIT = 6;
@@ -185,10 +379,7 @@ import Layout from '../layouts/Layout.astro';
       prevChar = true;
     }
     const ms = Math.round((units * 1200) / wpm);
-    return {
-      svg: `<svg viewBox="0 0 ${x} 8" preserveAspectRatio="none" role="presentation">${rects.join('')}</svg>`,
-      ms,
-    };
+    return { svg: `<svg viewBox="0 0 ${x} 8" preserveAspectRatio="none" role="presentation">${rects.join('')}</svg>`, ms };
   }
 
   function updateTape() {
@@ -202,108 +393,154 @@ import Layout from '../layouts/Layout.astro';
     if (tapeWpmLabel) tapeWpmLabel.textContent = String(wpm);
   }
 
+  const flashAdj = () => { adjOverlayUntil = tickMs + 2500; };
 
-  function updateDisplay() {
-    if (!oled) return;
-    const voltage = (3.0 + (battery / 100) * 1.2).toFixed(2);
-    const txLine = txActive ? `TX: +${power} dBm` : 'TX: STANDBY';
-    const lines: Record<string, string[]> = {
-      beacon: [
-        'SOS ... --- ...',
-        `N45 53.12 E09 12.45`,
-        `${currentFreq} MHz`,
-        txLine,
-        `BAT: ${battery}% ${voltage}V`,
-      ],
-      search: [
-        'SEARCH MODE',
-        `Scanning ${currentFreq} MHz`,
-        'RSSI: -67 dBm',
-        txActive ? 'SIGNAL DETECTED' : 'PAUSED',
-        `BAT: ${battery}% ${voltage}V`,
-      ],
-      config: [
-        'CONFIG MODE',
-        'WiFi AP: AEGIS-SETUP',
-        '192.168.4.1',
-        selTarget === 'wpm' ? `> WPM ${wpm}   PWR +${power}` : `  WPM ${wpm}   > PWR +${power}`,
-        `BAT: ${battery}% ${voltage}V`,
-      ],
-      emergency: [
-        'EMERGENCY MODE',
-        'MAX POWER TX',
-        '+22 dBm CONTINUOUS',
-        '1760 Hz TONE',
-        `BAT: ${battery}% ${voltage}V`,
-      ],
-    };
-    const lineClasses = ['oled-line', 'oled-line dim', 'oled-line accent', 'oled-line', 'oled-line dim'];
-    const data = lines[currentMode] || lines.beacon;
-    oled.innerHTML = data.map((text, i) => `<div class="${lineClasses[i] || 'oled-line'}">${text}</div>`).join('');
-    updateTape();
-  }
-
-  function selectMode(mode: string) {
+  const selectMode = (mode: Mode) => {
     currentMode = mode;
+    if (mode === 'emergency') power = 22;
     modes.forEach((b) => b.classList.toggle('active', (b as HTMLElement).dataset.mode === mode));
-    updateDisplay();
-  }
+    if (mode === 'listen' && !cwText) cwText = '';
+    renderOled();
+    updateTape();
+  };
+
+  const modeShortPress = () => {
+    if (currentMode === 'beacon') selectMode('search');
+    else if (currentMode === 'search') selectMode('beacon');
+    else if (currentMode === 'listen') selectMode('beacon');
+  };
 
   modes.forEach(btn => {
     btn.addEventListener('click', () => {
-      selectMode((btn as HTMLElement).dataset.mode || 'beacon');
+      selectMode((btn as HTMLElement).dataset.mode as Mode || 'beacon');
     });
   });
 
-  // Physical keys: MODE cycles modes, SEL selects the CONFIG target or
-  // toggles TX, UP/DN adjust the selected parameter live.
   const keyEls = {
-    mode: document.querySelector('.key-btn[data-key="mode"]'),
-    sel: document.querySelector('.key-btn[data-key="sel"]'),
-    up: document.querySelector('.key-btn[data-key="up"]'),
-    dn: document.querySelector('.key-btn[data-key="dn"]'),
+    mode: document.querySelector('.aegis-key[data-key="mode"]'),
+    sel: document.querySelector('.aegis-key[data-key="sel"]'),
+    up: document.querySelector('.aegis-key[data-key="up"]'),
+    dn: document.querySelector('.aegis-key[data-key="dn"]'),
   };
-  keyEls.mode?.addEventListener('click', () => {
-    const idx = MODES.indexOf(currentMode);
-    selectMode(MODES[(idx + 1) % MODES.length]);
-  });
-  keyEls.sel?.addEventListener('click', () => {
-    if (currentMode === 'config') {
-      selTarget = selTarget === 'wpm' ? 'pwr' : 'wpm';
-      updateDisplay();
-    } else {
-      txActive = !txActive;
-      updateDisplay();
-    }
-  });
-  const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+  const bindLongPress = (el: Element | null, ms: number, onShort: () => void, onLong: () => void) => {
+    if (!el) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let fired = false;
+    const clear = () => {
+      if (timer) clearTimeout(timer);
+      timer = null;
+      el.classList.remove('is-pressed');
+    };
+    el.addEventListener('pointerdown', () => {
+      fired = false;
+      el.classList.add('is-pressed');
+      timer = setTimeout(() => { fired = true; onLong(); clear(); }, ms);
+    });
+    el.addEventListener('pointerup', () => {
+      if (!fired) onShort();
+      clear();
+    });
+    el.addEventListener('pointerleave', clear);
+    el.addEventListener('pointercancel', clear);
+  };
+
+  bindLongPress(keyEls.mode, 2000, modeShortPress, () => selectMode('emergency'));
+  bindLongPress(keyEls.sel, 3000, () => {
+    adjTarget = adjTarget === 'vol' ? 'wpm' : 'vol';
+    flashAdj();
+    renderOled();
+  }, () => selectMode('config'));
+
   keyEls.up?.addEventListener('click', () => {
-    if (currentMode === 'config') {
-      if (selTarget === 'wpm') { wpm = clamp(wpm + 1, 5, 25); wpmSlider.value = String(wpm); }
-      else { power = clamp(power + 1, 0, 22); powerSlider.value = String(power); }
-    } else {
-      wpm = clamp(wpm + 1, 5, 25);
+    if (currentMode === 'config') return;
+    if (adjTarget === 'wpm') {
+      wpm = clamp(wpm + 1, 5, 40);
       wpmSlider.value = String(wpm);
-    }
-    updateDisplay();
-  });
-  keyEls.dn?.addEventListener('click', () => {
-    if (currentMode === 'config') {
-      if (selTarget === 'wpm') { wpm = clamp(wpm - 1, 5, 25); wpmSlider.value = String(wpm); }
-      else { power = clamp(power - 1, 0, 22); powerSlider.value = String(power); }
+      document.getElementById('wpm-value')!.textContent = wpm + ' WPM';
     } else {
-      wpm = clamp(wpm - 1, 5, 25);
-      wpmSlider.value = String(wpm);
+      vol = clamp(vol + 5, 0, 100);
     }
-    updateDisplay();
+    flashAdj();
+    renderOled();
+    updateTape();
   });
 
-  freqSelect?.addEventListener('change', () => { currentFreq = freqSelect.value; updateDisplay(); });
-  wpmSlider?.addEventListener('input', () => { wpm = parseInt(wpmSlider.value); document.getElementById('wpm-value')!.textContent = wpm + ' WPM'; updateDisplay(); });
-  powerSlider?.addEventListener('input', () => { power = parseInt(powerSlider.value); document.getElementById('power-value')!.textContent = '+' + power + ' dBm'; updateDisplay(); });
-  batterySlider?.addEventListener('input', () => { battery = parseInt(batterySlider.value); document.getElementById('battery-value')!.textContent = battery + '%'; updateDisplay(); });
-  payloadInput?.addEventListener('input', updateTape);
+  keyEls.dn?.addEventListener('click', () => {
+    if (currentMode === 'config') return;
+    if (adjTarget === 'wpm') {
+      wpm = clamp(wpm - 1, 5, 40);
+      wpmSlider.value = String(wpm);
+      document.getElementById('wpm-value')!.textContent = wpm + ' WPM';
+    } else {
+      vol = clamp(vol - 5, 0, 100);
+    }
+    flashAdj();
+    renderOled();
+    updateTape();
+  });
+
+  freqSelect?.addEventListener('change', () => {
+    currentFreq = freqSelect.value;
+    channelIdx = freqSelect.selectedIndex;
+    renderOled();
+  });
+
+  wpmSlider?.addEventListener('input', () => {
+    wpm = parseInt(wpmSlider.value);
+    document.getElementById('wpm-value')!.textContent = wpm + ' WPM';
+    renderOled();
+    updateTape();
+  });
+
+  powerSlider?.addEventListener('input', () => {
+    power = parseInt(powerSlider.value);
+    document.getElementById('power-value')!.textContent = '+' + power + ' dBm';
+    renderOled();
+  });
+
+  rssiSlider?.addEventListener('input', () => {
+    rssi = parseInt(rssiSlider.value);
+    document.getElementById('rssi-value')!.textContent = rssi + ' dBm';
+    renderOled();
+  });
+
+  batterySlider?.addEventListener('input', () => {
+    battery = parseInt(batterySlider.value);
+    document.getElementById('battery-value')!.textContent = battery + '%';
+    renderOled();
+  });
+
+  payloadInput?.addEventListener('input', () => {
+    updateTape();
+    if (currentMode === 'beacon') renderOled();
+  });
+
+  const simulateTick = () => {
+    tickMs += 120;
+    rssiHistory.unshift(rssi + Math.round(Math.sin(tickMs / 400) * 4));
+    if (rssiHistory.length > 120) rssiHistory.pop();
+
+    if (currentMode === 'beacon' && txActive) {
+      txProgress = (txProgress + 2) % 100;
+      if (sleepRemain > 0 && tickMs % 1200 === 0) sleepRemain = Math.max(0, sleepRemain - 1);
+    }
+    if (currentMode === 'search') scanPass += tickMs % 3600 === 0 ? 1 : 0;
+    if (currentMode === 'listen' && rssi >= rssiThreshold) {
+      const payload = payloadInput.value.trim().toUpperCase() || 'SOS';
+      if (cwCharIdx < payload.length && tickMs % 900 === 0) {
+        cwText += payload[cwCharIdx];
+        cwDecoded += 1;
+        cwCharIdx += 1;
+      }
+    }
+
+    renderOled();
+  };
+
+  setInterval(simulateTick, 120);
   updateTape();
+  renderOled();
 </script>
 
 <style>
@@ -311,11 +548,10 @@ import Layout from '../layouts/Layout.astro';
 
   .demo-layout {
     display: grid; grid-template-columns: 1fr; gap: 2rem;
-    max-width: 900px; margin: 2.5rem auto 0;
+    max-width: 960px; margin: 2.5rem auto 0;
   }
-  @media (min-width: 768px) { .demo-layout { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 768px) { .demo-layout { grid-template-columns: 1fr 1fr; align-items: start; } }
 
-  /* Controls Panel */
   .controls-panel {
     border: 1px solid var(--border); border-radius: var(--radius-xl);
     background: var(--card); overflow: hidden; box-shadow: var(--shadow-sm);
@@ -333,6 +569,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .mode-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.375rem; }
+  .mode-buttons .mode-btn:nth-child(5) { grid-column: 1 / -1; }
   .mode-btn {
     padding: 0.5rem; font-size: 0.6875rem; font-weight: 600;
     font-family: 'JetBrains Mono', monospace;
@@ -373,16 +610,7 @@ import Layout from '../layouts/Layout.astro';
     color: var(--muted-foreground); margin-top: 0.375rem;
   }
 
-  .key-hint {
-    margin: 0; text-align: center;
-    font-size: 0.7rem; color: var(--muted-foreground);
-    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em;
-  }
-
-  /* Live transmission tape */
-  .demo-tape {
-    max-width: 900px; margin: 3rem auto 0;
-  }
+  .demo-tape { max-width: 960px; margin: 3rem auto 0; }
   .demo-tape .hero-tape { margin-top: 0; }
   .demo-tape__controls {
     display: flex; align-items: center; justify-content: space-between;
@@ -392,9 +620,6 @@ import Layout from '../layouts/Layout.astro';
   .demo-tape__controls label {
     display: inline-flex; align-items: center; gap: 0.6rem;
     font-size: 0.78rem; font-weight: 600; color: var(--muted-foreground);
-    /* Without this the label (and the input inside it) gets squeezed by the
-       flex row's default shrink behavior instead of wrapping to its own
-       line, clipping the payload text. */
     flex-shrink: 0;
   }
   .payload-input {
@@ -402,11 +627,6 @@ import Layout from '../layouts/Layout.astro';
     font-family: 'JetBrains Mono', monospace;
     border: 1px solid var(--border-strong); border-radius: var(--radius-md);
     background: var(--background); color: var(--foreground);
-    /* `100%` can't resolve here: the label is an auto-width (shrink-to-fit)
-       flex container, so a percentage width on this child is circular and
-       browsers fall back to the tiny default text-input size. `vw` is
-       relative to the viewport instead, so it always resolves to a real
-       value and the field never gets clipped down to ~200px. */
     width: min(24rem, 70vw);
     flex-shrink: 0;
   }

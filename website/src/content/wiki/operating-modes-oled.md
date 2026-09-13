@@ -42,6 +42,16 @@ Every OLED screen shares the same visual language: an inverted header, a battery
 | Lower | Signal label / last hit |
 | Bottom | Scan pass + battery |
 
+### LISTEN
+
+| Zone | Content |
+|------|---------|
+| Header | `RX LISTEN` + decoded character count + pulsing antenna |
+| Line 1 | Frequency + battery |
+| Trace | RSSI history strip-chart with threshold tick |
+| Readout | `RSSI` and `THR` values |
+| Text area | Last 42 decoded characters (two lines of 21) |
+
 ### EMERGENCY
 
 - Alternating inverse full screen.
