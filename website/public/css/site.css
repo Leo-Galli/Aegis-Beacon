@@ -643,199 +643,196 @@ html.motion-ok [data-rv].is-in {
 .wiki-alert-important { background: color-mix(in srgb, var(--warning) 7%, var(--background)); border-color: color-mix(in srgb, var(--warning) 20%, var(--border)); border-left-color: var(--warning); color: var(--warning); }
 .wiki-alert-note, .wiki-alert-info { background: color-mix(in srgb, var(--info) 6%, var(--background)); border-color: color-mix(in srgb, var(--info) 18%, var(--border)); border-left-color: var(--info); color: var(--info); }
 
-/* ─── 20. Aegis device mockup (demo + reference) ─── */
-.aegis-device-wrap {
-  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+/* ─── 20. Aegis device mockup (demo) ─── */
+.aegis-device-scene {
+  display: flex; flex-direction: column; align-items: center; gap: 0.85rem;
   align-self: start;
+  perspective: 900px;
 }
 .aegis-device {
-  position: relative; width: min(100%, 22rem);
-  filter: drop-shadow(0 18px 28px oklch(0 0 0 / 28%));
+  position: relative; width: min(100%, 24rem);
+  transform: rotateX(4deg) rotateY(-6deg);
+  transform-style: preserve-3d;
+  transition: transform 0.35s ease;
 }
-.aegis-device__antenna {
-  position: absolute; top: -1.35rem; right: 1.35rem; width: 0.55rem; height: 1.65rem;
-  background: linear-gradient(180deg, oklch(0.72 0.01 50deg), oklch(0.48 0.008 50deg));
-  border-radius: 999px 999px 2px 2px; z-index: 2;
-  box-shadow: inset 0 1px 0 oklch(1 0 0 / 18%);
+.aegis-device:hover { transform: rotateX(2deg) rotateY(-2deg) scale(1.01); }
+.aegis-device__ambient {
+  position: absolute; inset: -12% -8%;
+  background: radial-gradient(ellipse at 50% 30%, oklch(0.72 0.04 230deg / 22%), transparent 65%);
+  pointer-events: none; z-index: 0;
 }
-.aegis-device__antenna::after {
-  content: ""; position: absolute; bottom: -0.35rem; left: 50%; transform: translateX(-50%);
-  width: 0.85rem; height: 0.35rem; border-radius: 2px;
-  background: oklch(0.35 0.008 50deg);
-}
-.aegis-device__case {
-  position: relative;
-  background: linear-gradient(165deg, oklch(0.34 0.012 250deg / 88%), oklch(0.22 0.01 250deg / 92%));
-  border: 1px solid oklch(0.48 0.015 250deg / 55%);
-  border-radius: 1.35rem;
-  padding: 1.1rem 1rem 1rem;
-  backdrop-filter: blur(6px);
+.aegis-device__shell {
+  position: relative; z-index: 1;
+  padding: 1.15rem 1.05rem 1.05rem;
+  border-radius: 1.5rem;
+  background:
+    linear-gradient(145deg, oklch(0.88 0.012 240deg / 55%) 0%, transparent 42%),
+    linear-gradient(165deg, oklch(0.62 0.018 245deg / 78%), oklch(0.38 0.014 250deg / 88%));
+  border: 1px solid oklch(0.72 0.015 240deg / 45%);
   box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 10%),
-    inset 0 -8px 18px oklch(0 0 0 / 22%),
-    0 0 0 1px oklch(0.18 0.008 250deg);
+    inset 0 1px 0 oklch(1 0 0 / 28%),
+    inset 0 -14px 22px oklch(0.15 0.02 250deg / 35%),
+    0 1px 0 oklch(0.28 0.01 250deg),
+    0 22px 40px oklch(0.12 0.02 250deg / 28%);
+  backdrop-filter: blur(8px);
 }
 .aegis-device__screw {
-  position: absolute; width: 0.45rem; height: 0.45rem; border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, oklch(0.78 0.04 70deg), oklch(0.52 0.06 55deg));
-  box-shadow: inset 0 -1px 1px oklch(0 0 0 / 35%);
+  position: absolute; width: 0.5rem; height: 0.5rem; border-radius: 50%; z-index: 3;
+  background: radial-gradient(circle at 32% 28%, oklch(0.85 0.05 75deg), oklch(0.55 0.07 58deg));
+  box-shadow: inset 0 -1px 2px oklch(0 0 0 / 40%), 0 1px 0 oklch(1 0 0 / 15%);
 }
-.aegis-device__screw--tl { top: 0.55rem; left: 0.55rem; }
-.aegis-device__screw--tr { top: 0.55rem; right: 0.55rem; }
-.aegis-device__screw--bl { bottom: 0.55rem; left: 0.55rem; }
-.aegis-device__screw--br { bottom: 0.55rem; right: 0.55rem; }
-.aegis-device__badge {
-  text-align: center; font-family: var(--font-mono); font-size: 0.58rem;
-  letter-spacing: 0.22em; text-transform: uppercase; color: oklch(0.78 0.01 250deg / 70%);
-  margin-bottom: 0.65rem;
+.aegis-device__screw--tl { top: 0.65rem; left: 0.65rem; }
+.aegis-device__screw--tr { top: 0.65rem; right: 0.65rem; }
+.aegis-device__screw--bl { bottom: 0.65rem; left: 0.65rem; }
+.aegis-device__screw--br { bottom: 0.65rem; right: 0.65rem; }
+.aegis-device__grip {
+  position: absolute; top: 22%; bottom: 22%; width: 0.35rem;
+  background: repeating-linear-gradient(180deg, oklch(0.45 0.01 250deg / 50%) 0 4px, transparent 4px 7px);
+  opacity: 0.55; border-radius: 2px;
 }
-.aegis-device__oled-bezel {
-  padding: 0.45rem;
-  background: linear-gradient(180deg, oklch(0.16 0.006 250deg), oklch(0.12 0.005 250deg));
-  border-radius: 0.65rem;
-  border: 1px solid oklch(0.28 0.01 250deg);
-  box-shadow: inset 0 2px 6px oklch(0 0 0 / 45%);
+.aegis-device__grip--left { left: 0.2rem; }
+.aegis-device__grip--right { right: 0.2rem; }
+.aegis-device__port {
+  position: absolute; bottom: 0.55rem; left: 50%; transform: translateX(-50%);
+  width: 1.6rem; height: 0.35rem; border-radius: 0 0 4px 4px;
+  background: linear-gradient(180deg, oklch(0.25 0.008 250deg), oklch(0.15 0.006 250deg));
+  box-shadow: inset 0 1px 2px oklch(0 0 0 / 50%);
 }
-.aegis-device__status {
-  display: flex; align-items: center; gap: 0.55rem;
-  margin: 0.75rem 0.35rem 0.85rem;
+.aegis-device__antenna {
+  position: absolute; top: -2rem; right: 1.5rem; z-index: 4;
+  display: flex; flex-direction: column; align-items: center;
+}
+.aegis-device__antenna-whip {
+  width: 0.5rem; height: 1.85rem;
+  background: linear-gradient(180deg, oklch(0.78 0.008 50deg), oklch(0.52 0.006 50deg));
+  border-radius: 999px 999px 2px 2px;
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 20%);
+}
+.aegis-device__antenna-base {
+  width: 0.95rem; height: 0.42rem; margin-top: -1px;
+  background: linear-gradient(180deg, oklch(0.58 0.008 50deg), oklch(0.38 0.006 50deg));
+  border-radius: 3px;
+  box-shadow: 0 2px 4px oklch(0 0 0 / 25%);
+}
+.aegis-device__header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 0.7rem; padding: 0 0.15rem;
+}
+.aegis-device__brand {
+  font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.24em; color: oklch(0.82 0.01 240deg / 75%);
+}
+.aegis-device__rev {
+  font-family: var(--font-mono); font-size: 0.58rem;
+  color: oklch(0.68 0.01 240deg / 60%);
+}
+.aegis-device__display-cutout {
+  position: relative;
+  padding: 0.55rem 0.5rem 0.45rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(180deg, oklch(0.14 0.008 250deg), oklch(0.1 0.006 250deg));
+  border: 1px solid oklch(0.22 0.01 250deg);
+  box-shadow:
+    inset 0 3px 10px oklch(0 0 0 / 55%),
+    0 1px 0 oklch(1 0 0 / 6%);
+}
+.aegis-device__oled-stack {
+  position: relative; border-radius: 4px; overflow: hidden;
+  box-shadow: 0 0 0 2px oklch(0.08 0.005 250deg), 0 0 0 3px oklch(0.32 0.012 250deg);
+}
+.oled-canvas {
+  display: block; width: 100%; height: auto;
+  aspect-ratio: 128 / 64;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #050608;
+}
+.oled-canvas__glass {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(125deg, oklch(1 0 0 / 14%) 0%, transparent 38%),
+    linear-gradient(180deg, oklch(1 0 0 / 4%) 0%, transparent 22%);
+}
+.aegis-device__display-label {
+  display: block; margin-top: 0.35rem;
+  font-family: var(--font-mono); font-size: 0.52rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: oklch(0.55 0.01 240deg / 70%); text-align: right;
+}
+.aegis-device__faceplate { margin-top: 0.85rem; }
+.aegis-device__io {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-bottom: 0.7rem; padding: 0 0.2rem;
+}
+.aegis-device__led-wrap {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+}
+.aegis-device__led-tag {
+  font-family: var(--font-mono); font-size: 0.5rem; font-weight: 700;
+  letter-spacing: 0.08em; color: oklch(0.58 0.01 240deg / 65%);
 }
 .aegis-device__led {
-  width: 0.42rem; height: 0.42rem; border-radius: 50%;
-  background: oklch(0.25 0.01 50deg);
-  border: 1px solid oklch(0.35 0.01 50deg);
-  box-shadow: inset 0 1px 2px oklch(0 0 0 / 40%);
+  width: 0.45rem; height: 0.45rem; border-radius: 50%;
+  background: oklch(0.22 0.01 250deg);
+  border: 1px solid oklch(0.32 0.01 250deg);
+  box-shadow: inset 0 1px 2px oklch(0 0 0 / 45%);
+  transition: box-shadow 0.12s, background 0.12s;
 }
 .aegis-device__led--tx.aegis-device__led--on {
   background: #ef4444; border-color: #fca5a5;
-  box-shadow: 0 0 8px #ef4444aa;
+  box-shadow: 0 0 10px #ef4444cc, inset 0 0 4px oklch(1 0 0 / 30%);
 }
 .aegis-device__led--rx.aegis-device__led--on {
   background: #3b82f6; border-color: #93c5fd;
-  box-shadow: 0 0 8px #3b82f6aa;
+  box-shadow: 0 0 10px #3b82f6cc, inset 0 0 4px oklch(1 0 0 / 30%);
 }
 .aegis-device__grille {
-  flex: 1; height: 0.55rem; margin-left: 0.35rem;
-  background: repeating-linear-gradient(90deg, oklch(0.2 0.008 250deg) 0 3px, transparent 3px 5px);
-  border-radius: 2px; opacity: 0.85;
+  flex: 1; height: 0.5rem; margin-left: 0.25rem;
+  background: repeating-linear-gradient(90deg, oklch(0.18 0.008 250deg) 0 2px, transparent 2px 4px);
+  border-radius: 2px; opacity: 0.9;
+  border: 1px solid oklch(0.25 0.01 250deg / 60%);
 }
 .aegis-device__keys {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.45rem;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;
 }
 .aegis-key {
-  aspect-ratio: 1; min-height: 2.65rem;
-  background: linear-gradient(180deg, oklch(0.28 0.008 50deg), oklch(0.2 0.006 50deg));
-  border: 1px solid oklch(0.38 0.01 50deg);
-  border-radius: 0.45rem;
-  color: oklch(0.72 0.008 50deg);
-  font-family: var(--font-mono); font-size: 0.58rem; font-weight: 700;
-  letter-spacing: 0.06em; line-height: 1.1;
-  cursor: pointer; user-select: none; touch-action: manipulation;
-  box-shadow: 0 3px 0 oklch(0.14 0.006 50deg), inset 0 1px 0 oklch(1 0 0 / 8%);
-  transition: transform 0.06s, box-shadow 0.06s, background 0.12s;
+  position: relative; aspect-ratio: 1; min-height: 2.75rem;
+  padding: 0; border: none; cursor: pointer;
+  background: transparent; touch-action: manipulation;
 }
-.aegis-key:hover { background: linear-gradient(180deg, oklch(0.34 0.01 50deg), oklch(0.24 0.008 50deg)); color: oklch(0.95 0 0deg); }
-.aegis-key:active, .aegis-key.is-pressed {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 oklch(0.14 0.006 50deg), inset 0 1px 0 oklch(1 0 0 / 8%);
+.aegis-key__cap {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100%;
+  font-family: var(--font-mono); font-size: 0.56rem; font-weight: 700;
+  letter-spacing: 0.05em; color: oklch(0.78 0.008 50deg);
+  background: linear-gradient(180deg, oklch(0.36 0.01 50deg), oklch(0.22 0.008 50deg));
+  border: 1px solid oklch(0.42 0.012 50deg);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 4px 0 oklch(0.14 0.006 50deg),
+    inset 0 1px 0 oklch(1 0 0 / 10%),
+    inset 0 -3px 6px oklch(0 0 0 / 22%);
+  transition: transform 0.06s, box-shadow 0.06s, color 0.12s;
+}
+.aegis-key:hover .aegis-key__cap {
+  color: oklch(0.98 0 0deg);
+  background: linear-gradient(180deg, oklch(0.42 0.012 50deg), oklch(0.26 0.01 50deg));
+}
+.aegis-key:active .aegis-key__cap,
+.aegis-key.is-pressed .aegis-key__cap {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 oklch(0.14 0.006 50deg), inset 0 1px 0 oklch(1 0 0 / 10%);
+}
+.aegis-device__shadow {
+  position: absolute; left: 8%; right: 8%; bottom: -0.65rem; height: 1.2rem;
+  background: radial-gradient(ellipse at 50% 50%, oklch(0 0 0 / 28%), transparent 72%);
+  transform: rotateX(80deg); z-index: 0;
 }
 .aegis-device__hint {
-  margin: 0; text-align: center; max-width: 22rem;
+  margin: 0; text-align: center; max-width: 24rem;
   font-size: 0.68rem; color: var(--muted-foreground);
-  font-family: var(--font-mono); line-height: 1.5;
+  font-family: var(--font-mono); line-height: 1.55;
 }
-
-/* OLED screen (128x64 logical layout) */
-.oled-screen {
-  background: #05080c; border: 1px solid oklch(0.25 0.02 230deg);
-  box-shadow: inset 0 0 34px oklch(0 0 0 / 85%);
-  font-family: var(--font-mono); position: relative; overflow: hidden;
-  aspect-ratio: 128 / 64; width: 100%;
-  color: #22c55e; font-size: clamp(7px, 2.4vw, 10px); line-height: 1.2;
-}
-.oled-screen::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 3px);
-}
-.oled-screen--invert { background: #22c55e; color: #05080c; }
-.oled-screen--invert .oled-hdr { background: #05080c; color: #22c55e; }
-.oled-screen--invert .oled-hdr__ant { border-color: #22c55e; }
-.oled-hdr {
-  display: flex; align-items: center; justify-content: space-between; gap: 0.25rem;
-  background: #22c55e; color: #05080c; padding: 0.15em 0.35em; min-height: 1.15em;
-  font-size: 0.95em; font-weight: 700; letter-spacing: 0.02em;
-}
-.oled-hdr__title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.oled-hdr__meta { font-weight: 600; white-space: nowrap; }
-.oled-hdr__ant {
-  width: 0.75em; height: 0.75em; border: 1px solid #05080c; border-radius: 50%;
-  position: relative; flex-shrink: 0;
-}
-.oled-hdr__ant.is-live::before,
-.oled-hdr__ant.is-live::after {
-  content: ""; position: absolute; inset: -2px; border: 1px solid #05080c;
-  border-radius: 50%; opacity: 0.55;
-}
-.oled-hdr__ant.is-live::after { inset: -4px; opacity: 0.3; animation: oledAntPulse 1.2s ease infinite; }
-@keyframes oledAntPulse { 50% { opacity: 0.08; } }
-.oled-batt {
-  display: inline-flex; gap: 1px; align-items: flex-end; height: 0.75em;
-}
-.oled-batt span {
-  display: block; width: 2px; background: currentColor; border-radius: 1px;
-}
-.oled-batt span:nth-child(1) { height: 35%; }
-.oled-batt span:nth-child(2) { height: 55%; }
-.oled-batt span:nth-child(3) { height: 75%; }
-.oled-batt span:nth-child(4) { height: 100%; }
-.oled-batt.is-low { animation: oledBlink 0.5s steps(2, start) infinite; }
-.oled-body { padding: 0.2em 0.35em 0.25em; display: flex; flex-direction: column; gap: 0.12em; flex: 1; }
-.oled-freq { font-size: 1.65em; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
-.oled-freq small { font-size: 0.42em; font-weight: 600; opacity: 0.85; margin-left: 0.15em; }
-.oled-info { font-size: 0.88em; opacity: 0.92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.oled-bar {
-  height: 0.55em; border: 1px solid currentColor; position: relative; overflow: hidden;
-}
-.oled-bar__fill { height: 100%; background: currentColor; opacity: 0.85; transition: width 0.12s linear; }
-.oled-bar__tick {
-  position: absolute; top: -1px; bottom: -1px; width: 1px; background: currentColor;
-}
-.oled-bar__caret {
-  position: absolute; top: 1px; bottom: 1px; width: 2px; background: currentColor;
-  animation: oledScan 2.2s linear infinite;
-}
-@keyframes oledScan { from { left: 2%; } to { left: 96%; } }
-.oled-trace { height: 0.65em; border: 1px solid currentColor; position: relative; overflow: hidden; }
-.oled-trace canvas { display: block; width: 100%; height: 100%; }
-.oled-foot {
-  margin-top: auto; font-size: 0.88em; min-height: 1.1em;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.oled-foot--inv {
-  background: #22c55e; color: #05080c; margin: 0 -0.35em -0.25em; padding: 0.12em 0.35em;
-  font-weight: 700;
-}
-.oled-screen--invert .oled-foot--inv { background: #05080c; color: #22c55e; }
-.oled-adj {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  background: #22c55e; color: #05080c; padding: 0.15em 0.35em;
-  font-weight: 700; font-size: 0.9em;
-}
-.oled-emg-sos { font-size: 2.4em; font-weight: 800; letter-spacing: 0.12em; text-align: center; line-height: 1; margin: 0.1em 0; }
-.oled-emg-rule { height: 1px; background: currentColor; opacity: 0.7; margin: 0.15em 0; }
-.oled-emg-line { font-size: 0.88em; }
-.oled-config-box {
-  border: 1px solid currentColor; padding: 0.2em 0.35em; margin: 0.15em 0;
-  font-size: 0.85em; line-height: 1.35;
-}
-.oled-checklist { list-style: none; margin: 0.2em 0 0; padding: 0; font-size: 0.82em; }
-.oled-checklist li { display: flex; align-items: center; gap: 0.35em; margin: 0.12em 0; }
-.oled-checklist li::before {
-  content: ""; width: 0.45em; height: 0.45em; border: 1px solid currentColor; flex-shrink: 0;
-}
-.oled-cw { font-size: 0.95em; font-weight: 600; line-height: 1.25; letter-spacing: 0.04em; }
-.oled-blink { animation: oledBlink 0.28s steps(2, start) infinite; }
-@keyframes oledBlink { 50% { opacity: 0; } }
 
 
 /* ─── 21. Hero & page responsiveness ───
