@@ -103,6 +103,19 @@ const drawBar = (ctx: CanvasRenderingContext2D, pct: number, y: number) => {
   ctx.fillRect(1, y + 1, Math.round((pct / 100) * (W - 2)), 5)
 }
 
+const drawLargeFreq = (ctx: CanvasRenderingContext2D, freq: string, baseline = 27) => {
+  setFont(ctx, 16, true)
+  const freqW = ctx.measureText(freq).width
+  setFont(ctx, 6, false)
+  const mhzW = ctx.measureText('MHz').width
+  const gap = 3
+  const x = Math.max(0, Math.round((W - freqW - gap - mhzW) / 2))
+  setFont(ctx, 16, true)
+  ctx.fillText(freq, x, baseline)
+  setFont(ctx, 6, false)
+  ctx.fillText('MHz', x + freqW + gap, baseline)
+}
+
 export const drawOledCanvas = (
   ctx: CanvasRenderingContext2D,
   s: DemoState,
@@ -124,12 +137,10 @@ export const drawOledCanvas = (
   if (s.currentMode === 'beacon') {
     drawHeader(ctx, 'TX BEACON', `#${s.cycleNum}`, false, s.txActive)
     drawBattery(ctx, s.battery, 112, 2)
-    setFont(ctx, 14, true)
-    ctx.fillText(s.currentFreq, 0, 28)
+    drawLargeFreq(ctx, s.currentFreq)
     setFont(ctx, 6)
-    ctx.fillText('MHz', 98, 28)
-    setFont(ctx, 6)
-    ctx.fillText(`CH${s.channelIdx + 1}/5 +${s.power}dBm ${s.wpm}WPM`, 0, 37)
+    const info = `CH${s.channelIdx + 1}/5 +${s.power}dBm ${s.wpm}WPM`
+    ctx.fillText(info, Math.max(0, (W - ctx.measureText(info).width) / 2), 37)
     drawBar(ctx, s.txProgress, 44)
     if (s.txActive && Math.floor(s.tickMs / 300) % 2 === 0) {
       ctx.fillStyle = BG_INV
@@ -147,11 +158,10 @@ export const drawOledCanvas = (
   } else if (s.currentMode === 'search') {
     drawHeader(ctx, 'RX SEARCH', `HIT:${s.hitCount}`, false)
     drawBattery(ctx, s.battery, 112, 2)
-    setFont(ctx, 14, true)
-    ctx.fillText(s.currentFreq, 0, 28)
+    drawLargeFreq(ctx, s.currentFreq)
     setFont(ctx, 6)
-    ctx.fillText('MHz', 98, 28)
-    ctx.fillText(`CH${s.channelIdx + 1}/5  RSSI ${s.rssi}dBm`, 0, 37)
+    const rinfo = `CH${s.channelIdx + 1}/5  RSSI ${s.rssi}dBm`
+    ctx.fillText(rinfo, Math.max(0, (W - ctx.measureText(rinfo).width) / 2), 37)
     drawTrace(ctx, s.rssiHistory, 43, 8, s.rssiThreshold)
     const detected = s.rssi >= s.rssiThreshold
     if (detected && Math.floor(s.tickMs / 280) % 2 === 0) {
@@ -173,10 +183,11 @@ export const drawOledCanvas = (
   } else if (s.currentMode === 'listen') {
     drawHeader(ctx, 'RX LISTEN', `${s.cwDecoded} CHR`, false, true)
     drawBattery(ctx, s.battery, 112, 2)
+    drawLargeFreq(ctx, s.currentFreq, 24)
+    drawTrace(ctx, s.rssiHistory, 28, 8, s.rssiThreshold)
     setFont(ctx, 6)
-    ctx.fillText(`${s.currentFreq} MHz`, 2, 22)
-    drawTrace(ctx, s.rssiHistory, 24, 9, s.rssiThreshold)
-    ctx.fillText(`RSSI ${s.rssi}dBm  THR ${s.rssiThreshold}dBm`, 0, 40)
+    const linf = `RSSI ${s.rssi}dBm  THR ${s.rssiThreshold}dBm`
+    ctx.fillText(linf, Math.max(0, (W - ctx.measureText(linf).width) / 2), 40)
     ctx.beginPath()
     ctx.moveTo(0, 43)
     ctx.lineTo(W, 43)
@@ -212,17 +223,20 @@ export const drawOledCanvas = (
       ctx.strokeRect(0, 0, W, H)
       ctx.strokeRect(2, 2, 124, 60)
     }
-    setFont(ctx, 18, true)
-    ctx.fillText('SOS', 14, 22)
+    setFont(ctx, 16, true)
+    const sos = 'SOS'
+    ctx.fillText(sos, Math.max(0, (W - ctx.measureText(sos).width) / 2), 18)
     ctx.beginPath()
-    ctx.moveTo(4, 35)
-    ctx.lineTo(124, 35)
+    ctx.moveTo(8, 24)
+    ctx.lineTo(W - 8, 24)
     ctx.stroke()
     setFont(ctx, 6, true)
-    ctx.fillText('EMERGENCY BEACON TX', 4, 44)
+    const elbl = 'EMERGENCY BEACON TX'
+    ctx.fillText(elbl, Math.max(0, (W - ctx.measureText(elbl).width) / 2), 32)
+    drawLargeFreq(ctx, s.currentFreq, 46)
     setFont(ctx, 6)
-    ctx.fillText(`${s.currentFreq} MHz  +22dBm`, 4, 52)
-    ctx.fillText(s.gpsFix ? '46.4983  11.3558' : `CYCLE #${s.cycleNum}  NO GPS`, 4, 60)
+    const gps = s.gpsFix ? '46.4983  11.3558' : `CYCLE #${s.cycleNum}  NO GPS`
+    ctx.fillText(gps, Math.max(0, (W - ctx.measureText(gps).width) / 2), 60)
   }
 
   if (showAdj && s.currentMode !== 'config' && s.currentMode !== 'emergency') {

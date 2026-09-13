@@ -17,6 +17,15 @@ import Layout from '../layouts/Layout.astro';
     <div class="aegis-device-scene" data-rv style="--rv-delay: 0ms">
       <article class="aegis-device" aria-label="Aegis-Beacon hardware simulation">
         <div class="aegis-device__ambient" aria-hidden="true"></div>
+        <div class="aegis-device__antenna-mount" aria-hidden="true">
+          <svg class="aegis-device__antenna-svg" viewBox="0 0 28 112" width="28" height="112" role="presentation">
+            <rect x="8" y="98" width="12" height="10" rx="1.5" fill="#6e7680"/>
+            <rect x="10" y="100" width="8" height="6" rx="0.8" fill="#9aa3ad"/>
+            <rect x="12.5" y="14" width="3" height="84" rx="1.5" fill="#8a929c"/>
+            <rect x="12" y="8" width="4" height="8" rx="2" fill="#a8b0ba"/>
+            <ellipse cx="14" cy="6" rx="3" ry="4" fill="#c4cad2"/>
+          </svg>
+        </div>
         <div class="aegis-device__shell">
           <span class="aegis-device__screw aegis-device__screw--tl" aria-hidden="true"></span>
           <span class="aegis-device__screw aegis-device__screw--tr" aria-hidden="true"></span>
@@ -28,14 +37,6 @@ import Layout from '../layouts/Layout.astro';
 
           <header class="aegis-device__header">
             <span class="aegis-device__brand">AEGIS-BEACON</span>
-            <div class="aegis-device__antenna" aria-hidden="true">
-              <svg class="aegis-device__antenna-svg" viewBox="0 0 20 52" width="20" height="52" role="presentation">
-                <rect x="5" y="44" width="10" height="7" rx="1.2" fill="#7a828c"/>
-                <rect x="6.5" y="45.5" width="7" height="4" rx="0.6" fill="#a8b0ba"/>
-                <rect x="9" y="10" width="2" height="35" rx="1" fill="#949aa4"/>
-                <ellipse cx="10" cy="8" rx="2.5" ry="3" fill="#b8bec8"/>
-              </svg>
-            </div>
             <span class="aegis-device__rev">v6.0</span>
           </header>
 
@@ -70,19 +71,15 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <div class="aegis-device__keys">
               <button class="aegis-key" data-key="mode" type="button" aria-label="MODE button">
-                <span class="aegis-key__well" aria-hidden="true"></span>
                 <span class="aegis-key__cap">MODE</span>
               </button>
               <button class="aegis-key" data-key="sel" type="button" aria-label="SEL button">
-                <span class="aegis-key__well" aria-hidden="true"></span>
                 <span class="aegis-key__cap">SEL</span>
               </button>
               <button class="aegis-key" data-key="up" type="button" aria-label="UP button">
-                <span class="aegis-key__well" aria-hidden="true"></span>
                 <span class="aegis-key__cap">UP</span>
               </button>
               <button class="aegis-key" data-key="dn" type="button" aria-label="DN button">
-                <span class="aegis-key__well" aria-hidden="true"></span>
                 <span class="aegis-key__cap">DN</span>
               </button>
             </div>
@@ -91,7 +88,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="aegis-device__shadow" aria-hidden="true"></div>
       </article>
       <p class="aegis-device__hint">
-        MODE short: BEACON/SEARCH toggle (LISTEN returns to BEACON). MODE hold 2 s: EMERGENCY.
+        MODE short: cycle BEACON, SEARCH, LISTEN, CONFIG. MODE hold 2 s: EMERGENCY.
         SEL short: VOL/WPM. SEL hold 3 s: CONFIG.
       </p>
     </div>
@@ -336,10 +333,16 @@ import Layout from '../layouts/Layout.astro';
     updateTape()
   }
 
+  const MODE_CYCLE: DemoMode[] = ['beacon', 'search', 'listen', 'config']
+
   const modeShortPress = () => {
-    if (currentMode === 'beacon') selectMode('search')
-    else if (currentMode === 'search') selectMode('beacon')
-    else if (currentMode === 'listen') selectMode('beacon')
+    if (currentMode === 'emergency') {
+      selectMode('beacon')
+      return
+    }
+    const idx = MODE_CYCLE.indexOf(currentMode)
+    const next = idx >= 0 ? MODE_CYCLE[(idx + 1) % MODE_CYCLE.length] : MODE_CYCLE[0]
+    selectMode(next)
   }
 
   modes.forEach(btn => {
