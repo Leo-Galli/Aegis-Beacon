@@ -533,6 +533,8 @@
 </style>
 
 <script>
+  import { hasAssistantConsent } from '../lib/consent'
+
   // ---------------------------------------------------------------------------
   // Aegis Assistant chat widget.
   //
@@ -1206,6 +1208,12 @@
   // ---- engine lifecycle ----------------------------------------------------
 
   async function loadEngine(modelId: string): Promise<void> {
+    if (!hasAssistantConsent()) {
+      setState('idle');
+      setStatus('Consent required', 'err');
+      showError('Enable the assistant in the cookie banner (Accept all) to download the local model.');
+      return;
+    }
     hideError();
     setState('loading');
     const label = MODELS.find((m) => m.id === modelId)?.label.toLowerCase() ?? 'local';
@@ -1451,6 +1459,7 @@
   // ---- persistence ------------------------------------------------------------
 
   function persistModel(): void {
+    if (!hasAssistantConsent()) return
     try {
       localStorage.setItem(STORAGE_KEY, modelSelect?.value ?? MODELS[0].id);
     } catch {
@@ -1459,6 +1468,7 @@
   }
 
   function readModel(): string {
+    if (!hasAssistantConsent()) return MODELS[0].id
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved && MODELS.some((m) => m.id === saved)) return saved;
@@ -1472,6 +1482,16 @@
 
   if (modelSelect) modelSelect.value = readModel();
   setState('idle');
-  setStatus('Local model', 'busy');
+  setStatus(hasAssistantConsent() ? 'Local model' : 'Consent required', hasAssistantConsent() ? 'busy' : 'err');
   renderGreeting();
+
+  window.addEventListener('aegis-consent-changed', (ev: Event) => {
+    const level = (ev as CustomEvent<{ level: string }>).detail?.level
+    if (level === 'all' && open && state === 'idle') {
+      void loadEngine(modelSelect?.value ?? readModel())
+    }
+    if (level === 'essential') {
+      setStatus('Consent required', 'err')
+    }
+  })
 </script>

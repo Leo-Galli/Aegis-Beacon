@@ -1,0 +1,84 @@
+---
+/** GDPR cookie / storage consent banner (essential vs optional features). */
+---
+
+<div class="cookie-consent" id="cookie-consent" role="dialog" aria-label="Cookie and storage preferences" aria-live="polite" hidden>
+  <div class="cookie-consent__inner">
+    <p class="cookie-consent__text">
+      We use browser storage for theme preference (essential) and, if you opt in,
+      the on-device assistant (model cache on your device, downloads from Hugging Face).
+      No analytics or ad tracking. See our <a href="/privacy">Privacy Policy</a>.
+    </p>
+    <div class="cookie-consent__actions">
+      <button type="button" class="cookie-consent__btn cookie-consent__btn--ghost" id="cookie-essential">Essential only</button>
+      <button type="button" class="cookie-consent__btn cookie-consent__btn--primary" id="cookie-accept-all">Accept all</button>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .cookie-consent {
+    position: fixed;
+    left: 0; right: 0; bottom: 0; z-index: 400;
+    padding: var(--space-4) var(--container-px);
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -8px 32px rgb(0 0 0 / 12%);
+  }
+  .cookie-consent[hidden] { display: none !important; }
+  .cookie-consent__inner {
+    max-width: var(--container-max); margin-inline: auto;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: var(--space-4);
+  }
+  .cookie-consent__text {
+    flex: 1 1 16rem; margin: 0;
+    font-size: 0.8125rem; line-height: 1.6; color: var(--muted-foreground);
+  }
+  .cookie-consent__text a {
+    color: var(--primary); text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .cookie-consent__actions {
+    display: flex; flex-wrap: wrap; gap: var(--space-2);
+  }
+  .cookie-consent__btn {
+    padding: 0.55rem 1rem; min-height: 44px;
+    font-size: 0.8125rem; font-weight: 600; font-family: var(--font-body);
+    border-radius: var(--radius-md); cursor: pointer;
+    border: 1px solid var(--border); transition: background 0.15s, border-color 0.15s;
+  }
+  .cookie-consent__btn--ghost {
+    background: var(--background); color: var(--foreground);
+  }
+  .cookie-consent__btn--ghost:hover { border-color: var(--border-strong); background: var(--muted); }
+  .cookie-consent__btn--primary {
+    background: var(--primary); color: var(--primary-foreground); border-color: var(--primary);
+  }
+  .cookie-consent__btn--primary:hover { background: var(--primary-hover); }
+  .cookie-consent__btn:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  @media (max-width: 520px) {
+    .cookie-consent__actions { width: 100%; }
+    .cookie-consent__btn { flex: 1 1 auto; }
+  }
+</style>
+
+<script>
+  import { readConsent, type ConsentLevel } from '../lib/consent'
+
+  const banner = document.getElementById('cookie-consent')
+  const btnEssential = document.getElementById('cookie-essential')
+  const btnAll = document.getElementById('cookie-accept-all')
+
+  const setConsent = (level: ConsentLevel) => {
+    try { localStorage.setItem('aegis-consent', level) } catch { /* private mode */ }
+    banner?.setAttribute('hidden', '')
+    window.dispatchEvent(new CustomEvent('aegis-consent-changed', { detail: { level } }))
+  }
+
+  if (!readConsent()) banner?.removeAttribute('hidden')
+
+  btnEssential?.addEventListener('click', () => setConsent('essential'))
+  btnAll?.addEventListener('click', () => setConsent('all'))
+</script>

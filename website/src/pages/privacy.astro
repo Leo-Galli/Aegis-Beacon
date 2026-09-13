@@ -6,7 +6,7 @@ import Layout from '../layouts/Layout.astro';
   <div class="legal-page container">
     <header class="section-head page-head">
       <h1 class="section-head__title">Privacy Policy</h1>
-      <p class="section-head__lead">Last updated: September 2, 2026</p>
+      <p class="section-head__lead">Last updated: September 13, 2026</p>
     </header>
 
     <div class="legal-content prose-wiki">
@@ -23,25 +23,32 @@ import Layout from '../layouts/Layout.astro';
         <li>Contact forms that store personal data</li>
       </ul>
 
-      <h2>3. Local Storage</h2>
-      <p>This website uses <strong>localStorage</strong> solely to remember your preferred theme (light or dark mode). This data stays entirely on your device and is never transmitted to any server.</p>
+      <h2>3. Cookie and Storage Consent</h2>
+      <p>On your first visit, a consent banner lets you choose <strong>Essential only</strong> or <strong>Accept all</strong>. Your choice is stored in <strong>localStorage</strong> under the key <code>aegis-consent</code> and is never sent to our servers.</p>
+      <ul>
+        <li><strong>Essential only</strong>: theme preference (light/dark) and wiki sidebar state. No assistant downloads.</li>
+        <li><strong>Accept all</strong>: additionally enables the on-device Aegis Assistant, which may download model weights from Hugging Face and cache them in your browser (<code>aegis-chat-model-v2</code>). Chat text is processed locally and is not uploaded to our hosting.</li>
+      </ul>
 
-      <h2>4. GitHub Links</h2>
+      <h2>4. Local Storage (details)</h2>
+      <p>Beyond the consent flag, localStorage may store your theme (<code>theme</code>), optional assistant model choice (<code>aegis-chat-model</code>, only after Accept all), and collapsed wiki navigation groups. All of this stays on your device.</p>
+
+      <h2>5. GitHub Links</h2>
       <p>This site links to the Aegis-Beacon GitHub repository. When you click these links, you leave our site. GitHub's own privacy policy applies to any data they collect during your visit.</p>
 
-      <h2>5. Static Hosting</h2>
+      <h2>6. Static Hosting</h2>
       <p>This website is hosted as a static site on Vercel. Vercel may collect standard server log information (IP addresses, user agent, request timestamps) as part of normal web hosting operations. This data is managed by Vercel according to their <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</p>
 
-      <h2>6. Open Source</h2>
+      <h2>7. Open Source</h2>
       <p>The source code of this website is publicly available on <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener noreferrer">GitHub</a>. You can verify exactly what code runs on this site at any time.</p>
 
-      <h2>7. Children's Privacy</h2>
+      <h2>8. Children's Privacy</h2>
       <p>This website does not knowingly collect any information from children under 13 years of age.</p>
 
-      <h2>8. Changes to This Policy</h2>
+      <h2>9. Changes to This Policy</h2>
       <p>If this privacy policy changes, the update date at the top of this page will be revised. Since we do not collect personal data, changes are unlikely to affect you.</p>
 
-      <h2>9. Contact</h2>
+      <h2>10. Contact</h2>
       <p>For privacy-related questions, please open an issue on the <a href="https://github.com/Leo-Galli/Aegis-Beacon" target="_blank" rel="noopener noreferrer">GitHub repository</a>.</p>
     </div>
   </div>
