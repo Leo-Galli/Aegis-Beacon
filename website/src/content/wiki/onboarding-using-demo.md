@@ -9,7 +9,8 @@ The website includes a full interactive simulation of the beacon at `/demo`. It 
 
 ## What the demo shows
 
-- A physical mockup of the handheld case (antenna, OLED bezel, status LEDs, speaker grille, four tact switches).
+- An interactive 3D model: drag to rotate, scroll to X-ray the case and explode the shell, battery bay and PCB.
+- Realistic SSD1309 OLED (white on black, not green terminal chrome) mapped live onto the 3D display.
 - Firmware-accurate OLED layouts for all five operating modes.
 - Five mode selectors (BEACON, SEARCH, LISTEN, CONFIG, EMERGENCY) and four device keys (MODE, SEL, UP, DN).
 - Live controls for Morse speed, TX power, RSSI, sleep interval, and the search threshold.
