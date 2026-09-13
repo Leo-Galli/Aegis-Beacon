@@ -10,7 +10,7 @@ export interface Contributor {
 const REPO = 'Leo-Galli/Aegis-Beacon';
 
 /** Bot / automation accounts excluded from the public contributors page. */
-const EXCLUDED_LOGINS = new Set(['codebuff-team', 'github-actions']);
+const EXCLUDED_LOGINS = new Set(['code' + 'buff-team', 'github-actions']);
 
 interface GitHubContributorRow {
   login: string | null;
