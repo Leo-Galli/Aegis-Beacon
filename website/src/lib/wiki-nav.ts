@@ -312,6 +312,7 @@ export const WIKI_NAV: WikiGroup[] = [
       { id: 'firmware-update-field', label: 'Firmware Update in the Field' },
       { id: 'firmware-wake-sources', label: 'Firmware Wake Sources' },
       { id: 'firmware-watchdog', label: 'The Watchdog' },
+      { id: 'benchmark-demo-mode', label: 'Benchmark Demo Mode' },
       { id: 'flash-troubleshooting', label: 'Flash Troubleshooting' },
       { id: 'no-boot-troubleshooting', label: 'No Boot? Troubleshooting' },
       { id: 'no-display-troubleshooting', label: 'No Display? Troubleshooting' },

@@ -98,82 +98,84 @@
 // ┌──────────────────────────────────────────────────────────────────────────┐
 // │  ST7735 1.8" TFT 128x160 (DISPLAY_TYPE 2)                                 │
 // ├────────────────────────────────────────────────────────────────────────────┤
-// │  Il costruttore nel codice è software SPI:                                  │
+// │  The constructor in the code is software SPI:                             │
 // │    Adafruit_ST7735 tft = Adafruit_ST7735(CS, DC, MOSI, SCLK, RST)          │
-// │  sugli stessi pin dell'OLED.                                                │
+// │  on the same pins as the OLED.                                             │
 // ├────────────────┬─────────────────┬─────────────────────────────────────  │
-// │  Pin modulo   │ Collega a         │ Note                                │
+// │  Module pin   │ Connect to        │ Notes                               │
 // ├────────────────┼─────────────────┼─────────────────────────────────────  │
-// │  VCC          │ 3V3 ESP32         │ non 5V, resta a 3.3V come tutto il  │
-// │               │                   │ resto della scheda                  │
+// │  VCC          │ 3V3 ESP32         │ not 5V, stays at 3.3V like the rest  │
+// │               │                   │ of the board                         │
 // │  GND          │ GND               │                                      │
-// │  GND (2°)     │ GND               │ stesso nodo di massa                 │
-// │  NC x3        │ non collegare     │ tipicamente MISO/SDO inutilizzato    │
-// │               │                   │ (SPI è solo scrittura) e/o pin di    │
-// │               │                   │ retroilluminazione già cablata sul   │
-// │               │                   │ modulo. Se uno di questi è in realtà │
-// │               │                   │ LED/BLK e lo schermo resta spento,  │
-// │               │                   │ prova a portarlo a 3V3 (con          │
-// │               │                   │ resistenza se non presente a bordo).│
+// │  GND (2nd)    │ GND               │ same ground node                     │
+// │  NC x3        │ do not connect    │ typically unused MISO/SDO (SPI is    │
+// │               │                   │ write-only) and/or a backlight pin   │
+// │               │                   │ already wired on the module. If one  │
+// │               │                   │ of these is actually LED/BLK and the │
+// │               │                   │ screen stays dark, try tying it to   │
+// │               │                   │ 3V3 (with a resistor if the module   │
+// │               │                   │ has none onboard).                   │
 // │  CLK          │ GPIO 15           │ PIN_OLED_SCK                         │
 // │  SDA          │ GPIO 13           │ PIN_OLED_SDA (MOSI)                  │
-// │  RS           │ GPIO 16           │ PIN_OLED_DC — su questo modulo       │
-// │               │                   │ "RS" = Data/Command                  │
+// │  RS           │ GPIO 16           │ PIN_OLED_DC - on this module         │
+// │               │                   │ "RS" is Data/Command                 │
 // │  RST          │ GPIO 4            │ PIN_OLED_RES                         │
 // │  CS           │ GPIO 17           │ PIN_OLED_CS                          │
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
-//  Compila con -D DISPLAY_TYPE=2.
-//  IMPORTANTE: OLED e TFT condividono il bus SPI. Non possono essere \
-//  connessi contemporaneamente. Disconnetti l'OLED prima di collegare il TFT.
+//  Compile with -D DISPLAY_TYPE=2.
+//  IMPORTANT: OLED and TFT share the SPI bus. They cannot be connected at
+//  the same time. Disconnect the OLED before wiring the TFT.
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
 // │  LCD HD44780 16x2 / 20x4 (DISPLAY_TYPE 3 / 4)                             │
 // ├────────────────────────────────────────────────────────────────────────────┤
-// │  Il codice usa LiquidCrystal in modalità 4-bit parallela,                  │
-// │  pin: RS=16, EN=17, D4=13, D5=15, D6=4, D7=12.                            │
+// │  The code drives the LCD with LiquidCrystal in 4-bit parallel mode,        │
+// │  pins: RS=16, EN=17, D4=13, D5=15, D6=4, D7=12.                            │
 // ├────────────────────────────────────────────────────────────────────────────┤
-// │  Header completo a 16 pin (pin LCD -> Collega a):                          │
+// │  Full 16-pin header (LCD pin -> Connect to):                               │
 // ├────────────────┬─────────────────┬─────────────────────────────────────  │
 // │  1  VSS       │ GND               │                                      │
-// │  2  VDD       │ 5V                │ alimentazione logica del display     │
-// │  3  V0        │ potenziometro     │ regola il contrasto; in alternativa  │
-// │               │ 10k tra VDD e GND,│ resistenza fissa ~2k verso GND       │
-// │               │ cursore su V0      │                                      │
+// │  2  VDD       │ 5V                │ display logic supply                 │
+// │  3  V0        │ potentiometer     │ sets the contrast; alternatively a   │
+// │               │ 10k between VDD   │ fixed ~2k resistor toward GND        │
+// │               │ and GND, wiper    │                                      │
+// │               │ on V0             │                                      │
 // │  4  RS        │ GPIO 16           │                                      │
-// │  5  RW        │ GND               │ LiquidCrystal scrive sempre, RW va   │
-// │               │                   │ fisso a massa                        │
+// │  5  RW        │ GND               │ LiquidCrystal only writes; keep RW   │
+// │               │                   │ tied to ground                       │
 // │  6  E         │ GPIO 17           │                                      │
-// │  7-10 D0-D3  │ non collegare     │ modalità 4-bit, non usati            │
+// │  7-10 D0-D3   │ do not connect    │ 4-bit mode, unused                   │
 // │  11 D4        │ GPIO 13           │                                      │
 // │  12 D5        │ GPIO 15           │                                      │
 // │  13 D6        │ GPIO 4            │                                      │
-// │  14 D7        │ GPIO 12           │ condiviso con GPS TX — se usi GPS    │
-// │               │                   │ insieme all'LCD sposta questo pin    │
-// │               │                   │ (PIN_LCD_D7 nel codice) su un GPIO   │
-// │               │                   │ libero                                │
-// │  15 LED+ (A) │ 5V (con resistenza│ retroilluminazione                  │
-// │               │ ~220 se non già    │                                      │
-// │               │ presente sul       │                                      │
-// │               │ modulo)            │                                      │
-// │  16 LED- (K) │ GND               │                                      │
+// │  14 D7        │ GPIO 12           │ shared with GPS TX - if you use GPS  │
+// │               │                   │ together with the LCD, move this pin │
+// │               │                   │ (PIN_LCD_D7 in the code) to a free   │
+// │               │                   │ GPIO                                 │
+// │  15 LED+ (A)  │ 5V (through a     │ backlight                            │
+// │               │ ~220 resistor if  │                                      │
+// │               │ not already on    │                                      │
+// │               │ the module)       │                                      │
+// │  16 LED- (K)  │ GND               │                                      │
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
 //
-//  Configurazione "a 7 pin": sono gli stessi identici segnali (RS, EN, D4, D5,
-//  D6, D7 + un riferimento comune), solo che sul modulo mancano i pin non
-//  essenziali perché già cablati a bordo — tipicamente RW è già fissato a GND
-//  internamente e/o il contrasto è fisso con resistore integrato. Collega
-//  semplicemente i pin che trovi etichettati RS/E/D4-D7 agli stessi GPIO della
-//  tabella sopra, più VCC e GND; se manca un pin V0 non devi fare nulla, il
-//  contrasto è già impostato dal produttore (a volte fisso troppo chiaro/scuro,
-//  in quel caso non è regolabile senza modificare il modulo).
+//  "7-pin" configuration: exactly the same signals (RS, EN, D4, D5, D6, D7
+//  plus one common reference), only the module omits the non-essential pins
+//  because they are already wired onboard - typically RW is fixed to GND
+//  internally and/or contrast is fixed by an integrated resistor. Connect
+//  simply the pins labeled RS/E/D4-D7 to the same GPIOs as in the table
+//  above, plus VCC and GND; if there is no V0 pin you do not need to do
+//  anything, the contrast is already set by the manufacturer (sometimes
+//  fixed too light or too dark; in that case it cannot be adjusted without
+//  modifying the module).
 //
-//  Adattatore I2C a 4 pin (GND, VCC, SDA, SCL):
-//    NON è compatibile con questo firmware così com'è. Il codice pilota l'LCD in
-//    parallela con LiquidCrystal, non con Wire/I2C. Se hai il backpack PCF8574
-//    collegato, o cambi modulo (via parallela vera), oppure serve modificare il
-//    codice per usare LiquidCrystal_I2C (richiede un DISPLAY_TYPE aggiuntivo, la
-//    lib nel platformio.ini, e riscrivere i dispXxx() del backend LCD per usare
-//    l'indirizzo I2C invece dei 6 GPIO).
+//  4-pin I2C adapter (GND, VCC, SDA, SCL):
+//    NOT compatible with this firmware as it stands. The code drives the
+//    LCD in parallel with LiquidCrystal, not with Wire/I2C. If you have a
+//    PCF8574 backpack attached, either change the module (true parallel) or
+//    the code must be changed to LiquidCrystal_I2C (which requires an extra
+//    DISPLAY_TYPE, the library in platformio.ini, and rewriting the LCD
+//    dispXxx() backend to use the I2C address instead of the 6 GPIOs).
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
 // │  GPS WIRING — NEO-6M <-> ESP32 DevKit V1 (UART2)                           │
@@ -182,11 +184,13 @@
 // ├────────────────┼─────────────────┼─────────────────────────────────────  │
 // │  VCC           │  3V3            │  3.3V (some modules: 5V tolerable)    │
 // │  GND           │  GND            │                                       │
-// │  TX            │  GPIO 34        │  GPS TX -> ESP RX (input only)         │
-// │  RX            │  GPIO 12        │  GPS RX <- ESP TX                      │
+// │  TX            │  GPIO 12        │  GPS RX <- ESP TX                     │
+// │  RX            │  GPIO 22        │  ESP RX <- GPS TX (input)             │
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
 //  GPS uses HardwareSerial(2) — Serial2 — at 9600 baud (NEO-6M default).
-//  GPIO34 is input-only on ESP32 — perfect for GPS RX data.
+//  GPS TX drives the ESP32 input on GPIO 22 (PIN_GPS_RX); the ESP32 drives
+//  GPS RX from GPIO 12 (PIN_GPS_TX). GPIO 12 is also LCD D7, so an LCD build
+//  with GPS must move PIN_LCD_D7 to a free GPIO.
 //  Time to first fix: ~30s (hot), up to 3 min (cold). The BEACON loop waits
 //  up to GPS_FIX_TIMEOUT_S seconds at startup if GPS is enabled.
 //
@@ -323,6 +327,32 @@
   #include <LiquidCrystal.h>
 #else
   #error "DISPLAY_TYPE must be 1 (OLED), 2 (TFT), 3 (LCD 16x2) or 4 (LCD 20x4)"
+#endif
+
+// =============================================================================
+//  BENCHMARK DEMO MODE — run the firmware without radio, battery and GPS
+// -----------------------------------------------------------------------------
+//  Compile with -D BENCHMARK_DEMO (or set the define below to 1) to run the
+//  full UI and timing logic on a board whose radio, battery divider and GPS
+//  receiver are not connected. In this mode the firmware:
+//
+//    - skips every SX1262 operation (no SPI traffic to a missing module),
+//    - never samples the battery ADC or the low-battery warning,
+//    - never opens the GPS UART or parses NMEA,
+//    - skips deep sleep, so the beacon loop runs back to back.
+//
+//  The watchdog, buttons, audio, display rendering and Morse timing are all
+//  still exercised, which is what the benchmark measures. Never flash a
+//  BENCHMARK_DEMO build onto a rescue device.
+// =============================================================================
+#ifndef BENCHMARK_DEMO
+#define BENCHMARK_DEMO 0
+#endif
+
+#if BENCHMARK_DEMO
+  #define DEMO_SKIP(subsystem) true
+#else
+  #define DEMO_SKIP(subsystem) false
 #endif
 
 // =============================================================================
@@ -774,6 +804,10 @@ inline void readPots() { pollAdjButtons(); }
 // =============================================================================
 
 void readGPS() {
+#if BENCHMARK_DEMO
+  // GPS UART is not opened in benchmark builds; keep the cached fix.
+  return;
+#endif
   if (!cfg.gpsEnabled) return;
   while (gpsSerial.available()) {
     gps.encode(gpsSerial.read());
@@ -962,7 +996,14 @@ static uint8_t  s_cwDecoded    = 0;   // characters decoded since power-on
 
 // Reads the battery voltage through the 2:1 divider (mV). Sampled every
 // BATTERY_READ_MS; warns once on the low threshold and resets on recovery.
+// In BENCHMARK_DEMO builds the ADC is never sampled: the divider and the
+// battery are absent from the benchmark rig, and a floating GPIO 34 would
+// produce meaningless readings.
 uint16_t readBatteryMv() {
+#if BENCHMARK_DEMO
+  s_battValid = false;
+  return 0;
+#endif
   uint32_t now = millis();
   if (now - s_lastBattRead < BATTERY_READ_MS && s_battValid) return s_battMv;
   s_lastBattRead = now;
@@ -1193,8 +1234,11 @@ void cwDecodeSample(bool carrier, uint32_t now) {
   }
   static uint16_t dispTextW(const char* s) { return (uint16_t)(strlen(s) * 6 * g_gfxScale); }
   static void dispContrast(uint8_t v) { (void)v; }
+  // The ST7735 power-down register sequence is unreliable over soft SPI on
+  // some panels; a re-init on wake is the deterministic way to restore the
+  // display. initR() also clears the RAM, so the next frame redraws fully.
   static void dispSleep() { tft.enableSleep(true); }
-  static void dispWake()  { tft.enableSleep(false); }
+  static void dispWake()  { tft.initR(INITR_BLACKTAB); tft.setRotation(0); tft.fillScreen(ST77XX_BLACK); }
   static void dispSetInvert(bool inv) { tft.invertDisplay(inv); }
 #else
   // Character LCD backend (HD44780 16x2 / 20x4) — text renderers below
@@ -2164,6 +2208,13 @@ static void ensureSpiStarted() {
 }
 
 bool initRadioOOK(float freqMHz, int8_t powerDbm) {
+#if BENCHMARK_DEMO
+  // No SX1262 on the benchmark rig: skip every radio transaction and let
+  // the TX engine key a virtual carrier. SPI (ensureSpiStarted) is also
+  // left untouched so the rig measures display + timing only.
+  LOG_INFO("BENCHMARK_DEMO: virtual CW TX init %.3f MHz @ %d dBm", freqMHz, powerDbm);
+  return true;
+#else
   LOG_INFO("SX1262 CW TX init: %.3f MHz @ %d dBm", freqMHz, powerDbm);
   ensureSpiStarted();
 
@@ -2194,9 +2245,16 @@ bool initRadioOOK(float freqMHz, int8_t powerDbm) {
 
   LOG_OK("SX1262 CW TX ready: %.3f MHz @ %d dBm", freqMHz, pwr);
   return true;
+#endif
 }
 
 bool initRadioFSK(float freqMHz) {
+#if BENCHMARK_DEMO
+  // Same as initRadioOOK: pretend the radio is ready without touching it.
+  // The scan/listen loops then run against a virtual -120 dBm floor.
+  LOG_INFO("BENCHMARK_DEMO: virtual FSK RX init %.3f MHz", freqMHz);
+  return true;
+#else
   LOG_INFO("SX1262 FSK RX init: %.3f MHz", freqMHz);
   ensureSpiStarted();
 
@@ -2217,6 +2275,7 @@ bool initRadioFSK(float freqMHz) {
   }
   LOG_OK("SX1262 FSK RX ready: %.3f MHz", freqMHz);
   return true;
+#endif
 }
 
 // =============================================================================
@@ -2224,8 +2283,19 @@ bool initRadioFSK(float freqMHz) {
 // =============================================================================
 static char g_currentPayload[128] = "SOS";   // built once per TX cycle
 
-inline void txOn()  { radio.transmitDirect(); }
-inline void txOff() { radio.standby(); }
+// Carrier keying primitives. In BENCHMARK_DEMO builds they are pure timing
+// stubs: the Morse engine still waits dot/dash durations, so the measured
+// per-message time matches a real TX without a radio attached.
+inline void txOn() {
+#if !BENCHMARK_DEMO
+  radio.transmitDirect();
+#endif
+}
+inline void txOff() {
+#if !BENCHMARK_DEMO
+  radio.standby();
+#endif
+}
 
 void transmitMorseChar(char c, int idx, int totalChars,
                         int freqIdx, float freqMHz, uint32_t cycleNum) {
@@ -2288,7 +2358,9 @@ bool transmitMessage(const char* msg, int freqIdx, float freqMHz,
 ScanResult scanFrequency(float freqMHz, int freqIdx, uint32_t passNum) {
   ScanResult r = {freqMHz, -120, false};
   if (!initRadioFSK(freqMHz)) return r;
+#if !BENCHMARK_DEMO
   radio.startReceive();
+#endif
 
   int16_t  maxRssi  = -120;
   uint32_t dwellEnd = millis() + cfg.scanDwellMs;
@@ -2296,7 +2368,13 @@ ScanResult scanFrequency(float freqMHz, int freqIdx, uint32_t passNum) {
   while (millis() < dwellEnd) {
     readPots();
     readGPS();
-    int16_t rssi = radio.getRSSI();
+    // Virtual noise floor in benchmark builds: real rigs report getRSSI()
+    // from a live SX1262, demo rigs only exercise the scan/draw pipeline.
+#if BENCHMARK_DEMO
+    const int16_t rssi = -120;
+#else
+    const int16_t rssi = radio.getRSSI();
+#endif
     recordRssi(rssi);
     readBatteryMv();
     if (rssi > maxRssi) maxRssi = rssi;
@@ -2308,7 +2386,9 @@ ScanResult scanFrequency(float freqMHz, int freqIdx, uint32_t passNum) {
   }
 
   audioToneStop();
+#if !BENCHMARK_DEMO
   radio.standby();
+#endif
   r.rssi     = maxRssi;
   r.detected = (maxRssi >= cfg.rssiThreshold);
 
@@ -3098,7 +3178,9 @@ void runBeaconMode(bool emergency) {
     }
   }
 
+#if !BENCHMARK_DEMO
   radio.sleep();
+#endif
   LOG_OK("Beacon cycle done in %lu ms", millis() - cycleStart);
 
   if (emergency) { delay(300); continue; }  // next SOS cycle, stack-safe
@@ -3137,21 +3219,41 @@ void runBeaconMode(bool emergency) {
 
     // Rebuild payload before sleeping (GPS fix might have improved)
     buildMorsePayload(g_currentPayload, sizeof(g_currentPayload));
+#if BENCHMARK_DEMO
+    // Benchmark rigs never deep-sleep: the UI would go dark mid-measurement
+    // and the cycle timing would include the wake-up. Idle here with the
+    // remaining-time screen still up; the serial bridge and buttons stay
+    // responsive so one measurement can flow into the next.
+    LOG_INFO("BENCHMARK_DEMO: deep sleep skipped, idling");
+    while (true) {
+      readPots();
+      serialPoll();
+      delay(100);
+      esp_task_wdt_reset();
+    }
+#else
     LOG_INFO("Deep sleep %lu s...", cfg.sleepSec);
     oledSleep();
     Serial.flush();
     ledsOff();
     esp_deep_sleep((uint64_t)cfg.sleepSec * 1000000ULL);
+#endif
   }
   return;
 
 mode_switch:
-  radio.sleep(); ledsOff(); audioToneStop();
+#if !BENCHMARK_DEMO
+  radio.sleep();
+#endif
+  ledsOff(); audioToneStop();
   ledModeIndicate(g_currentMode);
   delay(300);
   ESP.restart();
 enter_config:
-  radio.sleep(); ledsOff(); audioToneStop();
+#if !BENCHMARK_DEMO
+  radio.sleep();
+#endif
+  ledsOff(); audioToneStop();
   g_currentMode = MODE_CONFIG;
   runConfigMode();
 }
@@ -3237,7 +3339,9 @@ void runListenMode() {
     delay(2000);
     ESP.restart();
   }
+#if !BENCHMARK_DEMO
   radio.startReceive();
+#endif
   LOG_MODE("Listening on %.3f MHz (threshold %d dBm)", freq, cfg.rssiThreshold);
 
   while (true) {
@@ -3248,7 +3352,11 @@ void runListenMode() {
     serialPoll();
     serialPosReport(false);
 
-    int16_t rssi = radio.getRSSI();
+#if BENCHMARK_DEMO
+    const int16_t rssi = -120;
+#else
+    const int16_t rssi = radio.getRSSI();
+#endif
     recordRssi(rssi);
     cwDecodeSample(rssi >= cfg.rssiThreshold, millis());
 
@@ -3281,7 +3389,9 @@ void runListenMode() {
 
 listen_exit:
   audioToneStop();
+#if !BENCHMARK_DEMO
   radio.standby();
+#endif
   ledModeIndicate(g_currentMode);
   delay(300);
   ESP.restart();
@@ -3591,10 +3701,14 @@ void setup() {
   loadConfig();
 
   // ── GPS serial ────────────────────────────────────────────────────────────
+#if !BENCHMARK_DEMO
   if (cfg.gpsEnabled) {
     gpsSerial.begin(GPS_BAUD, SERIAL_8N1, PIN_GPS_RX, PIN_GPS_TX);
     LOG_GPS("GPS serial started on RX=GPIO%d TX=GPIO%d @ %d baud", PIN_GPS_RX, PIN_GPS_TX, GPS_BAUD);
   }
+#else
+  LOG_INFO("BENCHMARK_DEMO: GPS, radio and battery subsystems disabled");
+#endif
 
   // ── Button adjustment init ────────────────────────────────────────────────
   g_adjTarget = 0;   // start with VOL selected

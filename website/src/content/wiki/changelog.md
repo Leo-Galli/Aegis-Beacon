@@ -9,6 +9,8 @@ All notable changes across firmware, hardware and documentation, mirroring the a
 
 ## Version 6.0 (Current)
 
+- **Benchmark demo mode**: a compile-time `BENCHMARK_DEMO` flag runs the full UI and Morse timing on a bench board with no radio, battery divider or GPS attached: radio init and keying become stubs, RSSI reads a virtual -120 dBm floor, the battery ADC and GPS UART are never touched and deep sleep is replaced by an idle loop. See [Benchmark Demo Mode](benchmark-demo-mode).
+- **ST7735 wake fix**: waking the TFT from power-down re-initialises the panel (`initR` + rotation + clear) instead of relying on the unreliable soft-SPI power-up register sequence; the type 2 display now always comes back after a sleep.
 - **LISTEN mode**: the beacon can now receive and decode live Morse CW. The radio stays on the first configured frequency, samples RSSI every 5 ms, measures mark and gap durations with the PARIS timing model, accumulates symbols and streams every decoded character to the OLED and over serial as `AEGIS:CW:<char>`. Full ITU table (A-Z, 0-9, punctuation); entered with `MODE LISTEN`.
 - **Battery monitor**: live pack voltage through a 2:1 divider on GPIO 34 (ADC1). `readBatteryMv()` / `battPct()` map 3300-4200 mV to 0-100%; a battery glyph with three level cells appears on BEACON, SEARCH and LISTEN; below 3550 mV the glyph flashes, the red LED blinks and `AEGIS:BATT:low` is emitted once. New `BATT` serial command.
 - **Board temperature**: the ESP32 internal silicon sensor is reported as `temp=` in the extended `AEGIS:STATE` line and in the STATUS debug block.

@@ -2755,6 +2755,22 @@ runs are executed.
 > the values above are representative snapshots. Live results live on the
 > Benchmarks page.
 
+### Benchmark demo builds
+
+For bench rigs that carry no SX1262 module, no battery divider and no GPS
+receiver, the firmware supports a compile-time demo switch:
+
+```bash
+PLATFORMIO_BUILD_FLAGS="-D BENCHMARK_DEMO=1" pio run -e esp32dev
+```
+
+With the flag set, radio init and carrier keying become stubs, RSSI reads a
+virtual -120 dBm floor, the battery ADC and the GPS UART are never touched,
+and the beacon loop idles instead of deep-sleeping. The UI, Morse timing,
+buttons, audio and watchdog are fully exercised, which is what a benchmark
+measures. Never flash a `BENCHMARK_DEMO` build onto a rescue device: it does
+not transmit. See the wiki's Benchmark Demo Mode page for the full gate table.
+
 ---
 
 ## 63. FAQ — Expanded
