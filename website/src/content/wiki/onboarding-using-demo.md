@@ -20,8 +20,8 @@ The website includes a full interactive simulation of the beacon at `/demo`. It 
 ## Things to try
 
 1. Switch between the five modes and watch the OLED layout change to match the wiki screen reference.
-2. Press MODE briefly to toggle BEACON and SEARCH (from LISTEN, MODE returns to BEACON).
-3. Hold MODE for 2 seconds to enter EMERGENCY (alternating inverse SOS screen).
+2. Press MODE briefly to toggle BEACON and SEARCH (from LISTEN or CONFIG, MODE returns to BEACON).
+3. Hold MODE for 2 seconds to enter EMERGENCY (alternating inverse SOS screen). A red hold ring fills on the MODE key while you press.
 4. In any field mode, press SEL briefly to toggle the VOL/WPM adjustment target, then UP/DN to change values.
 5. Hold SEL for 3 seconds to open CONFIG (WiFi portal instructions on the OLED).
 6. Enter LISTEN, raise RSSI above the threshold, and watch characters decode from the payload field.
@@ -31,7 +31,7 @@ The website includes a full interactive simulation of the beacon at `/demo`. It 
 
 | Button | Short press | Long press |
 |--------|-------------|------------|
-| MODE | Toggle BEACON/SEARCH (LISTEN returns to BEACON) | 2 s: EMERGENCY |
+| MODE | Toggle BEACON/SEARCH (LISTEN/CONFIG/EMERGENCY → BEACON) | 2 s: EMERGENCY |
 | SEL | Toggle VOL / WPM target | 3 s: CONFIG |
 | UP | Increment selected parameter | - |
 | DN | Decrement selected parameter | - |

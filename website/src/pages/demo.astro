@@ -7,10 +7,11 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
 
 <div class="demo-page container">
   <header class="section-head page-head">
+    <span class="page-head__meta">Firmware v6.0 · hardware keys</span>
     <h1 class="section-head__title">Firmware Simulation</h1>
     <p class="section-head__lead">
-      Realistic handheld mockup with a live SSD1309 OLED (white on black, as on hardware).
-      Press the tact switches or use the panel to explore every firmware v6.0 mode.
+      Handheld mockup with live SSD1309 OLED. Short-press matches real button logic;
+      hold MODE for 2 seconds to enter EMERGENCY SOS, as on the physical device.
     </p>
   </header>
 
@@ -107,6 +108,8 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
     type DemoState,
     type AdjTarget,
   } from '../lib/demo-oled-canvas'
+  import { bindLongPress, bindTap } from '../lib/demo-device-input'
+  import { modeShortPressNext, MODE_HOLD_MS, SEL_HOLD_MS } from '../lib/demo-firmware-modes'
 
   const oledCanvas = document.getElementById('oled-canvas') as HTMLCanvasElement
   const oledCtx = oledCanvas.getContext('2d', { alpha: false })!
@@ -195,12 +198,33 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
     updateLeds()
   }
 
+  const deviceToast = document.getElementById('device-toast')
+  let toastTimer: ReturnType<typeof setTimeout> | null = null
+
+  const showToast = (msg: string, kind: 'info' | 'emergency' = 'info') => {
+    if (!deviceToast) return
+    deviceToast.textContent = msg
+    deviceToast.dataset.kind = kind
+    deviceToast.classList.add('is-visible')
+    if (toastTimer) clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => deviceToast.classList.remove('is-visible'), kind === 'emergency' ? 4200 : 2600)
+  }
+
   const updateLeds = () => {
     if (!ledTx || !ledRx) return
     let tx = currentMode === 'beacon' || currentMode === 'emergency'
     const rx = currentMode === 'search' || currentMode === 'listen'
     if (currentMode === 'beacon' && txActive) {
       tx = Math.floor(tickMs / 180) % 2 === 0
+    }
+    if (currentMode === 'emergency') {
+      tx = Math.floor(tickMs / 120) % 2 === 0
+    }
+    if (currentMode === 'config') {
+      const alt = Math.floor(tickMs / 400) % 2 === 0
+      ledTx.classList.toggle('aegis-device__led--on', alt)
+      ledRx.classList.toggle('aegis-device__led--on', !alt)
+      return
     }
     ledTx.classList.toggle('aegis-device__led--on', tx)
     ledRx.classList.toggle('aegis-device__led--on', rx)
@@ -248,26 +272,30 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
 
   const flashAdj = () => { adjOverlayUntil = tickMs + 2500 }
 
-  const selectMode = (mode: DemoMode) => {
+  const selectMode = (mode: DemoMode, fromHardware = false) => {
+    const prev = currentMode
     currentMode = mode
     if (mode === 'emergency') power = 22
-    modes.forEach((b) => b.classList.toggle('active', (b as HTMLElement).dataset.mode === mode))
+    modes.forEach((b) => {
+      const el = b as HTMLElement
+      el.classList.toggle('active', el.dataset.mode === mode)
+      el.classList.toggle('mode-btn--emergency', el.dataset.mode === 'emergency' && mode === 'emergency')
+    })
     if (mode === 'listen' && !cwText) cwText = ''
+    if (fromHardware) {
+      if (mode === 'emergency') showToast('EMERGENCY — SOS beacon TX (+22 dBm)', 'emergency')
+      else if (mode === 'config') showToast('CONFIG — WiFi portal 192.168.4.1')
+      else if (prev === 'emergency' && mode === 'beacon') showToast('Emergency cleared — BEACON')
+      else if (mode === 'search') showToast('SEARCH — RSSI scan')
+      else if (mode === 'beacon' && prev === 'search') showToast('BEACON — Morse TX')
+    }
     renderOled()
     updateTape()
   }
 
-  const MODE_CYCLE: DemoMode[] = ['beacon', 'search', 'listen', 'config']
+  const modeShortPress = () => selectMode(modeShortPressNext(currentMode), true)
 
-  const modeShortPress = () => {
-    if (currentMode === 'emergency') {
-      selectMode('beacon')
-      return
-    }
-    const idx = MODE_CYCLE.indexOf(currentMode)
-    const next = idx >= 0 ? MODE_CYCLE[(idx + 1) % MODE_CYCLE.length] : MODE_CYCLE[0]
-    selectMode(next)
-  }
+  const enterEmergency = () => selectMode('emergency', true)
 
   modes.forEach(btn => {
     btn.addEventListener('click', () => selectMode((btn as HTMLElement).dataset.mode as DemoMode || 'beacon'))
@@ -284,51 +312,8 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
     el.classList.toggle('is-pressed', on)
   }
 
-  const bindLongPress = (el: Element | null, ms: number, onShort: () => void, onLong: () => void) => {
-    if (!el) return
-    let timer: ReturnType<typeof setTimeout> | null = null
-    let fired = false
-    const clear = () => {
-      if (timer) clearTimeout(timer)
-      timer = null
-      pressVisual(el, false)
-    }
-    el.addEventListener('pointerdown', (ev) => {
-      const e = ev as PointerEvent
-      e.preventDefault()
-      ;(e.currentTarget as Element).setPointerCapture(e.pointerId)
-      fired = false
-      pressVisual(el, true)
-      timer = setTimeout(() => { fired = true; onLong(); clear() }, ms)
-    })
-    el.addEventListener('pointerup', (ev) => {
-      const e = ev as PointerEvent
-      if ((e.currentTarget as Element).hasPointerCapture(e.pointerId)) {
-        ;(e.currentTarget as Element).releasePointerCapture(e.pointerId)
-      }
-      if (!fired) onShort()
-      clear()
-    })
-    el.addEventListener('pointercancel', clear)
-  }
-
-  const bindTap = (el: Element | null, onTap: () => void) => {
-    if (!el) return
-    el.addEventListener('pointerdown', (ev) => {
-      const e = ev as PointerEvent
-      e.preventDefault()
-      ;(e.currentTarget as Element).setPointerCapture(e.pointerId)
-      pressVisual(el, true)
-    })
-    el.addEventListener('pointerup', (ev) => {
-      const e = ev as PointerEvent
-      if ((e.currentTarget as Element).hasPointerCapture(e.pointerId)) {
-        ;(e.currentTarget as Element).releasePointerCapture(e.pointerId)
-      }
-      pressVisual(el, false)
-      onTap()
-    })
-    el.addEventListener('pointercancel', () => pressVisual(el, false))
+  const setHoldProgress = (el: Element, ratio: number) => {
+    ;(el as HTMLElement).style.setProperty('--hold', String(ratio))
   }
 
   const adjustUp = () => {
@@ -355,14 +340,27 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
     updateTape()
   }
 
-  bindLongPress(keyEls.mode, 2000, modeShortPress, () => selectMode('emergency'))
-  bindLongPress(keyEls.sel, 3000, () => {
-    adjTarget = adjTarget === 'vol' ? 'wpm' : 'vol'
-    flashAdj()
-    renderOled()
-  }, () => selectMode('config'))
-  bindTap(keyEls.up, adjustUp)
-  bindTap(keyEls.dn, adjustDn)
+  bindLongPress(
+    keyEls.mode,
+    MODE_HOLD_MS,
+    modeShortPress,
+    enterEmergency,
+    pressVisual,
+    setHoldProgress,
+  )
+  bindLongPress(
+    keyEls.sel,
+    SEL_HOLD_MS,
+    () => {
+      adjTarget = adjTarget === 'vol' ? 'wpm' : 'vol'
+      flashAdj()
+      renderOled()
+    },
+    () => selectMode('config', true),
+    pressVisual,
+  )
+  bindTap(keyEls.up, adjustUp, pressVisual)
+  bindTap(keyEls.dn, adjustDn, pressVisual)
 
   freqSelect.addEventListener('change', () => {
     channelIdx = freqSelect.selectedIndex
@@ -418,91 +416,4 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
   renderOled()
 </script>
 
-<style>
-  .demo-page { padding-bottom: 4rem; }
-
-  .demo-layout {
-    display: grid; grid-template-columns: 1fr; gap: 2rem;
-    max-width: 980px; margin: 2.5rem auto 0;
-  }
-  @media (min-width: 860px) { .demo-layout { grid-template-columns: 1fr 1fr; align-items: start; } }
-
-  .controls-panel {
-    border: 1px solid var(--border); border-radius: var(--radius-xl);
-    background: var(--card); overflow: hidden; box-shadow: var(--shadow-sm);
-  }
-  .controls-panel__header {
-    padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border);
-    background: var(--muted);
-  }
-  .controls-panel__tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6875rem; color: var(--muted-foreground);
-    text-transform: uppercase; letter-spacing: 0.06em;
-  }
-  .control-group { padding: 1rem 1.25rem; border-bottom: 1px solid color-mix(in srgb, var(--foreground) 5%, var(--background)); }
-  .control-group:last-child { border-bottom: none; }
-  .control-label {
-    display: block; font-size: 0.6875rem; font-weight: 600;
-    color: var(--muted-foreground); margin-bottom: 0.5rem;
-    text-transform: uppercase; letter-spacing: 0.04em;
-  }
-
-  .mode-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.375rem; }
-  .mode-buttons .mode-btn:nth-child(5) { grid-column: 1 / -1; }
-  .mode-btn {
-    padding: 0.5rem; font-size: 0.6875rem; font-weight: 600;
-    font-family: 'JetBrains Mono', monospace;
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    background: var(--background); color: var(--muted-foreground);
-    cursor: pointer; transition: all 0.15s;
-  }
-  .mode-btn:hover { border-color: var(--primary); color: var(--primary); }
-  .mode-btn.active { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
-
-  .select-input {
-    width: 100%; padding: 0.5rem 0.75rem; font-size: 0.8125rem;
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    background: var(--background); color: var(--foreground);
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .range-input {
-    width: 100%; -webkit-appearance: none; height: 6px;
-    border-radius: 3px; background: var(--border); padding: 0; cursor: pointer;
-  }
-  .range-input::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 16px; height: 16px;
-    background: var(--primary); border-radius: 50%; cursor: pointer;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
-  }
-  .range-value {
-    display: block; font-size: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--muted-foreground); margin-top: 0.375rem;
-  }
-
-  .demo-tape { max-width: 980px; margin: 3rem auto 0; }
-  .demo-tape .hero-tape { margin-top: 0; }
-  .demo-tape__controls {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 1rem; flex-wrap: wrap;
-    padding: 0.85rem 1.1rem; border-top: 1px solid var(--border);
-  }
-  .demo-tape__controls label {
-    display: inline-flex; align-items: center; gap: 0.6rem;
-    font-size: 0.78rem; font-weight: 600; color: var(--muted-foreground);
-    flex-shrink: 0;
-  }
-  .payload-input {
-    padding: 0.45rem 0.7rem; font-size: 0.8rem;
-    font-family: 'JetBrains Mono', monospace;
-    border: 1px solid var(--border-strong); border-radius: var(--radius-md);
-    background: var(--background); color: var(--foreground);
-    width: min(24rem, 70vw); flex-shrink: 0;
-  }
-  .demo-tape__time {
-    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
-    color: var(--muted-foreground); white-space: nowrap;
-  }
-</style>
 </Layout>

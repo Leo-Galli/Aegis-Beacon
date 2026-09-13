@@ -3,14 +3,16 @@
 ---
 
 <div class="aegis-device-scene" data-rv style="--rv-delay: 0ms">
+  <div class="aegis-device-stage">
+    <div class="aegis-device-stage__plate" aria-hidden="true"></div>
   <article class="aegis-device" aria-label="Aegis-Beacon hardware simulation">
     <svg class="aegis-device__art" viewBox="0 -148 300 708" aria-hidden="true" role="presentation">
       <defs>
         <linearGradient id="ab-case-face" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#8f98a3"/>
-          <stop offset="18%" stop-color="#b8c0c9"/>
-          <stop offset="42%" stop-color="#9aa3ad"/>
-          <stop offset="100%" stop-color="#5f6770"/>
+          <stop offset="0%" stop-color="#7a828c"/>
+          <stop offset="22%" stop-color="#a8b0ba"/>
+          <stop offset="48%" stop-color="#8a929c"/>
+          <stop offset="100%" stop-color="#4a5159"/>
         </linearGradient>
         <linearGradient id="ab-case-edge" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stop-color="#d2d8df"/>
@@ -205,7 +207,8 @@
     </div>
 
     <div class="aegis-device__keys">
-      <button class="aegis-key" data-key="mode" type="button" aria-label="MODE button">
+      <button class="aegis-key" data-key="mode" type="button" aria-label="MODE button — hold 2 seconds for EMERGENCY">
+        <span class="aegis-key__hold" aria-hidden="true"></span>
         <span class="aegis-key__cap">MODE</span>
       </button>
       <button class="aegis-key" data-key="sel" type="button" aria-label="SEL button">
@@ -218,10 +221,13 @@
         <span class="aegis-key__cap">DN</span>
       </button>
     </div>
+
+    <p class="aegis-device__toast" id="device-toast" aria-live="polite"></p>
   </article>
+  </div>
 
   <p class="aegis-device__hint">
-    MODE short: cycle BEACON, SEARCH, LISTEN, CONFIG. MODE hold 2 s: EMERGENCY.
-    SEL short: VOL/WPM. SEL hold 3 s: CONFIG.
+    MODE short: BEACON ↔ SEARCH (LISTEN/CONFIG → BEACON). <strong>Hold MODE 2 s</strong> for EMERGENCY SOS.
+    SEL short: VOL/WPM · SEL hold 3 s: CONFIG.
   </p>
 </div>

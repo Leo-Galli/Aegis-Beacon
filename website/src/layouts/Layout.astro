@@ -202,9 +202,10 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
     /* Header */
     .site-header {
       position: sticky; top: 0; z-index: 100;
-      background: color-mix(in srgb, var(--background) 85%, transparent);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      background: color-mix(in srgb, var(--background) 88%, transparent);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 24px -12px rgb(0 0 0 / 10%);
       height: var(--header-h);
     }
     .site-header__inner {
@@ -234,6 +235,7 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
       transition: color 0.15s, background-color 0.15s;
     }
     .site-nav__link:hover { color: var(--foreground); background: var(--muted); }
+    .site-nav__link:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
     .site-nav__link.active {
       color: var(--foreground); font-weight: 600; background: var(--muted);
     }
