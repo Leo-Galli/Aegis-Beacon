@@ -648,14 +648,21 @@ html.motion-ok [data-rv].is-in {
   background: oklch(0.145 0.004 50deg); border: 1px solid oklch(0.27 0.008 50deg);
   border-radius: var(--radius-xl); overflow: hidden;
   box-shadow: var(--shadow-lg), 0 0 0 1px oklch(0.22 0.006 50deg);
+  /* Grid children stretch to the tallest column by default, which would grow
+     this window past its content and leave a dead black gap below the OLED
+     + buttons. Hug its own content instead of matching the taller sibling. */
+  display: flex; flex-direction: column; align-self: start;
 }
-.terminal-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 0.95rem; background: oklch(0.18 0.005 50deg); border-bottom: 1px solid oklch(0.26 0.008 50deg); }
+.terminal-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 0.95rem; background: oklch(0.18 0.005 50deg); border-bottom: 1px solid oklch(0.26 0.008 50deg); flex-shrink: 0; }
 .terminal-dot { width: 0.65rem; height: 0.65rem; border-radius: 50%; }
 .terminal-dot--red { background: #ef4444; }
 .terminal-dot--yellow { background: #eab308; }
 .terminal-dot--green { background: #22c55e; }
 .terminal-title { flex: 1; text-align: center; font-family: var(--font-mono); font-size: 0.68rem; color: oklch(0.62 0.008 50deg); }
-.terminal-body { padding: 1.25rem; }
+.terminal-body {
+  padding: 1.25rem;
+  display: flex; flex-direction: column; gap: 1rem;
+}
 
 /* OLED screen */
 .oled-screen {

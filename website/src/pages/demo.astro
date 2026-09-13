@@ -34,7 +34,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <!-- Device Buttons -->
-        <div style="display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: center;">
+        <div style="display: flex; gap: 0.5rem; justify-content: center;">
           <button class="key-btn" data-key="mode" type="button">MODE</button>
           <button class="key-btn" data-key="sel" type="button">SEL</button>
           <button class="key-btn" data-key="up" type="button">UP</button>
@@ -374,7 +374,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .key-hint {
-    margin: 0.75rem 0 0; text-align: center;
+    margin: 0; text-align: center;
     font-size: 0.7rem; color: var(--muted-foreground);
     font-family: 'JetBrains Mono', monospace; letter-spacing: 0.02em;
   }
@@ -392,13 +392,23 @@ import Layout from '../layouts/Layout.astro';
   .demo-tape__controls label {
     display: inline-flex; align-items: center; gap: 0.6rem;
     font-size: 0.78rem; font-weight: 600; color: var(--muted-foreground);
+    /* Without this the label (and the input inside it) gets squeezed by the
+       flex row's default shrink behavior instead of wrapping to its own
+       line, clipping the payload text. */
+    flex-shrink: 0;
   }
   .payload-input {
     padding: 0.45rem 0.7rem; font-size: 0.8rem;
     font-family: 'JetBrains Mono', monospace;
     border: 1px solid var(--border-strong); border-radius: var(--radius-md);
     background: var(--background); color: var(--foreground);
-    width: min(24rem, 100%);
+    /* `100%` can't resolve here: the label is an auto-width (shrink-to-fit)
+       flex container, so a percentage width on this child is circular and
+       browsers fall back to the tiny default text-input size. `vw` is
+       relative to the viewport instead, so it always resolves to a real
+       value and the field never gets clipped down to ~200px. */
+    width: min(24rem, 70vw);
+    flex-shrink: 0;
   }
   .payload-input:focus {
     outline: none; border-color: var(--primary);
