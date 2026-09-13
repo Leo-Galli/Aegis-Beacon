@@ -1,0 +1,185 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { fetchGitHubContributors } from '../lib/github-contributors';
+
+let contributors = [];
+let fetchError: string | null = null;
+
+try {
+  contributors = await fetchGitHubContributors();
+} catch (err) {
+  fetchError = err instanceof Error ? err.message : 'Could not load contributors from GitHub.';
+}
+
+const totalCommits = contributors.reduce((sum, c) => sum + c.contributions, 0);
+---
+
+<Layout
+  title="Contributors | Aegis-Beacon"
+  description="People who have contributed code, documentation and assets to the Aegis-Beacon open-source rescue beacon project on GitHub."
+>
+  <div class="contributors-page container">
+    <header class="section-head page-head">
+      <p class="hero-stamp">Open source community</p>
+      <h1 class="section-head__title">Contributors</h1>
+      <p class="section-head__lead">
+        Aegis-Beacon is built in the open. These GitHub contributors have merged
+        commits into the repository — firmware, website, documentation and assets.
+      </p>
+      {!fetchError && contributors.length > 0 && (
+        <div class="contributors-page__stats">
+          <div class="contributors-page__stat">
+            <strong>{contributors.length}</strong>
+            <span>contributors</span>
+          </div>
+          <div class="contributors-page__stat">
+            <strong>{totalCommits.toLocaleString('en-US')}</strong>
+            <span>commits counted</span>
+          </div>
+        </div>
+      )}
+    </header>
+
+    {fetchError ? (
+      <div class="contributors-page__error wiki-alert wiki-alert-warning" role="alert">
+        <span class="wiki-alert-title">Could not refresh the list</span>
+        <p>{fetchError} Try again after the next site build, or browse contributors directly on <a href="https://github.com/Leo-Galli/Aegis-Beacon/graphs/contributors" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+      </div>
+    ) : contributors.length === 0 ? (
+      <p class="contributors-page__empty">No contributors returned from GitHub.</p>
+    ) : (
+      <ul class="contributors-grid">
+        {contributors.map((person, index) => (
+          <li>
+            <a
+              class="contributor-card"
+              href={person.profileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${person.login} on GitHub (${person.contributions} commits)`}
+            >
+              <img
+                class="contributor-card__avatar"
+                src={person.avatarUrl}
+                alt=""
+                width="72"
+                height="72"
+                loading={index < 12 ? 'eager' : 'lazy'}
+                decoding="async"
+              />
+              <span class="contributor-card__body">
+                <span class="contributor-card__name">{person.login}</span>
+                <span class="contributor-card__meta">
+                  {person.contributions.toLocaleString('en-US')}
+                  {person.contributions === 1 ? ' commit' : ' commits'}
+                </span>
+              </span>
+              <svg class="contributor-card__arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M7 17L17 7"/><path d="M7 7h10v10"/>
+              </svg>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    <section class="contributors-page__cta">
+      <h2>Want to appear here?</h2>
+      <p>
+        Fork the repo, open a pull request and get your changes merged. Every
+        contribution — code, docs, hardware notes, fixes — counts.
+      </p>
+      <div class="contributors-page__cta-actions">
+        <a href="/wiki/contributing" class="btn btn-primary">Read the contributing guide</a>
+        <a href="https://github.com/Leo-Galli/Aegis-Beacon" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .contributors-page { padding-bottom: 4rem; }
+
+    .contributors-page__stats {
+      display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap;
+      margin-top: 2rem; padding-top: 1.5rem;
+      border-top: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+    }
+    .contributors-page__stat { text-align: center; }
+    .contributors-page__stat strong {
+      display: block; font-size: 1.6rem; font-weight: 700;
+      font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+      color: var(--primary);
+    }
+    .contributors-page__stat span {
+      font-size: 0.6875rem; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted-foreground);
+    }
+
+    .contributors-page__error { max-width: 40rem; margin: 0 auto 2rem; }
+    .contributors-page__error a { color: inherit; text-decoration: underline; }
+    .contributors-page__empty {
+      text-align: center; color: var(--muted-foreground); margin: 2rem 0;
+    }
+
+    .contributors-grid {
+      list-style: none; margin: 0; padding: 0;
+      display: grid; gap: 0.75rem;
+      grid-template-columns: 1fr;
+      max-width: 52rem; margin-inline: auto;
+    }
+    @media (min-width: 640px) {
+      .contributors-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .contributor-card {
+      display: flex; align-items: center; gap: 0.875rem;
+      padding: 0.875rem 1rem;
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      background: var(--card); text-decoration: none;
+      transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+    }
+    .contributor-card:hover {
+      border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+      box-shadow: var(--shadow-md); transform: translateY(-2px);
+    }
+    .contributor-card__avatar {
+      width: 3.25rem; height: 3.25rem; border-radius: var(--radius-full);
+      border: 2px solid color-mix(in srgb, var(--primary) 25%, var(--border));
+      flex-shrink: 0; object-fit: cover;
+    }
+    .contributor-card__body {
+      display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; flex: 1;
+    }
+    .contributor-card__name {
+      font-weight: 600; font-size: 0.9375rem; color: var(--foreground);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .contributor-card__meta {
+      font-family: var(--font-mono); font-size: 0.72rem;
+      color: var(--muted-foreground); letter-spacing: 0.02em;
+    }
+    .contributor-card__arrow {
+      flex-shrink: 0; color: var(--muted-foreground);
+      transition: color 0.15s, transform 0.15s;
+    }
+    .contributor-card:hover .contributor-card__arrow {
+      color: var(--primary); transform: translate(1px, -1px);
+    }
+
+    .contributors-page__cta {
+      max-width: 40rem; margin: 3.5rem auto 0; text-align: center;
+      padding: 2rem 1.5rem;
+      border: 1px solid var(--border); border-radius: var(--radius-xl);
+      background: color-mix(in srgb, var(--card) 94%, var(--muted));
+    }
+    .contributors-page__cta h2 {
+      font-size: 1.25rem; margin: 0 0 0.75rem;
+    }
+    .contributors-page__cta p {
+      margin: 0 0 1.25rem; color: var(--muted-foreground); line-height: 1.65;
+    }
+    .contributors-page__cta-actions {
+      display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;
+    }
+  </style>
+</Layout>
