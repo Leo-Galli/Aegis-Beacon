@@ -27,8 +27,12 @@ export interface DemoState {
   payload: string
 }
 
-const W = 128
-const H = 64
+export const OLED_LOGICAL_W = 128
+export const OLED_LOGICAL_H = 64
+export const OLED_SCALE = 4
+
+const W = OLED_LOGICAL_W
+const H = OLED_LOGICAL_H
 const FG = '#e8eaed'
 const BG = '#050608'
 const FG_INV = '#050608'
@@ -99,10 +103,20 @@ const drawBar = (ctx: CanvasRenderingContext2D, pct: number, y: number) => {
   ctx.fillRect(1, y + 1, Math.round((pct / 100) * (W - 2)), 5)
 }
 
-export const drawOledCanvas = (ctx: CanvasRenderingContext2D, s: DemoState) => {
+export const drawOledCanvas = (
+  ctx: CanvasRenderingContext2D,
+  s: DemoState,
+  scale: number = OLED_SCALE,
+) => {
+  const pw = W * scale
+  const ph = H * scale
+  ctx.setTransform(1, 0, 0, 1, 0, 0)
+  ctx.imageSmoothingEnabled = false
+
   const inv = s.currentMode === 'emergency' && Math.floor(s.tickMs / 500) % 2 === 1
   ctx.fillStyle = inv ? BG_INV : BG
-  ctx.fillRect(0, 0, W, H)
+  ctx.fillRect(0, 0, pw, ph)
+  ctx.scale(scale, scale)
   ctx.fillStyle = inv ? FG_INV : FG
 
   const showAdj = s.tickMs < s.adjOverlayUntil
@@ -221,9 +235,7 @@ export const drawOledCanvas = (ctx: CanvasRenderingContext2D, s: DemoState) => {
     ctx.fillText(`${label} ${val}`, 4, H - 4)
   }
 
-  ctx.fillStyle = 'rgba(255,255,255,0.03)'
-  for (let y = 0; y < H; y += 2) ctx.fillRect(0, y, W, 1)
 }
 
-export const OLED_W = W
-export const OLED_H = H
+export const OLED_W = OLED_LOGICAL_W * OLED_SCALE
+export const OLED_H = OLED_LOGICAL_H * OLED_SCALE
