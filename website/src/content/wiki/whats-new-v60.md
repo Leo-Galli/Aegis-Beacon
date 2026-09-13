@@ -23,7 +23,7 @@ Enter it with `MODE LISTEN` over serial or from a scripted bridge command. MODE 
 
 ## Battery monitor, live
 
-The firmware now really measures the pack: a 2:1 resistor divider on GPIO 34 (ADC1, so it keeps working while WiFi uses ADC2) is sampled every 5 seconds:
+The firmware now really measures the pack: a 2:1 resistor divider on GPIO 36 (ADC1, so it keeps working while WiFi uses ADC2) is sampled every 5 seconds:
 
 - `readBatteryMv()` returns the pack voltage in millivolts.
 - `battPct()` maps 3300-4200 mV linearly to 0-100%.

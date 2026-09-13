@@ -34,7 +34,7 @@ Aegis-Beacon is a professional emergency radio-location system based on LoRa tec
 
 ### GPS & Battery
 
-- **NEO-6M GPS module** on UART2 (GPIO 22 RX, GPIO 12 TX)
+- **NEO-6M GPS module** on UART2 (GPIO 22 RX, TX unconnected)
 - **Coordinates in Morse** -- compact DDM format: `N4553 E01230`
 - **Battery monitor** -- live percentage and voltage via voltage divider
 - **Charging detection** -- CHG shown when TP4056 STDBY pin detects charge

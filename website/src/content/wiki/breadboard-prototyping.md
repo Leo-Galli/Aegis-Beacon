@@ -83,7 +83,7 @@ The TFT uses the same five GPIOs as the OLED, so the two screens are drop-in rep
 | D4 | row | GPIO 13 |
 | D5 | row | GPIO 15 |
 | D6 | row | GPIO 4 |
-| D7 | row | GPIO 12 |
+| D7 | row | GPIO 2 |
 | R/W | GND rail | GND |
 | A (backlight anode) | 5V rail via 100Ω | 5V |
 | K (backlight cathode) | GND rail | GND |
@@ -104,12 +104,12 @@ Same six GPIOs, same power, same contrast circuit, same constructor call. The on
 | D4 | row | GPIO 13 |
 | D5 | row | GPIO 15 |
 | D6 | row | GPIO 4 |
-| D7 | row | GPIO 12 |
+| D7 | row | GPIO 2 |
 | R/W | GND rail | GND |
 | A (backlight anode) | 5V rail via 100Ω | 5V |
 | K (backlight cathode) | GND rail | GND |
 
-**GPIO 12 conflict**: D7 is on GPIO 12, which is also the GPS TX line. If you are testing the GPS and a 20x4 LCD on the same breadboard, move D7 to a free GPIO (for example GPIO 14 or GPIO 2) before you power up, and change `PIN_LCD_D7` in the firmware for that test build.
+**No GPIO 12 conflict**: D7 is on GPIO 2, which is boot-safe for this use (the HD44780 data line is a high-impedance input), and the GPS TX line is unconnected. GPS and LCD can share the breadboard without any pin moves.
 
 ### Contrast
 

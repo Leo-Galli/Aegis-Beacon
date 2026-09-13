@@ -15,7 +15,7 @@ GPS problems usually fall into three buckets: no fix at all, a very slow fix, or
 |-------|-----|-----|
 | Sky view | Move outdoors, away from metal and buildings | Relocate for the cold start |
 | Patch antenna | Facing up, not against metal | Reposition per GPS Antenna Placement |
-| Wiring | GPS TX to GPIO 22, RX to GPIO 12 | Verify continuity |
+| Wiring | GPS TX to GPIO 22, GPS RX unconnected | Verify continuity; only the module TX line matters |
 | Baud rate | Must be 9600 | Some clones default differently; configure the module |
 | UART enabled | `gpsen` true in NVS | Enable GPS in the portal |
 

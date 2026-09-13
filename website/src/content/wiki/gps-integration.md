@@ -16,7 +16,7 @@ The NEO-6M GPS module provides real-time coordinate acquisition for embedding in
 | Signal | ESP32 GPIO | GPS Pin | Notes |
 |--------|------------|---------|-------|
 | RX | GPIO 22 | TX | GPS TX to ESP32 RX (input-only) |
-| TX | GPIO 12 | RX | ESP32 TX to GPS RX |
+| TX | N/C | RX | unconnected - firmware never sends to the GPS |
 
 **Baud rate:** 9600 (NEO-6M default)
 

@@ -55,7 +55,7 @@ If the reading disagrees with a multimeter, adjust `BAT_VREF_MV`:
 
 ## Charging Detect
 
-The optional TP4056 STDBY line on GPIO 39 goes LOW while charging or full. The firmware shows a `C` in the battery icon when active.
+The firmware does not currently read a charge-detect line: GPIO 39 is reserved for the radio DIO1 interrupt and no TP4056 STDBY input exists in the default build. Charge state must be judged from the battery percentage trend or a future firmware revision that dedicates a pin to the TP4056 STDBY signal.
 
 ## Related Pages
 

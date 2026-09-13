@@ -184,7 +184,7 @@ The firmware runs on an **ESP32 DevKit V1** (30-pin) microcontroller, controlled
 |-------------------|--------------|------------------------------------|
 | Module            | NEO-6M       | UART, 9600 baud                    |
 | Parser library    | TinyGPS++    | ≥ 1.0.3                            |
-| UART port         | Serial2      | GPIO 22 RX, GPIO 12 TX             |
+| UART port         | Serial2      | GPIO 22 RX, TX unconnected         |
 | Baud rate         | 9600         | NEO-6M factory default             |
 | Fix timeout       | 60 s         | Configurable 10–120 s              |
 | Minimum satellites| 3            | `GPS_MIN_SATS`                     |
@@ -342,7 +342,7 @@ If the module already has a backlight resistor onboard, you can tie LED/BL direc
 | Backlight                  | 5V via 100Ω / GND | A and K                                 |
 | Rendering style            | Text only   | No graphics, bars rendered as hash chars |
 | Screen layouts             | Same as 20x4, without rows 3 and 4 | See Section 7.6 |
-| D7 conflict                | GPIO 12     | Shared with GPS TX; move D7 if both used |
+| D7 boot safety             | GPIO 2      | HD44780 input is high-Z; strap-safe       |
 
 #### 16-pin header pin table
 
@@ -358,7 +358,7 @@ If the module already has a backlight resistor onboard, you can tie LED/BL direc
 | 11 D4   | GPIO 13   | |
 | 12 D5   | GPIO 15   | |
 | 13 D6   | GPIO 4    | |
-| 14 D7   | GPIO 12   | Shared with GPS TX — if you use GPS together with the LCD, move this pin (`PIN_LCD_D7` in the code) to a free GPIO |
+| 14 D7   | GPIO 2    | Boot-safe: the HD44780 input is high-impedance and cannot disturb the GPIO 2 strap sample |
 | 15 LED+ (A) | 5V (through a ~220 Ω resistor if the module has none onboard) | Backlight |
 | 16 LED- (K) | GND    | |
 
@@ -408,7 +408,7 @@ The firmware keeps both lines inside the visible area and centres longer text wh
 | RS / EN / D4 / D5 / D6 / D7 | GPIO 16/17/13/15/4/12 | Identical to the 16x2      |
 | Constructor                | LiquidCrystal | Same call as the 16x2                   |
 | Initialisation             | `lcd.begin(20, 4)` | Automatic from `DISP_COLS` / `DISP_ROWS` |
-| D7 conflict                | GPIO 12     | Shared with GPS TX; move D7 if both used |
+| D7 boot safety             | GPIO 2      | HD44780 input is high-Z; strap-safe       |
 
 The 20x4 is the most informative character display. Every LCD renderer already checks `DISP_ROWS >= 4` before using a third or fourth row, so the 16x2 and 20x4 are served by the same functions.
 
@@ -428,7 +428,7 @@ The 20x4 uses the same 16-pin header, the same six GPIOs, and the same construct
 | 11 D4   | GPIO 13   | |
 | 12 D5   | GPIO 15   | |
 | 13 D6   | GPIO 4    | |
-| 14 D7   | GPIO 12   | Shared with GPS TX — if you use GPS together with the LCD, move this pin (`PIN_LCD_D7` in the code) to a free GPIO |
+| 14 D7   | GPIO 2    | Boot-safe: the HD44780 input is high-impedance and cannot disturb the GPIO 2 strap sample |
 | 15 LED+ (A) | 5V (through a ~220 Ω resistor if the module has none onboard) | Backlight |
 | 16 LED- (K) | GND    | |
 
@@ -478,7 +478,7 @@ The 20x4 is the best character display for development and for field use when yo
 - Twenty columns mean a full coordinate pair or a longer decoded CW line fits on a single row.
 - The driver is identical to the 16x2, so the same hardware, the same constructor, and the same contrast setup work for both.
 - The 16x2 and 20x4 use the same bus. You can switch between them by changing one number and rewiring nothing, as long as only one character display is connected at a time.
-- GPS and the 20x4 share GPIO 12 for D7 and GPS TX. If both are used at the same time, move D7 to another GPIO and update `PIN_LCD_D7` before compiling.
+- GPS and the 20x4 no longer share any pin: D7 sits on GPIO 2 and the GPS TX line is unconnected (the firmware never sends to the GPS). No manual pin moves are required.
 
 #### LCD variant you actually receive: 7-pin, 16-pin, fixed contrast
 
@@ -523,17 +523,17 @@ The PCF8574 I2C backpack is supported as `DISPLAY_TYPE 5` (16x2) or `DISPLAY_TYP
 | SDA          | GPIO 13    | `PIN_LCD_I2C_SDA`, shared with the OLED bus (only one display is mounted) |
 | SCL          | GPIO 15    | `PIN_LCD_I2C_SCL`, shared with the OLED bus |
 
-GPIO 21/22 (the usual I2C pair) are taken by the radio BUSY line and GPS RX; GPIO 0 is a strapping pin and GPIO 1/3 are the USB serial, so the bus reuses the OLED/TFT pins 13/15. A backpack build also removes the GPIO 12 conflict with GPS TX, because the parallel D7 line does not exist.
+GPIO 21/22 (the usual I2C pair) are taken by the radio BUSY line and GPS RX; GPIO 0 is a strapping pin and GPIO 1/3 are the USB serial, so the bus reuses the OLED/TFT pins 13/15. Parallel LCD builds are also conflict-free now: D7 sits on GPIO 2 and the GPS TX line is unconnected.
 
 The address defaults to 0x27 and the boot probe also tries 0x3F (PCF8574A); the first that answers wins. Override at compile time with `-D LCD_I2C_ADDR=0x3F` if your backpack uses a different address. Sleep on the backpack also switches the backlight off, since the display-enable bit and the backlight flag share the same PCF8574 port.
 
 #### Pin conflict: LCD D7 and GPS TX
 
-The 16x2 and 20x4 both default D7 to GPIO 12, which is also the GPS TX line (`PIN_GPS_TX`). That is the one default conflict worth fixing.
+The 16x2 and 20x4 both default D7 to GPIO 2, a strapping pin that is boot-safe here because the HD44780 data line is a high-impedance input. The GPS shares no LCD pin: its TX line is unconnected because the firmware never transmits to the module.
 
 To move D7:
 
-1. Pick a free GPIO. GPIO 14 and GPIO 2 are common choices on the 30-pin DevKit V1, but check that the pin you choose is not already used by your specific radio/boot configuration.
+1. Pick a free GPIO. GPIO 14 is a common choice on the 30-pin DevKit V1; it is also the SX1262 reset pin, so only use it if the display is the only screen and you are not building the radio version with the default reset pin. Avoid strapping pins: GPIO 2 carries the LCD D7 line in LCD builds (boot-safe because the HD44780 input is high-impedance) and GPIO 39 carries the radio DIO1 line; GPIO 12 (MTDI) and GPIO 15 (MTDO) must stay free or low-load.
 2. In `AegisBeacon.ino`, change `#define PIN_LCD_D7` to the new GPIO.
 3. Recompile and flash.
 
@@ -572,17 +572,17 @@ Use the **OLED** or **TFT** instead when you want the full graphical UI, battery
 | Connection              | Value   | Notes                                               |
 |-------------------------|---------|-----------------------------------------------------|
 | BAT+ (TP4056 BAT+ rail) | → R3a   | First 100 kΩ resistor                               |
-| R3a junction            | GPIO 34 | ADC1_CH6 — input-only, no pull needed               |
-| GPIO 34                 | → R3b   | Second 100 kΩ resistor                              |
+| R3a junction            | GPIO 36 | ADC1_CH0 (SVP) — input-only, no pull needed         |
+| GPIO 36                 | → R3b   | Second 100 kΩ resistor                              |
 | R3b                     | → GND   | Completes divider                                   |
 
-Divider formula: `VOUT = VBAT / 2`. At full charge (4.2 V): VOUT = 2.1 V (safely within 3.3 V ADC range). GPIO 34 is on ADC1, which keeps working while WiFi uses ADC2 (used during CONFIG mode).
+Divider formula: `VOUT = VBAT / 2`. At full charge (4.2 V): VOUT = 2.1 V (safely within 3.3 V ADC range). GPIO 36 is on ADC1, which keeps working while WiFi uses ADC2 (used during CONFIG mode).
 
 ### 8.2 Software
 
 | Parameter                   | Value         | Constant          |
 |-----------------------------|---------------|-------------------|
-| ADC pin                     | GPIO 34       | `PIN_BATTERY_ADC` |
+| ADC pin                     | GPIO 36       | `PIN_BATTERY_ADC` |
 | Read interval               | 5000 ms       | `BATTERY_READ_MS` |
 | Voltage scaling             | ×2 (divider)  | `analogReadMilliVolts` |
 | Full charge voltage         | 4200 mV       | `BATTERY_FULL_MV` |
@@ -678,11 +678,11 @@ Volume is adjustable live via SW_UP / SW_DN (step ±10). Persisted to NVS with S
 
 | GPIO | Direction | Function                                                      | Notes                               |
 |------|-----------|---------------------------------------------------------------|-------------------------------------|
-| 2    | Input     | SX1262 DIO1 (TX/RX done, timeout IRQ)                         | Interrupt-driven                    |
-| 4    | Output    | OLED RESET                                                    |                                     |
+| 2    | Input     | HD44780 LCD data line D7 (types 3/4)                          | LCD input is high-Z; boot-safe     |
+| 4    | Output    | OLED RESET / LCD D6                                           | Shared by display types            |
 | 5    | Output    | SX1262 NSS/CS (VSPI, active LOW)                              |                                     |
-| 12   | Output    | GPS RX ← Serial2 TX (ESP32 → NEO-6M)                         |                                     |
-| 13   | Output    | OLED SDA (D1/MOSI) — software SPI                             |                                     |
+| 12   | —         | Unconnected (MTDI strap pin; no wiring allowed)               | Strap: must stay LOW at boot       |
+| 13   | Output    | OLED SDA (D1/MOSI) — software SPI; I2C SDA (types 5/6)        |                                     |
 | 14   | Output    | SX1262 RESET (active LOW)                                     |                                     |
 | 15   | Output    | OLED SCK (D0) — software SPI                                  |                                     |
 | 16   | Output    | OLED DC (Data/Command)                                        |                                     |
@@ -695,14 +695,14 @@ Volume is adjustable live via SW_UP / SW_DN (step ±10). Persisted to NVS with S
 | 25   | Output    | DAC1 audio → 100 Ω → 10 µF → 3.5mm jack TIP                  |                                     |
 | 26   | Output    | LED_BLUE (SEARCH indicator, 330 Ω to GND)                    |                                     |
 | 27   | Output    | LED_RED (BEACON indicator, 330 Ω to GND)                     |                                     |
-| 32   | Input     | SW_SEL (INPUT_PULLUP)                                         |                                     |
+| 32   | Input     | SW_SEL (INPUT_PULLUP + external 10 kΩ)                        | No internal pull-up on input-only   |
 | 33   | Input     | SW_MODE (INPUT_PULLUP)                                        |                                     |
-| 34   | Input     | SW_DN — input-only; external 10 kΩ pullup required            |                                     |
-| 35   | Input     | SW_UP — input-only; external 10 kΩ pullup required            |                                     |
+| 34   | Input     | SW_DN — input-only; external 10 kΩ pullup required            | No internal pull-up exists          |
+| 35   | Input     | SW_UP — input-only; external 10 kΩ pullup required            | No internal pull-up exists          |
 | 36   | Input     | ADC1_CH0 — battery voltage divider wiper (SVP, input-only)    | No pull needed                      |
-| 39   | Input     | TP4056 STDBY detect (SVN, input-only)                         | Optional; LOW = charging/full       |
+| 39   | Input     | SX1262 DIO1 IRQ (SVN, input-only)                             | Boot-safe; no pull-up exists        |
 
-> **GPIO 34, 35, 36, 39 have no internal pull-up resistors.** Use external 10 kΩ pull-ups for SW_UP (35) and SW_DN (34). GPIO 36 and 39 are ADC/detect-only inputs requiring no pull-up.
+> **GPIO 34, 35, 36, 39 have no internal pull-up resistors.** Use external 10 kΩ pull-ups for SW_UP (35) and SW_DN (34) — the `INPUT_PULLUP` call in the firmware is silently ignored by hardware on input-only pins. GPIO 36 (battery ADC) and 39 (radio DIO1) are inputs requiring no pull-up.
 
 ---
 
@@ -1026,7 +1026,7 @@ There is **no runtime coupling** between the two: the beacon is a self-contained
 
 **Key firmware characteristics:**
 
-- Dual-core ESP32 (240 MHz), RadioLib SX1262 front end with **mandatory BUSY (GPIO 21)** and IRQ **DIO1 (GPIO 2)**.
+- Dual-core ESP32 (240 MHz), RadioLib SX1262 front end with **mandatory BUSY (GPIO 21)** and IRQ **DIO1 (GPIO 39)**.
 - Morse CW keying via `transmitDirect()` / `standby()` (no OOK support on SX1262), FSK carrier 0.6 kbps, TX −9…+22 dBm (RadioLib cap; E22 PA to +30 dBm).
 - Four operating modes: **BEACON / SEARCH / CONFIG / EMERGENCY**.
 - BEACON ~65 h, SEARCH ~44 h on one 18650 cell; ~10 µA deep sleep.
@@ -1583,7 +1583,7 @@ section of `AegisBeacon.ino`.
 | GPIO27 | D27 | (unused) | — | ADC2_CH7, TOUCH7, RTC_GPIO17 | — |
 | GPIO32 | D32 | (unused) | — | ADC1_CH4, TOUCH9, RTC_GPIO9 | — |
 | GPIO33 | D33 | (unused) | — | ADC1_CH5, TOUCH8, RTC_GPIO8 | — |
-| GPIO34 | D34 | Battery voltage monitor (ADC) | Input | ADC1_CH6 | Input-only pin |
+| GPIO34 | D34 | SW_DN button (with external 10 kΩ pull-up) | Input | — | Input-only pin |
 | GPIO35 | D35 | (unused) | — | ADC1_CH7, RTC_GPIO7 | Input-only pin |
 | GPIO36 | VP | (unused) | — | ADC1_CH0, RTC_GPIO0 | Input-only pin |
 | GPIO39 | VN | (unused) | — | ADC1_CH3, RTC_GPIO3 | Input-only pin |
@@ -1598,12 +1598,12 @@ section of `AegisBeacon.ino`.
 
 | Peripheral | Interface | Pins | Speed / protocol |
 | --- | --- | --- | --- |
-| SX1262 LoRa radio | SPI | SCK=GPIO18, MISO=GPIO19, MOSI=GPIO23, NSS=GPIO5, RST=GPIO14, DIO1=GPIO2, BUSY=GPIO4 | 8 MHz SPI (radio max) |
+| SX1262 LoRa radio | SPI | SCK=GPIO18, MISO=GPIO19, MOSI=GPIO23, NSS=GPIO5, RST=GPIO14, DIO1=GPIO39, BUSY=GPIO21 | 8 MHz SPI (radio max) |
 | SSD1309 OLED | I2C | SDA=GPIO21, SCL=GPIO22 | 400 kHz (fast mode) |
 | NEO-6M GPS | UART | TX=GPIO16, RX=GPIO17 | 9600 baud, 8N1 |
 | Buzzer | GPIO | BZ=GPIO25 (PWM-capable) | 2.7 kHz tone, ~50% duty |
 | Buttons | GPIO | BTN_MODE=GPIO26, BTN_SEL=GPIO27, BTN_UP=GPIO32, BTN_DN=GPIO33 | Active-low, internal pull-up, 50 ms debounce |
-| Battery divider | ADC | VBAT=GPIO34 | 100 kΩ / 100 kΩ divider, 2:1 ratio |
+| Battery divider | ADC | VBAT=GPIO36 | 100 kΩ / 100 kΩ divider, 2:1 ratio |
 
 ### 35.3 Strapping pin boot requirements
 
@@ -1620,7 +1620,7 @@ section of `AegisBeacon.ino`.
 
 | Signal | ADC | Channel | Attenuation | Effective range |
 | --- | --- | --- | --- | --- |
-| Battery voltage | ADC1 | CH6 (GPIO34) | 11 dB | 0–3.1 V at the pin, 0–6.2 V at the battery after the 2:1 divider |
+| Battery voltage | ADC1 | CH0 (GPIO36) | 11 dB | 0–3.1 V at the pin, 0–6.2 V at the battery after the 2:1 divider |
 
 ### 35.5 Current limits and drive strength
 
@@ -2027,7 +2027,7 @@ are range-checked server-side before being written to NVS.
 USB 5V ──► Charger (TP4056, 1 A) ──► Li-ion cell (18650 or 2×18650)
                  │
                  └──► VBAT ──► AMS1117-3.3 ──► 3V3 rail
-                         └──► Battery monitor divider (GPIO34)
+                         └──► Battery monitor divider (GPIO36)
 ```
 
 ### 43.3 Current consumption by state
@@ -2877,7 +2877,7 @@ GPIO19 (MISO) ◄──────────── MISO
 GPIO23 (MOSI) ────────────► MOSI
 GPIO5  (NSS)  ────────────► NSS
 GPIO14 (RST)  ────────────► RST
-GPIO2  (DIO1) ◄──────────── DIO1
+GPIO39 (DIO1) ◄─────────── DIO1
 GPIO4  (BUSY) ◄──────────── BUSY
 3V3           ────────────► VDD
 GND           ────────────► GND
@@ -2939,7 +2939,7 @@ Internal pull-ups enabled in firmware (INPUT_PULLUP)
 ### 65.6 Battery monitor
 
 ```text
-Battery (+) ──┬── 100 kΩ ──┬── GPIO34 (ADC1_CH6)
+Battery (+) ──┬── 100 kΩ ──┬── GPIO36 (ADC1_CH0)
               │            │
               └── 100 kΩ ──┴── GND
 
@@ -4144,7 +4144,7 @@ Total on-air time ≈ 25 s per cycle
 
 ## 116. Battery Calibration Table (ADC → Voltage)
 
-With the 2:1 divider on GPIO34 (ADC1_CH6, 11 dB attenuation, 12-bit):
+With the 2:1 divider on GPIO36 (ADC1_CH0, 11 dB attenuation, 12-bit):
 
 | ADC raw | Battery voltage (V) |
 | --- | --- |
@@ -8385,8 +8385,8 @@ exit
 | MOSI / SD1 | SPI data in | GPIO23 |
 | NSS / CS | Chip select | GPIO5 |
 | RST | Reset | GPIO14 |
-| DIO1 | Interrupt | GPIO2 |
-| BUSY | Busy | GPIO4 |
+| DIO1 | Interrupt | GPIO39 |
+| BUSY | Busy | GPIO21 |
 | 3.3V / VCC | Power | 3V3 |
 | GND | Ground | GND |
 | ANT | Antenna | SMA/whip |
@@ -8980,7 +8980,7 @@ power
               │                      │
               │                      ├──► [AMS1117] ──► 3V3 rail
               │                      │
-              │                      └──► [divider] ──► GPIO34 ADC
+              │                      └──► [divider] ──► GPIO36 ADC
 ```
 
 ---
@@ -9401,7 +9401,7 @@ checks. If you find an error, open an issue or a PR with the fix.
 
 | Constant | Value |
 | --- | --- |
-| BAT_PIN | GPIO34 |
+| BAT_PIN | GPIO36 |
 | BAT_DIVIDER | 2.0 |
 | BAT_OFFSET | 0.0 |
 | LOW_BAT_WARN | 3.5 V |

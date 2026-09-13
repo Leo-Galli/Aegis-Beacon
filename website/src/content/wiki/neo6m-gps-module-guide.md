@@ -15,7 +15,7 @@ The NEO-6M is an inexpensive GPS module that reports position over a 9600 baud U
 |-----------|-------|
 | Chip | u-blox NEO-6M |
 | Interface | UART, 9600 baud |
-| ESP32 port | Serial2 (GPIO 22 RX, GPIO 12 TX) |
+| ESP32 port | Serial2 (GPIO 22 RX, TX unconnected) |
 | Antenna | Ceramic patch, onboard |
 | Time to first fix | ~30 s hot, up to 3 min cold |
 | Minimum satellites | 3 |
@@ -28,7 +28,7 @@ The NEO-6M is an inexpensive GPS module that reports position over a 9600 baud U
 | VCC | 3V3 | Most modules accept 3.3-5 V |
 | GND | GND | Common ground |
 | TX | GPIO 22 | GPS TX to ESP32 RX (input-only) |
-| RX | GPIO 12 | ESP32 TX to GPS RX |
+| RX | N/C | unconnected - firmware never sends to the GPS |
 
 The NEO-6M TX line is 3.3 V logic on most breakouts. If your module is a 5 V version, level-shift the TX line before it reaches GPIO 22.
 

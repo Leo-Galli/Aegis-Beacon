@@ -60,7 +60,7 @@ The constructor is identical to the 20x4. The only difference is that `lcd.begin
 | 11 D4 | GPIO 13 | |
 | 12 D5 | GPIO 15 | |
 | 13 D6 | GPIO 4 | |
-| 14 D7 | GPIO 12 | Shared with GPS TX. If you use GPS together with the LCD, move this pin (`PIN_LCD_D7` in the code) to a free GPIO. |
+| 14 D7 | GPIO 2 | Boot-safe: the HD44780 input is high-impedance and cannot disturb the GPIO 2 strap sample. |
 | 15 LED+ (A) | 5V (through a ~220Ω resistor if the module has none onboard) | Backlight. |
 | 16 LED- (K) | GND | |
 
@@ -73,7 +73,7 @@ The constructor is identical to the 20x4. The only difference is that `lcd.begin
 | D4 | GPIO 13 | Data bit 4 |
 | D5 | GPIO 15 | Data bit 5 |
 | D6 | GPIO 4 | Data bit 6 |
-| D7 | GPIO 12 | Data bit 7 - shared with GPS TX |
+| D7 | GPIO 2 | Data bit 7 - strap pin, boot-safe (high-Z input) |
 
 ### NC pins, GND pins, and unused signals
 
@@ -114,7 +114,7 @@ The firmware keeps both lines inside the visible area and centres longer text wh
 
 - The LCD logic runs on 5 V; the ESP32 drives the six data/control lines at 3.3 V. Most HD44780 modules accept 3.3 V logic on a 5 V supply. If yours does not, add a level shifter on those six lines.
 - R/W is tied to GND. The firmware never reads the display.
-- D7 is on GPIO 12, which is also the GPS TX line. On the 16x2 this is less likely to matter because the screen is chosen when you do not need the extra rows. If you do use GPS and the 16x2 together and hit a conflict, move D7 and update `PIN_LCD_D7`.
+- D7 is on GPIO 2, a strapping pin that is boot-safe here because the HD44780 data line is a high-impedance input. The GPS shares no LCD pin: its TX line is unconnected because the firmware never transmits to the module.
 - Backlight current is high relative to the rest of the system. On battery builds, raise the series resistor on the A line or switch the backlight off in bright environments.
 
 ### Related
@@ -160,7 +160,7 @@ The constructor is identical to the 16x2. The only difference is that `lcd.begin
 | 11 D4 | GPIO 13 | |
 | 12 D5 | GPIO 15 | |
 | 13 D6 | GPIO 4 | |
-| 14 D7 | GPIO 12 | Shared with GPS TX. If you use GPS together with the LCD, move this pin (`PIN_LCD_D7` in the code) to a free GPIO. |
+| 14 D7 | GPIO 2 | Boot-safe: the HD44780 input is high-impedance and cannot disturb the GPIO 2 strap sample. |
 | 15 LED+ (A) | 5V (through a ~220Ω resistor if the module has none onboard) | Backlight. |
 | 16 LED- (K) | GND | |
 
@@ -173,7 +173,7 @@ The constructor is identical to the 16x2. The only difference is that `lcd.begin
 | D4 | GPIO 13 | Data bit 4 |
 | D5 | GPIO 15 | Data bit 5 |
 | D6 | GPIO 4 | Data bit 6 |
-| D7 | GPIO 12 | Data bit 7 - shared with GPS TX |
+| D7 | GPIO 2 | Data bit 7 - strap pin, boot-safe (high-Z input) |
 
 The 20x4 uses the same 16-pin header, the same six GPIOs, and the same constructor call as the 16x2. The only difference is the number of visible rows and columns, which the firmware derives automatically.
 
@@ -202,7 +202,7 @@ On a 20x4, every screen that has a third or fourth meaningful line uses it. The 
 ### Notes
 
 - The 20x4 uses the same six GPIOs as the 16x2. You can switch between them by changing one number and rewiring nothing, as long as only one character display is connected at a time.
-- D7 is still on GPIO 12, still shared with GPS TX. This conflict matters more on the 20x4 because that screen is often chosen precisely when GPS coordinates are wanted on screen at the same time. If you need both, move D7 to a free GPIO (GPIO 14 or GPIO 2 are common choices, but check they are not already used by your specific radio/boot configuration) and change `PIN_LCD_D7` before compiling.
+- D7 is on GPIO 2, boot-safe for this use (the HD44780 data line is a high-impedance input). The GPS shares no LCD pin: its TX line is unconnected because the firmware never transmits to the module. No manual pin moves are required.
 - Contrast is mandatory unless the module has a fixed internal resistor. Same potentiometer circuit as the 16x2.
 - Backlight current is the main battery cost of the character displays. Same mitigation as the 16x2.
 
@@ -308,7 +308,7 @@ On a 20x4, every screen that has a third or fourth meaningful line uses it. The 
 ### Notes
 
 - The 20x4 uses the same six GPIOs as the 16x2. You can switch between them by changing one number and rewiring nothing, as long as only one character display is connected at a time.
-- D7 is still on GPIO 12, still shared with GPS TX. This conflict matters more on the 20x4 because that screen is often chosen precisely when GPS coordinates are wanted on screen at the same time. If you need both, move D7 to a free GPIO (GPIO 14 or GPIO 2 are common choices, but check they are not already used by your specific radio/boot configuration) and change `PIN_LCD_D7` before compiling.
+- D7 is on GPIO 2, boot-safe for this use (the HD44780 data line is a high-impedance input). The GPS shares no LCD pin: its TX line is unconnected because the firmware never transmits to the module. No manual pin moves are required.
 - Contrast is mandatory. Same potentiometer circuit as the 16x2.
 - Backlight current is the main battery cost of the character displays. Same mitigation as the 16x2.
 
@@ -338,9 +338,9 @@ Power:
 
 ## GPIO 12 conflict with GPS
 
-D7 defaults to GPIO 12. That pin is also `PIN_GPS_TX`.
+D7 defaults to GPIO 2, a strapping pin that is boot-safe here because the display data line is a high-impedance input on the ESP32 side.
 
-If you build the GPS edition and use a 20x4 LCD at the same time, the default wiring puts two signals on GPIO 12. That is the one case where the default character display wiring does not work as-is.
+GPS and any character display can coexist on the default wiring: D7 sits on GPIO 2 and the GPS TX line is unconnected, so no two signals ever share a GPIO.
 
 To resolve it:
 

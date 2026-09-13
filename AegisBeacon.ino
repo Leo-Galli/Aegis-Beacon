@@ -64,7 +64,7 @@
 // │  NSS / CS      │  GPIO 5         │  Chip Select (active LOW)             │
 // │  RESET         │  GPIO 14        │  Hardware reset (active LOW)          │
 // │  BUSY          │  GPIO 21        │  BUSY output — MUST be connected      │
-// │  DIO1          │  GPIO 2         │  IRQ — TX/RX done, timeout            │
+// │  DIO1          │  GPIO 39        │  IRQ — TX/RX done, timeout            │
 // │  TXEN          │  -1 (N/C)       │  TX enable — pulled HI internally     │
 // │                │                 │  on E22; pass -1 to RadioLib          │
 // │  RXEN          │  -1 (N/C)       │  RX enable — same as above            │
@@ -148,10 +148,8 @@
 // │  11 D4        │ GPIO 13           │                                      │
 // │  12 D5        │ GPIO 15           │                                      │
 // │  13 D6        │ GPIO 4            │                                      │
-// │  14 D7        │ GPIO 12           │ shared with GPS TX - if you use GPS  │
-// │               │                   │ together with the LCD, move this pin │
-// │               │                   │ (PIN_LCD_D7 in the code) to a free   │
-// │               │                   │ GPIO                                 │
+// │  14 D7        │ GPIO 2            │ boot-safe: the LCD input is high-Z   │
+// │               │                   │ and cannot disturb the GPIO 2 strap  │
 // │  15 LED+ (A)  │ 5V (through a     │ backlight                            │
 // │               │ ~220 resistor if  │                                      │
 // │               │ not already on    │                                      │
@@ -184,13 +182,14 @@
 // ├────────────────┼─────────────────┼─────────────────────────────────────  │
 // │  VCC           │  3V3            │  3.3V (some modules: 5V tolerable)    │
 // │  GND           │  GND            │                                       │
-// │  TX            │  GPIO 12        │  GPS RX <- ESP TX                     │
+// │  TX (module)   │  N/C            │  N/C - firmware never sends to GPS    │
 // │  RX            │  GPIO 22        │  ESP RX <- GPS TX (input)             │
 // └────────────────┴─────────────────┴─────────────────────────────────────  ┘
 //  GPS uses HardwareSerial(2) — Serial2 — at 9600 baud (NEO-6M default).
-//  GPS TX drives the ESP32 input on GPIO 22 (PIN_GPS_RX); the ESP32 drives
-//  GPS RX from GPIO 12 (PIN_GPS_TX). GPIO 12 is also LCD D7, so an LCD build
-//  with GPS must move PIN_LCD_D7 to a free GPIO.
+//  The ESP32 only listens: GPS TX -> GPIO 22 (PIN_GPS_RX). The module's RX
+//  pin is left unconnected (PIN_GPS_TX = -1) because the firmware never
+//  sends commands to the GPS. GPIO 12 (MTDI strap) is therefore free of all
+//  wiring, and LCD D7 now sits on GPIO 2, so there is no GPS/LCD conflict.
 //  Time to first fix: ~30s (hot), up to 3 min (cold). The BEACON loop waits
 //  up to GPS_FIX_TIMEOUT_S seconds at startup if GPS is enabled.
 //
@@ -208,8 +207,9 @@
 //  Volume step: +/- 10 (range 20-255). WPM step: +/- 1 (range 5-40).
 //  Hold UP or DN for auto-repeat after 500 ms, every 150 ms.
 //  The selected parameter (VOL / WPM) is shown on the OLED status bar.
-//  GPIO 34 and 35 are input-only on ESP32 — suitable for button inputs
-//  with internal pullup and external 10kΩ pullup if needed.
+//  GPIO 34 and 35 are input-only and have NO internal pull-ups: the
+//  INPUT_PULLUP setting is ignored by hardware. External 10 kΩ pull-ups to
+//  3V3 on SW_DN and SW_UP are MANDATORY, not optional.
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
 // │  AUDIO JACK WIRING — 3.5mm TRRS <-> ESP32 DevKit V1                        │
@@ -225,10 +225,10 @@
 // ┌──────────────────────────────────────────────────────────────────────────┐
 // │  COMPLETE PIN MAP — ESP32 DevKit V1 (30-pin) v6.0                        │
 // ├────────────┬───────────────────────────────────────────────────────────  │
-// │  GPIO  2   │  SX1262 DIO1 (TX/RX Done / Timeout IRQ)                     │
+// │  GPIO  2   │  LCD D7 (HD44780 types 3/4) — display input is high-Z      │
 // │  GPIO  4   │  OLED RESET                                                 │
 // │  GPIO  5   │  SX1262 NSS/CS (VSPI, active LOW)                           │
-// │  GPIO 12   │  GPS TX ← ESP32 Serial2 TX                                  │
+// │  GPIO 12   │  unconnected (MTDI strap — no wiring allowed here)         │
 // │  GPIO 13   │  OLED SDA (D1/MOSI) — software SPI                          │
 // │  GPIO 14   │  SX1262 RESET (active LOW)                                  │
 // │  GPIO 15   │  OLED SCK (D0) — software SPI                               │
@@ -246,6 +246,8 @@
 // │  GPIO 34   │  SW_DN   — decrement selected parameter (input-only)        │
 // │  GPIO 35   │  SW_UP   — increment selected parameter (input-only)        │
 // │  GPIO 22   │  GPS RX ← NEO-6M TX  (input-only, SVP)                      │
+// │  GPIO 36   │  Battery ADC — divider wiper (ADC1_CH0, input-only)         │
+// │  GPIO 39   │  SX1262 DIO1 (TX/RX Done / Timeout IRQ, input-only)         │
 // └────────────┴───────────────────────────────────────────────────────────  ┘
 //
 // ┌──────────────────────────────────────────────────────────────────────────┐
@@ -403,7 +405,9 @@
 
 // ── SPI Radio (SX1262 / Ebyte E22-400M30S) — VSPI ───────────────────────────
 // SX1262 requires a BUSY pin — RadioLib polls it before every SPI transfer.
-// DIO1 is the primary IRQ line on SX1262 (was DIO0 on SX1276).
+// DIO1 is the primary IRQ line on SX1262 (was DIO0 on SX1276). It sits on
+// GPIO 39 (input-only, boot-safe): GPIO 2 is a strapping pin, and a radio
+// module holding it low at reset can force the chip into download mode.
 // TXEN and RXEN are pulled internally on E22 modules — pass -1 (not wired).
 #define PIN_SPI_SCK    18
 #define PIN_SPI_MISO   19
@@ -411,7 +415,7 @@
 #define PIN_LORA_CS    5
 #define PIN_LORA_RST   14
 #define PIN_LORA_BUSY  21   // MANDATORY on SX1262 — do not leave unconnected
-#define PIN_LORA_DIO1  2    // Main IRQ (TX done, RX done, timeout)
+#define PIN_LORA_DIO1  39   // Main IRQ (TX/RX done, timeout). GPIO 39 is input-only and boot-safe; GPIO 2 is a strapping pin.
 #define PIN_LORA_TXEN  -1   // TX enable — N/C on E22 (internal pull)
 #define PIN_LORA_RXEN  -1   // RX enable — N/C on E22 (internal pull)
 
@@ -425,14 +429,15 @@
 #define PIN_OLED_CS    17
 
 // HD44780 LCD (16x2 / 20x4), 4-bit mode — six GPIOs.
-// NOTE: PIN_LCD_D7 defaults to GPIO12 (shared with GPS TX). If you use the
-// GPS module together with an LCD, move PIN_LCD_D7 to a free GPIO.
+// NOTE: PIN_LCD_D7 uses GPIO 2. GPIO 2 is a strapping pin, but an HD44780
+// data line is a high-impedance input and cannot disturb the boot sample.
+// GPIO 12 (the old D7) is the MTDI strap and is now left fully unconnected.
 #define PIN_LCD_RS    16
 #define PIN_LCD_EN    17
 #define PIN_LCD_D4    13
 #define PIN_LCD_D5    15
 #define PIN_LCD_D6    4
-#define PIN_LCD_D7    12
+#define PIN_LCD_D7    2
 
 // HD44780 LCD via PCF8574 I2C backpack (types 5/6) — two GPIOs only.
 // The bus reuses the OLED/TFT soft-SPI pins (SDA=13, SCL=15) because only
@@ -451,7 +456,7 @@
 
 // ── GPS NEO-6M — UART2 ───────────────────────────────────────────────────────
 #define PIN_GPS_RX     22   // input-only GPIO (SVP), GPS TX → ESP RX
-#define PIN_GPS_TX     12   // ESP TX → GPS RX
+#define PIN_GPS_TX     -1   // N/C: the firmware never sends to the GPS; GPIO 12 (MTDI strap) stays free
 #define GPS_BAUD       9600
 #define GPS_SERIAL     Serial2
 #define GPS_FIX_TIMEOUT_S  60   // max seconds to wait for GPS fix on boot
@@ -996,9 +1001,11 @@ uint32_t audioSearchTone(int16_t rssi) {
 // SYSTEM MONITORING (v6.0): battery, board temperature, RSSI history, CW decode
 // =============================================================================
 void blinkLed(uint8_t pin, int times, int ms);         // defined in LED helpers
-// Battery is measured through a 2:1 resistor divider (VBAT -> GPIO34 -> GND).
-// GPIO34 is ADC1, which keeps working even while WiFi uses ADC2.
-#define PIN_BATTERY_ADC    34
+// Battery is measured through a 2:1 resistor divider (VBAT -> GPIO36 -> GND).
+// GPIO 36 is ADC1_CH0 (SVP), input-only, and free of the SW_DN conflict that
+// existed when the divider sat on GPIO 34. ADC1 keeps working while WiFi
+// uses ADC2 (CONFIG mode).
+#define PIN_BATTERY_ADC    36
 #define BATTERY_READ_MS    5000UL
 #define BATTERY_FULL_MV    4200
 #define BATTERY_EMPTY_MV   3300
@@ -2292,7 +2299,7 @@ bool initRadioOOK(float freqMHz, int8_t powerDbm) {
   if (s != RADIOLIB_ERR_NONE) {
     LOG_ERR("SX1262 TX init FAILED: %d (CS=GPIO%d RST=GPIO%d BUSY=GPIO%d DIO1=GPIO%d)",
             s, PIN_LORA_CS, PIN_LORA_RST, PIN_LORA_BUSY, PIN_LORA_DIO1);
-    oledMessage("RADIO ERROR", "Check SX1262 wiring", "BUSY=GPIO21 DIO1=GPIO2");
+    oledMessage("RADIO ERROR", "Check SX1262 wiring", "BUSY=GPIO21 DIO1=GPIO39");
     return false;
   }
 
@@ -2800,7 +2807,7 @@ input[type=range].wpm-range::-webkit-slider-thumb{background:var(--a2);}
   <div class="info-box">
     SCK=GPIO18  MISO=GPIO19  MOSI=GPIO23<br>
     CS=GPIO5   RST=GPIO14   BUSY=GPIO21<br>
-    DIO1=GPIO2  TCXO=1.6V<br>
+    DIO1=GPIO39  TCXO=1.6V<br>
     <span style="color:var(--a2)">[!] BUSY pin must be wired or radio hangs</span>
   </div>
 </div>
@@ -3644,13 +3651,16 @@ uint8_t detectDisplayType() {
   };
 
   // ── 1. I2C OLED (SSD1306/SSD1309) at the common address 0x3C ──────────
-  // Uses the Wire/I2C peripheral on the default SDA/SCL pins. If nothing
-  // answers the probe, we fall through to SPI.
+  // Probes on the shared I2C pair (SDA=13, SCL=15), never on the default
+  // 21/22 pins: GPIO 21 is the SX1262 BUSY line and GPIO 22 the GPS RX
+  // input, and the I2C peripheral would keep both pins muxed away from
+  // their real functions after the probe.
 #if DISPLAY_TYPE == 1
-  Wire.begin();
+  Wire.begin(PIN_LCD_I2C_SDA, PIN_LCD_I2C_SCL);
   Wire.beginTransmission(0x3C);
   if (timed() && Wire.endTransmission() == 0) {
     delay(1);
+    Wire.end();
     u8g2.begin();
     u8g2.setDrawColor(1);
     u8g2.clearBuffer();
@@ -3660,6 +3670,7 @@ uint8_t detectDisplayType() {
     cfg.displayType = 1;
     return true;
   }
+  Wire.end();   // release SDA/SCL so the soft-SPI OLED can own GPIO 13/15
 #endif
 
   // ── 2. SPI OLED (the existing U8g2 wiring) ─────────────────────────────
@@ -3703,6 +3714,7 @@ uint8_t detectDisplayType() {
       return true;
     }
   }
+  Wire.end();
   return false;
 #else
   // ── 4. LCD (HD44780) — hello-world echo ───────────────────────────────

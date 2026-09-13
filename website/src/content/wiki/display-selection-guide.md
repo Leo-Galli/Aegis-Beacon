@@ -76,7 +76,7 @@ The TFT driver is `Adafruit_ST7735`, initialised with `INITR_BLACKTAB`. Rotation
 | D4 | GPIO 13 | |
 | D5 | GPIO 15 | |
 | D6 | GPIO 4 | |
-| D7 | GPIO 12 | shared with GPS TX |
+| D7 | GPIO 2 | strap pin, boot-safe (high-Z input) |
 | R/W | GND | write-only |
 | A (backlight anode) | 5V via 100Ω | |
 | K (backlight cathode) | GND | |
@@ -97,12 +97,12 @@ Same six GPIOs as the 16x2, identical constructor call. The only difference is t
 | D4 | GPIO 13 | |
 | D5 | GPIO 15 | |
 | D6 | GPIO 4 | |
-| D7 | GPIO 12 | shared with GPS TX |
+| D7 | GPIO 2 | strap pin, boot-safe (high-Z input) |
 | R/W | GND | write-only |
 | A (backlight anode) | 5V via 100Ω | |
 | K (backlight cathode) | GND | |
 
-**GPIO 12 conflict**: D7 is on GPIO 12, which is also the GPS TX line. If you use the GPS module *and* a 20x4 LCD at the same time, move D7 to a free GPIO (for example GPIO 14 or GPIO 2) and change `PIN_LCD_D7` in the firmware before compiling.
+**No GPS conflict**: D7 is on GPIO 2 (boot-safe, the LCD input is high-impedance) and the GPS TX line is unconnected because the firmware never sends to the GPS. The old GPIO 12 D7/GPS-TX conflict no longer exists.
 
 The 16x2 and 20x4 use exactly the same bus and the same constructor call, so the two character displays are interchangeable without any firmware change beyond `DISPLAY_TYPE`.
 
@@ -133,7 +133,7 @@ The PCF8574 I2C backpack drives either character LCD with four wires:
 The bus reuses the OLED/TFT pins because only one display is ever mounted.
 GPIO 21/22 are taken by the radio BUSY line and GPS RX, GPIO 0 is a
 strapping pin and GPIO 1/3 are the USB serial, so 13/15 is the cleanest
-pair left. A backpack build also removes the GPIO 12 conflict with GPS TX
+pair left. Parallel LCD builds are conflict-free too (D7 on GPIO 2, GPS TX unconnected); a backpack build goes further and needs only two bus wires
 entirely, because the parallel D7 line does not exist.
 
 Compile with `-D DISPLAY_TYPE=5` (16x2) or `-D DISPLAY_TYPE=6` (20x4).
@@ -243,4 +243,4 @@ If the display shows nothing:
 4. For LCD: adjust the contrast potentiometer until text is visible
 5. For TFT: ensure LED/BL is connected to 3V3 for backlight
 6. Run `Serial Monitor` at 115200 baud to see boot messages - the firmware reports display init status
-7. For LCD + GPS: if D7 is on GPIO 12 and you also use GPS, move D7 to a free GPIO and recompile
+7. For LCD + GPS: nothing to move — D7 is on GPIO 2 and the GPS TX line is unconnected

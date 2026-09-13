@@ -9,7 +9,7 @@ The ESP32's ADC is where the battery voltage enters the firmware. It is also the
 
 ## The usable pins
 
-The ESP32's ADC is available on specific pins (GPIO 32-39 for ADC1 on most boards). The firmware uses one of these for the battery divider. Input-only pins (GPIO 34-39) work for the ADC but have no pull-ups (see [ESP32 Input Only Pins](esp32-input-only-pins)).
+The ESP32's ADC is available on specific pins (GPIO 32-39 for ADC1 on most boards). The firmware uses GPIO 36 for the battery divider. Input-only pins (GPIO 34-39) work for the ADC but have no pull-ups (see [ESP32 Input Only Pins](esp32-input-only-pins)).
 
 ## The reference and the range
 

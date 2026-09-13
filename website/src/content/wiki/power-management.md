@@ -110,7 +110,7 @@ If readings differ from multimeter:
 
 ### Charging Detection
 
-Optional connection from TP4056 STDBY to GPIO 39:
+Optional connection from TP4056 STDBY: not supported by the current pin map (GPIO 39 is the radio DIO1 line); charge state is judged from the percentage trend.
 
 ```cpp
 bool isCharging() {

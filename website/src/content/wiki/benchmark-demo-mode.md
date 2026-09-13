@@ -39,7 +39,7 @@ Each subsystem is gated at its entry point, so the rest of the firmware is untou
 | RSSI sampling | `radio.getRSSI()` every 20 ms (SCAN) or 5 ms (LISTEN) | A virtual noise floor of -120 dBm; the scan and decode pipelines run against it |
 | RX state | `radio.startReceive()` before each dwell | Skipped |
 | Radio sleep | `radio.sleep()` / `radio.standby()` at mode exits | Skipped |
-| Battery | `analogReadMilliVolts()` on GPIO 34 every 5 s, low-battery warning at 3550 mV | `readBatteryMv()` returns 0 and marks the reading invalid; no ADC access, no low-battery blink, no `AEGIS:BATT:low` line |
+| Battery | `analogReadMilliVolts()` on GPIO 36 every 5 s, low-battery warning at 3550 mV | `readBatteryMv()` returns 0 and marks the reading invalid; no ADC access, no low-battery blink, no `AEGIS:BATT:low` line |
 | GPS | `gpsSerial.begin()` at boot and `gps.encode()` in every loop | The UART is never opened and NMEA is never parsed; the cached fix stays whatever it was |
 | Deep sleep | `esp_deep_sleep()` after each beacon cycle | Replaced by an idle loop that keeps the remaining-time screen up, so a measurement session can run back to back |
 

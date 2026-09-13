@@ -87,7 +87,7 @@ See [Hardware Components](/wiki/hardware-components) for complete BOM.
 | VCC | 3.3V | Red |
 | GND | GND | Black |
 | TX | GPIO 22 | White |
-| RX | GPIO 12 | Yellow |
+| RX | N/C | Yellow (leave unconnected) |
 
 ### Antenna Placement
 

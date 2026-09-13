@@ -48,7 +48,7 @@ The beacon monitors cell health every 5 s:
 
 - Voltage from the GPIO 36 divider.
 - Percentage from the 9-point Li-ion curve.
-- Charging state from the TP4056 STDBY pin.
+- Charge state is not read by the current firmware: judge it from the percentage trend while charging.
 
 An ADC reading outside 2500-4500 mV is rejected as a fault - a sure sign of a bad connection or dead cell.
 

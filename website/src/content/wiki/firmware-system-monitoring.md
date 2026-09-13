@@ -15,10 +15,10 @@ A 2:1 resistor divider samples the pack:
 
 | Connection | Value |
 |------------|-------|
-| BAT+ (TP4056 BAT+ rail) | 100 kohm to GPIO 34 |
-| GPIO 34 (ADC1_CH6) | 100 kohm to GND |
+| BAT+ (TP4056 BAT+ rail) | 100 kohm to GPIO 36 |
+| GPIO 36 (ADC1_CH0) | 100 kohm to GND |
 
-At 4.2 V full charge the pin sees 2.1 V, safely inside the 3.3 V ADC range. GPIO 34 is ADC1, so it keeps measuring even while WiFi (ADC2) is active in CONFIG mode.
+At 4.2 V full charge the pin sees 2.1 V, safely inside the 3.3 V ADC range. GPIO 36 is ADC1, so it keeps measuring even while WiFi (ADC2) is active in CONFIG mode. It also frees GPIO 34 for the SW_DN button, which previously shared the pin with the divider.
 
 ### Software
 
@@ -29,7 +29,7 @@ At 4.2 V full charge the pin sees 2.1 V, safely inside the 3.3 V ADC range. GPIO
 | `BATTERY_EMPTY_MV` | 3300 | Empty cutoff |
 | `BATTERY_LOW_MV` | 3550 | Low-battery warning threshold |
 
-- `readBatteryMv()`: `analogReadMilliVolts()` on GPIO 34, doubled for the divider, clamped to 0-4200 mV, cached for `BATTERY_READ_MS`.
+- `readBatteryMv()`: `analogReadMilliVolts()` on GPIO 36, doubled for the divider, clamped to 0-4200 mV, cached for `BATTERY_READ_MS`.
 - `battPct()`: linear map of 3300-4200 mV to 0-100%.
 - Low-battery event: red LED blinks 4x, `AEGIS:BATT:low;mv=..` is printed once, and the OLED glyph flashes at 400 ms; the warning resets when voltage recovers above the threshold.
 - `BATT` serial command replies `AEGIS:BATT:mv=..;pct=..`.

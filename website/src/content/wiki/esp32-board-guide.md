@@ -16,7 +16,7 @@ The ESP32 DevKit V1 (30-pin) is the heart of the Aegis-Beacon. It provides the d
 | Dual-core CPU | Two Xtensa cores at 240 MHz |
 | Two SPI-capable buses | VSPI for the radio, software SPI for the OLED |
 | Native DAC | GPIO 25 (DAC1) for clean audio |
-| 4 ADC-capable inputs | GPIO 34, 35, 36, 39 for buttons and battery |
+| 4 ADC-capable inputs | GPIO 34, 35 (buttons), 36 (battery ADC), 39 (radio DIO1) |
 | Deep sleep | ~10 uA with RTC RAM retained |
 | USB programming | Built-in CP2102/CH340 USB-serial |
 

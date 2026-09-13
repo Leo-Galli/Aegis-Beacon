@@ -14,7 +14,7 @@ Four GPIOs on the ESP32 are input-only: **GPIO 34, 35, 36, 39**. They cannot dri
 | 34 | SW_DN button | Input only |
 | 35 | SW_UP button | Input only |
 | 36 | Battery divider ADC | Input only |
-| 39 | TP4056 STDBY detect | Input only |
+| 39 | SX1262 DIO1 interrupt | Input only |
 
 ## What "input-only" means
 
@@ -32,7 +32,7 @@ GPIO 36 (SVP) is the battery divider input. It reads half of BAT+ through the 10
 
 ## The STDBY consequence
 
-GPIO 39 (SVN) detects the TP4056 STDBY signal, which is LOW while charging. This pin is optional; if you do not wire it, the firmware simply never sees "charging".
+GPIO 39 (SVN) receives the SX1262 DIO1 interrupt. It needs no pull-up: the radio drives the line actively. It must never be wired to a TP4056 STDBY output or any other driven signal except the radio module.
 
 ## Checking your wiring
 

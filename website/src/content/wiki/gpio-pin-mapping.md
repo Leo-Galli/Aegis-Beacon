@@ -34,7 +34,7 @@ description: "Complete v5.5 GPIO map: radio, OLED, GPS, audio, LEDs, buttons and
 | **34** | SW_DN | Input | Input-only, needs 10k external pullup |
 | **35** | SW_UP | Input | Input-only, needs 10k external pullup |
 | **36** | ADC1_CH0 | Input | Battery voltage divider wiper (SVP, input-only) |
-| **39** | TP4056 STDBY | Input | Optional -- LOW when charging (SVN, input-only) |
+| **39** | SX1262 DIO1 | Input | Radio IRQ (SVN, input-only, boot-safe) |
 
 ## Input-Only Pins
 
@@ -44,7 +44,7 @@ description: "Complete v5.5 GPIO map: radio, OLED, GPS, audio, LEDs, buttons and
 - **GPIO 34 (SW_DN):** Add 10k pullup to 3.3V
 - **GPIO 35 (SW_UP):** Add 10k pullup to 3.3V
 - **GPIO 36 (Battery ADC):** No pullup needed (ADC input)
-- **GPIO 39 (TP4056 STDBY):** No pullup needed (optional, ADC input)
+- **GPIO 39 (SX1262 DIO1):** No pullup needed (the radio drives the IRQ line actively)
 
 ## Pin Assignment Rationale
 
@@ -82,8 +82,8 @@ ESP32 DevKit V1 Pinout (30-pin)
      GPIO26 [10] [21] GPIO17 (OLED CS)
      GPIO27 [11] [20] GPIO16 (OLED DC)
      GPIO14 [12] [19] GPIO4 (OLED RESET)
-     GPIO12 [13] [18] GPIO2 (SX1262 DIO1)
-     GND    [14] [17] GPIO15 (OLED SCK)
+     GND    [13] [18] GPIO2 (LCD D7)
+     GPIO36 [14] [17] GPIO15 (OLED SCK)
      GPIO13 [15] [16] GPIO0
               USB
 ```

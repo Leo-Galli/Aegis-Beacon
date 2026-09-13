@@ -29,7 +29,7 @@ Flashing fails mysteriously with a cable that carries power but no data. Test th
 
 ## 6. Wrong GPIO for GPS RX
 
-GPS TX connects to **GPIO 22** (a valid input). GPS RX connects to GPIO 12. Swapping them produces no fix and confusing serial output.
+GPS TX (the module's output) connects to **GPIO 22** (a valid input). The module's RX pin stays unconnected — the firmware never sends to the GPS. Wiring the module RX to anything and leaving its TX floating produces no fix and confusing serial output.
 
 ## 7. Antenna not actually connected
 

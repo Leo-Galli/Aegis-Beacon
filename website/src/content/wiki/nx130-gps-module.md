@@ -28,10 +28,10 @@ The NEO-6M talks to the ESP32 on UART2 so it does not conflict with the USB seri
 |---|---|---|---|
 | VCC | 3.3V | power | 3.3V only — do not feed 5V |
 | GND | GND | ground | common ground with ESP32 |
-| TX | GPIO 12 | NEO → ESP RX | ESP TX for this UART |
+| RX | N/C | ESP TX unused | firmware never sends to the GPS |
 | RX | GPIO 22 | ESP TX → NEO RX | input-only on many boards (SVP), works as ESP TX |
 
-Default firmware assignment uses GPIO 12 for the ESP TX to the module and GPIO 22 for the ESP RX from the module. Earlier prototype wiring used GPIO 34 and GPIO 12; GPIO 34 is input-only and caused the RX pin to be on the wrong side — the current assignment fixes that.
+Default firmware assignment listens on GPIO 22 (module TX) and leaves the module RX unconnected, because the firmware never transmits to the GPS. GPIO 12 (the MTDI strap pin) is therefore free of all wiring.
 
 ## Serial Setup in Firmware
 

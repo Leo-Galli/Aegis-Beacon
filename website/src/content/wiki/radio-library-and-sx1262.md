@@ -23,7 +23,7 @@ The SX1262 is wired to the ESP32 as a SPI device with a few control lines.
 | CS | GPIO 5 | chip select |
 | RST | GPIO 14 | reset |
 | BUSY | GPIO 21 | busy — must be wired |
-| DIO1 | GPIO 2 | interrupt for RX/TX events |
+| DIO1 | GPIO 39 | interrupt for RX/TX events (boot-safe input-only pin) |
 | TCXO | 1.6V | TCXO enable, if used |
 
 RadioLib talks to the chip over SPI and uses DIO1 for interrupt-driven RX/TX events.

@@ -180,7 +180,7 @@ lcd.begin(16, 2);   // from DISP_COLS / DISP_ROWS
 | D4 | GPIO 13 | Data bit 4 |
 | D5 | GPIO 15 | Data bit 5 |
 | D6 | GPIO 4 | Data bit 6 |
-| D7 | GPIO 12 | Data bit 7 - shared with GPS TX |
+| D7 | GPIO 2 | Data bit 7 - strap pin, boot-safe (high-Z input) |
 | A (backlight +) | 5V via 100Ω | Backlight anode |
 | K (backlight -) | GND | Backlight cathode |
 
@@ -188,7 +188,7 @@ lcd.begin(16, 2);   // from DISP_COLS / DISP_ROWS
 
 - The LCD logic runs on 5 V, but the data lines (RS, EN, D4–D7) are 3.3 V from the ESP32. Most HD44780 modules accept 3.3 V logic levels on a 5 V supply; if your module is picky, use a level shifter on the six data/control lines.
 - R/W is tied to GND. The firmware never reads the display, so the write-only bus saves one GPIO.
-- D7 is on GPIO 12. That pin is also the GPS TX line (`PIN_GPS_TX`). If you build the GPS edition and want the 16x2 LCD at the same time, move D7 to a free GPIO (for example GPIO 14 or GPIO 2) and change `PIN_LCD_D7` in the firmware before compiling.
+- D7 is on GPIO 2. GPIO 2 is a strapping pin, but the HD44780 data line is a high-impedance input on the ESP32 side, so it cannot disturb the boot sample. The GPS no longer shares any LCD pin: the firmware never transmits to the GPS and `PIN_GPS_TX` is left unconnected, so the GPS/LCD conflict that existed in earlier releases is gone entirely.
 - Contrast is mandatory. Without the potentiometer on V0 the display shows a faint rectangle or nothing at all.
 - Backlight current is significant on battery builds. If you want to reduce it, raise the series resistor on the A line or switch the backlight off in bright environments.
 
@@ -244,7 +244,7 @@ lcd.begin(20, 4);   // from DISP_COLS / DISP_ROWS
 | D4 | GPIO 13 | Data bit 4 |
 | D5 | GPIO 15 | Data bit 5 |
 | D6 | GPIO 4 | Data bit 6 |
-| D7 | GPIO 12 | Data bit 7 - shared with GPS TX |
+| D7 | GPIO 2 | Data bit 7 - strap pin, boot-safe (high-Z input) |
 | A (backlight +) | 5V via 100Ω | Backlight anode |
 | K (backlight -) | GND | Backlight cathode |
 
@@ -252,7 +252,7 @@ lcd.begin(20, 4);   // from DISP_COLS / DISP_ROWS
 
 - The 20x4 uses the same six GPIOs and the same constructor call as the 16x2. The only difference is the display module itself and the `lcd.begin(20, 4)` call, which the firmware makes automatically from `DISP_COLS` and `DISP_ROWS`.
 - You can swap a 16x2 for a 20x4 and back again without changing any wiring, only `DISPLAY_TYPE`.
-- D7 is still on GPIO 12, still shared with GPS TX. The conflict matters more on the 20x4 because that screen is often used precisely when you also want GPS coordinates visible. If you need both, move D7 and update `PIN_LCD_D7`.
+- D7 is on GPIO 2, boot-safe for this use because the HD44780 data line is a high-impedance input. The GPS shares no LCD pin at all: its TX line is unconnected because the firmware never transmits to the module.
 - The 20x4 shows a third and fourth row on every screen where the firmware has one. That is the main reason to choose it over the 16x2: coordinates, decoded Morse, and scan history can stay on screen at the same time.
 
 ### Related
@@ -278,17 +278,17 @@ You cannot mix SPI and LCD simultaneously without changing pins in the firmware,
 | TFT + Radio (VSPI) | Yes - different buses |
 | OLED + TFT | No - same bus, one at a time |
 | LCD 16x2 + LCD 20x4 | No - same bus, one at a time |
-| LCD + GPS | Yes, but D7 on GPIO 12 conflicts with GPS TX for the 20x4 use case. Move D7 if both are needed. |
+| LCD + GPS | Yes, with no conflicts: D7 is on GPIO 2 (strap-safe) and the GPS TX line is unconnected. |
 
 ---
 
 ## Moving a pin when you have a conflict
 
-The only default conflict worth fixing is **D7 on GPIO 12** when you use a 20x4 LCD together with GPS.
+There are no default conflicts left between the displays and the GPS: D7 sits on GPIO 2 (boot-safe high-Z input) and the GPS TX line is unconnected.
 
 To move D7:
 
-1. Pick a free GPIO. GPIO 14 and GPIO 2 are safe choices on the 30-pin DevKit V1; GPIO 14 is also the SX1262 reset pin, so only use it if the display is the only screen and you are not building the radio version with the default reset pin. GPIO 2 is the SX1262 DIO1 line, so only use it if you are not building the standard radio configuration.
+1. Pick a free GPIO. GPIO 14 is a safe choice on the 30-pin DevKit V1; it is also the SX1262 reset pin, so only use it if the display is the only screen and you are not building the radio version with the default reset pin. GPIO 2 carries the LCD D7 line (boot-safe: the HD44780 input is high-impedance) and GPIO 39 carries the radio DIO1 line. Avoid GPIO 12 (MTDI strap) entirely.
 2. In `AegisBeacon.ino`, change `#define PIN_LCD_D7` to the new GPIO.
 3. Recompile and flash.
 
@@ -311,7 +311,7 @@ Backlight current on the LCDs is much higher than on the OLED. If battery runtim
 - [ ] `DISPLAY_TYPE` matches the display you have wired.
 - [ ] For OLED/TFT: 3.3 V, not 5 V.
 - [ ] For LCD: 5 V on VDD, 3.3 V logic on RS/EN/D4–D7 is usually fine, contrast pot on V0.
-- [ ] For LCD + GPS with a 20x4: D7 moved off GPIO 12, or GPS TX sacrificed.
+- [ ] For LCD + GPS with a 20x4: nothing to move, D7 on GPIO 2 and GPS TX unconnected.
 - [ ] Only one display connected at a time.
 - [ ] OLED is the 7-pin SPI version, not the 4-pin I2C version.
 - [ ] TFT backlight (LED/BL) tied to 3.3 V.

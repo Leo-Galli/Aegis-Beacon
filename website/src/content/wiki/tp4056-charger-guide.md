@@ -18,7 +18,7 @@ The TP4056 is a single-cell Li-ion linear charger sold as a tiny USB-C breakout.
 | Cell output | BAT+ / BAT- |
 | Protection | DW01A + FS8205 (over-discharge, over-current) |
 | Status pins | CHRG (charging), STDBY (done) |
-| STDBY to ESP32 | GPIO 39 (optional) |
+| STDBY to ESP32 | not connected (GPIO 39 is the radio DIO1 line; the firmware has no charge-detect input) |
 
 ## The Pads That Matter
 
@@ -26,7 +26,7 @@ The TP4056 is a single-cell Li-ion linear charger sold as a tiny USB-C breakout.
 |-----|-----------|---------|
 | BAT+ | 100k divider input | Battery voltage measurement point |
 | BAT- | GND (common) | Cell negative |
-| STDBY | GPIO 39 | LOW while charging or full |
+| STDBY | N/C | leave unconnected in the default build; no firmware charge-detect |
 | CHRG | (optional) | LOW while actively charging |
 | OUT+/OUT- | ESP32 VBUS/5V or separate | Depends on module layout |
 

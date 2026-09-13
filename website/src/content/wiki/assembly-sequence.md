@@ -33,7 +33,7 @@ The order you assemble matters. Solder the power path first, test it, then add p
 ## Phase 5: Audio and GPS
 
 12. Wire the audio jack (GPIO 25 → 100 Ω → 10 µF → tip).
-13. Wire the GPS (TX to GPIO 22, RX to GPIO 12, VCC, GND).
+13. Wire the GPS (module TX to GPIO 22, module RX unconnected, VCC, GND).
 14. **Test**: headphone clicks during TX; GPS fix screen resolves outdoors.
 
 ## Phase 6: Enclosure

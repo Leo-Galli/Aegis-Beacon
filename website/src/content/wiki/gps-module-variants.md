@@ -40,7 +40,7 @@ All of these use the same two pins:
 | GPS pin | ESP32 GPIO |
 |---------|------------|
 | TX | GPIO 22 (Serial2 RX) |
-| RX | GPIO 12 (Serial2 TX) |
+| RX | N/C (Serial2 TX unused; firmware never sends to the GPS) |
 
 ## Related Pages
 

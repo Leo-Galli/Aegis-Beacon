@@ -19,7 +19,7 @@ The E22-400M30S is the radio heart of the beacon. Knowing every pin prevents the
 | NSS / CS | Chip select (active low) | GPIO 5 |
 | RESET | Active low reset | GPIO 14 |
 | BUSY | Status output (mandatory) | GPIO 21 |
-| DIO1 | TX/RX done IRQ | GPIO 2 |
+| DIO1 | TX/RX done IRQ | GPIO 39 |
 | TXEN / RXEN | PA control (internal) | N/C |
 
 ## VCC and GND
@@ -36,7 +36,7 @@ BUSY goes high while the SX1262 is busy (e.g. during a command, a calibration, o
 
 ## DIO1
 
-DIO1 is the interrupt output: it pulses on TX/RX complete and on timeout. The firmware uses it for transmission timing. It is wired to GPIO 2.
+DIO1 is the interrupt output: it pulses on TX/RX complete and on timeout. The firmware uses it for transmission timing. It is wired to GPIO 39 (input-only, boot-safe): GPIO 2 is a strapping pin, and a radio module holding it low at reset could force the chip into download mode.
 
 ## RESET
 

@@ -34,7 +34,7 @@ The same firmware drives three practical builds. Every configuration shares the 
 ## GPS Edition
 
 - The recommended reference build documented throughout this wiki and in the DATASHEET.
-- Adds the NEO-6M on UART2 (GPIO 22 RX / GPIO 12 TX) and the battery divider on GPIO 36.
+- Adds the NEO-6M on UART2 (GPIO 22 RX, TX unconnected) and the battery divider on GPIO 36.
 - Enables the full `SOS DE [NAME] PSN [LAT] [LON]` payload.
 - Enclosure: Hammond 1593L or 3D printed, with the OLED window cut out.
 
