@@ -1,0 +1,227 @@
+---
+/** Photorealistic 2D shell for the /demo firmware simulation. */
+---
+
+<div class="aegis-device-scene" data-rv style="--rv-delay: 0ms">
+  <article class="aegis-device" aria-label="Aegis-Beacon hardware simulation">
+    <svg class="aegis-device__art" viewBox="0 -148 300 708" aria-hidden="true" role="presentation">
+      <defs>
+        <linearGradient id="ab-case-face" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#8f98a3"/>
+          <stop offset="18%" stop-color="#b8c0c9"/>
+          <stop offset="42%" stop-color="#9aa3ad"/>
+          <stop offset="100%" stop-color="#5f6770"/>
+        </linearGradient>
+        <linearGradient id="ab-case-edge" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#d2d8df"/>
+          <stop offset="100%" stop-color="#434a52"/>
+        </linearGradient>
+        <linearGradient id="ab-case-side" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#3a4048"/>
+          <stop offset="50%" stop-color="#6d7680"/>
+          <stop offset="100%" stop-color="#2e3339"/>
+        </linearGradient>
+        <linearGradient id="ab-whip" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#1a1d21"/>
+          <stop offset="35%" stop-color="#3d444c"/>
+          <stop offset="65%" stop-color="#252a30"/>
+          <stop offset="100%" stop-color="#121418"/>
+        </linearGradient>
+        <linearGradient id="ab-sma-nut" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#e8ecf0"/>
+          <stop offset="45%" stop-color="#9aa3ad"/>
+          <stop offset="100%" stop-color="#5c646d"/>
+        </linearGradient>
+        <linearGradient id="ab-bezel" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#2a2f36"/>
+          <stop offset="100%" stop-color="#0a0c0e"/>
+        </linearGradient>
+        <radialGradient id="ab-screw" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#e2e6ea"/>
+          <stop offset="100%" stop-color="#6b737c"/>
+        </radialGradient>
+        <filter id="ab-soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.28"/>
+        </filter>
+        <filter id="ab-inset" x="-10%" y="-10%" width="120%" height="120%">
+          <feOffset dx="0" dy="1"/>
+          <feGaussianBlur stdDeviation="1.5" result="blur"/>
+          <feComposite in="SourceGraphic" in2="blur" operator="arithmetic" k2="-1" k3="1"/>
+        </filter>
+      </defs>
+
+      <ellipse cx="150" cy="548" rx="108" ry="10" fill="#000" opacity="0.22"/>
+
+      <!-- Whip antenna (433 MHz, ~17 cm — ~1.4× case height) -->
+      <g class="aegis-device__antenna-group">
+        <path
+          d="M236 152 C235 110 233 40 232 -20 C231 -70 231 -110 233 -140"
+          fill="none" stroke="url(#ab-whip)" stroke-width="4.5" stroke-linecap="round"
+        />
+        <path
+          d="M236 152 C235 90 233 10 232 -60 C231 -100 232 -130 233 -140"
+          fill="none" stroke="#707880" stroke-width="0.9" stroke-linecap="round" opacity="0.28"
+        />
+        <ellipse cx="233" cy="-143" rx="2.4" ry="3.4" fill="#1a1e24"/>
+        <path d="M229 152 Q236 158 243 152 L241 146 Q236 150 231 146 Z" fill="#252a30"/>
+      </g>
+
+      <!-- Case side depth (3D lip) -->
+      <path
+        d="M24 168 L24 548 Q24 558 34 558 L266 558 Q276 558 276 548 L276 168 Q276 158 266 158 L34 158 Q24 158 24 168 Z"
+        fill="url(#ab-case-side)" opacity="0.95"
+      />
+
+      <!-- Front face (smoke polycarbonate) -->
+      <rect x="18" y="152" width="264" height="400" rx="26" ry="26" fill="url(#ab-case-face)" filter="url(#ab-soft-shadow)"/>
+      <rect x="18" y="152" width="264" height="400" rx="26" ry="26" fill="#b8c0c9" opacity="0.08"/>
+      <rect x="18" y="152" width="264" height="400" rx="26" ry="26" fill="none" stroke="url(#ab-case-edge)" stroke-width="1.2" opacity="0.85"/>
+      <rect x="24" y="158" width="252" height="388" rx="22" ry="22" fill="none" stroke="#fff" stroke-width="0.5" opacity="0.07"/>
+
+      <!-- Top chamfer highlight -->
+      <path d="M34 158 H266 Q274 158 274 166 V172 C220 168 80 168 26 172 V166 Q26 158 34 158 Z" fill="#fff" opacity="0.12"/>
+
+      <!-- Side grip ribs -->
+      <g opacity="0.28" stroke="#2a3038" stroke-width="1">
+        <line x1="22" y1="220" x2="22" y2="500"/>
+        <line x1="278" y1="220" x2="278" y2="500"/>
+      </g>
+      <g opacity="0.18" fill="#2a3038">
+        <rect x="20" y="230" width="2" height="5" rx="0.5"/>
+        <rect x="20" y="242" width="2" height="5" rx="0.5"/>
+        <rect x="20" y="254" width="2" height="5" rx="0.5"/>
+        <rect x="278" y="230" width="2" height="5" rx="0.5"/>
+        <rect x="278" y="242" width="2" height="5" rx="0.5"/>
+        <rect x="278" y="254" width="2" height="5" rx="0.5"/>
+      </g>
+
+      <!-- SMA bulkhead on top edge -->
+      <g transform="translate(222 146)">
+        <rect x="0" y="0" width="28" height="14" rx="2" fill="#252a30"/>
+        <polygon points="4,14 24,14 22,22 6,22" fill="#1a1e24"/>
+        <circle cx="14" cy="7" r="9" fill="url(#ab-sma-nut)"/>
+        <circle cx="14" cy="7" r="5.5" fill="#3a4048" stroke="#6d7680" stroke-width="0.6"/>
+        <circle cx="14" cy="7" r="2.2" fill="#121418"/>
+      </g>
+
+      <!-- Silkscreen -->
+      <text x="36" y="188" fill="#dfe4ea" font-family="ui-monospace, monospace" font-size="7.5" font-weight="700" letter-spacing="2.8">AEGIS-BEACON</text>
+      <text x="252" y="188" fill="#aeb6bf" font-family="ui-monospace, monospace" font-size="6.5" text-anchor="end">v6.0</text>
+
+      <!-- OLED recess -->
+      <rect x="34" y="202" width="232" height="128" rx="8" fill="url(#ab-bezel)" stroke="#14181c" stroke-width="1"/>
+      <rect x="40" y="208" width="220" height="116" rx="4" fill="#050608" stroke="#30363d" stroke-width="0.8"/>
+      <rect x="40" y="208" width="220" height="116" rx="4" fill="none" stroke="#fff" stroke-width="0.4" opacity="0.06"/>
+      <text x="254" y="342" fill="#7a828c" font-family="ui-monospace, monospace" font-size="5.5" text-anchor="end" letter-spacing="1.2">2.42&quot; SSD1309</text>
+
+      <!-- Status row -->
+      <text x="42" y="368" fill="#8a929c" font-family="ui-monospace, monospace" font-size="5.5" font-weight="700">TX</text>
+      <circle cx="58" cy="365" r="5" fill="#14181c" stroke="#30363d" stroke-width="0.8"/>
+      <text x="78" y="368" fill="#8a929c" font-family="ui-monospace, monospace" font-size="5.5" font-weight="700">RX</text>
+      <circle cx="94" cy="365" r="5" fill="#14181c" stroke="#30363d" stroke-width="0.8"/>
+
+      <!-- Speaker grille -->
+      <g transform="translate(118 358)">
+        <rect x="0" y="0" width="140" height="14" rx="3" fill="#14181c" stroke="#30363d" stroke-width="0.6"/>
+        <g fill="#252a30">
+          <rect x="6" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="11" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="16" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="21" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="26" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="31" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="36" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="41" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="46" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="51" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="56" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="61" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="66" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="71" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="76" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="81" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="86" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="91" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="96" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="101" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="106" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="111" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="116" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="121" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="126" y="4" width="2" height="6" rx="0.5"/>
+          <rect x="131" y="4" width="2" height="6" rx="0.5"/>
+        </g>
+      </g>
+
+      <!-- Button wells -->
+      <g fill="#121418" stroke="#30363d" stroke-width="0.8">
+        <rect x="36" y="388" width="52" height="52" rx="4"/>
+        <rect x="98" y="388" width="52" height="52" rx="4"/>
+        <rect x="160" y="388" width="52" height="52" rx="4"/>
+        <rect x="222" y="388" width="52" height="52" rx="4"/>
+      </g>
+
+      <!-- Corner screws -->
+      <g fill="url(#ab-screw)" stroke="#4a5159" stroke-width="0.4">
+        <circle cx="38" cy="172" r="4.5"/>
+        <circle cx="262" cy="172" r="4.5"/>
+        <circle cx="38" cy="536" r="4.5"/>
+        <circle cx="262" cy="536" r="4.5"/>
+      </g>
+      <g stroke="#3a4048" stroke-width="0.7" stroke-linecap="round">
+        <line x1="36" y1="172" x2="40" y2="172"/>
+        <line x1="38" y1="170" x2="38" y2="174"/>
+        <line x1="260" y1="172" x2="264" y2="172"/>
+        <line x1="262" y1="170" x2="262" y2="174"/>
+        <line x1="36" y1="536" x2="40" y2="536"/>
+        <line x1="38" y1="534" x2="38" y2="538"/>
+        <line x1="260" y1="536" x2="264" y2="536"/>
+        <line x1="262" y1="534" x2="262" y2="538"/>
+      </g>
+
+      <!-- USB-C port -->
+      <rect x="128" y="544" width="44" height="7" rx="2" fill="#0a0c0e" stroke="#30363d" stroke-width="0.6"/>
+      <rect x="136" y="546" width="28" height="3" rx="1" fill="#252a30"/>
+    </svg>
+
+    <div class="aegis-device__oled-slot">
+      <canvas
+        id="oled-canvas"
+        class="oled-canvas"
+        width="512"
+        height="256"
+        role="img"
+        aria-live="polite"
+        aria-label="OLED display simulation"
+      ></canvas>
+      <div class="oled-canvas__glass" aria-hidden="true"></div>
+    </div>
+
+    <div class="aegis-device__led-slot aegis-device__led-slot--tx" aria-hidden="true">
+      <span class="aegis-device__led aegis-device__led--tx" id="led-tx"></span>
+    </div>
+    <div class="aegis-device__led-slot aegis-device__led-slot--rx" aria-hidden="true">
+      <span class="aegis-device__led aegis-device__led--rx" id="led-rx"></span>
+    </div>
+
+    <div class="aegis-device__keys">
+      <button class="aegis-key" data-key="mode" type="button" aria-label="MODE button">
+        <span class="aegis-key__cap">MODE</span>
+      </button>
+      <button class="aegis-key" data-key="sel" type="button" aria-label="SEL button">
+        <span class="aegis-key__cap">SEL</span>
+      </button>
+      <button class="aegis-key" data-key="up" type="button" aria-label="UP button">
+        <span class="aegis-key__cap">UP</span>
+      </button>
+      <button class="aegis-key" data-key="dn" type="button" aria-label="DN button">
+        <span class="aegis-key__cap">DN</span>
+      </button>
+    </div>
+  </article>
+
+  <p class="aegis-device__hint">
+    MODE short: cycle BEACON, SEARCH, LISTEN, CONFIG. MODE hold 2 s: EMERGENCY.
+    SEL short: VOL/WPM. SEL hold 3 s: CONFIG.
+  </p>
+</div>

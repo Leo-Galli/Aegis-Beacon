@@ -1,5 +1,6 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '../layouts/Layout.astro'
+import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
 ---
 
 <Layout title="Firmware Demo | Aegis-Beacon" description="Interactive simulation of the Aegis-Beacon firmware v6.0: BEACON, SEARCH, LISTEN, CONFIG and EMERGENCY modes with a realistic device mockup and live SSD1309 OLED.">
@@ -14,84 +15,7 @@ import Layout from '../layouts/Layout.astro';
   </header>
 
   <div class="demo-layout">
-    <div class="aegis-device-scene" data-rv style="--rv-delay: 0ms">
-      <article class="aegis-device" aria-label="Aegis-Beacon hardware simulation">
-        <div class="aegis-device__ambient" aria-hidden="true"></div>
-        <div class="aegis-device__antenna-mount" aria-hidden="true">
-          <svg class="aegis-device__antenna-svg" viewBox="0 0 28 112" width="28" height="112" role="presentation">
-            <rect x="8" y="98" width="12" height="10" rx="1.5" fill="#6e7680"/>
-            <rect x="10" y="100" width="8" height="6" rx="0.8" fill="#9aa3ad"/>
-            <rect x="12.5" y="14" width="3" height="84" rx="1.5" fill="#8a929c"/>
-            <rect x="12" y="8" width="4" height="8" rx="2" fill="#a8b0ba"/>
-            <ellipse cx="14" cy="6" rx="3" ry="4" fill="#c4cad2"/>
-          </svg>
-        </div>
-        <div class="aegis-device__shell">
-          <span class="aegis-device__screw aegis-device__screw--tl" aria-hidden="true"></span>
-          <span class="aegis-device__screw aegis-device__screw--tr" aria-hidden="true"></span>
-          <span class="aegis-device__screw aegis-device__screw--bl" aria-hidden="true"></span>
-          <span class="aegis-device__screw aegis-device__screw--br" aria-hidden="true"></span>
-          <span class="aegis-device__grip aegis-device__grip--left" aria-hidden="true"></span>
-          <span class="aegis-device__grip aegis-device__grip--right" aria-hidden="true"></span>
-          <span class="aegis-device__port" aria-hidden="true"></span>
-
-          <header class="aegis-device__header">
-            <span class="aegis-device__brand">AEGIS-BEACON</span>
-            <span class="aegis-device__rev">v6.0</span>
-          </header>
-
-          <div class="aegis-device__display-cutout">
-            <div class="aegis-device__oled-stack">
-              <canvas
-                id="oled-canvas"
-                class="oled-canvas"
-                width="512"
-                height="256"
-                role="img"
-                aria-live="polite"
-                aria-label="OLED display simulation"
-              ></canvas>
-              <div class="oled-canvas__glass" aria-hidden="true"></div>
-              <div class="oled-canvas__bezel" aria-hidden="true"></div>
-            </div>
-            <span class="aegis-device__display-label">2.42&quot; SSD1309</span>
-          </div>
-
-          <div class="aegis-device__faceplate">
-            <div class="aegis-device__io" aria-hidden="true">
-              <span class="aegis-device__led-wrap">
-                <span class="aegis-device__led-tag">TX</span>
-                <span class="aegis-device__led aegis-device__led--tx" id="led-tx"></span>
-              </span>
-              <span class="aegis-device__led-wrap">
-                <span class="aegis-device__led-tag">RX</span>
-                <span class="aegis-device__led aegis-device__led--rx" id="led-rx"></span>
-              </span>
-              <span class="aegis-device__grille"></span>
-            </div>
-            <div class="aegis-device__keys">
-              <button class="aegis-key" data-key="mode" type="button" aria-label="MODE button">
-                <span class="aegis-key__cap">MODE</span>
-              </button>
-              <button class="aegis-key" data-key="sel" type="button" aria-label="SEL button">
-                <span class="aegis-key__cap">SEL</span>
-              </button>
-              <button class="aegis-key" data-key="up" type="button" aria-label="UP button">
-                <span class="aegis-key__cap">UP</span>
-              </button>
-              <button class="aegis-key" data-key="dn" type="button" aria-label="DN button">
-                <span class="aegis-key__cap">DN</span>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="aegis-device__shadow" aria-hidden="true"></div>
-      </article>
-      <p class="aegis-device__hint">
-        MODE short: cycle BEACON, SEARCH, LISTEN, CONFIG. MODE hold 2 s: EMERGENCY.
-        SEL short: VOL/WPM. SEL hold 3 s: CONFIG.
-      </p>
-    </div>
+    <AegisDeviceMockup />
 
     <div class="controls-panel" data-rv style="--rv-delay: 120ms">
       <div class="controls-panel__header">
