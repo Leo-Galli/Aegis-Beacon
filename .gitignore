@@ -42,3 +42,4 @@ bench-*.json
 __pycache__/
 *.pyc
 "skill-lock.json"  
+"skill-lock.json"  
