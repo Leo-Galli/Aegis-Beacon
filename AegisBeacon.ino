@@ -439,9 +439,20 @@
 #define AUDIO_CHANNEL  0
 #define AUDIO_FREQ_HZ  40000
 #define AUDIO_RES_BITS 8
+
+// Core compatibility switch. Core 3.x moved to a pin-addressed LEDC API and
+// a struct-based task watchdog config; core 2.x keeps the channel API and
+// the classic two-argument init. Unknown cores default to 3.x, the current
+// Arduino-ESP32 line.
+#if !defined(ESP_ARDUINO_VERSION_MAJOR) || ESP_ARDUINO_VERSION_MAJOR >= 3
+  #define CORE_3X 1
+#else
+  #define CORE_3X 0
+#endif
+
 // LEDC handle passed to ledcWrite/ledcWriteTone: core 3.x addresses the PWM
 // through the GPIO pin, core 2.x uses the raw channel number.
-#if ESP_ARDUINO_VERSION >= 0x03000000
+#if CORE_3X
   #define AUDIO_LEDC_TARGET PIN_AUDIO
 #else
   #define AUDIO_LEDC_TARGET AUDIO_CHANNEL
@@ -862,7 +873,7 @@ void buildMorsePayload(char* out, size_t outLen) {
 // output signal (DAC parking included), so PWM must be re-attached before
 // the next note or it stays silent. Cheap and idempotent.
 static inline void audioPwmAttach() {
-#if ESP_ARDUINO_VERSION >= 0x03000000
+#if CORE_3X
   ledcAttach(PIN_AUDIO, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
 #else
   ledcSetup(AUDIO_CHANNEL, AUDIO_FREQ_HZ, AUDIO_RES_BITS);
@@ -3554,7 +3565,7 @@ void setup() {
   // Task watchdog: WDT_TIMEOUT_SEC budget, panic on expiry. Core 3.x (IDF 5)
   // configures via struct and the Arduino runtime already starts the TWDT,
   // so reconfigure with an init fallback; core 2.x keeps the classic init.
-  #if ESP_ARDUINO_VERSION >= 0x03000000
+  #if CORE_3X
     esp_task_wdt_config_t wdtCfg;
     wdtCfg.timeout_ms     = WDT_TIMEOUT_SEC * 1000U;
     wdtCfg.idle_core_mask = 0;
