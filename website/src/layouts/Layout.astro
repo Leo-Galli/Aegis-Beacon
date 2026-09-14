@@ -118,6 +118,7 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 18v-3a6 6 0 0 1 12 0v3"/><circle cx="12" cy="18" r="1.6"/><path d="M8 6h8M8 9h6"/></svg>
         </span>
         <span class="site-logo__text">Aegis<span class="site-logo__accent">Beacon</span></span>
+        <span class="site-logo__beacon" aria-hidden="true" title="SAR Radio System Online"></span>
       </a>
       <nav class="site-nav">
         <a href="/wiki" class:list={["site-nav__link", { active: currentPath.includes('/wiki') }]}>Docs</a>
@@ -229,6 +230,17 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
     }
     .site-logo__text { letter-spacing: 0; }
     .site-logo__accent { color: var(--primary); }
+    .site-logo__beacon {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      margin-left: 2px;
+      animation: beaconPulse 2.4s ease-in-out infinite;
+    }
+    @keyframes beaconPulse {
+      0%, 100% { opacity: 0.9; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.8); }
+    }
     .site-nav { display: flex; gap: 0.125rem; align-items: center; }
     .site-nav__link {
       position: relative;

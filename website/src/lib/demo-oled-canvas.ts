@@ -33,87 +33,128 @@ export const OLED_SCALE = 4
 
 const W = OLED_LOGICAL_W
 const H = OLED_LOGICAL_H
-const FG = '#e8eaed'
-const BG = '#050608'
-const FG_INV = '#050608'
-const BG_INV = '#e8eaed'
+const FG = '#ffffff'
+const BG = '#000000'
+const FG_DIM = '#8e96a0'
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
 
 const setFont = (ctx: CanvasRenderingContext2D, size: number, bold = false) => {
-  ctx.font = `${bold ? '700' : '400'} ${size}px "JetBrains Mono", ui-monospace, monospace`
+  ctx.font = `${bold ? '700' : '500'} ${size}px "JetBrains Mono", ui-monospace, monospace`
 }
 
+/** Draws antenna icon with radio broadcast arcs */
+const drawAntennaIcon = (ctx: CanvasRenderingContext2D, x: number, y: number, radiating = false) => {
+  ctx.strokeStyle = FG
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(x + 3, y + 8)
+  ctx.lineTo(x + 3, y + 2)
+  ctx.moveTo(x + 1, y)
+  ctx.lineTo(x + 5, y)
+  ctx.stroke()
+
+  if (radiating) {
+    ctx.beginPath()
+    ctx.arc(x + 3, y + 1, 3, -0.8 * Math.PI, -0.2 * Math.PI)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.arc(x + 3, y + 1, 6, -0.8 * Math.PI, -0.2 * Math.PI)
+    ctx.stroke()
+  }
+}
+
+/** Draws battery meter with voltage readout and discrete level bars */
+const drawBattery = (ctx: CanvasRenderingContext2D, pct: number, x: number, y: number) => {
+  ctx.strokeStyle = FG
+  ctx.lineWidth = 1
+  ctx.strokeRect(x, y, 14, 7)
+  ctx.fillRect(x + 14, y + 2, 1.5, 3)
+
+  const bars = pct <= 15 ? 1 : pct <= 40 ? 2 : pct <= 70 ? 3 : 4
+  for (let i = 0; i < 4; i++) {
+    if (i < bars) {
+      ctx.fillStyle = FG
+      ctx.fillRect(x + 2 + i * 3, y + 2, 2, 3)
+    }
+  }
+}
+
+/** Draws the top telemetry status bar */
 const drawHeader = (
   ctx: CanvasRenderingContext2D,
   title: string,
   meta: string,
-  invert: boolean,
-  antLive = false,
+  radiating = false,
+  batteryPct = 85
 ) => {
-  ctx.fillStyle = invert ? BG_INV : BG_INV
-  ctx.fillRect(0, 0, W, 12)
-  ctx.fillStyle = invert ? FG_INV : FG_INV
+  drawAntennaIcon(ctx, 2, 1, radiating)
   setFont(ctx, 6, true)
-  ctx.fillText(title, 2, 9)
+  ctx.fillStyle = FG
+  ctx.fillText(title, 14, 8)
+
   if (meta) {
-    const mw = ctx.measureText(meta).width
-    ctx.fillText(meta, W - mw - 2, 9)
+    setFont(ctx, 6, false)
+    ctx.fillStyle = FG_DIM
+    ctx.fillText(meta, 60, 8)
   }
-  if (antLive) {
-    ctx.strokeStyle = FG_INV
-    ctx.beginPath()
-    ctx.arc(64, 6, 2, 0, Math.PI * 2)
-    ctx.stroke()
-    ctx.beginPath()
-    ctx.arc(64, 6, 4, 0, Math.PI * 2)
-    ctx.stroke()
-  }
+
+  drawBattery(ctx, batteryPct, W - 17, 1)
+
+  ctx.strokeStyle = '#222830'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(0, 11.5)
+  ctx.lineTo(W, 11.5)
+  ctx.stroke()
 }
 
-const drawBattery = (ctx: CanvasRenderingContext2D, pct: number, x: number, y: number) => {
-  const segs = pct <= 10 ? 1 : pct >= 76 ? 4 : pct >= 51 ? 3 : pct >= 26 ? 2 : 1
-  ctx.strokeStyle = FG_INV
-  ctx.strokeRect(x, y, 10, 6)
-  for (let i = 0; i < 4; i++) {
-    const on = i < segs
-    ctx.fillStyle = on ? FG_INV : 'transparent'
-    if (on) ctx.fillRect(x + 1 + i * 2, y + 1 + (3 - i), 1, 1 + i)
-  }
-}
-
-const drawTrace = (ctx: CanvasRenderingContext2D, history: number[], y: number, h: number, thr: number) => {
-  ctx.strokeStyle = FG
-  ctx.strokeRect(0, y, W, h)
-  ctx.fillStyle = FG
-  for (let i = 0; i < history.length; i++) {
-    const v = history[i]
-    if (v === 0) continue
-    const py = y + h - 1 - Math.round(((clamp(v, -120, -40) + 120) / 80) * (h - 2))
-    ctx.fillRect(W - 1 - i, py, 1, 1)
-  }
-  const tx = Math.round(((clamp(Math.round(((thr + 120) / 80) * 100), 0, 100)) / 100) * (W - 1))
-  ctx.fillRect(tx, y, 1, h)
-}
-
-const drawBar = (ctx: CanvasRenderingContext2D, pct: number, y: number) => {
-  ctx.strokeStyle = FG
-  ctx.strokeRect(0, y, W, 7)
-  ctx.fillStyle = FG
-  ctx.fillRect(1, y + 1, Math.round((pct / 100) * (W - 2)), 5)
-}
-
+/** Draws large centered frequency with MHz unit */
 const drawLargeFreq = (ctx: CanvasRenderingContext2D, freq: string, baseline = 27) => {
-  setFont(ctx, 16, true)
+  setFont(ctx, 15, true)
   const freqW = ctx.measureText(freq).width
   setFont(ctx, 6, false)
-  const mhzW = ctx.measureText('MHz').width
+  const unitW = ctx.measureText('MHz').width
   const gap = 3
-  const x = Math.max(0, Math.round((W - freqW - gap - mhzW) / 2))
-  setFont(ctx, 16, true)
-  ctx.fillText(freq, x, baseline)
+  const startX = Math.max(0, Math.round((W - freqW - gap - unitW) / 2))
+
+  setFont(ctx, 15, true)
+  ctx.fillStyle = FG
+  ctx.fillText(freq, startX, baseline)
   setFont(ctx, 6, false)
-  ctx.fillText('MHz', x + freqW + gap, baseline)
+  ctx.fillStyle = FG_DIM
+  ctx.fillText('MHz', startX + freqW + gap, baseline)
+}
+
+/** Draws the RF signal strength trace / waterfall */
+const drawTrace = (ctx: CanvasRenderingContext2D, history: number[], y: number, h: number, thr: number) => {
+  ctx.fillStyle = '#080c10'
+  ctx.fillRect(0, y, W, h)
+  ctx.strokeStyle = '#1e242c'
+  ctx.strokeRect(0, y, W, h)
+
+  ctx.fillStyle = FG
+  for (let i = 0; i < history.length; i++) {
+    const val = history[i]
+    if (val === 0) continue
+    const py = y + h - 1 - Math.round(((clamp(val, -120, -40) + 120) / 80) * (h - 2))
+    ctx.fillRect(W - 1 - i, py, 1, 1)
+  }
+
+  const thrX = Math.round(((clamp(Math.round(((thr + 120) / 80) * 100), 0, 100)) / 100) * (W - 1))
+  ctx.fillStyle = '#404c5a'
+  ctx.fillRect(thrX, y, 1, h)
+}
+
+/** Draws transmission progress bar */
+const drawBar = (ctx: CanvasRenderingContext2D, pct: number, y: number) => {
+  ctx.strokeStyle = '#2e3844'
+  ctx.strokeRect(0, y, W, 6)
+  ctx.fillStyle = FG
+  const fillWidth = Math.round((clamp(pct, 0, 100) / 100) * (W - 2))
+  if (fillWidth > 0) {
+    ctx.fillRect(1, y + 1, fillWidth, 4)
+  }
 }
 
 export const drawOledCanvas = (
@@ -126,129 +167,165 @@ export const drawOledCanvas = (
   ctx.setTransform(1, 0, 0, 1, 0, 0)
   ctx.imageSmoothingEnabled = false
 
-  const inv = s.currentMode === 'emergency' && Math.floor(s.tickMs / 500) % 2 === 1
-  ctx.fillStyle = inv ? BG_INV : BG
+  // Deep pitch black background
+  ctx.fillStyle = BG
   ctx.fillRect(0, 0, pw, ph)
   ctx.scale(scale, scale)
-  ctx.fillStyle = inv ? FG_INV : FG
 
   const showAdj = s.tickMs < s.adjOverlayUntil
 
   if (s.currentMode === 'beacon') {
-    drawHeader(ctx, 'TX BEACON', `#${s.cycleNum}`, false, s.txActive)
-    drawBattery(ctx, s.battery, 112, 2)
-    drawLargeFreq(ctx, s.currentFreq)
-    setFont(ctx, 6)
-    const info = `CH${s.channelIdx + 1}/5 +${s.power}dBm ${s.wpm}WPM`
-    ctx.fillText(info, Math.max(0, (W - ctx.measureText(info).width) / 2), 37)
-    drawBar(ctx, s.txProgress, 44)
+    drawHeader(ctx, 'BEACON', `CH${s.channelIdx + 1}/5`, s.txActive, s.battery)
+    drawLargeFreq(ctx, s.currentFreq, 26)
+
+    // Sub-telemetry line
+    setFont(ctx, 6, false)
+    ctx.fillStyle = FG_DIM
+    const subInfo = `PWR +${s.power}dBm   CW ${s.wpm}WPM`
+    const subW = ctx.measureText(subInfo).width
+    ctx.fillText(subInfo, Math.max(0, (W - subW) / 2), 36)
+
+    // Progress bar for payload transmission
+    drawBar(ctx, s.txProgress, 41)
+
+    // Bottom telemetry
     if (s.txActive && Math.floor(s.tickMs / 300) % 2 === 0) {
-      ctx.fillStyle = BG_INV
-      ctx.fillRect(0, 52, W, 12)
-      ctx.fillStyle = FG_INV
+      // Inverted ticker banner during live transmission
+      ctx.fillStyle = FG
+      ctx.fillRect(0, 50, W, 14)
+      ctx.fillStyle = BG
       setFont(ctx, 6, true)
-      ctx.fillText(s.payload.slice(0, 21), 1, 60)
+      ctx.fillText(`TX > ${s.payload.slice(0, 20)}`, 2, 59)
     } else {
-      ctx.fillStyle = inv ? FG_INV : FG
-      setFont(ctx, 6)
-      ctx.fillText(`GPS:${s.gpsFix ? 'OK' : '--'}  SLP ${s.sleepRemain}s`, 0, 60)
-      ctx.strokeRect(101, 52, 27, 10)
-      ctx.fillText(s.adjTarget === 'vol' ? 'VOL' : 'WPM', 104, 60)
+      setFont(ctx, 6, false)
+      ctx.fillStyle = FG
+      ctx.fillText(`GPS: ${s.gpsFix ? '3D FIX (8)' : 'SEARCHING'}`, 1, 59)
+
+      ctx.fillStyle = FG_DIM
+      ctx.fillText(`SLP ${s.sleepRemain}s`, 88, 59)
     }
   } else if (s.currentMode === 'search') {
-    drawHeader(ctx, 'RX SEARCH', `HIT:${s.hitCount}`, false)
-    drawBattery(ctx, s.battery, 112, 2)
-    drawLargeFreq(ctx, s.currentFreq)
-    setFont(ctx, 6)
-    const rinfo = `CH${s.channelIdx + 1}/5  RSSI ${s.rssi}dBm`
-    ctx.fillText(rinfo, Math.max(0, (W - ctx.measureText(rinfo).width) / 2), 37)
-    drawTrace(ctx, s.rssiHistory, 43, 8, s.rssiThreshold)
+    drawHeader(ctx, 'SEARCH', `HITS:${s.hitCount}`, false, s.battery)
+    drawLargeFreq(ctx, s.currentFreq, 25)
+
+    setFont(ctx, 6, false)
+    ctx.fillStyle = FG_DIM
+    const info = `SCAN #${s.scanPass}  RSSI ${s.rssi}dBm`
+    ctx.fillText(info, Math.max(0, (W - ctx.measureText(info).width) / 2), 35)
+
+    drawTrace(ctx, s.rssiHistory, 39, 10, s.rssiThreshold)
+
     const detected = s.rssi >= s.rssiThreshold
-    if (detected && Math.floor(s.tickMs / 280) % 2 === 0) {
-      const lbl = s.rssi >= -60 ? '** STRONG **' : s.rssi >= -80 ? '* MEDIUM *' : 'WEAK'
-      ctx.fillStyle = BG_INV
-      ctx.fillRect(0, 52, W, 12)
-      ctx.fillStyle = FG_INV
-      setFont(ctx, 6, true)
-      ctx.fillText(lbl, 8, 60)
-    } else if (s.hitCount > 0) {
-      setFont(ctx, 6)
-      ctx.fillStyle = inv ? FG_INV : FG
-      ctx.fillText(`LAST ${s.currentFreq}MHz ${s.rssi}dBm`, 0, 60)
+    setFont(ctx, 6, true)
+    if (detected && Math.floor(s.tickMs / 250) % 2 === 0) {
+      ctx.fillStyle = FG
+      ctx.fillRect(0, 51, W, 13)
+      ctx.fillStyle = BG
+      const level = s.rssi >= -60 ? '** CARRIER DETECTED **' : '* SIGNAL FOUND *'
+      ctx.fillText(level, 6, 60)
     } else {
-      ctx.fillText(`SCAN #${s.scanPass}  THR:${s.rssiThreshold}dBm`, 0, 60)
-      ctx.strokeRect(101, 52, 27, 10)
-      ctx.fillText(s.adjTarget === 'vol' ? 'VOL' : 'WPM', 104, 60)
+      ctx.fillStyle = FG
+      ctx.fillText(`THR: ${s.rssiThreshold}dBm  LAST: ${s.currentFreq}M`, 1, 60)
     }
   } else if (s.currentMode === 'listen') {
-    drawHeader(ctx, 'RX LISTEN', `${s.cwDecoded} CHR`, false, true)
-    drawBattery(ctx, s.battery, 112, 2)
-    drawLargeFreq(ctx, s.currentFreq, 24)
-    drawTrace(ctx, s.rssiHistory, 28, 8, s.rssiThreshold)
-    setFont(ctx, 6)
-    const linf = `RSSI ${s.rssi}dBm  THR ${s.rssiThreshold}dBm`
-    ctx.fillText(linf, Math.max(0, (W - ctx.measureText(linf).width) / 2), 40)
+    drawHeader(ctx, 'LISTEN', `${s.cwDecoded} CHR`, true, s.battery)
+    drawLargeFreq(ctx, s.currentFreq, 23)
+    drawTrace(ctx, s.rssiHistory, 26, 8, s.rssiThreshold)
+
+    setFont(ctx, 6, false)
+    ctx.fillStyle = FG_DIM
+    const linf = `RSSI ${s.rssi}dBm | CW DECODER`
+    ctx.fillText(linf, Math.max(0, (W - ctx.measureText(linf).width) / 2), 38)
+
+    ctx.strokeStyle = '#222830'
     ctx.beginPath()
-    ctx.moveTo(0, 43)
-    ctx.lineTo(W, 43)
+    ctx.moveTo(0, 41)
+    ctx.lineTo(W, 41)
     ctx.stroke()
-    const start = s.cwText.length > 42 ? s.cwText.length - 42 : 0
+
+    // Live decoded text stream
+    const start = s.cwText.length > 40 ? s.cwText.length - 40 : 0
     const slice = s.cwText.slice(start)
     setFont(ctx, 6, true)
-    ctx.fillText(slice.slice(0, 21) || '...', 1, 52)
-    if (slice.length > 21) ctx.fillText(slice.slice(21, 42), 1, 62)
-  } else if (s.currentMode === 'config') {
-    drawHeader(ctx, 'CONFIGURATION MODE', '', false)
-    ctx.strokeRect(2, 13, 124, 19)
-    setFont(ctx, 6)
-    ctx.fillText('WIFI AP:', 6, 22)
-    ctx.fillText('AegisBeacon', 48, 22)
-    ctx.fillText('URL: http://192.168.4.1', 6, 30)
-    ctx.beginPath()
-    ctx.moveTo(0, 35)
-    ctx.lineTo(W, 35)
-    ctx.stroke()
-    ctx.strokeRect(2, 38, 4, 4)
-    ctx.fillText('Connect to WiFi network', 10, 42)
-    ctx.strokeRect(2, 46, 4, 4)
-    ctx.fillText('Open your browser', 10, 50)
-    ctx.strokeRect(2, 54, 4, 4)
-    ctx.fillText('Go to the URL above', 10, 58)
-  } else {
-    if (inv) {
-      ctx.fillStyle = BG_INV
-      ctx.fillRect(0, 0, W, H)
-      ctx.fillStyle = FG_INV
-    } else {
-      ctx.strokeRect(0, 0, W, H)
-      ctx.strokeRect(2, 2, 124, 60)
+    ctx.fillStyle = FG
+    ctx.fillText(slice.slice(0, 20) || 'LISTENING FOR CW...', 2, 50)
+    if (slice.length > 20) {
+      ctx.fillText(slice.slice(20, 40), 2, 60)
     }
-    setFont(ctx, 16, true)
-    const sos = 'SOS'
-    ctx.fillText(sos, Math.max(0, (W - ctx.measureText(sos).width) / 2), 18)
-    ctx.beginPath()
-    ctx.moveTo(8, 24)
-    ctx.lineTo(W - 8, 24)
-    ctx.stroke()
+  } else if (s.currentMode === 'config') {
+    drawHeader(ctx, 'CONFIG PORTAL', 'AP ACTIVE', false, s.battery)
+    ctx.strokeStyle = '#222830'
+    ctx.strokeRect(2, 14, 124, 20)
+
     setFont(ctx, 6, true)
-    const elbl = 'EMERGENCY BEACON TX'
-    ctx.fillText(elbl, Math.max(0, (W - ctx.measureText(elbl).width) / 2), 32)
-    drawLargeFreq(ctx, s.currentFreq, 46)
-    setFont(ctx, 6)
-    const gps = s.gpsFix ? '46.4983  11.3558' : `CYCLE #${s.cycleNum}  NO GPS`
-    ctx.fillText(gps, Math.max(0, (W - ctx.measureText(gps).width) / 2), 60)
+    ctx.fillStyle = FG
+    ctx.fillText('SSID: AEGIS-SETUP', 6, 23)
+    setFont(ctx, 6, false)
+    ctx.fillStyle = FG_DIM
+    ctx.fillText('IP: http://192.168.4.1', 6, 31)
+
+    ctx.fillStyle = FG
+    ctx.fillText('1. Connect to WiFi access point', 4, 43)
+    ctx.fillText('2. Open browser to configure', 4, 52)
+    ctx.fillText('3. Hold SEL 3s to exit', 4, 61)
+  } else {
+    // EMERGENCY SOS mode - matched with banner.png aesthetic!
+    const flash = Math.floor(s.tickMs / 400) % 2 === 0
+
+    if (flash) {
+      ctx.strokeStyle = FG
+      ctx.lineWidth = 1
+      ctx.strokeRect(1, 1, W - 2, H - 2)
+      ctx.strokeRect(3, 3, W - 6, H - 6)
+    }
+
+    drawAntennaIcon(ctx, 5, 5, true)
+    drawBattery(ctx, s.battery, W - 18, 5)
+
+    // Centered large SOS
+    setFont(ctx, 19, true)
+    ctx.fillStyle = FG
+    const sosW = ctx.measureText('SOS').width
+    ctx.fillText('SOS', (W - sosW) / 2, 23)
+
+    // SEARCH & RESCUE line (matching banner.png)
+    setFont(ctx, 6, true)
+    ctx.fillStyle = FG
+    const sar = 'SEARCH & RESCUE'
+    const sarW = ctx.measureText(sar).width
+    ctx.fillText(sar, (W - sarW) / 2, 32)
+
+    ctx.strokeStyle = '#333d48'
+    ctx.beginPath()
+    ctx.moveTo(12, 35)
+    ctx.lineTo(W - 12, 35)
+    ctx.stroke()
+
+    // GPS coordinates (matching banner.png format)
+    setFont(ctx, 6, false)
+    ctx.fillStyle = FG
+    const coords = s.gpsFix ? '46.4983 N   11.3558 E' : 'GPS ACQUIRING...'
+    const coordsW = ctx.measureText(coords).width
+    ctx.fillText(coords, (W - coordsW) / 2, 45)
+
+    // Emergency telemetry
+    setFont(ctx, 6, false)
+    ctx.fillStyle = FG_DIM
+    const emergInfo = `TX +22dBm  ${s.currentFreq}MHz  #${s.cycleNum}`
+    const emergW = ctx.measureText(emergInfo).width
+    ctx.fillText(emergInfo, (W - emergW) / 2, 57)
   }
 
+  // Parameter adjustment overlay badge
   if (showAdj && s.currentMode !== 'config' && s.currentMode !== 'emergency') {
-    ctx.fillStyle = BG_INV
+    ctx.fillStyle = FG
     ctx.fillRect(0, H - 12, W, 12)
-    ctx.fillStyle = FG_INV
+    ctx.fillStyle = BG
     setFont(ctx, 6, true)
     const label = s.adjTarget === 'vol' ? 'VOL' : 'WPM'
-    const val = s.adjTarget === 'vol' ? String(s.vol) : String(s.wpm)
-    ctx.fillText(`${label} ${val}`, 4, H - 4)
+    const val = s.adjTarget === 'vol' ? `${s.vol}%` : `${s.wpm} WPM`
+    ctx.fillText(`ADJUST: ${label} = ${val}`, 4, H - 3)
   }
-
 }
 
 export const OLED_W = OLED_LOGICAL_W * OLED_SCALE

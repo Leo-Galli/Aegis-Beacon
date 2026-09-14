@@ -116,6 +116,14 @@ body {
   font-size: 1rem;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
+.dark body {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 90% 0%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 10% 90%, color-mix(in srgb, var(--info) 6%, transparent), transparent 60%),
+    radial-gradient(circle, rgb(255 255 255 / 4.5%) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 28px 28px;
+}
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
 button { font: inherit; cursor: pointer; }
@@ -652,21 +660,36 @@ html.motion-ok [data-rv].is-in {
   align-self: start; width: 100%;
 }
 .aegis-device-stage {
-  position: relative; width: min(100%, 19rem);
-  padding: var(--space-5) var(--space-4) var(--space-2);
+  position: relative; width: min(100%, 20rem);
+  padding: var(--space-6) var(--space-4) var(--space-3);
 }
 .aegis-device-stage__plate {
   position: absolute; inset: var(--space-4) 0 0;
   border: 1px solid var(--border-strong); border-radius: var(--radius-2xl);
   background:
-    radial-gradient(ellipse 90% 60% at 50% 0%, color-mix(in srgb, var(--primary) 6%, var(--card)), transparent 70%),
-    linear-gradient(180deg, var(--card), color-mix(in srgb, var(--muted) 65%, var(--card)));
-  box-shadow: var(--shadow-lg);
-  pointer-events: none;
+    radial-gradient(ellipse 90% 60% at 50% 0%, color-mix(in srgb, var(--primary) 9%, var(--card)), transparent 70%),
+    linear-gradient(180deg, var(--card), color-mix(in srgb, var(--muted) 75%, var(--card)));
+  box-shadow: 0 16px 40px -12px rgb(0 0 0 / 25%), inset 0 1px 0 rgb(255 255 255 / 15%);
+  pointer-events: none; overflow: hidden;
+}
+.stage-grid-lines {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0.12;
+  background-image: radial-gradient(circle, var(--foreground) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.stage-tag {
+  position: absolute; top: 10px; left: 16px;
+  font-family: var(--font-mono); font-size: 0.52rem; font-weight: 700;
+  color: var(--muted-foreground); letter-spacing: 0.1em; opacity: 0.8;
+}
+.stage-spec {
+  position: absolute; top: 10px; right: 16px;
+  font-family: var(--font-mono); font-size: 0.52rem; font-weight: 700;
+  color: var(--primary); letter-spacing: 0.08em;
 }
 .aegis-device-stage__plate::before,
 .aegis-device-stage__plate::after {
-  content: ""; position: absolute; width: 18px; height: 18px; pointer-events: none;
+  content: ""; position: absolute; width: 18px; height: 18px; pointer-events: none; z-index: 2;
 }
 .aegis-device-stage__plate::before {
   top: -1px; left: -1px;
@@ -683,9 +706,9 @@ html.motion-ok [data-rv].is-in {
   display: grid;
   grid-template-columns: repeat(300, minmax(0, 1fr));
   grid-template-rows: repeat(540, minmax(0, 1fr));
-  width: 100%; max-width: min(17rem, 100%); margin-inline: auto;
+  width: 100%; max-width: min(18rem, 100%); margin-inline: auto;
   aspect-ratio: 300 / 540;
-  filter: drop-shadow(0 18px 32px rgb(0 0 0 / 22%));
+  filter: drop-shadow(0 24px 38px rgb(0 0 0 / 32%));
 }
 .aegis-device > * { min-width: 0; min-height: 0; }
 .aegis-device__art {
@@ -695,22 +718,22 @@ html.motion-ok [data-rv].is-in {
 }
 .aegis-device__oled-slot {
   grid-column: 49 / 253; grid-row: 135 / 241;
-  z-index: 2; overflow: hidden; border-radius: 2%;
-  background: #030405;
-  box-shadow: inset 0 3px 12px rgb(0 0 0 / 70%);
+  z-index: 2; overflow: hidden; border-radius: 3px;
+  background: #000000;
+  box-shadow: inset 0 2px 10px rgb(0 0 0 / 95%), 0 0 1px 1px rgb(255 255 255 / 8%);
 }
 .oled-canvas {
   display: block; width: 100%; height: 100%;
   object-fit: fill;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  background: #050608;
+  background: #000000;
 }
 .oled-canvas__glass {
   position: absolute; inset: 0; pointer-events: none;
   background:
-    linear-gradient(128deg, rgb(255 255 255 / 12%) 0%, transparent 38%),
-    linear-gradient(320deg, rgb(255 255 255 / 5%) 0%, transparent 28%);
+    linear-gradient(132deg, rgb(255 255 255 / 16%) 0%, transparent 40%),
+    linear-gradient(312deg, rgb(255 255 255 / 6%) 0%, transparent 32%);
 }
 .aegis-device__led-slot {
   z-index: 2;
@@ -722,16 +745,24 @@ html.motion-ok [data-rv].is-in {
 .aegis-device__led {
   width: 100%; height: 100%; border-radius: 50%;
   background: #14181c;
-  box-shadow: inset 0 1px 3px rgb(0 0 0 / 60%);
-  transition: box-shadow 0.12s, background 0.12s;
+  box-shadow: inset 0 1px 4px rgb(0 0 0 / 80%);
+  transition: box-shadow 0.08s, background 0.08s;
 }
 .aegis-device__led--tx.aegis-device__led--on {
-  background: #ff2d2d;
-  box-shadow: 0 0 14px #ff2d2d, 0 0 28px #ff2d2d88, inset 0 0 4px rgb(255 255 255 / 40%);
+  background: #ff2222;
+  box-shadow:
+    0 0 8px #ff2222,
+    0 0 18px #ff2222,
+    0 0 32px #ff2222aa,
+    inset 0 0 4px #ffffff;
 }
 .aegis-device__led--rx.aegis-device__led--on {
-  background: #3b8bff;
-  box-shadow: 0 0 14px #3b8bff, 0 0 28px #3b8bff88, inset 0 0 4px rgb(255 255 255 / 40%);
+  background: #0088ff;
+  box-shadow:
+    0 0 8px #0088ff,
+    0 0 18px #0088ff,
+    0 0 32px #0088ffaa,
+    inset 0 0 4px #ffffff;
 }
 .aegis-device__keys {
   grid-column: 41 / 265; grid-row: 269 / 319;
@@ -752,7 +783,7 @@ html.motion-ok [data-rv].is-in {
 }
 .aegis-key:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: var(--radius-sm); }
 .aegis-key__hold {
-  position: absolute; inset: 6%;
+  position: absolute; inset: 4%;
   border-radius: 14%; pointer-events: none; opacity: 0;
   background: conic-gradient(from -90deg, var(--destructive) calc(var(--hold, 0) * 360deg), transparent 0);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
@@ -762,30 +793,38 @@ html.motion-ok [data-rv].is-in {
 .aegis-key.is-holding .aegis-key__hold { opacity: 1; }
 .aegis-key__cap {
   position: relative; z-index: 1;
-  display: flex; align-items: center; justify-content: center;
-  width: 90%; height: 90%;
-  font-family: var(--font-mono); font-size: clamp(0.38rem, 2.1vw, 0.5rem);
-  font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; text-align: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1px;
+  width: 92%; height: 92%;
   color: #e8ecf0;
-  background: linear-gradient(180deg, #4a525a 0%, #323840 55%, #282e36 100%);
-  border: 1px solid #5a626a;
-  border-radius: 12%;
+  background: linear-gradient(180deg, #3e4752 0%, #293038 52%, #1e242b 100%);
+  border: 1px solid #4a5562;
+  border-radius: 14%;
   box-shadow:
-    0 2px 0 #1a1e24,
-    0 4px 10px rgb(0 0 0 / 28%),
-    inset 0 1px 0 rgb(255 255 255 / 12%);
+    0 2px 0 #12161a,
+    0 5px 12px rgb(0 0 0 / 35%),
+    inset 0 1px 0 rgb(255 255 255 / 16%);
   transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.1s;
 }
+.key-legend {
+  font-family: var(--font-mono); font-size: clamp(0.40rem, 2.1vw, 0.52rem);
+  font-weight: 700; letter-spacing: 0.04em; line-height: 1; text-align: center;
+}
+.key-sub {
+  font-family: var(--font-mono); font-size: clamp(0.26rem, 1.4vw, 0.35rem);
+  font-weight: 600; opacity: 0.65; letter-spacing: 0.02em; line-height: 1; text-align: center;
+}
 .aegis-key:hover .aegis-key__cap {
-  color: #fff;
-  background: linear-gradient(180deg, #565e68 0%, #3a424a 55%, #303840 100%);
+  color: #ffffff;
+  background: linear-gradient(180deg, #4b5663 0%, #323b45 52%, #242b33 100%);
+  border-color: #5c6877;
 }
 .aegis-key.is-pressed .aegis-key__cap,
 .aegis-key.is-holding .aegis-key__cap {
   transform: translateY(2px);
-  background: linear-gradient(180deg, #282e36 0%, #1e242c 100%);
-  box-shadow: inset 0 2px 6px rgb(0 0 0 / 45%);
-  color: #fff;
+  background: linear-gradient(180deg, #1c2128 0%, #14181d 100%);
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 60%);
+  color: #ffffff;
 }
 .aegis-device__toast {
   grid-column: 40 / 261; grid-row: 495 / 515;
@@ -806,8 +845,8 @@ html.motion-ok [data-rv].is-in {
   box-shadow: 0 0 20px color-mix(in srgb, var(--destructive) 45%, transparent);
 }
 .aegis-device__hint {
-  margin: 0; text-align: center; max-width: 26rem;
-  font-size: 0.68rem; color: var(--muted-foreground);
+  margin: 0; text-align: center; max-width: 28rem;
+  font-size: 0.72rem; color: var(--muted-foreground);
   font-family: var(--font-mono); line-height: 1.65;
 }
 .aegis-device__hint strong { color: var(--destructive); font-weight: 700; }
@@ -822,9 +861,9 @@ html.motion-ok [data-rv].is-in {
 @media (max-width: 859px) {
   .demo-layout { justify-items: center; }
   .aegis-device-scene { max-width: 100%; }
-  .aegis-device-stage { width: min(100%, 19rem); padding-inline: var(--space-2); }
-  .aegis-device { max-width: min(17rem, 92vw); }
-  .controls-panel { width: min(100%, 26rem); }
+  .aegis-device-stage { width: min(100%, 20rem); padding-inline: var(--space-2); }
+  .aegis-device { max-width: min(17.5rem, 92vw); }
+  .controls-panel { width: min(100%, 28rem); }
   .demo-tape { width: 100%; }
   .demo-tape__controls { flex-direction: column; align-items: stretch; }
   .demo-tape__controls label { flex-direction: column; align-items: stretch; }
@@ -832,20 +871,40 @@ html.motion-ok [data-rv].is-in {
   .mode-buttons { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 420px) {
-  .aegis-device { max-width: min(16rem, 96vw); }
+  .aegis-device { max-width: min(16.5rem, 96vw); }
   .page-head .section-head__lead { font-size: 0.92rem; }
 }
 .controls-panel {
-  border: 1px solid var(--border); border-radius: var(--radius-xl);
-  background: var(--card); overflow: hidden; box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-xl);
+  background: var(--card); overflow: hidden;
+  box-shadow: 0 8px 30px -10px rgb(0 0 0 / 15%), inset 0 1px 0 rgb(255 255 255 / 8%);
 }
 .controls-panel__header {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
   padding: var(--space-3) var(--space-5); border-bottom: 1px solid var(--border);
   background: var(--muted);
 }
 .controls-panel__tag {
-  font-family: var(--font-mono); font-size: 0.6875rem;
-  color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.06em;
+  font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700;
+  color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.08em;
+}
+.sound-toggle-btn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: 0.35rem 0.75rem; border-radius: var(--radius-full);
+  font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--card); border: 1px solid var(--border-strong);
+  color: var(--muted-foreground); cursor: pointer;
+  transition: all 0.15s ease;
+}
+.sound-toggle-btn:hover {
+  border-color: var(--primary); color: var(--foreground);
+  background: color-mix(in srgb, var(--primary) 8%, var(--card));
+}
+.sound-toggle-btn.is-active {
+  border-color: var(--primary); color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, var(--card));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 30%, transparent);
 }
 .control-group {
   padding: var(--space-4) var(--space-5);

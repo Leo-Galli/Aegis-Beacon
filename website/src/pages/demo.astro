@@ -7,7 +7,7 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
 
 <div class="demo-page container">
   <header class="section-head page-head">
-    <span class="page-head__meta">Firmware v6.0 · hardware keys</span>
+    <span class="page-head__meta">Firmware v6.0 | hardware keys</span>
     <h1 class="section-head__title">Firmware Simulation</h1>
     <p class="section-head__lead">
       Handheld mockup with live SSD1309 OLED. Short-press matches real button logic;
@@ -21,6 +21,11 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
     <div class="controls-panel" data-rv style="--rv-delay: 120ms">
       <div class="controls-panel__header">
         <span class="controls-panel__tag">Simulation controls</span>
+        <button id="sound-toggle-btn" class="sound-toggle-btn" type="button" aria-label="Toggle radio CW audio synthesizer" title="Toggle audio">
+          <svg id="sound-icon-on" class="sound-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          <svg id="sound-icon-off" class="sound-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+          <span id="sound-status-label">AUDIO OFF</span>
+        </button>
       </div>
 
       <div class="control-group">
@@ -110,6 +115,14 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
   } from '../lib/demo-oled-canvas'
   import { bindLongPress, bindTap } from '../lib/demo-device-input'
   import { modeShortPressNext, MODE_HOLD_MS, SEL_HOLD_MS } from '../lib/demo-firmware-modes'
+  import {
+    toggleSound,
+    playKeyClick,
+    startCwTone,
+    stopCwTone,
+    updateRadioNoise,
+  } from '../lib/demo-audio'
+  import { computeMorseTimeline, isMorseCarrierOn } from '../lib/morse-timing'
 
   const oledCanvas = document.getElementById('oled-canvas') as HTMLCanvasElement
   const oledCtx = oledCanvas.getContext('2d', { alpha: false })!
@@ -118,6 +131,7 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
   oledCtx.imageSmoothingEnabled = false
   const ledTx = document.getElementById('led-tx')
   const ledRx = document.getElementById('led-rx')
+
   const modes = document.querySelectorAll('.mode-btn')
   const freqSelect = document.getElementById('freq-select') as HTMLSelectElement
   const wpmSlider = document.getElementById('wpm-slider') as HTMLInputElement
@@ -125,6 +139,11 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
   const rssiSlider = document.getElementById('rssi-slider') as HTMLInputElement
   const batterySlider = document.getElementById('battery-slider') as HTMLInputElement
   const payloadInput = document.getElementById('payload-input') as HTMLInputElement
+
+  const soundBtn = document.getElementById('sound-toggle-btn')
+  const soundIconOn = document.getElementById('sound-icon-on')
+  const soundIconOff = document.getElementById('sound-icon-off')
+  const soundLabel = document.getElementById('sound-status-label')
 
   let currentMode: DemoMode = 'beacon'
   let channelIdx = 0
@@ -149,16 +168,6 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
   let rssiHistory: number[] = []
   let tickMs = 0
 
-  const MORSE: Record<string, string> = {
-    A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.',
-    H: '....', I: '..', J: '.---', K: '-.-', L: '.-..', M: '--', N: '-.',
-    O: '---', P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-', U: '..-',
-    V: '...-', W: '.--', X: '-..-', Y: '-.--', Z: '--..',
-    '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
-    '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
-    '.': '.-.-.-',
-  }
-
   const tapeWaveform = document.getElementById('tape-waveform')
   const tapeCarrier = document.getElementById('tape-carrier')
   const tapeTime = document.getElementById('tape-time')
@@ -166,6 +175,18 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
   const tapeWpmLabel = document.getElementById('tape-wpm-label')
 
   const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
+
+  let activeTimeline = computeMorseTimeline(payloadInput.value.trim() || 'SOS', wpm)
+
+  const handleToggleSound = () => {
+    const on = toggleSound()
+    if (soundBtn) soundBtn.classList.toggle('is-active', on)
+    if (soundIconOn) soundIconOn.style.display = on ? 'inline-block' : 'none'
+    if (soundIconOff) soundIconOff.style.display = on ? 'none' : 'inline-block'
+    if (soundLabel) soundLabel.textContent = on ? 'AUDIO ON' : 'AUDIO OFF'
+    if (on) playKeyClick(1400)
+  }
+  soundBtn?.addEventListener('click', handleToggleSound)
 
   const buildState = (): DemoState => ({
     currentMode,
@@ -210,60 +231,46 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
     toastTimer = setTimeout(() => deviceToast.classList.remove('is-visible'), kind === 'emergency' ? 4200 : 2600)
   }
 
+  let carrierActive = false
+
   const updateLeds = () => {
     if (!ledTx || !ledRx) return
-    let tx = currentMode === 'beacon' || currentMode === 'emergency'
-    const rx = currentMode === 'search' || currentMode === 'listen'
-    if (currentMode === 'beacon' && txActive) {
-      tx = Math.floor(tickMs / 180) % 2 === 0
-    }
-    if (currentMode === 'emergency') {
-      tx = Math.floor(tickMs / 120) % 2 === 0
-    }
     if (currentMode === 'config') {
       const alt = Math.floor(tickMs / 400) % 2 === 0
       ledTx.classList.toggle('aegis-device__led--on', alt)
       ledRx.classList.toggle('aegis-device__led--on', !alt)
       return
     }
-    ledTx.classList.toggle('aegis-device__led--on', tx)
-    ledRx.classList.toggle('aegis-device__led--on', rx)
-  }
 
-  function buildWaveform(payload: string) {
-    const UNIT = 6
-    let x = 0
-    let units = 0
-    let prevChar = false
-    const rects: string[] = []
-    for (const ch of payload.toUpperCase()) {
-      const code = MORSE[ch]
-      if (!code || ch === ' ') {
-        x += UNIT * 6
-        units += 7
-        prevChar = false
-        continue
-      }
-      if (prevChar) units += 3
-      let u = 0
-      for (const g of code) {
-        const w = g === '.' ? UNIT : UNIT * 3
-        rects.push(`<rect x="${x}" y="2.5" width="${w}" height="3.5"/>`)
-        x += w + UNIT
-        u += g === '.' ? 1 : 3
-      }
-      units += u + (code.length - 1)
-      prevChar = true
+    if (currentMode === 'beacon' || currentMode === 'emergency') {
+      ledTx.classList.toggle('aegis-device__led--on', carrierActive)
+      ledRx.classList.toggle('aegis-device__led--on', false)
+    } else {
+      ledTx.classList.toggle('aegis-device__led--on', false)
+      const rxDetected = rssi >= rssiThreshold
+      ledRx.classList.toggle('aegis-device__led--on', rxDetected)
     }
-    const ms = Math.round((units * 1200) / wpm)
-    return { svg: `<svg viewBox="0 0 ${x} 8" preserveAspectRatio="none" role="presentation">${rects.join('')}</svg>`, ms }
   }
 
-  function updateTape() {
+  const updateTape = () => {
     if (!tapeWaveform || !tapeCarrier || !tapeTime) return
     const payload = payloadInput.value.trim() || 'SOS'
-    const { svg, ms } = buildWaveform(payload)
-    tapeWaveform.innerHTML = svg
+    activeTimeline = computeMorseTimeline(payload, wpm)
+    const ms = activeTimeline.totalMs
+
+    const UNIT = 6
+    let x = 0
+    const rects: string[] = []
+    for (let i = 0; i < activeTimeline.intervals.length; i++) {
+      const iv = activeTimeline.intervals[i]
+      const durUnits = Math.round((iv.endMs - iv.startMs) / activeTimeline.unitMs)
+      const w = durUnits * UNIT
+      const posX = Math.round((iv.startMs / activeTimeline.totalMs) * 360)
+      rects.push(`<rect x="${posX}" y="2" width="${Math.max(2, w)}" height="4"/>`)
+      x = Math.max(x, posX + w)
+    }
+
+    tapeWaveform.innerHTML = `<svg viewBox="0 0 ${Math.max(x, 360)} 8" preserveAspectRatio="none" role="presentation">${rects.join('')}</svg>`
     tapeCarrier.style.setProperty('--carrier-dur', ms + 'ms')
     tapeTime.textContent = `On air ${(ms / 1000).toFixed(1)} s at ${wpm} WPM`
     if (tapePayloadLabel) tapePayloadLabel.textContent = payload
@@ -275,6 +282,8 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
   const selectMode = (mode: DemoMode, fromHardware = false) => {
     const prev = currentMode
     currentMode = mode
+    playKeyClick(mode === 'emergency' ? 880 : 1200)
+
     if (mode === 'emergency') power = 22
     modes.forEach((b) => {
       const el = b as HTMLElement
@@ -293,12 +302,21 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
     updateTape()
   }
 
-  const modeShortPress = () => selectMode(modeShortPressNext(currentMode), true)
+  const modeShortPress = () => {
+    playKeyClick(1100)
+    selectMode(modeShortPressNext(currentMode), true)
+  }
 
-  const enterEmergency = () => selectMode('emergency', true)
+  const enterEmergency = () => {
+    playKeyClick(700)
+    selectMode('emergency', true)
+  }
 
   modes.forEach(btn => {
-    btn.addEventListener('click', () => selectMode((btn as HTMLElement).dataset.mode as DemoMode || 'beacon'))
+    btn.addEventListener('click', () => {
+      playKeyClick(1250)
+      selectMode((btn as HTMLElement).dataset.mode as DemoMode || 'beacon')
+    })
   })
 
   const keyEls = {
@@ -310,6 +328,7 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
 
   const pressVisual = (el: Element, on: boolean) => {
     el.classList.toggle('is-pressed', on)
+    if (on) playKeyClick(1350)
   }
 
   const setHoldProgress = (el: Element, ratio: number) => {
@@ -318,6 +337,7 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
 
   const adjustUp = () => {
     if (currentMode === 'config') return
+    playKeyClick(1450)
     if (adjTarget === 'wpm') {
       wpm = clamp(wpm + 1, 5, 40)
       wpmSlider.value = String(wpm)
@@ -330,6 +350,7 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
 
   const adjustDn = () => {
     if (currentMode === 'config') return
+    playKeyClick(1050)
     if (adjTarget === 'wpm') {
       wpm = clamp(wpm - 1, 5, 40)
       wpmSlider.value = String(wpm)
@@ -352,6 +373,7 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
     keyEls.sel,
     SEL_HOLD_MS,
     () => {
+      playKeyClick(1300)
       adjTarget = adjTarget === 'vol' ? 'wpm' : 'vol'
       flashAdj()
       renderOled()
@@ -364,6 +386,7 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
 
   freqSelect.addEventListener('change', () => {
     channelIdx = freqSelect.selectedIndex
+    playKeyClick(1150)
     renderOled()
   })
   wpmSlider.addEventListener('input', () => {
@@ -389,28 +412,52 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
   })
   payloadInput.addEventListener('input', () => {
     updateTape()
-    if (currentMode === 'beacon') renderOled()
+    if (currentMode === 'beacon' || currentMode === 'emergency') renderOled()
   })
 
+  // Real-time audio & simulation ticker (60ms for smooth 16fps audio keying)
   setInterval(() => {
-    tickMs += 120
+    tickMs += 60
+
+    // Synchronize CW Morse sidetone with PARIS timeline
+    const isTx = (currentMode === 'beacon' || currentMode === 'emergency') && txActive
+    if (isTx) {
+      carrierActive = isMorseCarrierOn(activeTimeline, tickMs)
+      if (carrierActive) {
+        startCwTone(currentMode === 'emergency' ? 820 : 700)
+      } else {
+        stopCwTone()
+      }
+    } else {
+      carrierActive = false
+      stopCwTone()
+    }
+
+    // Radio atmospheric background noise in search and listen modes
+    if (currentMode === 'search' || currentMode === 'listen') {
+      updateRadioNoise(true, rssi)
+    } else {
+      updateRadioNoise(false)
+    }
+
     rssiHistory.unshift(rssi + Math.round(Math.sin(tickMs / 400) * 4))
     if (rssiHistory.length > 120) rssiHistory.pop()
+
     if (currentMode === 'beacon' && txActive) {
-      txProgress = (txProgress + 2) % 100
+      txProgress = Math.round(((tickMs % activeTimeline.totalMs) / activeTimeline.totalMs) * 100)
       if (sleepRemain > 0 && tickMs % 1200 === 0) sleepRemain = Math.max(0, sleepRemain - 1)
     }
     if (currentMode === 'search' && tickMs % 3600 === 0) scanPass += 1
     if (currentMode === 'listen' && rssi >= rssiThreshold) {
       const payload = payloadInput.value.trim().toUpperCase() || 'SOS'
-      if (cwCharIdx < payload.length && tickMs % 900 === 0) {
+      if (cwCharIdx < payload.length && tickMs % 850 === 0) {
         cwText += payload[cwCharIdx]
         cwDecoded += 1
         cwCharIdx += 1
       }
     }
     renderOled()
-  }, 120)
+  }, 60)
 
   updateTape()
   renderOled()

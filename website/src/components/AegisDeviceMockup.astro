@@ -1,156 +1,376 @@
 ---
-/** Banner-matched handheld shell for the /demo firmware simulation. */
+/**
+ * Photorealistic handheld rescue transceiver shell for the /demo simulation.
+ * Replicates the banner.png physical device: smoke translucent polycarbonate,
+ * visible internal PCB, hex Allen fasteners, knurled brass SMA connector,
+ * black tactical stub antenna, recessed SSD1309 OLED, molded tactile keys,
+ * acoustic speaker grille, and high-intensity TX (red) and RX (blue) LEDs.
+ */
 ---
 
 <div class="aegis-device-scene" data-rv style="--rv-delay: 0ms">
   <div class="aegis-device-stage">
-    <div class="aegis-device-stage__plate" aria-hidden="true"></div>
+    <div class="aegis-device-stage__plate" aria-hidden="true">
+      <div class="stage-grid-lines"></div>
+      <div class="stage-tag">AEGIS // SAR BENCH TEST</div>
+      <div class="stage-spec">433.500 MHz | PMR446</div>
+    </div>
+
     <article class="aegis-device" aria-label="Aegis-Beacon hardware simulation">
       <svg class="aegis-device__art" viewBox="0 0 300 540" aria-hidden="true" role="presentation">
         <defs>
+          <!-- Smoke polycarbonate case gradient -->
           <linearGradient id="ab-shell" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#9ca8b4" stop-opacity="0.92"/>
-            <stop offset="35%" stop-color="#7d8996" stop-opacity="0.88"/>
-            <stop offset="100%" stop-color="#5c6670" stop-opacity="0.9"/>
+            <stop offset="0%" stop-color="#343d46" stop-opacity="0.94"/>
+            <stop offset="25%" stop-color="#262d35" stop-opacity="0.90"/>
+            <stop offset="70%" stop-color="#1a2027" stop-opacity="0.93"/>
+            <stop offset="100%" stop-color="#13181e" stop-opacity="0.96"/>
           </linearGradient>
-          <linearGradient id="ab-shell-hi" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#fff" stop-opacity="0.22"/>
-            <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+
+          <!-- Outer bevel specular highlight -->
+          <linearGradient id="ab-bevel-hi" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.32"/>
+            <stop offset="8%" stop-color="#ffffff" stop-opacity="0.08"/>
+            <stop offset="92%" stop-color="#000000" stop-opacity="0.1"/>
+            <stop offset="100%" stop-color="#000000" stop-opacity="0.65"/>
           </linearGradient>
-          <linearGradient id="ab-edge" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#c8d0d8"/>
-            <stop offset="100%" stop-color="#3a424a"/>
+
+          <!-- Chamfered perimeter edge -->
+          <linearGradient id="ab-edge" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#808c9a" stop-opacity="0.8"/>
+            <stop offset="35%" stop-color="#4d5763" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#14181d" stop-opacity="0.9"/>
           </linearGradient>
-          <linearGradient id="ab-brass" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#f0d080"/>
-            <stop offset="45%" stop-color="#c9a227"/>
-            <stop offset="100%" stop-color="#8a6914"/>
+
+          <!-- Brass SMA connector gradient -->
+          <linearGradient id="ab-brass" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#d4aa37"/>
+            <stop offset="22%" stop-color="#fff2a8"/>
+            <stop offset="48%" stop-color="#b88924"/>
+            <stop offset="75%" stop-color="#e2bf54"/>
+            <stop offset="100%" stop-color="#7a5810"/>
           </linearGradient>
-          <linearGradient id="ab-ant-seg" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#1a1e24"/>
-            <stop offset="50%" stop-color="#3a424a"/>
-            <stop offset="100%" stop-color="#222830"/>
+
+          <!-- Brass knurl pattern -->
+          <pattern id="ab-knurl" width="3" height="3" patternUnits="userSpaceOnUse">
+            <path d="M0 1.5 L1.5 0 L3 1.5 L1.5 3 Z" fill="#9e7518" stroke="#f0d575" stroke-width="0.35"/>
+          </pattern>
+
+          <!-- Antenna rubber grip texture -->
+          <linearGradient id="ab-ant-body" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#161a1f"/>
+            <stop offset="30%" stop-color="#2d353e"/>
+            <stop offset="70%" stop-color="#3b444e"/>
+            <stop offset="100%" stop-color="#161a1f"/>
           </linearGradient>
-          <filter id="ab-drop" x="-15%" y="-15%" width="130%" height="130%">
-            <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity="0.35"/>
+
+          <!-- Stainless steel Allen bolt gradient -->
+          <linearGradient id="ab-screw-head" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#e8ecf0"/>
+            <stop offset="45%" stop-color="#a4adb6"/>
+            <stop offset="80%" stop-color="#656e77"/>
+            <stop offset="100%" stop-color="#343940"/>
+          </linearGradient>
+
+          <linearGradient id="ab-screw-socket" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0a0c0e"/>
+            <stop offset="100%" stop-color="#22272d"/>
+          </linearGradient>
+
+          <!-- Internal PCB copper gradient -->
+          <linearGradient id="ab-copper" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#c8923a" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#8a5a1c" stop-opacity="0.4"/>
+          </linearGradient>
+
+          <!-- Drop shadow filter for 3D realism -->
+          <filter id="ab-shadow" x="-20%" y="-15%" width="140%" height="135%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="12"/>
+            <feOffset dx="0" dy="16" result="offsetblur"/>
+            <feFlood flood-color="#000000" flood-opacity="0.45"/>
+            <feComposite in2="offsetblur" operator="in"/>
+            <feMerge>
+              <feMergeNode/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+
+          <!-- OLED inner shadow -->
+          <filter id="ab-oled-inset" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.85"/>
           </filter>
         </defs>
 
-        <ellipse cx="150" cy="518" rx="98" ry="9" fill="#000" opacity="0.25"/>
+        <!-- Ambient cast ground shadow -->
+        <ellipse cx="150" cy="518" rx="104" ry="12" fill="#000000" opacity="0.32" filter="blur(6px)"/>
 
-        <!-- Internal PCB ghost (visible through smoke shell) -->
-        <g opacity="0.55">
-          <rect x="44" y="118" width="212" height="72" rx="4" fill="#142818" stroke="#2a5030" stroke-width="0.6"/>
-          <path d="M52 130 H248 M52 145 H220 M52 160 H235 M52 175 H200" stroke="#3d6848" stroke-width="0.5" opacity="0.7"/>
-          <rect x="58" y="198" width="36" height="22" rx="2" fill="#1a2428" stroke="#3a4850" stroke-width="0.5"/>
-          <rect x="206" y="198" width="36" height="22" rx="2" fill="#1a2428" stroke="#3a4850" stroke-width="0.5"/>
-          <circle cx="150" cy="210" r="14" fill="#1a1e22" stroke="#4a525a" stroke-width="0.5"/>
-        </g>
+        <!-- ══════════════════════════════════════════════════
+             ANTENNA ASSEMBLY (Top-right SMA stub)
+             ══════════════════════════════════════════════════ -->
+        <g id="ab-antenna-group" transform="translate(216 28)">
+          <!-- Brass threaded base nut -->
+          <rect x="1" y="70" width="22" height="6" rx="1" fill="url(#ab-brass)" stroke="#5c4410" stroke-width="0.5"/>
+          <path d="M1 73 H23" stroke="#fff" stroke-width="0.4" opacity="0.4"/>
 
-        <!-- Side wall -->
-        <path d="M30 108 L30 488 Q30 498 40 498 L260 498 Q270 498 270 488 L270 108 Q270 98 260 98 L40 98 Q30 98 30 108 Z" fill="#4a525a" opacity="0.95"/>
+          <!-- Knurled brass SMA collar -->
+          <rect x="3" y="58" width="18" height="12" rx="1" fill="url(#ab-brass)"/>
+          <rect x="3" y="58" width="18" height="12" fill="url(#ab-knurl)" opacity="0.55"/>
+          <rect x="3" y="58" width="18" height="12" fill="none" stroke="#7a5810" stroke-width="0.6"/>
 
-        <!-- Front smoke polycarbonate face -->
-        <rect x="26" y="102" width="248" height="392" rx="20" ry="20" fill="url(#ab-shell)" filter="url(#ab-drop)"/>
-        <rect x="26" y="102" width="248" height="392" rx="20" ry="20" fill="url(#ab-shell-hi)"/>
-        <rect x="26" y="102" width="248" height="392" rx="20" ry="20" fill="none" stroke="url(#ab-edge)" stroke-width="1.4"/>
+          <!-- Hex nut flats detail -->
+          <line x1="8" y1="58" x2="8" y2="70" stroke="#4a370b" stroke-width="0.6"/>
+          <line x1="16" y1="58" x2="16" y2="70" stroke="#4a370b" stroke-width="0.6"/>
 
-        <!-- Corner reinforcements -->
-        <path d="M38 106 Q26 106 26 118" fill="none" stroke="#6a7480" stroke-width="2" opacity="0.5"/>
-        <path d="M262 106 Q274 106 274 118" fill="none" stroke="#6a7480" stroke-width="2" opacity="0.5"/>
-        <path d="M38 490 Q26 490 26 478" fill="none" stroke="#6a7480" stroke-width="2" opacity="0.5"/>
-        <path d="M262 490 Q274 490 274 478" fill="none" stroke="#6a7480" stroke-width="2" opacity="0.5"/>
+          <!-- Antenna rubber base boot -->
+          <path d="M5 58 L7 44 L17 44 L19 58 Z" fill="#1b2026" stroke="#2d353e" stroke-width="0.5"/>
+          <line x1="7" y1="51" x2="17" y2="51" stroke="#3d4752" stroke-width="0.8"/>
 
-        <!-- Side grip texture -->
-        <g opacity="0.25" fill="#2a3038">
-          <rect x="27" y="140" width="3" height="6" rx="0.5"/>
-          <rect x="27" y="152" width="3" height="6" rx="0.5"/>
-          <rect x="27" y="164" width="3" height="6" rx="0.5"/>
-          <rect x="270" y="140" width="3" height="6" rx="0.5"/>
-          <rect x="270" y="152" width="3" height="6" rx="0.5"/>
-          <rect x="270" y="164" width="3" height="6" rx="0.5"/>
-        </g>
+          <!-- Tactical ribbed stub antenna shaft -->
+          <rect x="7" y="6" width="10" height="38" rx="2" fill="url(#ab-ant-body)"/>
 
-        <!-- Stub ribbed antenna + brass SMA (banner style) -->
-        <g transform="translate(218 88)">
-          <rect x="0" y="18" width="22" height="8" rx="1.5" fill="#2a3038"/>
-          <polygon points="2,26 20,26 18,32 4,32" fill="#1a1e24"/>
-          <circle cx="11" cy="12" r="10" fill="url(#ab-brass)"/>
-          <circle cx="11" cy="12" r="6" fill="#3a3420" stroke="#a08030" stroke-width="0.5"/>
-          <g fill="url(#ab-ant-seg)">
-            <rect x="9" y="-34" width="4" height="8" rx="1"/>
-            <rect x="9" y="-26" width="4" height="8" rx="1" opacity="0.85"/>
-            <rect x="9" y="-18" width="4" height="8" rx="1"/>
-            <rect x="9" y="-10" width="4" height="8" rx="1" opacity="0.85"/>
-            <rect x="9" y="-2" width="4" height="8" rx="1"/>
+          <!-- Antenna rubber grip ribs -->
+          <g fill="#14181c">
+            <rect x="6.5" y="10" width="11" height="2.5" rx="0.5"/>
+            <rect x="6.5" y="15" width="11" height="2.5" rx="0.5"/>
+            <rect x="6.5" y="20" width="11" height="2.5" rx="0.5"/>
+            <rect x="6.5" y="25" width="11" height="2.5" rx="0.5"/>
+            <rect x="6.5" y="30" width="11" height="2.5" rx="0.5"/>
+            <rect x="6.5" y="35" width="11" height="2.5" rx="0.5"/>
           </g>
-          <ellipse cx="11" cy="-36" rx="2.5" ry="2" fill="#1a1e24"/>
+
+          <!-- Tapered rounded antenna cap -->
+          <ellipse cx="12" cy="6" rx="5" ry="4" fill="#2d353e"/>
+          <ellipse cx="12" cy="5" rx="4" ry="2.5" fill="#404b56"/>
         </g>
 
-        <!-- Top knobs -->
-        <circle cx="72" cy="100" r="5" fill="#2a3038" stroke="#4a525a" stroke-width="0.6"/>
-        <circle cx="150" cy="98" r="5" fill="#2a3038" stroke="#4a525a" stroke-width="0.6"/>
-        <circle cx="188" cy="100" r="4" fill="#2a3038" stroke="#4a525a" stroke-width="0.6"/>
-
-        <!-- OLED recess -->
-        <rect x="42" y="128" width="216" height="118" rx="6" fill="#0a0c0e" stroke="#222830" stroke-width="1.2"/>
-        <rect x="48" y="134" width="204" height="106" rx="3" fill="#030405"/>
-        <rect x="48" y="134" width="204" height="106" rx="3" fill="none" stroke="#fff" stroke-width="0.35" opacity="0.05"/>
-
-        <!-- Button wells -->
-        <g fill="#14181c" stroke="#303840" stroke-width="0.8">
-          <rect x="40" y="268" width="50" height="50" rx="6"/>
-          <rect x="98" y="268" width="50" height="50" rx="6"/>
-          <rect x="156" y="268" width="50" height="50" rx="6"/>
-          <rect x="214" y="268" width="50" height="50" rx="6"/>
+        <!-- Top rotary knobs -->
+        <!-- Left Volume/Power rotary knob -->
+        <g transform="translate(62 90)">
+          <rect x="0" y="0" width="22" height="12" rx="2" fill="#1e242b" stroke="#3a444e" stroke-width="0.8"/>
+          <line x1="4" y1="0" x2="4" y2="12" stroke="#4a5562" stroke-width="0.8"/>
+          <line x1="8" y1="0" x2="8" y2="12" stroke="#4a5562" stroke-width="0.8"/>
+          <line x1="12" y1="0" x2="12" y2="12" stroke="#4a5562" stroke-width="0.8"/>
+          <line x1="16" y1="0" x2="16" y2="12" stroke="#4a5562" stroke-width="0.8"/>
+          <circle cx="11" cy="2" r="2" fill="#ff5722"/>
         </g>
 
-        <!-- Speaker grille -->
-        <g transform="translate(88 338)">
-          <rect x="0" y="0" width="124" height="16" rx="4" fill="#0a0c0e" stroke="#303840" stroke-width="0.7"/>
-          <g fill="#252a30">
-            <rect x="5" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="10" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="15" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="20" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="25" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="30" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="35" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="40" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="45" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="50" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="55" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="60" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="65" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="70" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="75" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="80" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="85" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="90" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="95" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="100" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="105" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="110" y="5" width="2.5" height="6" rx="0.5"/>
-            <rect x="115" y="5" width="2.5" height="6" rx="0.5"/>
+        <!-- Center Channel selector knob -->
+        <g transform="translate(138 88)">
+          <rect x="0" y="0" width="24" height="14" rx="2" fill="#1b2027" stroke="#36404b" stroke-width="0.8"/>
+          <line x1="5" y1="0" x2="5" y2="14" stroke="#485360" stroke-width="0.8"/>
+          <line x1="10" y1="0" x2="10" y2="14" stroke="#485360" stroke-width="0.8"/>
+          <line x1="15" y1="0" x2="15" y2="14" stroke="#485360" stroke-width="0.8"/>
+          <line x1="19" y1="0" x2="19" y2="14" stroke="#485360" stroke-width="0.8"/>
+        </g>
+
+        <!-- ══════════════════════════════════════════════════
+             INTERNAL PCB & COMPONENTS (Visible through smoke case)
+             ══════════════════════════════════════════════════ -->
+        <g id="ab-internal-pcb" opacity="0.62">
+          <!-- FR4 Substrate (matte tactical green-charcoal) -->
+          <rect x="36" y="112" width="228" height="372" rx="12" fill="#14241b" stroke="#254231" stroke-width="0.8"/>
+
+          <!-- Copper routing traces -->
+          <g stroke="url(#ab-copper)" stroke-width="0.8" fill="none" opacity="0.85">
+            <path d="M54 130 H246 V180 H230 V210 H180"/>
+            <path d="M60 148 H120 V200 H160"/>
+            <path d="M72 165 H110 V230"/>
+            <path d="M190 140 V220 H240"/>
+            <path d="M52 350 H110 V390 H90"/>
+            <path d="M190 350 H248 V410 H220"/>
+            <path d="M60 410 H140 V450 H160"/>
+            <path d="M150 370 V470"/>
+          </g>
+
+          <!-- Gold-plated test points & via holes -->
+          <g fill="#cca43b" opacity="0.75">
+            <circle cx="58" cy="132" r="1.5"/>
+            <circle cx="64" cy="132" r="1.5"/>
+            <circle cx="70" cy="132" r="1.5"/>
+            <circle cx="236" cy="148" r="1.5"/>
+            <circle cx="242" cy="148" r="1.5"/>
+            <circle cx="58" cy="360" r="1.5"/>
+            <circle cx="64" cy="360" r="1.5"/>
+            <circle cx="236" cy="360" r="1.5"/>
+            <circle cx="242" cy="360" r="1.5"/>
+          </g>
+
+          <!-- ESP32-S3 Metallic RF shield can -->
+          <rect x="60" y="380" width="76" height="54" rx="2" fill="#242c34" stroke="#485664" stroke-width="0.8"/>
+          <text x="66" y="396" font-family="'JetBrains Mono', monospace" font-size="5" font-weight="700" fill="#788898" letter-spacing="0.5">ESP32-S3</text>
+          <text x="66" y="405" font-family="'JetBrains Mono', monospace" font-size="4" fill="#586878">AEGIS CORE v6</text>
+          <rect x="114" y="384" width="18" height="14" rx="1" fill="#1b2127" stroke="#3a4652" stroke-width="0.5"/>
+
+          <!-- SX1262 LoRa Transceiver IC -->
+          <rect x="164" y="382" width="42" height="34" rx="1.5" fill="#1b2229" stroke="#3e4a56" stroke-width="0.8"/>
+          <circle cx="170" cy="388" r="1.2" fill="#cca43b"/>
+          <text x="174" y="394" font-family="'JetBrains Mono', monospace" font-size="4" font-weight="700" fill="#6a7888">SX1262</text>
+          <text x="174" y="401" font-family="'JetBrains Mono', monospace" font-size="3" fill="#4d5a66">433MHz</text>
+
+          <!-- TCXO 32MHz Crystal Oscillator -->
+          <rect x="174" y="422" width="22" height="14" rx="1" fill="#2a323a" stroke="#5a6876" stroke-width="0.6"/>
+
+          <!-- 18650 Li-ion Battery cylinder contour (underneath lower section) -->
+          <rect x="80" y="438" width="140" height="42" rx="6" fill="#0f1914" stroke="#1d3024" stroke-width="0.8" opacity="0.7"/>
+          <text x="112" y="462" font-family="'JetBrains Mono', monospace" font-size="5" font-weight="700" fill="#2d4837" letter-spacing="1">18650 3000mAh 3.7V</text>
+        </g>
+
+        <!-- ══════════════════════════════════════════════════
+             TRANSLUCENT CHASSIS SHELL
+             ══════════════════════════════════════════════════ -->
+        <!-- Main body base with drop shadow -->
+        <rect x="24" y="100" width="252" height="396" rx="22" fill="url(#ab-shell)" filter="url(#ab-shadow)"/>
+
+        <!-- Bevel specular highlights -->
+        <rect x="24" y="100" width="252" height="396" rx="22" fill="url(#ab-bevel-hi)"/>
+        <rect x="24" y="100" width="252" height="396" rx="22" fill="none" stroke="url(#ab-edge)" stroke-width="1.8"/>
+
+        <!-- Side grip rib texture (left and right edges) -->
+        <g fill="#181e24" opacity="0.6">
+          <!-- Left grip ribs -->
+          <rect x="25" y="160" width="4" height="8" rx="1"/>
+          <rect x="25" y="174" width="4" height="8" rx="1"/>
+          <rect x="25" y="188" width="4" height="8" rx="1"/>
+          <rect x="25" y="202" width="4" height="8" rx="1"/>
+          <rect x="25" y="216" width="4" height="8" rx="1"/>
+
+          <!-- Right grip ribs -->
+          <rect x="271" y="160" width="4" height="8" rx="1"/>
+          <rect x="271" y="174" width="4" height="8" rx="1"/>
+          <rect x="271" y="188" width="4" height="8" rx="1"/>
+          <rect x="271" y="202" width="4" height="8" rx="1"/>
+          <rect x="271" y="216" width="4" height="8" rx="1"/>
+        </g>
+
+        <!-- Silkscreen laser-marked device labeling -->
+        <g fill="#909aa6" opacity="0.45" font-family="'JetBrains Mono', monospace">
+          <text x="44" y="123" font-size="5" font-weight="700" letter-spacing="1.2">AEGIS-BEACON</text>
+          <text x="210" y="123" font-size="4.5" letter-spacing="0.8">SAR // v6.0</text>
+        </g>
+
+        <!-- ══════════════════════════════════════════════════
+             OLED DISPLAY RECESS & BEZEL
+             ══════════════════════════════════════════════════ -->
+        <!-- Outer beveled housing -->
+        <rect x="42" y="128" width="216" height="118" rx="7" fill="#07090b" stroke="#252d36" stroke-width="1.4"/>
+        <rect x="44" y="130" width="212" height="114" rx="5" fill="#040506" stroke="#12161b" stroke-width="1"/>
+
+        <!-- Inner OLED active glass display well -->
+        <rect x="48" y="134" width="204" height="106" rx="3" fill="#000000" filter="url(#ab-oled-inset)"/>
+
+        <!-- Display polarized antireflection coating tint -->
+        <rect x="48" y="134" width="204" height="106" rx="3" fill="none" stroke="#2c3540" stroke-width="0.6"/>
+
+        <!-- ══════════════════════════════════════════════════
+             BUTTON WELLS
+             ══════════════════════════════════════════════════ -->
+        <g fill="#0e1216" stroke="#2a333c" stroke-width="1">
+          <!-- MODE well -->
+          <rect x="40" y="268" width="50" height="50" rx="7"/>
+          <rect x="42" y="270" width="46" height="46" rx="5" fill="#090c0e"/>
+
+          <!-- SEL well -->
+          <rect x="98" y="268" width="50" height="50" rx="7"/>
+          <rect x="100" y="270" width="46" height="46" rx="5" fill="#090c0e"/>
+
+          <!-- UP well -->
+          <rect x="156" y="268" width="50" height="50" rx="7"/>
+          <rect x="158" y="270" width="46" height="46" rx="5" fill="#090c0e"/>
+
+          <!-- DN well -->
+          <rect x="214" y="268" width="50" height="50" rx="7"/>
+          <rect x="216" y="270" width="46" height="46" rx="5" fill="#090c0e"/>
+        </g>
+
+        <!-- ══════════════════════════════════════════════════
+             SPEAKER GRILLE & ACOUSTIC APERTURES
+             ══════════════════════════════════════════════════ -->
+        <g id="ab-speaker-grille" transform="translate(86 338)">
+          <!-- Grille recess chamber -->
+          <rect x="0" y="0" width="128" height="16" rx="4" fill="#080a0c" stroke="#222a32" stroke-width="0.8"/>
+          <!-- Inner acoustic cloth backing -->
+          <rect x="2" y="2" width="124" height="12" rx="2" fill="#101418"/>
+
+          <!-- CNC milled horizontal sound ports -->
+          <g fill="#040506">
+            <rect x="8" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="15" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="22" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="29" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="36" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="43" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="50" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="57" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="64" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="71" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="78" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="85" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="92" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="99" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="106" y="4.5" width="3" height="7" rx="0.8"/>
+            <rect x="113" y="4.5" width="3" height="7" rx="0.8"/>
           </g>
         </g>
 
-        <!-- LED bezels (TX left, RX right of grille) -->
-        <circle cx="68" cy="346" r="7" fill="#0a0c0e" stroke="#303840" stroke-width="0.8"/>
-        <circle cx="232" cy="346" r="7" fill="#0a0c0e" stroke="#303840" stroke-width="0.8"/>
+        <!-- ══════════════════════════════════════════════════
+             LED BEZELS (TX Left, RX Right of Grille)
+             ══════════════════════════════════════════════════ -->
+        <!-- Left TX LED Bezel -->
+        <circle cx="68" cy="346" r="8" fill="#090b0e" stroke="#2a333c" stroke-width="1"/>
+        <circle cx="68" cy="346" r="6" fill="#151a20" stroke="#000" stroke-width="0.5"/>
+        <text x="68" y="360" font-family="'JetBrains Mono', monospace" font-size="4.5" font-weight="700" fill="#788490" text-anchor="middle">TX</text>
 
-        <!-- Hex corner screws -->
-        <g fill="#b8c0c8" stroke="#6a7480" stroke-width="0.5">
-          <polygon points="44,118 48,116 52,118 52,122 48,124 44,122"/>
-          <polygon points="256,118 260,116 264,118 264,122 260,124 256,122"/>
-          <polygon points="44,478 48,476 52,478 52,482 48,484 44,482"/>
-          <polygon points="256,478 260,476 264,478 264,482 260,484 256,482"/>
+        <!-- Right RX LED Bezel -->
+        <circle cx="232" cy="346" r="8" fill="#090b0e" stroke="#2a333c" stroke-width="1"/>
+        <circle cx="232" cy="346" r="6" fill="#151a20" stroke="#000" stroke-width="0.5"/>
+        <text x="232" y="360" font-family="'JetBrains Mono', monospace" font-size="4.5" font-weight="700" fill="#788490" text-anchor="middle">RX</text>
+
+        <!-- ══════════════════════════════════════════════════
+             HEX ALLEN FASTENERS (4 corners + 2 waist bolts)
+             ══════════════════════════════════════════════════ -->
+        <!-- Top Left Screw -->
+        <g transform="translate(46 118)">
+          <circle cx="0" cy="0" r="5.5" fill="url(#ab-screw-head)" stroke="#222830" stroke-width="0.6"/>
+          <polygon points="-2.2,-1.2 0,-2.5 2.2,-1.2 2.2,1.2 0,2.5 -2.2,1.2" fill="url(#ab-screw-socket)"/>
         </g>
 
-        <!-- USB-C -->
-        <rect x="128" y="486" width="44" height="7" rx="2" fill="#0a0c0e" stroke="#303840" stroke-width="0.6"/>
+        <!-- Top Right Screw -->
+        <g transform="translate(254 118)">
+          <circle cx="0" cy="0" r="5.5" fill="url(#ab-screw-head)" stroke="#222830" stroke-width="0.6"/>
+          <polygon points="-2.2,-1.2 0,-2.5 2.2,-1.2 2.2,1.2 0,2.5 -2.2,1.2" fill="url(#ab-screw-socket)"/>
+        </g>
+
+        <!-- Mid Left Waist Screw -->
+        <g transform="translate(34 293)">
+          <circle cx="0" cy="0" r="4.8" fill="url(#ab-screw-head)" stroke="#222830" stroke-width="0.6"/>
+          <polygon points="-1.9,-1.1 0,-2.2 1.9,-1.1 1.9,1.1 0,2.2 -1.9,1.1" fill="url(#ab-screw-socket)"/>
+        </g>
+
+        <!-- Mid Right Waist Screw -->
+        <g transform="translate(266 293)">
+          <circle cx="0" cy="0" r="4.8" fill="url(#ab-screw-head)" stroke="#222830" stroke-width="0.6"/>
+          <polygon points="-1.9,-1.1 0,-2.2 1.9,-1.1 1.9,1.1 0,2.2 -1.9,1.1" fill="url(#ab-screw-socket)"/>
+        </g>
+
+        <!-- Bottom Left Screw -->
+        <g transform="translate(46 478)">
+          <circle cx="0" cy="0" r="5.5" fill="url(#ab-screw-head)" stroke="#222830" stroke-width="0.6"/>
+          <polygon points="-2.2,-1.2 0,-2.5 2.2,-1.2 2.2,1.2 0,2.5 -2.2,1.2" fill="url(#ab-screw-socket)"/>
+        </g>
+
+        <!-- Bottom Right Screw -->
+        <g transform="translate(254 478)">
+          <circle cx="0" cy="0" r="5.5" fill="url(#ab-screw-head)" stroke="#222830" stroke-width="0.6"/>
+          <polygon points="-2.2,-1.2 0,-2.5 2.2,-1.2 2.2,1.2 0,2.5 -2.2,1.2" fill="url(#ab-screw-socket)"/>
+        </g>
+
+        <!-- Bottom USB-C Port & Lanyard Bar -->
+        <rect x="126" y="488" width="48" height="8" rx="3" fill="#0a0c0e" stroke="#2b343d" stroke-width="0.8"/>
+        <rect x="133" y="490" width="34" height="4" rx="1.5" fill="#000000"/>
+        <rect x="142" y="491.5" width="16" height="1" fill="#c8923a"/>
       </svg>
 
+      <!-- OLED Display Slot: Pixel-perfect SSD1309 display overlay -->
       <div class="aegis-device__oled-slot">
         <canvas
           id="oled-canvas"
@@ -164,26 +384,43 @@
         <div class="oled-canvas__glass" aria-hidden="true"></div>
       </div>
 
+      <!-- TX LED: Left optical diode -->
       <div class="aegis-device__led-slot aegis-device__led-slot--tx" aria-hidden="true">
         <span class="aegis-device__led aegis-device__led--tx" id="led-tx"></span>
       </div>
+
+      <!-- RX LED: Right optical diode -->
       <div class="aegis-device__led-slot aegis-device__led-slot--rx" aria-hidden="true">
         <span class="aegis-device__led aegis-device__led--rx" id="led-rx"></span>
       </div>
 
+      <!-- Physical Tactile Keys: MODE, SEL, UP, DN -->
       <div class="aegis-device__keys">
         <button class="aegis-key" data-key="mode" type="button" aria-label="MODE button, hold 2 seconds for EMERGENCY">
           <span class="aegis-key__hold" aria-hidden="true"></span>
-          <span class="aegis-key__cap">MODE</span>
+          <span class="aegis-key__cap">
+            <span class="key-legend">MODE</span>
+            <span class="key-sub">SOS 2s</span>
+          </span>
         </button>
-        <button class="aegis-key" data-key="sel" type="button" aria-label="SEL button">
-          <span class="aegis-key__cap">SEL</span>
+        <button class="aegis-key" data-key="sel" type="button" aria-label="SEL button, hold 3 seconds for CONFIG">
+          <span class="aegis-key__hold" aria-hidden="true"></span>
+          <span class="aegis-key__cap">
+            <span class="key-legend">SEL</span>
+            <span class="key-sub">CFG 3s</span>
+          </span>
         </button>
         <button class="aegis-key" data-key="up" type="button" aria-label="UP button">
-          <span class="aegis-key__cap">UP</span>
+          <span class="aegis-key__cap">
+            <span class="key-legend">UP</span>
+            <span class="key-sub">+</span>
+          </span>
         </button>
         <button class="aegis-key" data-key="dn" type="button" aria-label="DN button">
-          <span class="aegis-key__cap">DN</span>
+          <span class="aegis-key__cap">
+            <span class="key-legend">DN</span>
+            <span class="key-sub">-</span>
+          </span>
         </button>
       </div>
 
@@ -192,7 +429,6 @@
   </div>
 
   <p class="aegis-device__hint">
-    MODE short: BEACON / SEARCH toggle (LISTEN/CONFIG to BEACON). <strong>Hold MODE 2 s</strong> for EMERGENCY SOS.
-    SEL short: VOL/WPM. SEL hold 3 s: CONFIG.
+    MODE: short toggle BEACON/SEARCH | <strong>Hold MODE 2s</strong> for EMERGENCY SOS | SEL: VOL/WPM | <strong>Hold SEL 3s</strong> for CONFIG
   </p>
 </div>
