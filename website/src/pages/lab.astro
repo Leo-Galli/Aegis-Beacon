@@ -1,38 +1,64 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
+import { LAB_PARTS, LAB_PRESETS, LAB_STEPS, partSvgInner, ghostSlotSvg } from '../lib/hardware-lab'
+
+const ghostMarkup = LAB_PARTS.map((p) => ghostSlotSvg(p)).join('')
 ---
 
 <Layout
   title="Hardware Lab | Aegis-Beacon"
-  description="Interactive bench: place ESP32, SX1262 radio, OLED, GPS and power parts on a virtual PCB and see how the beacon stack connects."
+  description="Interactive bench: mount ESP32, SX1262, OLED, GPS and power modules on a virtual PCB, inspect pins, and watch power, data and RF links connect."
 >
   <div class="hw-lab-page container">
     <header class="hw-lab-head" data-rv="fade">
       <p class="hw-lab-eyebrow">Bench assembly</p>
       <h1>Interactive hardware lab</h1>
       <p class="hw-lab-lead">
-        Explore each module with illustrated parts. Click components in the palette to mount them on the
-        bench PCB; wires appear when both ends of a link are placed. This is separate from the live firmware demo.
+        Mount illustrated modules on the Rev.B bench PCB. Wires animate when both ends of a link are
+        placed. Use the inspector for GPIO notes — separate from the live <a href="/demo">firmware demo</a>.
       </p>
-      <div class="hw-lab-presets" id="hw-lab-presets" role="toolbar" aria-label="Assembly presets">
-        {LAB_PRESETS.map((preset) => (
-          <button type="button" class="hw-lab-preset-btn" data-preset={preset.id}>
-            {preset.label}
+      <div class="hw-lab-head__row">
+        <div class="hw-lab-presets" id="hw-lab-presets" role="toolbar" aria-label="Assembly presets">
+          {LAB_PRESETS.map((preset) => (
+            <button type="button" class="hw-lab-preset-btn" data-preset={preset.id} title={preset.desc}>
+              {preset.label}
+            </button>
+          ))}
+          <button type="button" class="hw-lab-preset-btn hw-lab-preset-btn--ghost" data-preset="clear">
+            Clear
           </button>
-        ))}
-        <button type="button" class="hw-lab-preset-btn hw-lab-preset-btn--ghost" data-preset="clear">
-          Clear bench
-        </button>
+        </div>
+        <div class="hw-lab-progress" aria-label="Build progress">
+          <svg class="hw-lab-progress__ring" viewBox="0 0 36 36" aria-hidden="true">
+            <path class="hw-lab-progress__track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="hw-lab-progress__fill" id="hw-lab-progress-fill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          </svg>
+          <span class="hw-lab-progress__label" id="hw-lab-stat">0 / {LAB_PARTS.length}</span>
+        </div>
       </div>
     </header>
 
+    <ol class="hw-lab-steps" id="hw-lab-steps" aria-label="Suggested build order">
+      {LAB_STEPS.map((step) => (
+        <li class="hw-lab-steps__item" data-step={step.id}>
+          <span class="hw-lab-steps__title">{step.title}</span>
+          <span class="hw-lab-steps__hint">{step.hint}</span>
+        </li>
+      ))}
+    </ol>
+
     <div class="hw-lab-layout" data-rv style="--rv-delay: 80ms">
       <aside class="hw-lab-palette" aria-label="Component library">
+        <div class="hw-lab-palette__tools">
+          <label class="hw-lab-search">
+            <span class="visually-hidden">Filter parts</span>
+            <input type="search" id="hw-lab-search" placeholder="Filter parts…" autocomplete="off" />
+          </label>
+        </div>
         <h2 class="hw-lab-palette__title">Parts tray</h2>
         <ul class="hw-lab-palette__list" id="hw-lab-palette">
           {LAB_PARTS.map((part) => (
-            <li>
+            <li data-category={part.category}>
               <button
                 type="button"
                 class="hw-lab-palette__item"
@@ -41,12 +67,13 @@ import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
               >
                 <span class="hw-lab-palette__thumb" aria-hidden="true">
                   <svg viewBox={`0 0 ${part.w} ${part.h}`} focusable="false">
-                    <g set:html={partSvgInner(part.id)} />
+                    <g set:html={partSvgInner(part.id, 'thumb')} />
                   </svg>
                 </span>
                 <span class="hw-lab-palette__meta">
                   <span class="hw-lab-palette__name">{part.name}</span>
                   <span class="hw-lab-palette__sub">{part.subtitle}</span>
+                  <span class="hw-lab-palette__zone">{part.zone}</span>
                 </span>
               </button>
             </li>
@@ -56,8 +83,12 @@ import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
 
       <section class="hw-lab-bench" aria-label="Virtual workbench">
         <div class="hw-lab-bench__chrome">
-          <span class="hw-lab-bench__tag">FR4 · 1.6 mm · HASL</span>
-          <span class="hw-lab-bench__stat" id="hw-lab-stat">0 / {LAB_PARTS.length} mounted</span>
+          <span class="hw-lab-bench__tag">FR4 · 1.6 mm · HASL · Rev.B</span>
+          <ul class="hw-lab-legend" aria-label="Wire types">
+            <li><span class="hw-lab-legend__swatch hw-lab-legend__swatch--power"></span>Power</li>
+            <li><span class="hw-lab-legend__swatch hw-lab-legend__swatch--data"></span>Data</li>
+            <li><span class="hw-lab-legend__swatch hw-lab-legend__swatch--rf"></span>RF</li>
+          </ul>
         </div>
         <div class="hw-lab-bench__surface">
           <svg
@@ -77,16 +108,54 @@ import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
               <pattern id="lab-copper" width="8" height="8" patternUnits="userSpaceOnUse">
                 <path d="M0 8 L8 0" stroke="#c8923a" stroke-width="0.6" opacity="0.35"/>
               </pattern>
+              <pattern id="lab-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M20 0 H0 V20" fill="none" stroke="#1e3a2f" stroke-width="0.4" opacity="0.5"/>
+              </pattern>
             </defs>
+            <rect x="8" y="8" width="704" height="464" rx="18" fill="#0a1210"/>
             <rect x="24" y="24" width="672" height="432" rx="14" fill="#14241b" stroke="#254231" stroke-width="1.2"/>
-            <rect x="32" y="32" width="656" height="416" rx="10" fill="url(#lab-copper)" opacity="0.25"/>
-            <text x="40" y="52" font-family="JetBrains Mono, monospace" font-size="9" fill="#3ecf6a" opacity="0.7">AEGIS-BEACON REV.B · BENCH</text>
-            <g id="hw-lab-wires" class="hw-lab-wires"></g>
+            <rect x="32" y="32" width="656" height="416" rx="10" fill="url(#lab-grid)" opacity="0.35"/>
+            <rect x="32" y="32" width="656" height="416" rx="10" fill="url(#lab-copper)" opacity="0.18"/>
+            <text x="40" y="52" font-family="JetBrains Mono, monospace" font-size="9" fill="#3ecf6a" opacity="0.75">AEGIS-BEACON · BENCH PCB · REV.B</text>
+            <g opacity="0.55">
+              <circle cx="44" cy="44" r="3" fill="#2a4034" stroke="#3ecf6a" stroke-width="0.6"/>
+              <circle cx="676" cy="44" r="3" fill="#2a4034" stroke="#3ecf6a" stroke-width="0.6"/>
+              <circle cx="44" cy="436" r="3" fill="#2a4034" stroke="#3ecf6a" stroke-width="0.6"/>
+              <circle cx="676" cy="436" r="3" fill="#2a4034" stroke="#3ecf6a" stroke-width="0.6"/>
+            </g>
+            <g id="hw-lab-zones" aria-hidden="true">
+              <text x="48" y="78" class="hw-lab-zone-label">POWER</text>
+              <text x="108" y="78" class="hw-lab-zone-label">UI / MCU</text>
+              <text x="268" y="78" class="hw-lab-zone-label">RF</text>
+              <text x="392" y="78" class="hw-lab-zone-label">NAV</text>
+            </g>
+            <g id="hw-lab-ghosts" set:html={ghostMarkup} />
+            <g id="hw-lab-wires"></g>
             <g id="hw-lab-parts"></g>
           </svg>
         </div>
-        <p class="hw-lab-bench__hint" id="hw-lab-hint">Select a part from the tray to mount it on the PCB.</p>
+        <p class="hw-lab-bench__hint" id="hw-lab-hint">Click a part in the tray to mount it. Click a mounted module on the PCB to inspect.</p>
       </section>
+
+      <aside class="hw-lab-inspector" id="hw-lab-inspector" aria-live="polite">
+        <h2 class="hw-lab-inspector__title">Inspector</h2>
+        <div class="hw-lab-inspector__empty" id="hw-lab-inspector-empty">
+          <p>Select a mounted module on the bench or from the tray to see pin notes and role in the stack.</p>
+        </div>
+        <div class="hw-lab-inspector__body" id="hw-lab-inspector-body" hidden>
+          <p class="hw-lab-inspector__zone" id="hw-lab-inspector-zone"></p>
+          <h3 class="hw-lab-inspector__name" id="hw-lab-inspector-name"></h3>
+          <p class="hw-lab-inspector__detail" id="hw-lab-inspector-detail"></p>
+          <dl class="hw-lab-inspector__pins">
+            <dt>Interfaces</dt>
+            <dd id="hw-lab-inspector-pins"></dd>
+          </dl>
+          <button type="button" class="hw-lab-inspector__toggle" id="hw-lab-inspector-unmount">
+            Remove from bench
+          </button>
+        </div>
+        <p class="hw-lab-inspector__links" id="hw-lab-inspector-links"></p>
+      </aside>
     </div>
   </div>
 </Layout>
@@ -96,6 +165,7 @@ import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
     LAB_PARTS,
     LAB_LINKS,
     LAB_PRESETS,
+    LAB_STEPS,
     linkPath,
     partSvgInner,
     type LabPartId,
@@ -103,15 +173,91 @@ import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
 
   const partById = new Map(LAB_PARTS.map((p) => [p.id, p]))
   const mounted = new Set<LabPartId>()
+  let selected: LabPartId | null = null
+
   const palette = document.getElementById('hw-lab-palette')
   const partsLayer = document.getElementById('hw-lab-parts')
   const wiresLayer = document.getElementById('hw-lab-wires')
+  const ghostsLayer = document.getElementById('hw-lab-ghosts')
   const statEl = document.getElementById('hw-lab-stat')
+  const progressFill = document.getElementById('hw-lab-progress-fill')
   const hintEl = document.getElementById('hw-lab-hint')
   const presetsBar = document.getElementById('hw-lab-presets')
+  const searchInput = document.getElementById('hw-lab-search') as HTMLInputElement | null
+  const stepsEl = document.getElementById('hw-lab-steps')
+
+  const inspEmpty = document.getElementById('hw-lab-inspector-empty')
+  const inspBody = document.getElementById('hw-lab-inspector-body')
+  const inspZone = document.getElementById('hw-lab-inspector-zone')
+  const inspName = document.getElementById('hw-lab-inspector-name')
+  const inspDetail = document.getElementById('hw-lab-inspector-detail')
+  const inspPins = document.getElementById('hw-lab-inspector-pins')
+  const inspLinks = document.getElementById('hw-lab-inspector-links')
+  const inspUnmount = document.getElementById('hw-lab-inspector-unmount')
 
   const updateStat = () => {
-    if (statEl) statEl.textContent = `${mounted.size} / ${LAB_PARTS.length} mounted`
+    const n = mounted.size
+    const total = LAB_PARTS.length
+    if (statEl) statEl.textContent = `${n} / ${total}`
+    if (progressFill) {
+      const pct = total ? Math.round((n / total) * 100) : 0
+      progressFill.setAttribute('stroke-dasharray', `${pct}, 100`)
+    }
+    if (hintEl && n === total) {
+      hintEl.textContent = 'Full stack mounted — all power, data and RF links are live on the bench.'
+    }
+  }
+
+  const updateGhosts = () => {
+    ghostsLayer?.querySelectorAll('[data-ghost]').forEach((el) => {
+      const id = (el as SVGElement).dataset.ghost as LabPartId
+      el.classList.toggle('is-hidden', mounted.has(id))
+    })
+  }
+
+  const updateSteps = () => {
+    stepsEl?.querySelectorAll<HTMLElement>('[data-step]').forEach((li) => {
+      const step = LAB_STEPS.find((s) => s.id === li.dataset.step)
+      if (!step) return
+      const done = step.parts.every((id) => mounted.has(id))
+      li.classList.toggle('is-done', done)
+    })
+  }
+
+  const linksForPart = (id: LabPartId) =>
+    LAB_LINKS.filter((l) => l.from === id || l.to === id)
+
+  const renderInspector = (id: LabPartId | null) => {
+    selected = id
+    partsLayer?.querySelectorAll('.hw-lab-part').forEach((g) => {
+      g.classList.toggle('is-selected', g.getAttribute('data-part') === id)
+    })
+    if (!id || !inspBody || !inspEmpty) {
+      inspBody?.setAttribute('hidden', '')
+      inspEmpty.hidden = false
+      return
+    }
+    const def = partById.get(id)
+    if (!def) return
+    inspEmpty.hidden = true
+    inspBody.removeAttribute('hidden')
+    if (inspZone) inspZone.textContent = def.zone
+    if (inspName) inspName.textContent = def.name
+    if (inspDetail) inspDetail.textContent = def.detail
+    if (inspPins) inspPins.textContent = def.pins
+    if (inspLinks) {
+      const live = linksForPart(id).filter(
+        (l) => mounted.has(l.from) && mounted.has(l.to),
+      )
+      const pending = linksForPart(id).filter(
+        (l) => !mounted.has(l.from) || !mounted.has(l.to),
+      )
+      const bits: string[] = []
+      if (live.length) bits.push(`Active: ${live.map((l) => l.label).join(', ')}`)
+      if (pending.length) bits.push(`Waiting: ${pending.map((l) => l.label).join(', ')}`)
+      inspLinks.textContent = bits.join(' · ') || 'No harness links defined.'
+    }
+    inspUnmount?.toggleAttribute('disabled', !mounted.has(id))
   }
 
   const renderWires = () => {
@@ -123,15 +269,14 @@ import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
       const b = partById.get(link.to)
       if (!a || !b) continue
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-      path.setAttribute('d', linkPath(a, b))
-      path.setAttribute('class', 'hw-lab-wire')
+      path.setAttribute('d', linkPath(a, b, link))
+      path.setAttribute('class', `hw-lab-wire hw-lab-wire--${link.kind}`)
       path.setAttribute('data-link', `${link.from}-${link.to}`)
       wiresLayer.appendChild(path)
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-      const mx = (a.x + a.w / 2 + b.x + b.w / 2) / 2
-      const my = (a.y + a.h / 2 + b.y + b.h / 2) / 2 - 6
-      label.setAttribute('x', String(mx))
-      label.setAttribute('y', String(my))
+      const mid = path.getPointAtLength(path.getTotalLength() / 2)
+      label.setAttribute('x', String(mid.x))
+      label.setAttribute('y', String(mid.y - 4))
       label.setAttribute('class', 'hw-lab-wire-label')
       label.textContent = link.label
       wiresLayer.appendChild(label)
@@ -143,28 +288,37 @@ import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
     if (!def || !partsLayer || mounted.has(id)) return
     mounted.add(id)
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-    g.setAttribute('class', 'hw-lab-part')
+    g.setAttribute('class', 'hw-lab-part is-entering')
     g.setAttribute('data-part', id)
     g.setAttribute('transform', `translate(${def.x} ${def.y})`)
-    g.innerHTML = partSvgInner(id)
+    g.setAttribute('tabindex', '0')
+    g.setAttribute('role', 'button')
+    g.setAttribute('aria-label', `${def.name}, mounted. Activate to inspect.`)
+    g.innerHTML = partSvgInner(id, 'bench')
     partsLayer.appendChild(g)
+    window.setTimeout(() => g.classList.remove('is-entering'), 420)
+    updateGhosts()
     renderWires()
     updateStat()
-    if (hintEl) hintEl.textContent = `${def.name} mounted. Add linked modules to show signal paths.`
+    updateSteps()
+    renderInspector(id)
+    if (hintEl && mounted.size < LAB_PARTS.length) {
+      hintEl.textContent = `${def.name} mounted on ${def.zone}.`
+    }
   }
 
   const unmountPart = (id: LabPartId) => {
     if (!mounted.has(id)) return
     mounted.delete(id)
     partsLayer?.querySelector(`[data-part="${id}"]`)?.remove()
+    if (selected === id) renderInspector(null)
+    updateGhosts()
     renderWires()
     updateStat()
-    if (hintEl && mounted.size === 0) hintEl.textContent = 'Select a part from the tray to mount it on the PCB.'
-  }
-
-  const togglePart = (id: LabPartId) => {
-    if (mounted.has(id)) unmountPart(id)
-    else mountPart(id)
+    updateSteps()
+    if (hintEl && mounted.size === 0) {
+      hintEl.textContent = 'Click a part in the tray to mount it. Click a mounted module on the PCB to inspect.'
+    }
   }
 
   const setPalettePressed = () => {
@@ -178,7 +332,30 @@ import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
   palette?.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-part]')
     if (!btn?.dataset.part) return
-    togglePart(btn.dataset.part as LabPartId)
+    const id = btn.dataset.part as LabPartId
+    if (!mounted.has(id)) mountPart(id)
+    else renderInspector(id)
+    setPalettePressed()
+  })
+
+  palette?.addEventListener('dblclick', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-part]')
+    if (!btn?.dataset.part) return
+    const id = btn.dataset.part as LabPartId
+    if (!mounted.has(id)) return
+    unmountPart(id)
+    setPalettePressed()
+  })
+
+  partsLayer?.addEventListener('click', (e) => {
+    const g = (e.target as HTMLElement).closest<SVGGElement>('.hw-lab-part')
+    if (!g?.dataset.part) return
+    renderInspector(g.dataset.part as LabPartId)
+  })
+
+  inspUnmount?.addEventListener('click', () => {
+    if (!selected) return
+    unmountPart(selected)
     setPalettePressed()
   })
 
@@ -189,6 +366,7 @@ import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
     if (presetId === 'clear') {
       ;[...mounted].forEach((id) => unmountPart(id))
       setPalettePressed()
+      renderInspector(null)
       return
     }
     const preset = LAB_PRESETS.find((p) => p.id === presetId)
@@ -202,5 +380,17 @@ import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
     setPalettePressed()
   })
 
+  searchInput?.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase()
+    palette?.querySelectorAll<HTMLLIElement>('li').forEach((li) => {
+      const btn = li.querySelector('[data-part]') as HTMLButtonElement | null
+      const id = btn?.dataset.part as LabPartId | undefined
+      const def = id ? partById.get(id) : null
+      const hay = `${def?.name} ${def?.subtitle} ${def?.zone} ${def?.category}`.toLowerCase()
+      li.hidden = q.length > 0 && !hay.includes(q)
+    })
+  })
+
   updateStat()
+  updateGhosts()
 </script>
