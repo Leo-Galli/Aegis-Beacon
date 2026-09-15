@@ -113,16 +113,59 @@ STATE = BridgeState()
 # Falls back to plain line logging automatically when stdout is not a TTY.
 TRACK_MAX = 8  # how many recent fixes the dashboard keeps on screen
 
+# ANSI styling (Windows Terminal, macOS, Linux)
+_ANSI = {
+    "reset": "\x1b[0m",
+    "dim": "\x1b[2m",
+    "bold": "\x1b[1m",
+    "brand": "\x1b[38;5;255m",
+    "accent": "\x1b[38;5;214m",
+    "info": "\x1b[38;5;117m",
+    "ok": "\x1b[38;5;114m",
+    "warn": "\x1b[38;5;180m",
+    "device": "\x1b[38;5;117m",
+    "muted": "\x1b[38;5;245m",
+    "cw": "\x1b[38;5;214m",
+}
+
+
+def _parse_kv_body(body):
+    """Parse semicolon key=value pairs from an AEGIS line body."""
+    out = {}
+    for pair in body.split(";"):
+        pair = pair.strip()
+        if "=" not in pair:
+            continue
+        key, _, value = pair.partition("=")
+        key, value = key.strip().lower(), value.strip()
+        if key and value:
+            out[key] = value
+    return out
+
+
+def _parse_aegis_body(line):
+    upper = line.strip().upper()
+    if not upper.startswith("AEGIS:"):
+        return None, {}
+    rest = line.strip()[6:]
+    if ":" not in rest:
+        return rest.upper(), {}
+    tag, _, body = rest.partition(":")
+    return tag.strip().upper(), _parse_kv_body(body)
+
 
 class TUI:
     def __init__(self):
         self.lock = threading.Lock()
         self.enabled = sys.stdout.isatty()
         self.lines = []          # rolling log lines (newest last)
-        self.last_status = ""
+        self.last_status = "waiting for USB device..."
         self.last_pos = "no position received yet"
         self.last_page = "not detected"
         self.last_url = ""      # public site link for the latest fix (shareable)
+        self.last_mode = "UNKNOWN"
+        self.last_cw = ""
+        self.hint = "Run with --tui · type MODE LISTEN on the host"
         self.track = []          # recent fixes: (time, lat, lng, url), newest last
         self.started = time.time()
 
@@ -132,6 +175,32 @@ class TUI:
 
     def _bar(self, label, value, width=34):
         return f"{label:<10} {value}".ljust(width)
+
+    def _paint_log(self, line):
+        a = _ANSI
+        if line.startswith("[bridge]"):
+            return a["warn"] + line + a["reset"]
+        if line.startswith("[device]"):
+            return a["device"] + line + a["reset"]
+        if line.startswith("AEGIS:CW:"):
+            return a["cw"] + a["bold"] + line + a["reset"]
+        if line.startswith("AEGIS:MODE:") or line.startswith("AEGIS:OK:"):
+            return a["ok"] + line + a["reset"]
+        if line.startswith("AEGIS:"):
+            return a["ok"] + line + a["reset"]
+        if line.startswith("[serial]"):
+            return a["muted"] + line + a["reset"]
+        return line
+
+    def _mode_badge(self):
+        a = _ANSI
+        mode = self.last_mode or "UNKNOWN"
+        color = a["accent"]
+        if mode == "LISTEN":
+            color = a["info"]
+        elif mode == "EMERGENCY":
+            color = a["warn"]
+        return f"{a['dim']}Mode{a['reset']}  {color}{a['bold']}[{mode}]{a['reset']}"
 
     def set_share(self, url):
         """Remember the latest fix's public link and push it onto the on-screen
@@ -145,6 +214,45 @@ class TUI:
                     del self.track[: len(self.track) - TRACK_MAX]
             self.draw()
 
+    def set_mode(self, mode):
+        with self.lock:
+            self.last_mode = (mode or "UNKNOWN").upper()
+            if self.last_mode == "LISTEN":
+                self.hint = "LISTEN · AEGIS:CW stream · device OLED + speaker"
+            elif self.last_mode == "SEARCH":
+                self.hint = "SEARCH · RSSI scan on configured frequency"
+            elif self.last_mode == "CONFIG":
+                self.hint = "CONFIG · WiFi portal 192.168.4.1 on the beacon"
+            elif self.last_mode == "EMERGENCY":
+                self.hint = "EMERGENCY · SOS Morse TX"
+            else:
+                self.hint = "BEACON · Morse TX · POS lines to report-position"
+            self.draw()
+
+    def set_cw(self, ch):
+        with self.lock:
+            self.last_cw = ch
+            self.draw()
+
+    def note_aegis_line(self, line):
+        """Update dashboard fields from a machine-readable AEGIS line."""
+        tag, kv = _parse_aegis_body(line)
+        if not tag:
+            return
+        if tag == "HELLO" and "mode" in kv:
+            self.set_mode(kv["mode"])
+        elif tag == "STATE" and "mode" in kv:
+            self.set_mode(kv["mode"])
+        elif tag == "MODE":
+            body = line.strip().split(":", 2)[-1].strip()
+            self.set_mode(body)
+        elif tag == "OK" and "mode" in kv:
+            self.set_mode(kv["mode"])
+        elif tag == "CW":
+            body = line.strip().split(":", 2)[-1].strip()
+            if body:
+                self.set_cw(body)
+
     def draw(self):
         if not self.enabled:
             return
@@ -152,24 +260,46 @@ class TUI:
             width = min(shutil.get_terminal_size((80, 24)).columns, 96)
             now = datetime.datetime.now().strftime("%H:%M:%S")
             uptime = int(time.time() - self.started)
+            a = _ANSI
             lines = []
+            conn = f"{a['ok']}●{a['reset']}" if "connected" in self.last_status.lower() else f"{a['muted']}○{a['reset']}"
             lines.append("")
-            lines.append(f"  AEGIS-BEACON SERIAL BRIDGE   {now}   uptime {uptime}s".ljust(width))
-            lines.append("  " + "-" * (width - 2))
+            head = (
+                f"  {conn} {a['brand']}{a['bold']}AEGIS-BEACON{a['reset']} "
+                f"{a['accent']}SERIAL BRIDGE{a['reset']}   {a['muted']}{now}   uptime {uptime}s{a['reset']}"
+            )
+            lines.append(head.ljust(width + len(a["reset"]) * 3))
+            lines.append("  " + a["muted"] + ("─" * (width - 2)) + a["reset"])
+            lines.append("  " + self._mode_badge())
+            lines.append(f"  {a['dim']}{self.hint}{a['reset']}")
+            lines.append("  " + a["muted"] + ("─" * (width - 2)) + a["reset"])
             lines.append("  " + self._bar("Device", self.last_status))
             lines.append("  " + self._bar("Position", self.last_pos))
-            lines.append("  " + self._bar("Share", self.last_url or "(public link appears on first fix)"))
+            share = self.last_url or "(public link appears on first fix)"
+            if len(share) > width - 14:
+                share = "…" + share[-(width - 18):]
+            lines.append("  " + self._bar("Share", share))
             lines.append("  " + self._bar("Page", self.last_page))
+            if self.last_mode == "LISTEN" and self.last_cw:
+                cw_line = f"AEGIS:CW:{self.last_cw}"
+                lines.append("  " + self._bar("RX decode", cw_line))
             if self.track:
-                lines.append("  " + "-" * (width - 2))
-                lines.append("  Local track (path taken, newest last):")
+                lines.append("  " + a["muted"] + ("─" * (width - 2)) + a["reset"])
+                lines.append(f"  {a['dim']}Local track (newest last):{a['reset']}")
                 for ts, pos, _url in self.track:
-                    lines.append(f"    {ts}  {pos}")
-            lines.append("  " + "-" * (width - 2))
-            lines.append("  Live log:")
-            body = self.lines[- (width // 2) - 8:]  # keep the newest lines
+                    lines.append(f"    {a['muted']}{ts}{a['reset']}  {pos}")
+            lines.append("  " + a["muted"] + ("─" * (width - 2)) + a["reset"])
+            lines.append(f"  {a['dim']}Live log:{a['reset']}")
+            body = self.lines[- (width // 2) - 8:]
             for line in body:
-                lines.append("  " + line[: width - 2])
+                painted = self._paint_log(line)
+                plain_len = len(line)
+                pad = max(0, width - 2 - plain_len)
+                lines.append("  " + painted + " " * pad)
+            lines.append("  " + a["muted"] + ("─" * (width - 2)) + a["reset"])
+            lines.append(
+                f"  {a['dim']}Host input:{a['reset']} MODE LISTEN · FREQ · WPM · STATUS · HELP · quit"
+            )
             frame = "\n".join(lines)
             self._clear()
             sys.stdout.write(frame + "\n")
@@ -361,6 +491,7 @@ def handle_serial(device, baud, site, no_open, verbose):
                     continue
                 upper = line.upper()
                 if upper.startswith("AEGIS:"):
+                    TUI_UI.note_aegis_line(line)
                     TUI_UI.log(f"[device] {line}")
                     if upper.startswith("AEGIS:POS:"):
                         data = parse_pos_line(line)
@@ -387,6 +518,10 @@ def handle_serial(device, baud, site, no_open, verbose):
                             TUI_UI.log("[bridge] AEGIS:POS: line without usable coordinates, ignoring")
                     elif upper.startswith("AEGIS:HELLO:"):
                         TUI_UI.log("[device] firmware handshake received")
+                    elif upper.startswith("AEGIS:CW:"):
+                        pass  # note_aegis_line already updated RX decode panel
+                    elif upper.startswith("AEGIS:MODE:") or upper.startswith("AEGIS:OK:"):
+                        TUI_UI.log("[bridge] device mode synced with dashboard")
                     elif verbose:
                         TUI_UI.log(f"[bridge] (ignored) {line}")
                 elif verbose:

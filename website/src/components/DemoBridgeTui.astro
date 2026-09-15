@@ -1,0 +1,80 @@
+---
+interface Props {
+  id: string
+  compact?: boolean
+  showTypingRow?: boolean
+}
+
+const { id, compact = false, showTypingRow = false } = Astro.props
+---
+
+<div
+  class:list={['demo-bridge-tui', compact && 'demo-bridge-tui--compact']}
+  id={id}
+  data-bridge-tui
+  data-bridge-connected="0"
+  aria-label="Aegis serial bridge terminal dashboard"
+>
+  <div class="demo-bridge-tui__glow" aria-hidden="true"></div>
+  <div class="demo-bridge-tui__scanlines" aria-hidden="true"></div>
+  <header class="demo-bridge-tui__head">
+    <span class="demo-bridge-tui__conn" data-bridge-conn-led aria-hidden="true"></span>
+    <span class="demo-bridge-tui__brand">AEGIS-BEACON</span>
+    <span class="demo-bridge-tui__head-mid">SERIAL BRIDGE</span>
+    <span class="demo-bridge-tui__meta">
+      <span data-bridge-clock>--:--:--</span>
+      <span data-bridge-uptime>uptime 0s</span>
+    </span>
+  </header>
+  <div class="demo-bridge-tui__mode-row">
+    <span class="demo-bridge-tui__mode-label">Device mode</span>
+    <span class="demo-bridge-tui__mode-pill" data-bridge-mode-pill data-mode="beacon">BEACON</span>
+    <span class="demo-bridge-tui__rssi" data-bridge-rssi hidden aria-hidden="true">RSSI —</span>
+  </div>
+  <p class="demo-bridge-tui__status-hint" data-bridge-status-hint>Run python bridge/aegis-serial-bridge.py --tui</p>
+  <hr class="demo-bridge-tui__rule" />
+  <dl class="demo-bridge-tui__stats">
+    <div class="demo-bridge-tui__stat">
+      <dt>Device</dt>
+      <dd data-bridge-device>waiting for USB device...</dd>
+    </div>
+    <div class="demo-bridge-tui__stat">
+      <dt>Position</dt>
+      <dd data-bridge-position>no position received yet</dd>
+    </div>
+    <div class="demo-bridge-tui__stat">
+      <dt>Share</dt>
+      <dd data-bridge-share class="demo-bridge-tui__share">(public link appears on first fix)</dd>
+    </div>
+    <div class="demo-bridge-tui__stat">
+      <dt>Page</dt>
+      <dd data-bridge-page>not detected</dd>
+    </div>
+  </dl>
+  <div class="demo-bridge-tui__track-wrap" data-bridge-track-wrap hidden>
+    <p class="demo-bridge-tui__track-label">Local track</p>
+    <ul class="demo-bridge-tui__track" data-bridge-track></ul>
+  </div>
+  <div class="demo-bridge-tui__cw-panel" data-bridge-cw-panel hidden>
+    <span class="demo-bridge-tui__cw-label">RX decode</span>
+    <code class="demo-bridge-tui__cw-line" data-bridge-cw-line>AEGIS:CW:...</code>
+  </div>
+  <hr class="demo-bridge-tui__rule" />
+  <p class="demo-bridge-tui__log-label">Live log</p>
+  <div class="demo-bridge-tui__log" data-bridge-log role="log" aria-live="polite"></div>
+  {showTypingRow && (
+    <div class="demo-bridge-tui__typing" id="demo-listen-terminal" aria-live="polite">
+      <span class="demo-bridge-tui__log-line demo-bridge-tui__log-line--dim">[bridge] USB detected · 115200</span>
+      <span class="demo-bridge-tui__cmdline">
+        <span class="demo-bridge-tui__log-line demo-bridge-tui__log-line--cmd">&gt;</span>
+        <span id="demo-listen-cmd"></span>
+        <span class="demo-bridge-tui__cursor" id="demo-listen-cursor">|</span>
+      </span>
+      <span id="demo-listen-response" class="demo-bridge-tui__response"></span>
+    </div>
+  )}
+  <footer class="demo-bridge-tui__footer">
+    <span class="demo-bridge-tui__footer-label">Host input</span>
+    <span class="demo-bridge-tui__footer-hint">MODE LISTEN · FREQ · WPM · STATUS · HELP</span>
+  </footer>
+</div>

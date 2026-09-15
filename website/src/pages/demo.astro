@@ -127,6 +127,13 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   import { bindLongPress, bindTap } from '../lib/demo-device-input'
   import { modeShortPressNext, MODE_HOLD_MS, SEL_HOLD_MS } from '../lib/demo-firmware-modes'
   import {
+    appendBridgeLog,
+    getBridgeTuiRoot,
+    renderBridgeTui,
+    seedBridgeListenSession,
+    updateBridgeCwLine,
+  } from '../lib/demo-bridge-tui'
+  import {
     toggleSound,
     playKeyClick,
     startCwTone,
@@ -176,10 +183,9 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   const listenCursor = document.getElementById('demo-listen-cursor')
   const listenResponse = document.getElementById('demo-listen-response')
   const listenSteps = document.querySelectorAll('.demo-listen-steps__item')
-  const fsCwStream = document.getElementById('demo-fs-cw-stream')
-
   let listenAnimTimer: number | null = null
   let usbBenchActive = false
+  let bridgeStartedAtMs = 0
   let modeBeforeConfig: DemoMode = 'beacon'
 
   let currentMode: DemoMode = 'beacon'
@@ -316,6 +322,24 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
 
   const flashAdj = () => { adjOverlayUntil = tickMs + 2500 }
 
+  const syncBridgeTui = () => {
+    const nowMs = Date.now()
+    const snap = {
+      connected: usbBenchActive,
+      mode: currentMode,
+      freqMhz: parseFloat(freqSelect.value) || 433.5,
+      rssi,
+      payload: payloadInput.value.trim(),
+      cwChar: currentMode === 'listen' ? cwText.slice(-1) || undefined : undefined,
+      startedAtMs: bridgeStartedAtMs || nowMs,
+      nowMs,
+    }
+    renderBridgeTui(getBridgeTuiRoot('demo-fs-bridge-tui'), snap)
+    if (usbBenchActive) {
+      renderBridgeTui(getBridgeTuiRoot('demo-dialog-bridge-tui'), snap)
+    }
+  }
+
   const syncFsToolbar = () => {
     const inFs = deviceColumn?.classList.contains('is-fullscreen')
     fsExit?.toggleAttribute('hidden', !inFs)
@@ -365,6 +389,7 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
       deviceColumn.classList.remove('is-fullscreen')
       setLaptopVisible(false)
       usbBenchActive = false
+      bridgeStartedAtMs = 0
     }
 
     document.body.classList.toggle('demo-fs-open', on)
@@ -420,7 +445,7 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
             } else {
               listenAnimTimer = window.setTimeout(() => {
                 listenCursor?.classList.add('is-hidden')
-                if (listenResponse) listenResponse.textContent = 'AEGIS:OK:mode=LISTEN'
+                if (listenResponse) listenResponse.textContent = 'AEGIS:MODE:LISTEN'
                 listenScene?.classList.add('is-done')
                 listenSteps[2]?.classList.add('is-done')
                 listenSteps[2]?.classList.remove('is-active')
@@ -444,7 +469,11 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
     listenDialog?.close()
     listenStart && (listenStart.disabled = false)
     usbBenchActive = true
+    bridgeStartedAtMs = Date.now()
     selectMode('listen', false)
+    const fsTui = getBridgeTuiRoot('demo-fs-bridge-tui')
+    seedBridgeListenSession(fsTui)
+    syncBridgeTui()
     const inFs = deviceColumn?.classList.contains('is-fullscreen')
     if (inFs) setLaptopVisible(true)
     else setFullscreen(true, true)
@@ -493,6 +522,13 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
       else if (mode === 'search') showToast('SEARCH | RSSI scan')
       else if (mode === 'beacon' && prev === 'search') showToast('BEACON | Morse TX')
     }
+    if (usbBenchActive && prev !== mode) {
+      const fsTui = getBridgeTuiRoot('demo-fs-bridge-tui')
+      if (fromHardware) {
+        appendBridgeLog(fsTui, `[device] AEGIS:MODE:${mode.toUpperCase()}`)
+      }
+    }
+    syncBridgeTui()
     renderOled()
     updateTape()
   }
@@ -665,11 +701,12 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
         cwText += ch
         cwDecoded += 1
         cwCharIdx += 1
-        if (fsCwStream && usbBenchActive) {
-          fsCwStream.textContent = `AEGIS:CW:${ch === ' ' ? ' ' : ch}`
+        if (usbBenchActive) {
+          updateBridgeCwLine(getBridgeTuiRoot('demo-fs-bridge-tui'), ch)
         }
       }
     }
+    if (usbBenchActive) syncBridgeTui()
     renderOled()
   }, 60)
 
