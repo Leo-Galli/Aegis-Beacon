@@ -16,7 +16,7 @@
       <div class="stage-spec">433.500 MHz | PMR446</div>
     </div>
 
-    <article class="aegis-device is-powered-on" id="aegis-device" aria-label="Aegis-Beacon hardware simulation">
+    <article class="aegis-device" id="aegis-device" aria-label="Aegis-Beacon hardware simulation">
       <svg class="aegis-device__art" viewBox="0 0 300 540" aria-hidden="true" role="presentation">
         <defs>
           <!-- Smoke polycarbonate case gradient -->
@@ -144,14 +144,16 @@
         </g>
 
         <!-- Top rotary knobs -->
-        <!-- Left Volume/Power rotary knob -->
-        <g transform="translate(62 90)">
-          <rect x="0" y="0" width="22" height="12" rx="2" fill="#1e242b" stroke="#3a444e" stroke-width="0.8"/>
-          <line x1="4" y1="0" x2="4" y2="12" stroke="#4a5562" stroke-width="0.8"/>
-          <line x1="8" y1="0" x2="8" y2="12" stroke="#4a5562" stroke-width="0.8"/>
-          <line x1="12" y1="0" x2="12" y2="12" stroke="#4a5562" stroke-width="0.8"/>
-          <line x1="16" y1="0" x2="16" y2="12" stroke="#4a5562" stroke-width="0.8"/>
-          <circle cx="11" cy="2" r="2" fill="#ff5722"/>
+        <!-- Left panel: recessed power slide slot (thumb is HTML overlay) -->
+        <g transform="translate(62 90)" aria-hidden="true">
+          <rect x="0" y="0" width="22" height="12" rx="2" fill="#14181e" stroke="#3a444e" stroke-width="0.8"/>
+          <rect x="1" y="1" width="20" height="10" rx="1.5" fill="#1e242b"/>
+          <line x1="4" y1="1" x2="4" y2="11" stroke="#4a5562" stroke-width="0.7" opacity="0.85"/>
+          <line x1="8" y1="1" x2="8" y2="11" stroke="#4a5562" stroke-width="0.7" opacity="0.85"/>
+          <line x1="12" y1="1" x2="12" y2="11" stroke="#4a5562" stroke-width="0.7" opacity="0.85"/>
+          <line x1="16" y1="1" x2="16" y2="11" stroke="#4a5562" stroke-width="0.7" opacity="0.85"/>
+          <text x="3" y="9.5" font-family="'JetBrains Mono', monospace" font-size="3.2" font-weight="700" fill="#4a5562">0</text>
+          <text x="17" y="9.5" font-family="'JetBrains Mono', monospace" font-size="3.2" font-weight="700" fill="#4a5562">I</text>
         </g>
 
         <!-- Center Channel selector knob -->
@@ -384,19 +386,19 @@
         <div class="oled-canvas__glass" aria-hidden="true"></div>
       </div>
 
-      <button
-        type="button"
-        class="aegis-device__power-knob"
-        id="device-power-knob"
-        aria-label="Power button, toggle device on and off"
-        aria-pressed="true"
-        title="Power"
-      >
-        <span class="aegis-device__power-knob-cap" aria-hidden="true">
-          <span class="aegis-device__power-knob-dot"></span>
-          <span class="aegis-device__power-knob-label">PWR</span>
-        </span>
-      </button>
+      <div class="aegis-device__power-switch" id="device-power-switch">
+        <input
+          type="checkbox"
+          class="aegis-device__power-switch-input"
+          id="device-power-input"
+          checked
+          role="switch"
+          aria-label="Power slide switch"
+        />
+        <label class="aegis-device__power-switch-track" for="device-power-input" title="Power">
+          <span class="aegis-device__power-switch-thumb" aria-hidden="true"></span>
+        </label>
+      </div>
 
       <!-- TX LED: Left optical diode -->
       <div class="aegis-device__led-slot aegis-device__led-slot--tx" aria-hidden="true">
@@ -443,6 +445,6 @@
   </div>
 
   <p class="aegis-device__hint">
-    <strong>PWR knob:</strong> power on/off | MODE: BEACON/SEARCH | <strong>Hold MODE 2s</strong> SOS | SEL: VOL/WPM | <strong>Hold SEL 3s</strong> CONFIG
+    <strong>Slide 0/I:</strong> power | MODE: BEACON/SEARCH | <strong>Hold MODE 2s</strong> SOS | SEL: VOL/WPM | <strong>Hold SEL 3s</strong> CONFIG
   </p>
 </div>
