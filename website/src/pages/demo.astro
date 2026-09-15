@@ -161,6 +161,7 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   const fsOverlay = document.getElementById('demo-fs-overlay')
   const fsConnector = document.getElementById('demo-fs-connector')
   const fsBtn = document.getElementById('demo-fs-btn')
+  const fsUsbBtn = document.getElementById('demo-fs-usb-btn')
   const fsExit = document.getElementById('demo-fs-exit')
   const fsLaptop = document.getElementById('demo-fs-laptop')
   const hwModeBadge = document.getElementById('demo-hw-mode-badge')
@@ -178,7 +179,8 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   const fsCwStream = document.getElementById('demo-fs-cw-stream')
 
   let listenAnimTimer: number | null = null
-  let pcConnected = false
+  let usbBenchActive = false
+  let modeBeforeConfig: DemoMode = 'beacon'
 
   let currentMode: DemoMode = 'beacon'
   let channelIdx = 0
@@ -314,6 +316,18 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
 
   const flashAdj = () => { adjOverlayUntil = tickMs + 2500 }
 
+  const syncFsToolbar = () => {
+    const inFs = deviceColumn?.classList.contains('is-fullscreen')
+    fsExit?.toggleAttribute('hidden', !inFs)
+    if (!inFs) {
+      fsUsbBtn?.setAttribute('hidden', '')
+      return
+    }
+    const showUsb = !usbBenchActive
+    if (showUsb) fsUsbBtn?.removeAttribute('hidden')
+    else fsUsbBtn?.setAttribute('hidden', '')
+  }
+
   const setLaptopVisible = (visible: boolean) => {
     if (visible) {
       fsLaptop?.removeAttribute('hidden')
@@ -324,27 +338,37 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
       fsConnector?.setAttribute('hidden', '')
       deviceColumn?.classList.remove('has-laptop')
     }
+    syncFsToolbar()
   }
 
   const setFullscreen = (on: boolean, withLaptop = false) => {
     if (!deviceColumn || !fsOverlay || !columnSlot) return
+
+    const alreadyFs = deviceColumn.classList.contains('is-fullscreen')
+
+    if (on && alreadyFs) {
+      setLaptopVisible(withLaptop && usbBenchActive)
+      syncFsToolbar()
+      return
+    }
 
     if (on) {
       fsOverlay.appendChild(deviceColumn)
       fsOverlay.removeAttribute('hidden')
       fsOverlay.setAttribute('aria-hidden', 'false')
       deviceColumn.classList.add('is-fullscreen')
-      setLaptopVisible(withLaptop || currentMode === 'listen')
+      setLaptopVisible(withLaptop && usbBenchActive)
     } else {
       columnSlot.appendChild(deviceColumn)
       fsOverlay.setAttribute('hidden', '')
       fsOverlay.setAttribute('aria-hidden', 'true')
       deviceColumn.classList.remove('is-fullscreen')
       setLaptopVisible(false)
+      usbBenchActive = false
     }
 
     document.body.classList.toggle('demo-fs-open', on)
-    fsExit?.toggleAttribute('hidden', !on)
+    syncFsToolbar()
   }
 
   const updateHwBadge = (mode: DemoMode) => {
@@ -411,18 +435,25 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   }
 
   const enterListenFromPc = async () => {
-    pcConnected = true
     listenStart && (listenStart.disabled = true)
+    if (listenDialog && !listenDialog.open) {
+      resetListenDialog()
+      listenDialog.showModal()
+    }
     await runListenConnectAnim()
     listenDialog?.close()
     listenStart && (listenStart.disabled = false)
+    usbBenchActive = true
     selectMode('listen', false)
-    setFullscreen(true, true)
+    const inFs = deviceColumn?.classList.contains('is-fullscreen')
+    if (inFs) setLaptopVisible(true)
+    else setFullscreen(true, true)
     if (soundBtn && !soundBtn.classList.contains('is-active')) handleToggleSound()
     showToast('USB serial | LISTEN mode active', 'info')
   }
 
-  fsBtn?.addEventListener('click', () => setFullscreen(true, pcConnected && currentMode === 'listen'))
+  fsBtn?.addEventListener('click', () => setFullscreen(true, false))
+  fsUsbBtn?.addEventListener('click', () => { void enterListenFromPc() })
   fsExit?.addEventListener('click', () => setFullscreen(false))
   listenPcBtn?.addEventListener('click', openListenDialog)
   listenCalloutBtn?.addEventListener('click', openListenDialog)
@@ -451,8 +482,7 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
     updateHwBadge(mode)
     if (mode === 'listen') {
       if (!cwText) cwText = ''
-      pcConnected = true
-      if (deviceColumn?.classList.contains('is-fullscreen')) setLaptopVisible(true)
+      if (deviceColumn?.classList.contains('is-fullscreen') && usbBenchActive) setLaptopVisible(true)
     } else if (deviceColumn?.classList.contains('is-fullscreen')) {
       setLaptopVisible(false)
     }
@@ -543,13 +573,23 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
     keyEls.sel,
     SEL_HOLD_MS,
     () => {
+      if (currentMode === 'config') return
       playKeyClick(1300)
       adjTarget = adjTarget === 'vol' ? 'wpm' : 'vol'
       flashAdj()
       renderOled()
     },
-    () => selectMode('config', true),
+    () => {
+      if (currentMode === 'config') {
+        selectMode(modeBeforeConfig, true)
+        showToast('CONFIG closed')
+        return
+      }
+      modeBeforeConfig = currentMode === 'emergency' ? 'beacon' : currentMode
+      selectMode('config', true)
+    },
     pressVisual,
+    setHoldProgress,
   )
   bindTap(keyEls.up, adjustUp, pressVisual)
   bindTap(keyEls.dn, adjustDn, pressVisual)
@@ -625,7 +665,7 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
         cwText += ch
         cwDecoded += 1
         cwCharIdx += 1
-        if (fsCwStream && pcConnected) {
+        if (fsCwStream && usbBenchActive) {
           fsCwStream.textContent = `AEGIS:CW:${ch === ' ' ? ' ' : ch}`
         }
       }

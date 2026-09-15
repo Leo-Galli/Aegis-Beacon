@@ -4,6 +4,7 @@ import type { DemoMode } from './demo-oled-canvas'
 export const modeShortPressNext = (current: DemoMode): DemoMode => {
   if (current === 'beacon') return 'search'
   if (current === 'search') return 'beacon'
+  if (current === 'config' || current === 'listen' || current === 'emergency') return 'beacon'
   return 'beacon'
 }
 

@@ -43,8 +43,9 @@ import DemoLaptopMockup from './DemoLaptopMockup.astro'
       </div>
 
       <div class="demo-listen-scene__laptop">
-        <DemoLaptopMockup variant="dialog" chromeTitle="Terminal · Aegis Bridge">
-          <pre class="demo-laptop__terminal" id="demo-listen-terminal" aria-live="polite"><span class="demo-laptop__prompt">&gt;</span> <span id="demo-listen-cmd"></span><span class="demo-laptop__cursor" id="demo-listen-cursor">|</span>
+        <DemoLaptopMockup variant="dialog" chromeTitle="aegis-serial-bridge.py">
+          <pre class="demo-laptop__terminal" id="demo-listen-terminal" aria-live="polite"><span class="demo-laptop__line demo-laptop__line--dim">[bridge] USB detected · 115200</span>
+<span class="demo-laptop__prompt">&gt;</span> <span id="demo-listen-cmd"></span><span class="demo-laptop__cursor" id="demo-listen-cursor">|</span>
 <span id="demo-listen-response" class="demo-laptop__response"></span></pre>
         </DemoLaptopMockup>
       </div>

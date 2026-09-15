@@ -39,6 +39,22 @@ import DemoLaptopMockup from './DemoLaptopMockup.astro'
       </button>
       <button
         type="button"
+        class="demo-icon-btn demo-icon-btn--accent demo-toolbar-fs-only"
+        id="demo-fs-usb-btn"
+        hidden
+        aria-label="Connect USB and enter LISTEN mode"
+        title="Simulate USB serial bridge"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M12 22v-5"/>
+          <path d="M9 17h6"/>
+          <rect x="5" y="2" width="14" height="12" rx="2"/>
+          <path d="M9 6h.01M12 6h.01M15 6h.01"/>
+        </svg>
+        <span class="demo-icon-btn__label">Connect USB</span>
+      </button>
+      <button
+        type="button"
         class="demo-icon-btn demo-toolbar-fs-only"
         id="demo-fs-exit"
         hidden
@@ -81,12 +97,14 @@ import DemoLaptopMockup from './DemoLaptopMockup.astro'
     </div>
 
     <aside class="demo-fs-laptop" id="demo-fs-laptop" hidden aria-label="Laptop connected for LISTEN mode">
-      <DemoLaptopMockup variant="stage" chromeTitle="Aegis Bridge · serial">
-        <pre class="demo-laptop__terminal demo-laptop__terminal--live" id="demo-fs-terminal"><span class="demo-laptop__line demo-laptop__line--ok">&gt; MODE LISTEN</span>
+      <DemoLaptopMockup variant="stage" chromeTitle="PowerShell · aegis-serial-bridge.py">
+        <pre class="demo-laptop__terminal demo-laptop__terminal--live" id="demo-fs-terminal"><span class="demo-laptop__line demo-laptop__line--dim">[bridge] COM3 @ 115200 · fw 6.0</span>
+<span class="demo-laptop__line demo-laptop__line--dim">AEGIS:HELLO:device=Aegis-Beacon</span>
+<span class="demo-laptop__line demo-laptop__line--ok">&gt; MODE LISTEN</span>
 <span class="demo-laptop__line">AEGIS:OK:mode=LISTEN</span>
 <span class="demo-laptop__line demo-laptop__line--cw" id="demo-fs-cw-stream">AEGIS:CW:...</span></pre>
       </DemoLaptopMockup>
-      <p class="demo-fs-laptop__status">Decoding CW to OLED + speaker</p>
+      <p class="demo-fs-laptop__status">Host script sends MODE LISTEN · device decodes CW on OLED + speaker</p>
     </aside>
   </div>
 </div>

@@ -4,20 +4,25 @@ interface Props {
   chromeTitle?: string
 }
 
-const { variant = 'dialog', chromeTitle = 'Terminal · Aegis Bridge' } = Astro.props
+const { variant = 'dialog', chromeTitle = 'aegis-serial-bridge.py' } = Astro.props
 ---
 
 <div class={`demo-laptop-mock demo-laptop-mock--${variant}`}>
-  <div class="demo-laptop-mock__unit" aria-hidden="false">
+  <div class="demo-laptop-mock__unit">
     <div class="demo-laptop-mock__lid">
       <div class="demo-laptop-mock__bezel">
         <span class="demo-laptop-mock__webcam" aria-hidden="true"></span>
         <div class="demo-laptop-mock__screen">
-          <div class="demo-laptop__chrome">
-            <span></span><span></span><span></span>
+          <div class="demo-laptop__chrome demo-laptop__chrome--host">
+            <span class="demo-laptop__chrome-os" aria-hidden="true"></span>
             <span class="demo-laptop__title">{chromeTitle}</span>
+            <span class="demo-laptop__chrome-spacer" aria-hidden="true"></span>
           </div>
           <div class="demo-laptop-mock__terminal-wrap">
+            <div class="demo-bridge-prompt" aria-hidden="true">
+              <span class="demo-bridge-prompt__path">bridge/</span>
+              <span class="demo-bridge-prompt__cmd">python aegis-serial-bridge.py</span>
+            </div>
             <slot />
           </div>
         </div>
@@ -26,7 +31,7 @@ const { variant = 'dialog', chromeTitle = 'Terminal · Aegis Bridge' } = Astro.p
     <div class="demo-laptop-mock__hinge" aria-hidden="true"></div>
     <div class="demo-laptop-mock__base">
       <div class="demo-laptop-mock__deck">
-        <span class="demo-laptop-mock__brand" aria-hidden="true">AEGIS BRIDGE</span>
+        <span class="demo-laptop-mock__brand" aria-hidden="true">Host PC · USB serial</span>
         <div class="demo-laptop-mock__keyboard" aria-hidden="true"></div>
         <div class="demo-laptop-mock__trackpad" aria-hidden="true"></div>
       </div>
@@ -35,6 +40,8 @@ const { variant = 'dialog', chromeTitle = 'Terminal · Aegis Bridge' } = Astro.p
     <span class="demo-laptop-mock__port demo-laptop-mock__port--left" aria-hidden="true">USB-C</span>
   </div>
   <p class="demo-laptop-mock__caption">
-    {variant === 'stage' ? 'Field laptop · USB serial 115200' : 'Your laptop · serial terminal'}
+    {variant === 'stage'
+      ? 'Python serial bridge on your laptop (not on the beacon)'
+      : 'Run bridge/aegis-serial-bridge.py on the PC'}
   </p>
 </div>
