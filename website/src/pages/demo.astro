@@ -18,9 +18,11 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   </header>
 
   <div class="demo-layout">
-    <DemoDeviceChrome>
-      <AegisDeviceMockup />
-    </DemoDeviceChrome>
+    <div class="demo-column-slot" id="demo-column-slot">
+      <DemoDeviceChrome>
+        <AegisDeviceMockup />
+      </DemoDeviceChrome>
+    </div>
 
     <div class="controls-panel" data-rv style="--rv-delay: 120ms">
       <div class="controls-panel__header">
@@ -112,6 +114,8 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
 
 <DemoListenDialog />
 
+<div class="demo-fs-overlay" id="demo-fs-overlay" hidden aria-hidden="true"></div>
+
 <script>
   import {
     drawOledCanvas,
@@ -153,6 +157,9 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   const soundLabel = document.getElementById('sound-status-label')
 
   const deviceColumn = document.getElementById('demo-device-column')
+  const columnSlot = document.getElementById('demo-column-slot')
+  const fsOverlay = document.getElementById('demo-fs-overlay')
+  const fsConnector = document.getElementById('demo-fs-connector')
   const fsBtn = document.getElementById('demo-fs-btn')
   const fsExit = document.getElementById('demo-fs-exit')
   const fsLaptop = document.getElementById('demo-fs-laptop')
@@ -307,19 +314,37 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
 
   const flashAdj = () => { adjOverlayUntil = tickMs + 2500 }
 
+  const setLaptopVisible = (visible: boolean) => {
+    if (visible) {
+      fsLaptop?.removeAttribute('hidden')
+      fsConnector?.removeAttribute('hidden')
+      deviceColumn?.classList.add('has-laptop')
+    } else {
+      fsLaptop?.setAttribute('hidden', '')
+      fsConnector?.setAttribute('hidden', '')
+      deviceColumn?.classList.remove('has-laptop')
+    }
+  }
+
   const setFullscreen = (on: boolean, withLaptop = false) => {
-    deviceColumn?.classList.toggle('is-fullscreen', on)
+    if (!deviceColumn || !fsOverlay || !columnSlot) return
+
+    if (on) {
+      fsOverlay.appendChild(deviceColumn)
+      fsOverlay.removeAttribute('hidden')
+      fsOverlay.setAttribute('aria-hidden', 'false')
+      deviceColumn.classList.add('is-fullscreen')
+      setLaptopVisible(withLaptop || currentMode === 'listen')
+    } else {
+      columnSlot.appendChild(deviceColumn)
+      fsOverlay.setAttribute('hidden', '')
+      fsOverlay.setAttribute('aria-hidden', 'true')
+      deviceColumn.classList.remove('is-fullscreen')
+      setLaptopVisible(false)
+    }
+
     document.body.classList.toggle('demo-fs-open', on)
     fsExit?.toggleAttribute('hidden', !on)
-    if (fsLaptop) {
-      if (on && (withLaptop || currentMode === 'listen')) {
-        fsLaptop.removeAttribute('hidden')
-        deviceColumn?.classList.add('has-laptop')
-      } else if (!withLaptop && currentMode !== 'listen') {
-        fsLaptop.setAttribute('hidden', '')
-        deviceColumn?.classList.remove('has-laptop')
-      }
-    }
   }
 
   const updateHwBadge = (mode: DemoMode) => {
@@ -427,13 +452,9 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
     if (mode === 'listen') {
       if (!cwText) cwText = ''
       pcConnected = true
-      if (deviceColumn?.classList.contains('is-fullscreen')) {
-        fsLaptop?.removeAttribute('hidden')
-        deviceColumn?.classList.add('has-laptop')
-      }
+      if (deviceColumn?.classList.contains('is-fullscreen')) setLaptopVisible(true)
     } else if (deviceColumn?.classList.contains('is-fullscreen')) {
-      fsLaptop?.setAttribute('hidden', '')
-      deviceColumn?.classList.remove('has-laptop')
+      setLaptopVisible(false)
     }
     if (fromHardware) {
       if (mode === 'emergency') showToast('EMERGENCY | SOS beacon TX (+22 dBm)', 'emergency')
