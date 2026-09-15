@@ -177,7 +177,7 @@ export const renderBridgeTui = (root: HTMLElement | null, snap: BridgeTuiSnapsho
 export const seedBridgeListenSession = (root: HTMLElement | null) => {
   resetBridgeTuiLogs(root)
   if (root) delete root.dataset.bridgeTrackSeed
-  appendBridgeLog(root, '[bridge] loopback server on http://127.0.0.1:8765/')
+  appendBridgeLog(root, '[bridge] loopback server 127.0.0.1:8765 (stream|ping|state)')
   appendBridgeLog(root, '[bridge] connected to COM3 @ 115200 baud')
   appendBridgeLog(root, '[device] AEGIS:HELLO:ver=6.0;mode=BEACON;freq=433.500;wpm=13;vol=64')
   appendBridgeLog(root, '[device] firmware handshake received')
