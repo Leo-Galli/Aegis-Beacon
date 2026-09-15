@@ -1,4 +1,6 @@
 ---
+import DemoLaptopMockup from './DemoLaptopMockup.astro'
+
 /** Toolbar and mode legend above the handheld mockup on /demo. */
 ---
 
@@ -11,7 +13,7 @@
     <div class="demo-device-toolbar__actions">
       <button
         type="button"
-        class="demo-icon-btn"
+        class="demo-icon-btn demo-toolbar-normal"
         id="demo-listen-pc-btn"
         aria-label="Connect a laptop for LISTEN mode"
         title="LISTEN via USB serial"
@@ -25,7 +27,7 @@
       </button>
       <button
         type="button"
-        class="demo-icon-btn demo-icon-btn--accent"
+        class="demo-icon-btn demo-icon-btn--accent demo-toolbar-normal"
         id="demo-fs-btn"
         aria-label="Open device fullscreen"
         title="Fullscreen"
@@ -34,6 +36,18 @@
           <path d="M8 3H5a2 2 0 00-2 2v3M21 8V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3M16 21h3a2 2 0 002-2v-3"/>
         </svg>
         <span class="demo-icon-btn__label">Fullscreen</span>
+      </button>
+      <button
+        type="button"
+        class="demo-icon-btn demo-toolbar-fs-only"
+        id="demo-fs-exit"
+        hidden
+        aria-label="Exit fullscreen"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3"/>
+        </svg>
+        <span class="demo-icon-btn__label">Exit</span>
       </button>
     </div>
   </div>
@@ -58,31 +72,21 @@
     </div>
 
     <div class="demo-fs-connector" id="demo-fs-connector" hidden aria-hidden="true">
-      <span class="demo-fs-connector__line"></span>
-      <span class="demo-fs-connector__tag">USB</span>
+      <svg class="demo-fs-connector__cable" viewBox="0 0 120 32" aria-hidden="true">
+        <path class="demo-fs-connector__path" d="M8 16 H112" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <rect class="demo-fs-connector__plug" x="0" y="10" width="10" height="12" rx="2" fill="currentColor"/>
+        <rect class="demo-fs-connector__plug" x="110" y="10" width="10" height="12" rx="2" fill="currentColor"/>
+      </svg>
+      <span class="demo-fs-connector__tag">USB-C · 115200</span>
     </div>
 
     <aside class="demo-fs-laptop" id="demo-fs-laptop" hidden aria-label="Laptop connected for LISTEN mode">
-      <div class="demo-fs-laptop__inner">
-        <div class="demo-laptop demo-laptop--compact">
-          <div class="demo-laptop__screen">
-            <div class="demo-laptop__chrome">
-              <span></span><span></span><span></span>
-              <span class="demo-laptop__title">Aegis Bridge</span>
-            </div>
-            <pre class="demo-laptop__terminal demo-laptop__terminal--live" id="demo-fs-terminal"><span class="demo-laptop__line demo-laptop__line--ok">&gt; MODE LISTEN</span>
+      <DemoLaptopMockup variant="stage" chromeTitle="Aegis Bridge · serial">
+        <pre class="demo-laptop__terminal demo-laptop__terminal--live" id="demo-fs-terminal"><span class="demo-laptop__line demo-laptop__line--ok">&gt; MODE LISTEN</span>
 <span class="demo-laptop__line">AEGIS:OK:mode=LISTEN</span>
 <span class="demo-laptop__line demo-laptop__line--cw" id="demo-fs-cw-stream">AEGIS:CW:...</span></pre>
-          </div>
-          <div class="demo-laptop__base"></div>
-        </div>
-        <p class="demo-fs-laptop__caption">USB serial active | decoding CW to OLED + speaker</p>
-      </div>
+      </DemoLaptopMockup>
+      <p class="demo-fs-laptop__status">Decoding CW to OLED + speaker</p>
     </aside>
   </div>
-
-  <button type="button" class="demo-fs-exit" id="demo-fs-exit" hidden aria-label="Exit fullscreen">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3"/></svg>
-    Exit fullscreen
-  </button>
 </div>

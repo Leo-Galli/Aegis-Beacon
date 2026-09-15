@@ -1,0 +1,40 @@
+---
+interface Props {
+  variant?: 'dialog' | 'stage'
+  chromeTitle?: string
+}
+
+const { variant = 'dialog', chromeTitle = 'Terminal · Aegis Bridge' } = Astro.props
+---
+
+<div class={`demo-laptop-mock demo-laptop-mock--${variant}`}>
+  <div class="demo-laptop-mock__unit" aria-hidden="false">
+    <div class="demo-laptop-mock__lid">
+      <div class="demo-laptop-mock__bezel">
+        <span class="demo-laptop-mock__webcam" aria-hidden="true"></span>
+        <div class="demo-laptop-mock__screen">
+          <div class="demo-laptop__chrome">
+            <span></span><span></span><span></span>
+            <span class="demo-laptop__title">{chromeTitle}</span>
+          </div>
+          <div class="demo-laptop-mock__terminal-wrap">
+            <slot />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-laptop-mock__hinge" aria-hidden="true"></div>
+    <div class="demo-laptop-mock__base">
+      <div class="demo-laptop-mock__deck">
+        <span class="demo-laptop-mock__brand" aria-hidden="true">AEGIS BRIDGE</span>
+        <div class="demo-laptop-mock__keyboard" aria-hidden="true"></div>
+        <div class="demo-laptop-mock__trackpad" aria-hidden="true"></div>
+      </div>
+      <div class="demo-laptop-mock__lip" aria-hidden="true"></div>
+    </div>
+    <span class="demo-laptop-mock__port demo-laptop-mock__port--left" aria-hidden="true">USB-C</span>
+  </div>
+  <p class="demo-laptop-mock__caption">
+    {variant === 'stage' ? 'Field laptop · USB serial 115200' : 'Your laptop · serial terminal'}
+  </p>
+</div>

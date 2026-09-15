@@ -1,4 +1,6 @@
 ---
+import DemoLaptopMockup from './DemoLaptopMockup.astro'
+
 /** Modal: USB serial connection to a laptop for LISTEN mode (firmware-accurate). */
 ---
 
@@ -41,18 +43,10 @@
       </div>
 
       <div class="demo-listen-scene__laptop">
-        <div class="demo-laptop">
-          <div class="demo-laptop__screen">
-            <div class="demo-laptop__chrome">
-              <span></span><span></span><span></span>
-              <span class="demo-laptop__title">Terminal - Aegis Bridge</span>
-            </div>
-            <pre class="demo-laptop__terminal" id="demo-listen-terminal" aria-live="polite"><span class="demo-laptop__prompt">&gt;</span> <span id="demo-listen-cmd"></span><span class="demo-laptop__cursor" id="demo-listen-cursor">|</span>
+        <DemoLaptopMockup variant="dialog" chromeTitle="Terminal · Aegis Bridge">
+          <pre class="demo-laptop__terminal" id="demo-listen-terminal" aria-live="polite"><span class="demo-laptop__prompt">&gt;</span> <span id="demo-listen-cmd"></span><span class="demo-laptop__cursor" id="demo-listen-cursor">|</span>
 <span id="demo-listen-response" class="demo-laptop__response"></span></pre>
-          </div>
-          <div class="demo-laptop__base"></div>
-        </div>
-        <span class="demo-listen-scene__label">Your laptop</span>
+        </DemoLaptopMockup>
       </div>
     </div>
 
