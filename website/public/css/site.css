@@ -740,6 +740,84 @@ html.motion-ok [data-rv].is-in {
   display: flex; align-items: center; justify-content: center;
   pointer-events: none;
 }
+.aegis-device__power-knob {
+  grid-column: 48 / 92;
+  grid-row: 78 / 122;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.aegis-device__power-knob:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+.aegis-device__power-knob-cap {
+  position: relative;
+  width: 72%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #3a424c 0%, #1a1f24 55%, #0d1014 100%);
+  box-shadow:
+    inset 0 2px 4px rgb(255 255 255 / 12%),
+    inset 0 -3px 6px rgb(0 0 0 / 55%),
+    0 4px 10px rgb(0 0 0 / 35%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.aegis-device__power-knob:active .aegis-device__power-knob-cap {
+  transform: scale(0.94);
+  box-shadow:
+    inset 0 3px 8px rgb(0 0 0 / 65%),
+    0 2px 4px rgb(0 0 0 / 25%);
+}
+.aegis-device__power-knob-dot {
+  width: 18%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #2a323a;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 80%);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.aegis-device.is-powered-on .aegis-device__power-knob-dot {
+  background: #3ecf6a;
+  box-shadow: 0 0 6px #3ecf6a, 0 0 14px #3ecf6a88;
+}
+.aegis-device.is-powered-off .aegis-device__power-knob-dot {
+  background: #4a5560;
+}
+.aegis-device__power-knob-label {
+  font-family: var(--font-mono);
+  font-size: clamp(0.35rem, 2.2vw, 0.45rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgb(255 255 255 / 45%);
+  line-height: 1;
+}
+.aegis-device.is-powered-off {
+  filter: drop-shadow(0 16px 28px rgb(0 0 0 / 22%));
+}
+.aegis-device.is-powered-off .aegis-device__art {
+  opacity: 0.72;
+}
+.aegis-device.is-powered-off .aegis-key {
+  pointer-events: none;
+  opacity: 0.42;
+}
+.aegis-device.is-powered-off .aegis-device__oled-slot {
+  box-shadow: inset 0 2px 12px rgb(0 0 0 / 98%);
+}
 .aegis-device__led-slot--tx { grid-column: 62 / 76; grid-row: 340 / 354; }
 .aegis-device__led-slot--rx { grid-column: 226 / 240; grid-row: 340 / 354; }
 .aegis-device__led {
@@ -1587,6 +1665,38 @@ body.demo-fs-open .ac-chat { visibility: hidden; pointer-events: none; }
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
   padding: var(--space-3) var(--space-5); border-bottom: 1px solid var(--border);
   background: var(--muted);
+}
+.controls-panel__toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end;
+  gap: var(--space-2);
+}
+.device-power-btn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: 0.35rem 0.75rem; border-radius: var(--radius-full);
+  font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--card); border: 1px solid var(--border-strong);
+  color: var(--muted-foreground); cursor: pointer;
+  transition: all 0.15s ease;
+}
+.device-power-btn:hover {
+  border-color: var(--destructive); color: var(--foreground);
+  background: color-mix(in srgb, var(--destructive) 8%, var(--card));
+}
+.device-power-btn.is-on {
+  border-color: color-mix(in srgb, #3ecf6a 70%, var(--border-strong));
+  color: color-mix(in srgb, #3ecf6a 90%, var(--foreground));
+  background: color-mix(in srgb, #3ecf6a 12%, var(--card));
+}
+.device-power-btn__led {
+  width: 0.5rem; height: 0.5rem; border-radius: 50%;
+  background: #4a5560;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 50%);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.device-power-btn.is-on .device-power-btn__led {
+  background: #3ecf6a;
+  box-shadow: 0 0 8px #3ecf6a88;
 }
 .controls-panel__tag {
   font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700;

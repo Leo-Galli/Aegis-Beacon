@@ -1,4 +1,5 @@
 ---
+import DemoBridgeTui from './DemoBridgeTui.astro'
 import DemoLaptopMockup from './DemoLaptopMockup.astro'
 
 /** Toolbar and mode legend above the handheld mockup on /demo. */
@@ -97,12 +98,8 @@ import DemoLaptopMockup from './DemoLaptopMockup.astro'
     </div>
 
     <aside class="demo-fs-laptop" id="demo-fs-laptop" hidden aria-label="Laptop connected for LISTEN mode">
-      <DemoLaptopMockup variant="stage" chromeTitle="PowerShell · aegis-serial-bridge.py">
-        <pre class="demo-laptop__terminal demo-laptop__terminal--live" id="demo-fs-terminal"><span class="demo-laptop__line demo-laptop__line--dim">[bridge] COM3 @ 115200 · fw 6.0</span>
-<span class="demo-laptop__line demo-laptop__line--dim">AEGIS:HELLO:device=Aegis-Beacon</span>
-<span class="demo-laptop__line demo-laptop__line--ok">&gt; MODE LISTEN</span>
-<span class="demo-laptop__line">AEGIS:OK:mode=LISTEN</span>
-<span class="demo-laptop__line demo-laptop__line--cw" id="demo-fs-cw-stream">AEGIS:CW:...</span></pre>
+      <DemoLaptopMockup variant="stage" chromeTitle="Windows Terminal · bridge TUI">
+        <DemoBridgeTui id="demo-fs-bridge-tui" />
       </DemoLaptopMockup>
       <p class="demo-fs-laptop__status">Host script sends MODE LISTEN · device decodes CW on OLED + speaker</p>
     </aside>

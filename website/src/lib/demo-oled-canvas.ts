@@ -2,6 +2,7 @@ export type DemoMode = 'beacon' | 'search' | 'listen' | 'config' | 'emergency'
 export type AdjTarget = 'vol' | 'wpm'
 
 export interface DemoState {
+  poweredOn: boolean
   currentMode: DemoMode
   currentFreq: string
   channelIdx: number
@@ -171,6 +172,19 @@ export const drawOledCanvas = (
   ctx.fillStyle = BG
   ctx.fillRect(0, 0, pw, ph)
   ctx.scale(scale, scale)
+
+  if (!s.poweredOn) {
+    ctx.fillStyle = BG
+    ctx.fillRect(0, 0, W, H)
+    setFont(ctx, 7, true)
+    ctx.fillStyle = '#2a323a'
+    ctx.fillText('AEGIS', 48, 28)
+    setFont(ctx, 6, false)
+    ctx.fillStyle = '#1e242b'
+    ctx.fillText('POWER OFF', 38, 40)
+    ctx.fillRect(0, H - 3, W, 3)
+    return
+  }
 
   const showAdj = s.tickMs < s.adjOverlayUntil
 

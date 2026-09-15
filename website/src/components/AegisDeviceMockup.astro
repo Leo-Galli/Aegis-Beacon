@@ -16,7 +16,7 @@
       <div class="stage-spec">433.500 MHz | PMR446</div>
     </div>
 
-    <article class="aegis-device" aria-label="Aegis-Beacon hardware simulation">
+    <article class="aegis-device is-powered-on" id="aegis-device" aria-label="Aegis-Beacon hardware simulation">
       <svg class="aegis-device__art" viewBox="0 0 300 540" aria-hidden="true" role="presentation">
         <defs>
           <!-- Smoke polycarbonate case gradient -->
@@ -384,6 +384,20 @@
         <div class="oled-canvas__glass" aria-hidden="true"></div>
       </div>
 
+      <button
+        type="button"
+        class="aegis-device__power-knob"
+        id="device-power-knob"
+        aria-label="Power button, toggle device on and off"
+        aria-pressed="true"
+        title="Power"
+      >
+        <span class="aegis-device__power-knob-cap" aria-hidden="true">
+          <span class="aegis-device__power-knob-dot"></span>
+          <span class="aegis-device__power-knob-label">PWR</span>
+        </span>
+      </button>
+
       <!-- TX LED: Left optical diode -->
       <div class="aegis-device__led-slot aegis-device__led-slot--tx" aria-hidden="true">
         <span class="aegis-device__led aegis-device__led--tx" id="led-tx"></span>
@@ -429,6 +443,6 @@
   </div>
 
   <p class="aegis-device__hint">
-    MODE: short toggle BEACON/SEARCH | <strong>Hold MODE 2s</strong> for EMERGENCY SOS | SEL: VOL/WPM | <strong>Hold SEL 3s</strong> for CONFIG
+    <strong>PWR knob:</strong> power on/off | MODE: BEACON/SEARCH | <strong>Hold MODE 2s</strong> SOS | SEL: VOL/WPM | <strong>Hold SEL 3s</strong> CONFIG
   </p>
 </div>

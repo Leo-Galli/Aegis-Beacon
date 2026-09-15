@@ -27,11 +27,17 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
     <div class="controls-panel" data-rv style="--rv-delay: 120ms">
       <div class="controls-panel__header">
         <span class="controls-panel__tag">Simulation controls</span>
+        <div class="controls-panel__toolbar">
+        <button id="device-power-btn" class="device-power-btn is-on" type="button" aria-label="Toggle device power" aria-pressed="true" title="Device power">
+          <span class="device-power-btn__led" aria-hidden="true"></span>
+          <span id="device-power-label">PWR ON</span>
+        </button>
         <button id="sound-toggle-btn" class="sound-toggle-btn" type="button" aria-label="Toggle radio CW audio synthesizer" title="Toggle audio">
           <svg id="sound-icon-on" class="sound-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
           <svg id="sound-icon-off" class="sound-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
           <span id="sound-status-label">AUDIO OFF</span>
         </button>
+        </div>
       </div>
 
       <div class="control-group">
@@ -162,6 +168,10 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   const soundIconOn = document.getElementById('sound-icon-on')
   const soundIconOff = document.getElementById('sound-icon-off')
   const soundLabel = document.getElementById('sound-status-label')
+  const aegisDevice = document.getElementById('aegis-device')
+  const devicePowerKnob = document.getElementById('device-power-knob')
+  const devicePowerBtn = document.getElementById('device-power-btn')
+  const devicePowerLabel = document.getElementById('device-power-label')
 
   const deviceColumn = document.getElementById('demo-device-column')
   const columnSlot = document.getElementById('demo-column-slot')
@@ -184,6 +194,7 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   const listenResponse = document.getElementById('demo-listen-response')
   const listenSteps = document.querySelectorAll('.demo-listen-steps__item')
   let listenAnimTimer: number | null = null
+  let devicePowered = true
   let usbBenchActive = false
   let bridgeStartedAtMs = 0
   let modeBeforeConfig: DemoMode = 'beacon'
@@ -231,7 +242,47 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   }
   soundBtn?.addEventListener('click', handleToggleSound)
 
+  const applyDevicePowerUi = () => {
+    const on = devicePowered
+    aegisDevice?.classList.toggle('is-powered-on', on)
+    aegisDevice?.classList.toggle('is-powered-off', !on)
+    devicePowerKnob?.setAttribute('aria-pressed', String(on))
+    devicePowerBtn?.classList.toggle('is-on', on)
+    devicePowerBtn?.setAttribute('aria-pressed', String(on))
+    if (devicePowerLabel) devicePowerLabel.textContent = on ? 'PWR ON' : 'PWR OFF'
+  }
+
+  const setDevicePower = (on: boolean, fromUi = false) => {
+    if (on === devicePowered) return
+    devicePowered = on
+    if (!on) {
+      stopCwTone()
+      updateRadioNoise(false)
+      carrierActive = false
+      if (usbBenchActive) {
+        usbBenchActive = false
+        bridgeStartedAtMs = 0
+        setLaptopVisible(false)
+      }
+      if (fromUi) playKeyClick(520)
+      showToast('Device powered off')
+    } else {
+      if (fromUi) playKeyClick(1080)
+      showToast(`Powered on | ${currentMode.toUpperCase()}`)
+    }
+    applyDevicePowerUi()
+    renderOled()
+    updateLeds()
+    syncBridgeTui()
+  }
+
+  const toggleDevicePower = () => setDevicePower(!devicePowered, true)
+
+  devicePowerKnob?.addEventListener('click', toggleDevicePower)
+  devicePowerBtn?.addEventListener('click', toggleDevicePower)
+
   const buildState = (): DemoState => ({
+    poweredOn: devicePowered,
     currentMode,
     currentFreq: freqSelect.value,
     channelIdx,
@@ -278,6 +329,11 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
 
   const updateLeds = () => {
     if (!ledTx || !ledRx) return
+    if (!devicePowered) {
+      ledTx.classList.remove('aegis-device__led--on')
+      ledRx.classList.remove('aegis-device__led--on')
+      return
+    }
     if (currentMode === 'config') {
       const alt = Math.floor(tickMs / 400) % 2 === 0
       ledTx.classList.toggle('aegis-device__led--on', alt)
@@ -499,6 +555,7 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   })
 
   const selectMode = (mode: DemoMode, fromHardware = false) => {
+    if (!devicePowered) return
     const prev = currentMode
     currentMode = mode
     playKeyClick(mode === 'emergency' ? 880 : 1200)
@@ -535,17 +592,20 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   }
 
   const modeShortPress = () => {
+    if (!devicePowered) return
     playKeyClick(1100)
     selectMode(modeShortPressNext(currentMode), true)
   }
 
   const enterEmergency = () => {
+    if (!devicePowered) return
     playKeyClick(700)
     selectMode('emergency', true)
   }
 
   modes.forEach(btn => {
     btn.addEventListener('click', () => {
+      if (!devicePowered) return
       playKeyClick(1250)
       const mode = (btn as HTMLElement).dataset.mode as DemoMode || 'beacon'
       if (mode === 'listen') {
@@ -573,7 +633,7 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   }
 
   const adjustUp = () => {
-    if (currentMode === 'config') return
+    if (!devicePowered || currentMode === 'config') return
     playKeyClick(1450)
     if (adjTarget === 'wpm') {
       wpm = clamp(wpm + 1, 5, 40)
@@ -586,7 +646,7 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   }
 
   const adjustDn = () => {
-    if (currentMode === 'config') return
+    if (!devicePowered || currentMode === 'config') return
     playKeyClick(1050)
     if (adjTarget === 'wpm') {
       wpm = clamp(wpm - 1, 5, 40)
@@ -610,13 +670,14 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
     keyEls.sel,
     SEL_HOLD_MS,
     () => {
-      if (currentMode === 'config') return
+      if (!devicePowered || currentMode === 'config') return
       playKeyClick(1300)
       adjTarget = adjTarget === 'vol' ? 'wpm' : 'vol'
       flashAdj()
       renderOled()
     },
     () => {
+      if (!devicePowered) return
       if (currentMode === 'config') {
         selectMode(modeBeforeConfig, true)
         showToast('CONFIG closed')
@@ -666,6 +727,11 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   setInterval(() => {
     tickMs += 60
 
+    if (!devicePowered) {
+      renderOled()
+      return
+    }
+
     // Synchronize CW Morse sidetone with PARIS timeline
     const isTx = (currentMode === 'beacon' || currentMode === 'emergency') && txActive
     if (isTx) {
@@ -713,6 +779,7 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
 
   updateTape()
   updateHwBadge(currentMode)
+  applyDevicePowerUi()
   renderOled()
 </script>
 
