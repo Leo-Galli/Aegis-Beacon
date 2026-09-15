@@ -11,32 +11,51 @@ const { variant = 'dialog', chromeTitle = 'aegis-serial-bridge.py' } = Astro.pro
   <div class="demo-laptop-mock__unit">
     <div class="demo-laptop-mock__lid">
       <div class="demo-laptop-mock__bezel">
-        <span class="demo-laptop-mock__webcam" aria-hidden="true"></span>
+        {variant !== 'stage' && <span class="demo-laptop-mock__webcam" aria-hidden="true"></span>}
         <div class="demo-laptop-mock__screen">
           <div class="demo-laptop__chrome demo-laptop__chrome--host">
-            <span class="demo-laptop__chrome-os" aria-hidden="true"></span>
-            <span class="demo-laptop__title">{chromeTitle}</span>
-            <span class="demo-laptop__chrome-spacer" aria-hidden="true"></span>
+            {variant === 'stage' ? (
+              <>
+                <span class="demo-laptop__chrome-tab" aria-hidden="true">bridge TUI</span>
+                <span class="demo-laptop__title">{chromeTitle}</span>
+              </>
+            ) : (
+              <>
+                <span class="demo-laptop__chrome-os" aria-hidden="true"></span>
+                <span class="demo-laptop__title">{chromeTitle}</span>
+                <span class="demo-laptop__chrome-spacer" aria-hidden="true"></span>
+              </>
+            )}
           </div>
           <div class="demo-laptop-mock__terminal-wrap">
-            <div class="demo-bridge-prompt" aria-hidden="true">
-              <span class="demo-bridge-prompt__path">bridge/</span>
-              <span class="demo-bridge-prompt__cmd">python aegis-serial-bridge.py</span>
+            <div class="demo-bridge-launch" aria-hidden="true">
+              <span class="demo-bridge-launch__user">PS C:\Aegis-Beacon\bridge&gt;</span>
+              <span class="demo-bridge-launch__cmd">python aegis-serial-bridge.py --tui</span>
+              <span class="demo-bridge-launch__flag">--port COM3</span>
             </div>
             <slot />
           </div>
         </div>
       </div>
     </div>
-    <div class="demo-laptop-mock__hinge" aria-hidden="true"></div>
-    <div class="demo-laptop-mock__base">
-      <div class="demo-laptop-mock__deck">
-        <span class="demo-laptop-mock__brand" aria-hidden="true">Host PC · USB serial</span>
-        <div class="demo-laptop-mock__keyboard" aria-hidden="true"></div>
-        <div class="demo-laptop-mock__trackpad" aria-hidden="true"></div>
+    {variant === 'stage' ? (
+      <div class="demo-laptop-mock__monitor-stand" aria-hidden="true">
+        <span class="demo-laptop-mock__neck"></span>
+        <span class="demo-laptop-mock__foot"></span>
       </div>
-      <div class="demo-laptop-mock__lip" aria-hidden="true"></div>
-    </div>
+    ) : (
+      <>
+        <div class="demo-laptop-mock__hinge" aria-hidden="true"></div>
+        <div class="demo-laptop-mock__base">
+          <div class="demo-laptop-mock__deck">
+            <span class="demo-laptop-mock__brand" aria-hidden="true">Host PC · USB serial</span>
+            <div class="demo-laptop-mock__keyboard" aria-hidden="true"></div>
+            <div class="demo-laptop-mock__trackpad" aria-hidden="true"></div>
+          </div>
+          <div class="demo-laptop-mock__lip" aria-hidden="true"></div>
+        </div>
+      </>
+    )}
     <span class="demo-laptop-mock__port demo-laptop-mock__port--left" aria-hidden="true">USB-C</span>
   </div>
   <p class="demo-laptop-mock__caption">

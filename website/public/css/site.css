@@ -1010,10 +1010,31 @@ body.demo-fs-open .ac-chat { visibility: hidden; pointer-events: none; }
   border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border));
   background: color-mix(in srgb, var(--primary) 10%, var(--card));
 }
+.demo-fs-laptop[hidden],
+.demo-fs-connector[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+.demo-device-column:not(.has-laptop) .demo-fs-laptop,
+.demo-device-column:not(.has-laptop) .demo-fs-connector {
+  display: none !important;
+}
+.demo-device-column:not(.is-fullscreen) .demo-fs-laptop,
+.demo-device-column:not(.is-fullscreen) .demo-fs-connector {
+  display: none !important;
+}
+.demo-device-column.is-fullscreen:not(.has-laptop) .demo-fs-body {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  max-width: 26rem; margin-inline: auto;
+}
 .demo-fs-laptop {
   display: flex; flex-direction: column; align-items: stretch; justify-content: center;
   min-width: 0; width: 100%; max-width: min(32rem, 100%);
   animation: demoLaptopIn 0.55s ease-out both;
+}
+.demo-device-column.has-laptop .demo-fs-laptop:not([hidden]) {
+  display: flex;
 }
 @keyframes demoLaptopIn {
   from { opacity: 0; transform: translateX(1.25rem) scale(0.96); }
@@ -1388,9 +1409,46 @@ body.demo-fs-open .ac-chat { visibility: hidden; pointer-events: none; }
   min-height: 13.5rem; font-size: 0.7rem;
 }
 .demo-laptop-mock--stage .demo-bridge-tui__log { max-height: 8rem; }
-.demo-laptop-mock--stage { max-width: min(36rem, 100%); }
-.demo-laptop-mock--stage .demo-laptop-mock__keyboard { height: 3.25rem; }
-.demo-laptop-mock--stage .demo-laptop-mock__deck { padding: 0.65rem 0.75rem 0.55rem; }
+.demo-laptop-mock--stage { max-width: min(30rem, 100%); }
+.demo-laptop-mock--stage .demo-laptop-mock__lid {
+  border-radius: var(--radius-lg);
+  border-bottom: 1px solid #5c6877;
+  padding-bottom: 0.35rem;
+}
+.demo-laptop-mock--stage .demo-laptop-mock__bezel {
+  border-radius: var(--radius-md);
+}
+.demo-laptop-mock--stage .demo-laptop-mock__screen {
+  border-radius: var(--radius-sm);
+}
+.demo-laptop-mock__monitor-stand {
+  display: flex; flex-direction: column; align-items: center;
+  margin-top: 0.15rem;
+}
+.demo-laptop-mock__neck {
+  display: block; width: 3px; height: 1.1rem;
+  background: linear-gradient(180deg, #4a5562, #2a323a);
+  border-radius: 1px;
+}
+.demo-laptop-mock__foot {
+  display: block; width: 5.5rem; height: 0.35rem;
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, #3a424c, #1a2027);
+  box-shadow: 0 4px 10px rgb(0 0 0 / 35%);
+}
+.demo-laptop-mock--stage .demo-laptop-mock__port {
+  bottom: 18%; left: -4px;
+}
+.demo-laptop__chrome-tab {
+  font-size: 0.52rem; font-weight: 700; letter-spacing: 0.06em;
+  padding: 0.12rem 0.45rem; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: #0a0c0e; color: #c8d0d8;
+  border: 1px solid #2a323a; border-bottom: none;
+}
+.demo-laptop-mock--stage .demo-bridge-tui {
+  min-height: 11.5rem; font-size: 0.66rem;
+}
+.demo-laptop-mock--stage .demo-bridge-tui__log { max-height: 6.5rem; }
 .demo-laptop-mock--dialog .demo-laptop-mock__keyboard { height: 2.25rem; }
 .demo-listen-scene__laptop .demo-laptop-mock { max-width: 18rem; width: 100%; }
 

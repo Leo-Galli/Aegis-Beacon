@@ -353,7 +353,8 @@ import DemoListenDialog from '../components/DemoListenDialog.astro'
   }
 
   const setLaptopVisible = (visible: boolean) => {
-    if (visible) {
+    const show = visible && usbBenchActive
+    if (show) {
       fsLaptop?.removeAttribute('hidden')
       fsConnector?.removeAttribute('hidden')
       deviceColumn?.classList.add('has-laptop')
