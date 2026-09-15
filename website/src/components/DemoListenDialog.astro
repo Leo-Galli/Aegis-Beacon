@@ -1,0 +1,82 @@
+---
+/** Modal: USB serial connection to a laptop for LISTEN mode (firmware-accurate). */
+---
+
+<dialog class="demo-listen-dialog" id="demo-listen-dialog" aria-labelledby="demo-listen-title">
+  <div class="demo-listen-dialog__panel">
+    <button type="button" class="demo-listen-dialog__close" id="demo-listen-close" aria-label="Close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+
+    <header class="demo-listen-dialog__head">
+      <span class="demo-listen-dialog__badge">Serial bridge</span>
+      <h2 id="demo-listen-title" class="demo-listen-dialog__title">LISTEN mode needs a PC</h2>
+      <p class="demo-listen-dialog__lead">
+        On the real device, LISTEN is not on the MODE button. Connect USB, open a terminal,
+        send <code>MODE LISTEN</code>, then decode Morse on the OLED while audio plays on the speaker.
+      </p>
+    </header>
+
+    <div class="demo-listen-scene" id="demo-listen-scene" aria-hidden="true">
+      <div class="demo-listen-scene__device" aria-hidden="true">
+        <svg class="demo-listen-scene__device-icon" viewBox="0 0 80 140" aria-hidden="true">
+          <rect x="8" y="12" width="64" height="112" rx="10" fill="#2a323a" stroke="#4a5562" stroke-width="1.2"/>
+          <rect x="14" y="24" width="52" height="36" rx="3" fill="#050608"/>
+          <rect x="14" y="68" width="12" height="12" rx="2" fill="#1a2027"/>
+          <rect x="30" y="68" width="12" height="12" rx="2" fill="#1a2027"/>
+          <rect x="46" y="68" width="12" height="12" rx="2" fill="#1a2027"/>
+          <rect x="62" y="68" width="4" height="12" rx="1" fill="#1a2027"/>
+          <rect x="34" y="118" width="12" height="4" rx="1" fill="#c8923a"/>
+        </svg>
+        <span class="demo-listen-scene__label">Aegis-Beacon</span>
+      </div>
+
+      <div class="demo-listen-scene__link" aria-hidden="true">
+        <svg class="demo-listen-scene__cable" viewBox="0 0 120 40" preserveAspectRatio="none" aria-hidden="true">
+          <path class="demo-listen-scene__cable-path" d="M4 20 H116" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <rect class="demo-listen-scene__plug-a" x="0" y="14" width="10" height="12" rx="2" fill="currentColor"/>
+          <rect class="demo-listen-scene__plug-b" x="110" y="14" width="10" height="12" rx="2" fill="currentColor"/>
+        </svg>
+        <span class="demo-listen-scene__usb-tag">USB serial</span>
+      </div>
+
+      <div class="demo-listen-scene__laptop">
+        <div class="demo-laptop">
+          <div class="demo-laptop__screen">
+            <div class="demo-laptop__chrome">
+              <span></span><span></span><span></span>
+              <span class="demo-laptop__title">Terminal - Aegis Bridge</span>
+            </div>
+            <pre class="demo-laptop__terminal" id="demo-listen-terminal" aria-live="polite"><span class="demo-laptop__prompt">&gt;</span> <span id="demo-listen-cmd"></span><span class="demo-laptop__cursor" id="demo-listen-cursor">|</span>
+<span id="demo-listen-response" class="demo-laptop__response"></span></pre>
+          </div>
+          <div class="demo-laptop__base"></div>
+        </div>
+        <span class="demo-listen-scene__label">Your laptop</span>
+      </div>
+    </div>
+
+    <ol class="demo-listen-steps" id="demo-listen-steps">
+      <li class="demo-listen-steps__item" data-step="1">
+        <span class="demo-listen-steps__num">1</span>
+        <span>Plug USB-C into the beacon (115200 baud)</span>
+      </li>
+      <li class="demo-listen-steps__item" data-step="2">
+        <span class="demo-listen-steps__num">2</span>
+        <span>Open the serial bridge or any terminal</span>
+      </li>
+      <li class="demo-listen-steps__item" data-step="3">
+        <span class="demo-listen-steps__num">3</span>
+        <span>Send <code>MODE LISTEN</code> - device reboots into RX decode</span>
+      </li>
+    </ol>
+
+    <div class="demo-listen-dialog__actions">
+      <button type="button" class="btn btn-secondary" id="demo-listen-cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="demo-listen-start">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Simulate USB connect
+      </button>
+    </div>
+  </div>
+</dialog>

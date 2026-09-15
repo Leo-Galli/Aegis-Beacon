@@ -1,6 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
+import DemoDeviceChrome from '../components/DemoDeviceChrome.astro'
+import DemoListenDialog from '../components/DemoListenDialog.astro'
 ---
 
 <Layout title="Firmware Demo | Aegis-Beacon" description="Interactive simulation of the Aegis-Beacon firmware v6.0: BEACON, SEARCH, LISTEN, CONFIG and EMERGENCY modes with a realistic device mockup and live SSD1309 OLED.">
@@ -10,13 +12,15 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
     <span class="page-head__meta">Firmware v6.0 | hardware keys</span>
     <h1 class="section-head__title">Firmware Simulation</h1>
     <p class="section-head__lead">
-      Handheld mockup with live SSD1309 OLED. Short-press matches real button logic;
-      hold MODE for 2 seconds to enter EMERGENCY SOS, as on the physical device.
+      Handheld mockup with live SSD1309 OLED. Hardware keys match firmware v6.0:
+      MODE toggles BEACON / SEARCH only. LISTEN requires a USB serial link to a PC.
     </p>
   </header>
 
   <div class="demo-layout">
-    <AegisDeviceMockup />
+    <DemoDeviceChrome>
+      <AegisDeviceMockup />
+    </DemoDeviceChrome>
 
     <div class="controls-panel" data-rv style="--rv-delay: 120ms">
       <div class="controls-panel__header">
@@ -30,10 +34,11 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
 
       <div class="control-group">
         <span class="control-label">Operating Mode</span>
+        <p class="control-hint">Panel shortcuts for bench testing. On hardware, LISTEN is serial-only.</p>
         <div class="mode-buttons">
           <button class="mode-btn active" data-mode="beacon" type="button">BEACON</button>
           <button class="mode-btn" data-mode="search" type="button">SEARCH</button>
-          <button class="mode-btn" data-mode="listen" type="button">LISTEN</button>
+          <button class="mode-btn mode-btn--serial" data-mode="listen" type="button" title="Simulates MODE LISTEN over USB">LISTEN</button>
           <button class="mode-btn" data-mode="config" type="button">CONFIG</button>
           <button class="mode-btn" data-mode="emergency" type="button">EMERGENCY</button>
         </div>
@@ -105,6 +110,8 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
   </section>
 </div>
 
+<DemoListenDialog />
+
 <script>
   import {
     drawOledCanvas,
@@ -144,6 +151,27 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
   const soundIconOn = document.getElementById('sound-icon-on')
   const soundIconOff = document.getElementById('sound-icon-off')
   const soundLabel = document.getElementById('sound-status-label')
+
+  const deviceColumn = document.getElementById('demo-device-column')
+  const fsBtn = document.getElementById('demo-fs-btn')
+  const fsExit = document.getElementById('demo-fs-exit')
+  const fsLaptop = document.getElementById('demo-fs-laptop')
+  const hwModeBadge = document.getElementById('demo-hw-mode-badge')
+  const listenDialog = document.getElementById('demo-listen-dialog') as HTMLDialogElement | null
+  const listenStart = document.getElementById('demo-listen-start') as HTMLButtonElement | null
+  const listenCancel = document.getElementById('demo-listen-close')
+  const listenCancel2 = document.getElementById('demo-listen-cancel')
+  const listenCalloutBtn = document.getElementById('demo-listen-callout-btn')
+  const listenPcBtn = document.getElementById('demo-listen-pc-btn')
+  const listenScene = document.getElementById('demo-listen-scene')
+  const listenCmd = document.getElementById('demo-listen-cmd')
+  const listenCursor = document.getElementById('demo-listen-cursor')
+  const listenResponse = document.getElementById('demo-listen-response')
+  const listenSteps = document.querySelectorAll('.demo-listen-steps__item')
+  const fsCwStream = document.getElementById('demo-fs-cw-stream')
+
+  let listenAnimTimer: number | null = null
+  let pcConnected = false
 
   let currentMode: DemoMode = 'beacon'
   let channelIdx = 0
@@ -279,6 +307,111 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
 
   const flashAdj = () => { adjOverlayUntil = tickMs + 2500 }
 
+  const setFullscreen = (on: boolean, withLaptop = false) => {
+    deviceColumn?.classList.toggle('is-fullscreen', on)
+    document.body.classList.toggle('demo-fs-open', on)
+    fsExit?.toggleAttribute('hidden', !on)
+    if (fsLaptop) {
+      if (on && (withLaptop || currentMode === 'listen')) {
+        fsLaptop.removeAttribute('hidden')
+        deviceColumn?.classList.add('has-laptop')
+      } else if (!withLaptop && currentMode !== 'listen') {
+        fsLaptop.setAttribute('hidden', '')
+        deviceColumn?.classList.remove('has-laptop')
+      }
+    }
+  }
+
+  const updateHwBadge = (mode: DemoMode) => {
+    if (!hwModeBadge) return
+    hwModeBadge.textContent = mode.toUpperCase()
+    hwModeBadge.dataset.mode = mode
+  }
+
+  const resetListenDialog = () => {
+    if (listenAnimTimer) clearTimeout(listenAnimTimer)
+    listenScene?.classList.remove('is-connected', 'is-typing', 'is-done')
+    listenCmd && (listenCmd.textContent = '')
+    listenResponse && (listenResponse.textContent = '')
+    listenCursor?.classList.remove('is-hidden')
+    listenSteps.forEach((el) => el.classList.remove('is-active', 'is-done'))
+  }
+
+  const openListenDialog = () => {
+    if (!listenDialog) return
+    resetListenDialog()
+    listenDialog.showModal()
+  }
+
+  const runListenConnectAnim = (): Promise<void> => {
+    return new Promise((resolve) => {
+      resetListenDialog()
+      listenScene?.classList.add('is-connected')
+      listenSteps[0]?.classList.add('is-active')
+
+      listenAnimTimer = window.setTimeout(() => {
+        listenSteps[0]?.classList.add('is-done')
+        listenSteps[0]?.classList.remove('is-active')
+        listenSteps[1]?.classList.add('is-active')
+
+        listenAnimTimer = window.setTimeout(() => {
+          listenSteps[1]?.classList.add('is-done')
+          listenSteps[1]?.classList.remove('is-active')
+          listenSteps[2]?.classList.add('is-active')
+          listenScene?.classList.add('is-typing')
+
+          const cmd = 'MODE LISTEN'
+          let i = 0
+          const typeNext = () => {
+            if (!listenCmd) return
+            listenCmd.textContent = cmd.slice(0, i)
+            i += 1
+            if (i <= cmd.length) {
+              listenAnimTimer = window.setTimeout(typeNext, 70)
+            } else {
+              listenAnimTimer = window.setTimeout(() => {
+                listenCursor?.classList.add('is-hidden')
+                if (listenResponse) listenResponse.textContent = 'AEGIS:OK:mode=LISTEN'
+                listenScene?.classList.add('is-done')
+                listenSteps[2]?.classList.add('is-done')
+                listenSteps[2]?.classList.remove('is-active')
+                resolve()
+              }, 400)
+            }
+          }
+          typeNext()
+        }, 700)
+      }, 600)
+    })
+  }
+
+  const enterListenFromPc = async () => {
+    pcConnected = true
+    listenStart && (listenStart.disabled = true)
+    await runListenConnectAnim()
+    listenDialog?.close()
+    listenStart && (listenStart.disabled = false)
+    selectMode('listen', false)
+    setFullscreen(true, true)
+    if (soundBtn && !soundBtn.classList.contains('is-active')) handleToggleSound()
+    showToast('USB serial | LISTEN mode active', 'info')
+  }
+
+  fsBtn?.addEventListener('click', () => setFullscreen(true, pcConnected && currentMode === 'listen'))
+  fsExit?.addEventListener('click', () => setFullscreen(false))
+  listenPcBtn?.addEventListener('click', openListenDialog)
+  listenCalloutBtn?.addEventListener('click', openListenDialog)
+  listenStart?.addEventListener('click', () => { void enterListenFromPc() })
+  listenCancel?.addEventListener('click', () => { listenDialog?.close(); resetListenDialog() })
+  listenCancel2?.addEventListener('click', () => { listenDialog?.close(); resetListenDialog() })
+  listenDialog?.addEventListener('cancel', resetListenDialog)
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && deviceColumn?.classList.contains('is-fullscreen')) {
+      setFullscreen(false)
+    }
+  })
+
   const selectMode = (mode: DemoMode, fromHardware = false) => {
     const prev = currentMode
     currentMode = mode
@@ -290,7 +423,18 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
       el.classList.toggle('active', el.dataset.mode === mode)
       el.classList.toggle('mode-btn--emergency', el.dataset.mode === 'emergency' && mode === 'emergency')
     })
-    if (mode === 'listen' && !cwText) cwText = ''
+    updateHwBadge(mode)
+    if (mode === 'listen') {
+      if (!cwText) cwText = ''
+      pcConnected = true
+      if (deviceColumn?.classList.contains('is-fullscreen')) {
+        fsLaptop?.removeAttribute('hidden')
+        deviceColumn?.classList.add('has-laptop')
+      }
+    } else if (deviceColumn?.classList.contains('is-fullscreen')) {
+      fsLaptop?.setAttribute('hidden', '')
+      deviceColumn?.classList.remove('has-laptop')
+    }
     if (fromHardware) {
       if (mode === 'emergency') showToast('EMERGENCY | SOS beacon TX (+22 dBm)', 'emergency')
       else if (mode === 'config') showToast('CONFIG | WiFi portal 192.168.4.1')
@@ -315,7 +459,12 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
   modes.forEach(btn => {
     btn.addEventListener('click', () => {
       playKeyClick(1250)
-      selectMode((btn as HTMLElement).dataset.mode as DemoMode || 'beacon')
+      const mode = (btn as HTMLElement).dataset.mode as DemoMode || 'beacon'
+      if (mode === 'listen') {
+        openListenDialog()
+        return
+      }
+      selectMode(mode)
     })
   })
 
@@ -451,15 +600,20 @@ import AegisDeviceMockup from '../components/AegisDeviceMockup.astro'
     if (currentMode === 'listen' && rssi >= rssiThreshold) {
       const payload = payloadInput.value.trim().toUpperCase() || 'SOS'
       if (cwCharIdx < payload.length && tickMs % 850 === 0) {
-        cwText += payload[cwCharIdx]
+        const ch = payload[cwCharIdx]
+        cwText += ch
         cwDecoded += 1
         cwCharIdx += 1
+        if (fsCwStream && pcConnected) {
+          fsCwStream.textContent = `AEGIS:CW:${ch === ' ' ? ' ' : ch}`
+        }
       }
     }
     renderOled()
   }, 60)
 
   updateTape()
+  updateHwBadge(currentMode)
   renderOled()
 </script>
 
