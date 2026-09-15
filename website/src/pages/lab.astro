@@ -1,0 +1,206 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { LAB_PARTS, LAB_PRESETS, partSvgInner } from '../lib/hardware-lab'
+---
+
+<Layout
+  title="Hardware Lab | Aegis-Beacon"
+  description="Interactive bench: place ESP32, SX1262 radio, OLED, GPS and power parts on a virtual PCB and see how the beacon stack connects."
+>
+  <div class="hw-lab-page container">
+    <header class="hw-lab-head" data-rv="fade">
+      <p class="hw-lab-eyebrow">Bench assembly</p>
+      <h1>Interactive hardware lab</h1>
+      <p class="hw-lab-lead">
+        Explore each module with illustrated parts. Click components in the palette to mount them on the
+        bench PCB; wires appear when both ends of a link are placed. This is separate from the live firmware demo.
+      </p>
+      <div class="hw-lab-presets" id="hw-lab-presets" role="toolbar" aria-label="Assembly presets">
+        {LAB_PRESETS.map((preset) => (
+          <button type="button" class="hw-lab-preset-btn" data-preset={preset.id}>
+            {preset.label}
+          </button>
+        ))}
+        <button type="button" class="hw-lab-preset-btn hw-lab-preset-btn--ghost" data-preset="clear">
+          Clear bench
+        </button>
+      </div>
+    </header>
+
+    <div class="hw-lab-layout" data-rv style="--rv-delay: 80ms">
+      <aside class="hw-lab-palette" aria-label="Component library">
+        <h2 class="hw-lab-palette__title">Parts tray</h2>
+        <ul class="hw-lab-palette__list" id="hw-lab-palette">
+          {LAB_PARTS.map((part) => (
+            <li>
+              <button
+                type="button"
+                class="hw-lab-palette__item"
+                data-part={part.id}
+                aria-pressed="false"
+              >
+                <span class="hw-lab-palette__thumb" aria-hidden="true">
+                  <svg viewBox={`0 0 ${part.w} ${part.h}`} focusable="false">
+                    <g set:html={partSvgInner(part.id)} />
+                  </svg>
+                </span>
+                <span class="hw-lab-palette__meta">
+                  <span class="hw-lab-palette__name">{part.name}</span>
+                  <span class="hw-lab-palette__sub">{part.subtitle}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </aside>
+
+      <section class="hw-lab-bench" aria-label="Virtual workbench">
+        <div class="hw-lab-bench__chrome">
+          <span class="hw-lab-bench__tag">FR4 · 1.6 mm · HASL</span>
+          <span class="hw-lab-bench__stat" id="hw-lab-stat">0 / {LAB_PARTS.length} mounted</span>
+        </div>
+        <div class="hw-lab-bench__surface">
+          <svg
+            id="hw-lab-svg"
+            class="hw-lab-bench__svg"
+            viewBox="0 0 720 480"
+            role="img"
+            aria-labelledby="hw-lab-svg-title"
+          >
+            <title id="hw-lab-svg-title">Aegis-Beacon bench PCB with pluggable modules</title>
+            <defs>
+              <linearGradient id="lab-brass" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#d4aa37"/>
+                <stop offset="50%" stop-color="#b88924"/>
+                <stop offset="100%" stop-color="#7a5810"/>
+              </linearGradient>
+              <pattern id="lab-copper" width="8" height="8" patternUnits="userSpaceOnUse">
+                <path d="M0 8 L8 0" stroke="#c8923a" stroke-width="0.6" opacity="0.35"/>
+              </pattern>
+            </defs>
+            <rect x="24" y="24" width="672" height="432" rx="14" fill="#14241b" stroke="#254231" stroke-width="1.2"/>
+            <rect x="32" y="32" width="656" height="416" rx="10" fill="url(#lab-copper)" opacity="0.25"/>
+            <text x="40" y="52" font-family="JetBrains Mono, monospace" font-size="9" fill="#3ecf6a" opacity="0.7">AEGIS-BEACON REV.B · BENCH</text>
+            <g id="hw-lab-wires" class="hw-lab-wires"></g>
+            <g id="hw-lab-parts"></g>
+          </svg>
+        </div>
+        <p class="hw-lab-bench__hint" id="hw-lab-hint">Select a part from the tray to mount it on the PCB.</p>
+      </section>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import {
+    LAB_PARTS,
+    LAB_LINKS,
+    LAB_PRESETS,
+    linkPath,
+    partSvgInner,
+    type LabPartId,
+  } from '../lib/hardware-lab'
+
+  const partById = new Map(LAB_PARTS.map((p) => [p.id, p]))
+  const mounted = new Set<LabPartId>()
+  const palette = document.getElementById('hw-lab-palette')
+  const partsLayer = document.getElementById('hw-lab-parts')
+  const wiresLayer = document.getElementById('hw-lab-wires')
+  const statEl = document.getElementById('hw-lab-stat')
+  const hintEl = document.getElementById('hw-lab-hint')
+  const presetsBar = document.getElementById('hw-lab-presets')
+
+  const updateStat = () => {
+    if (statEl) statEl.textContent = `${mounted.size} / ${LAB_PARTS.length} mounted`
+  }
+
+  const renderWires = () => {
+    if (!wiresLayer) return
+    wiresLayer.innerHTML = ''
+    for (const link of LAB_LINKS) {
+      if (!mounted.has(link.from) || !mounted.has(link.to)) continue
+      const a = partById.get(link.from)
+      const b = partById.get(link.to)
+      if (!a || !b) continue
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      path.setAttribute('d', linkPath(a, b))
+      path.setAttribute('class', 'hw-lab-wire')
+      path.setAttribute('data-link', `${link.from}-${link.to}`)
+      wiresLayer.appendChild(path)
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+      const mx = (a.x + a.w / 2 + b.x + b.w / 2) / 2
+      const my = (a.y + a.h / 2 + b.y + b.h / 2) / 2 - 6
+      label.setAttribute('x', String(mx))
+      label.setAttribute('y', String(my))
+      label.setAttribute('class', 'hw-lab-wire-label')
+      label.textContent = link.label
+      wiresLayer.appendChild(label)
+    }
+  }
+
+  const mountPart = (id: LabPartId) => {
+    const def = partById.get(id)
+    if (!def || !partsLayer || mounted.has(id)) return
+    mounted.add(id)
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    g.setAttribute('class', 'hw-lab-part')
+    g.setAttribute('data-part', id)
+    g.setAttribute('transform', `translate(${def.x} ${def.y})`)
+    g.innerHTML = partSvgInner(id)
+    partsLayer.appendChild(g)
+    renderWires()
+    updateStat()
+    if (hintEl) hintEl.textContent = `${def.name} mounted. Add linked modules to show signal paths.`
+  }
+
+  const unmountPart = (id: LabPartId) => {
+    if (!mounted.has(id)) return
+    mounted.delete(id)
+    partsLayer?.querySelector(`[data-part="${id}"]`)?.remove()
+    renderWires()
+    updateStat()
+    if (hintEl && mounted.size === 0) hintEl.textContent = 'Select a part from the tray to mount it on the PCB.'
+  }
+
+  const togglePart = (id: LabPartId) => {
+    if (mounted.has(id)) unmountPart(id)
+    else mountPart(id)
+  }
+
+  const setPalettePressed = () => {
+    palette?.querySelectorAll<HTMLButtonElement>('[data-part]').forEach((btn) => {
+      const id = btn.dataset.part as LabPartId
+      btn.setAttribute('aria-pressed', String(mounted.has(id)))
+      btn.classList.toggle('is-mounted', mounted.has(id))
+    })
+  }
+
+  palette?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-part]')
+    if (!btn?.dataset.part) return
+    togglePart(btn.dataset.part as LabPartId)
+    setPalettePressed()
+  })
+
+  presetsBar?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-preset]')
+    if (!btn?.dataset.preset) return
+    const presetId = btn.dataset.preset
+    if (presetId === 'clear') {
+      ;[...mounted].forEach((id) => unmountPart(id))
+      setPalettePressed()
+      return
+    }
+    const preset = LAB_PRESETS.find((p) => p.id === presetId)
+    if (!preset) return
+    LAB_PARTS.forEach((p) => {
+      if (mounted.has(p.id) && !preset.parts.includes(p.id)) unmountPart(p.id)
+    })
+    preset.parts.forEach((id) => {
+      if (!mounted.has(id)) mountPart(id)
+    })
+    setPalettePressed()
+  })
+
+  updateStat()
+</script>

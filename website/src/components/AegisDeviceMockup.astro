@@ -144,18 +144,6 @@
         </g>
 
         <!-- Top rotary knobs -->
-        <!-- Left panel: recessed power slide slot (thumb is HTML overlay) -->
-        <g transform="translate(62 90)" aria-hidden="true">
-          <rect x="0" y="0" width="22" height="12" rx="2" fill="#14181e" stroke="#3a444e" stroke-width="0.8"/>
-          <rect x="1" y="1" width="20" height="10" rx="1.5" fill="#1e242b"/>
-          <line x1="4" y1="1" x2="4" y2="11" stroke="#4a5562" stroke-width="0.7" opacity="0.85"/>
-          <line x1="8" y1="1" x2="8" y2="11" stroke="#4a5562" stroke-width="0.7" opacity="0.85"/>
-          <line x1="12" y1="1" x2="12" y2="11" stroke="#4a5562" stroke-width="0.7" opacity="0.85"/>
-          <line x1="16" y1="1" x2="16" y2="11" stroke="#4a5562" stroke-width="0.7" opacity="0.85"/>
-          <text x="3" y="9.5" font-family="'JetBrains Mono', monospace" font-size="3.2" font-weight="700" fill="#4a5562">0</text>
-          <text x="17" y="9.5" font-family="'JetBrains Mono', monospace" font-size="3.2" font-weight="700" fill="#4a5562">I</text>
-        </g>
-
         <!-- Center Channel selector knob -->
         <g transform="translate(138 88)">
           <rect x="0" y="0" width="24" height="14" rx="2" fill="#1b2027" stroke="#36404b" stroke-width="0.8"/>
@@ -370,21 +358,19 @@
         <rect x="126" y="488" width="48" height="8" rx="3" fill="#0a0c0e" stroke="#2b343d" stroke-width="0.8"/>
         <rect x="133" y="490" width="34" height="4" rx="1.5" fill="#000000"/>
         <rect x="142" y="491.5" width="16" height="1" fill="#c8923a"/>
-      </svg>
 
-      <!-- OLED Display Slot: Pixel-perfect SSD1309 display overlay -->
-      <div class="aegis-device__oled-slot">
-        <canvas
-          id="oled-canvas"
-          class="oled-canvas"
-          width="512"
-          height="256"
-          role="img"
-          aria-live="polite"
-          aria-label="OLED display simulation"
-        ></canvas>
-        <div class="oled-canvas__glass" aria-hidden="true"></div>
-      </div>
+        <!-- Left bezel: recessed vertical power slide (0 = down, I = up) -->
+        <g transform="translate(28 118)" aria-hidden="true">
+          <rect x="0" y="0" width="14" height="30" rx="2.5" fill="#0c0f12" stroke="#2f3842" stroke-width="0.9"/>
+          <rect x="1.2" y="1.2" width="11.6" height="27.6" rx="2" fill="#161b21"/>
+          <line x1="4" y1="3" x2="4" y2="27" stroke="#3a444e" stroke-width="0.6" opacity="0.7"/>
+          <line x1="7" y1="3" x2="7" y2="27" stroke="#3a444e" stroke-width="0.6" opacity="0.7"/>
+          <line x1="10" y1="3" x2="10" y2="27" stroke="#3a444e" stroke-width="0.6" opacity="0.7"/>
+          <text x="2.2" y="27" font-family="'JetBrains Mono', monospace" font-size="3.4" font-weight="700" fill="#5a6570">0</text>
+          <text x="2.2" y="7" font-family="'JetBrains Mono', monospace" font-size="3.4" font-weight="700" fill="#5a6570">I</text>
+        </g>
+
+      </svg>
 
       <div class="aegis-device__power-switch" id="device-power-switch">
         <input
@@ -398,6 +384,20 @@
         <label class="aegis-device__power-switch-track" for="device-power-input" title="Power">
           <span class="aegis-device__power-switch-thumb" aria-hidden="true"></span>
         </label>
+      </div>
+
+      <!-- OLED Display Slot: Pixel-perfect SSD1309 display overlay -->
+      <div class="aegis-device__oled-slot">
+        <canvas
+          id="oled-canvas"
+          class="oled-canvas"
+          width="512"
+          height="256"
+          role="img"
+          aria-live="polite"
+          aria-label="OLED display simulation"
+        ></canvas>
+        <div class="oled-canvas__glass" aria-hidden="true"></div>
       </div>
 
       <!-- TX LED: Left optical diode -->
@@ -445,6 +445,6 @@
   </div>
 
   <p class="aegis-device__hint">
-    <strong>Slide 0/I:</strong> power | MODE: BEACON/SEARCH | <strong>Hold MODE 2s</strong> SOS | SEL: VOL/WPM | <strong>Hold SEL 3s</strong> CONFIG
+    <strong>Side slide 0/I:</strong> power | MODE: BEACON/SEARCH | <strong>Hold MODE 2s</strong> SOS | SEL: VOL/WPM | <strong>Hold SEL 3s</strong> CONFIG
   </p>
 </div>
