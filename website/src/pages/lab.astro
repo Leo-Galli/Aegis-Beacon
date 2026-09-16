@@ -15,7 +15,7 @@ const ghostMarkup = LAB_PARTS.map((p) => ghostSlotSvg(p)).join('')
       <h1>Interactive hardware lab</h1>
       <p class="hw-lab-lead">
         Mount illustrated modules on the Rev.B bench PCB. Wires animate when both ends of a link are
-        placed. Use the inspector for GPIO notes — separate from the live <a href="/demo">firmware demo</a>.
+        placed. Use the inspector for GPIO notes - separate from the live <a href="/demo">firmware demo</a>.
       </p>
       <div class="hw-lab-head__row">
         <div class="hw-lab-presets" id="hw-lab-presets" role="toolbar" aria-label="Assembly presets">
@@ -204,7 +204,7 @@ const ghostMarkup = LAB_PARTS.map((p) => ghostSlotSvg(p)).join('')
       progressFill.setAttribute('stroke-dasharray', `${pct}, 100`)
     }
     if (hintEl && n === total) {
-      hintEl.textContent = 'Full stack mounted — all power, data and RF links are live on the bench.'
+      hintEl.textContent = 'Full stack mounted - all power, data and RF links are live on the bench.'
     }
   }
 
