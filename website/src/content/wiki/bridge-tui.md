@@ -61,6 +61,18 @@ python bridge/aegis-serial-bridge.py --no-tui   # force plain log lines
 python bridge/aegis-serial-bridge.py --no-tui | tee bridge.log
 ```
 
+## Configure the bridge from the TUI
+
+Run with no arguments - `python bridge/aegis-serial-bridge.py` - even before USB
+is plugged in. The dashboard stays up and shows `:menu` host commands to set the
+serial port, baud rate, loopback HTTP port, site URL, browser behaviour and
+verbose logging. Type `:save` to write `~/.aegis-bridge.json`; the next run loads
+those defaults automatically (CLI flags still override them).
+
+Host commands start with `:` and are **not** sent to the beacon. Device commands
+(MODE, FREQ, WPM, …) are typed without a leading colon. See
+[Serial Bridge Guide](serial-bridge-guide) for the full `:menu` list.
+
 ## Local tracking and the share link
 
 Every fix the bridge receives is added to the **Local track** block, so the
@@ -98,7 +110,8 @@ MODE BEACON      BEACON | SEARCH | CONFIG | EMERGENCY
 POS              print the fix now
 STATUS           print device state
 HELP             list everything
-exit             stop the bridge
+quit             stop the bridge
+:menu            bridge settings (port, baud, HTTP, site)
 ```
 
 Each command you send appears in the live log as `[bridge] -> device: ...`,

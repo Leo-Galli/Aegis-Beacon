@@ -31,7 +31,7 @@ const { id, compact = false, showTypingRow = false } = Astro.props
     <span class="demo-bridge-tui__mode-pill" data-bridge-mode-pill data-mode="beacon">BEACON</span>
     <span class="demo-bridge-tui__rssi" data-bridge-rssi hidden aria-hidden="true">RSSI -</span>
   </div>
-  <p class="demo-bridge-tui__status-hint" data-bridge-status-hint>Run python bridge/aegis-serial-bridge.py --tui</p>
+  <p class="demo-bridge-tui__status-hint" data-bridge-status-hint>Run python bridge/aegis-serial-bridge.py · :menu in TUI</p>
   <hr class="demo-bridge-tui__rule" />
   <dl class="demo-bridge-tui__stats">
     <div class="demo-bridge-tui__stat">
@@ -75,6 +75,6 @@ const { id, compact = false, showTypingRow = false } = Astro.props
   )}
   <footer class="demo-bridge-tui__footer">
     <span class="demo-bridge-tui__footer-label">Host input</span>
-    <span class="demo-bridge-tui__footer-hint">MODE LISTEN · FREQ · WPM · STATUS · HELP</span>
+    <span class="demo-bridge-tui__footer-hint">:menu · MODE LISTEN · FREQ · WPM · STATUS</span>
   </footer>
 </div>

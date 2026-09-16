@@ -86,6 +86,30 @@ position, whether the Report Position page is open and streaming, and a
 scrolling live log. It auto-enables when stdout is a terminal; use `--tui` to
 force it on, or `--no-tui` for plain lines (useful when piping to a file).
 
+You can start with **no arguments** even when no USB device is plugged in yet:
+the bridge keeps running, shows the TUI, and waits while you configure it.
+
+### Configure from the TUI (no CLI flags needed)
+
+Host lines starting with `:` change bridge settings (not sent to the device).
+Settings can be saved to `~/.aegis-bridge.json` and are loaded on the next run.
+
+| Command        | Meaning                                      |
+| -------------- | -------------------------------------------- |
+| `:menu`        | Show all host commands                       |
+| `:ports`       | List serial ports (best match first)         |
+| `:port COM3`   | Set port explicitly                          |
+| `:port auto`   | Auto-detect port again                       |
+| `:baud 115200` | Serial baud rate                             |
+| `:http 8765`   | Loopback port for the Report Position page   |
+| `:site URL`    | Site base URL for share links                |
+| `:open on/off` | Open browser on new fixes                    |
+| `:verbose on/off` | Log all serial traffic                    |
+| `:save`        | Write `~/.aegis-bridge.json`                 |
+| `:connect`     | Reconnect serial with current settings       |
+
+Lines without a leading `:` are forwarded to the beacon (MODE, FREQ, WPM, …).
+
 ## Setting the frequency over serial
 
 While the bridge is running you can type commands in the same terminal that

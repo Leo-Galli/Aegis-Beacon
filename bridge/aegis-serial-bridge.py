@@ -28,9 +28,10 @@ Examples:
     python bridge/aegis-serial-bridge.py
     python bridge/aegis-serial-bridge.py --list
     python bridge/aegis-serial-bridge.py --port COM3
-    python bridge/aegis-serial-bridge.py --port /dev/ttyUSB0 --no-open
-    python bridge/aegis-serial-bridge.py --no-tui          # plain log lines
-    python bridge/aegis-serial-bridge.py --http-port 9123 --site http://localhost:4321
+
+With no arguments the bridge starts the TUI, loads ~/.aegis-bridge.json if present,
+auto-detects USB when possible, and lets you configure everything from the host
+prompt with :menu, :ports, :port, :baud, :site, :http, :open, :verbose, :save.
 """
 
 import argparse
@@ -58,8 +59,97 @@ except ImportError:  # pragma: no cover
 DEFAULT_BAUD = 115200
 DEFAULT_HTTP_PORT = 8765
 DEFAULT_SITE = "https://aegis-beacon.vercel.app"
+CONFIG_PATH = os.path.join(os.path.expanduser("~"), ".aegis-bridge.json")
 PAGE_OPEN_WINDOW_S = 10.0  # a page heartbeat newer than this counts as "open"
 POS_PATH = "/report-position"
+
+RECONNECT = threading.Event()
+
+
+class BridgeSettings:
+    """Runtime + persisted bridge options (CLI overrides file on startup)."""
+
+    def __init__(self):
+        self.port = None
+        self.auto_port = True
+        self.baud = DEFAULT_BAUD
+        self.http_port = DEFAULT_HTTP_PORT
+        self.site = DEFAULT_SITE
+        self.no_open = False
+        self.verbose = False
+
+    def resolve_port(self):
+        if self.port:
+            return self.port
+        if self.auto_port:
+            return detect_port(None)
+        return None
+
+    def to_dict(self):
+        return {
+            "port": self.port,
+            "auto_port": self.auto_port,
+            "baud": self.baud,
+            "http_port": self.http_port,
+            "site": self.site,
+            "no_open": self.no_open,
+            "verbose": self.verbose,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        s = cls()
+        if not isinstance(data, dict):
+            return s
+        port = data.get("port")
+        if port:
+            s.port = str(port)
+            s.auto_port = False
+        if "auto_port" in data:
+            s.auto_port = bool(data["auto_port"])
+        s.baud = int(data.get("baud", DEFAULT_BAUD))
+        s.http_port = int(data.get("http_port", DEFAULT_HTTP_PORT))
+        site = data.get("site")
+        if site:
+            s.site = str(site)
+        s.no_open = bool(data.get("no_open", False))
+        s.verbose = bool(data.get("verbose", False))
+        return s
+
+    def apply_cli(self, args):
+        if args.port:
+            self.port = args.port
+            self.auto_port = False
+        if args.baud != DEFAULT_BAUD:
+            self.baud = args.baud
+        if args.http_port != DEFAULT_HTTP_PORT:
+            self.http_port = args.http_port
+        if args.site != DEFAULT_SITE:
+            self.site = args.site
+        if args.no_open:
+            self.no_open = True
+        if args.verbose:
+            self.verbose = True
+
+
+def load_settings_file():
+    try:
+        with open(CONFIG_PATH, encoding="utf-8") as fh:
+            return BridgeSettings.from_dict(json.load(fh))
+    except FileNotFoundError:
+        return BridgeSettings()
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        return BridgeSettings()
+
+
+def save_settings_file(settings):
+    try:
+        with open(CONFIG_PATH, "w", encoding="utf-8") as fh:
+            json.dump(settings.to_dict(), fh, indent=2)
+            fh.write("\n")
+        return True
+    except OSError:
+        return False
 
 # Well-known USB serial chips used by ESP32 dev boards.
 PREFERRED_VIDS = {0x10C4, 0x1A86, 0x0403, 0x303A}  # CP210x, CH340, FTDI, ESP32-S3 native
@@ -165,9 +255,10 @@ class TUI:
         self.last_url = ""      # public site link for the latest fix (shareable)
         self.last_mode = "UNKNOWN"
         self.last_cw = ""
-        self.hint = "Run with --tui · type MODE LISTEN on the host"
+        self.hint = "Type :menu for bridge settings · MODE LISTEN to the device"
         self.track = []          # recent fixes: (time, lat, lng, url), newest last
         self.started = time.time()
+        self.settings = None
 
     def _clear(self):
         # Move to home, clear the screen and the scrollback buffer.
@@ -280,6 +371,16 @@ class TUI:
                 share = "…" + share[-(width - 18):]
             lines.append("  " + self._bar("Share", share))
             lines.append("  " + self._bar("Page", self.last_page))
+            if self.settings is not None:
+                s = self.settings
+                port_lbl = s.port if s.port else ("auto" if s.auto_port else "(unset)")
+                cfg = (
+                    f"port={port_lbl}  baud={s.baud}  http={s.http_port}  "
+                    f"browser={'off' if s.no_open else 'on'}  verbose={'on' if s.verbose else 'off'}"
+                )
+                if len(cfg) > width - 6:
+                    cfg = cfg[: width - 9] + "..."
+                lines.append(f"  {a['dim']}Config{a['reset']}  {a['muted']}{cfg}{a['reset']}")
             if self.last_mode == "LISTEN" and self.last_cw:
                 cw_line = f"AEGIS:CW:{self.last_cw}"
                 lines.append("  " + self._bar("RX decode", cw_line))
@@ -298,7 +399,7 @@ class TUI:
                 lines.append("  " + painted + " " * pad)
             lines.append("  " + a["muted"] + ("─" * (width - 2)) + a["reset"])
             lines.append(
-                f"  {a['dim']}Host input:{a['reset']} MODE LISTEN · FREQ · WPM · STATUS · HELP · quit"
+                f"  {a['dim']}Host:{a['reset']} :menu :ports :port :save · device: MODE LISTEN FREQ WPM · quit"
             )
             frame = "\n".join(lines)
             self._clear()
@@ -432,9 +533,134 @@ def should_open_browser(data):
     return False
 
 
-def _forward_stdin(ser_ref, stop):
-    """Background thread: read lines from the terminal and write them to the
-    device as serial commands (FREQ, WPM, MODE, POS, STATUS, HELP)."""
+def _print_port_list():
+    ports = sorted(serial.tools.list_ports.comports(), key=score_port, reverse=True)
+    if not ports:
+        TUI_UI.log("[bridge] no serial ports found (plug USB and try again)")
+        return
+    TUI_UI.log("[bridge] serial ports (best first):")
+    for idx, p in enumerate(ports, start=1):
+        desc = (p.description or "").strip()
+        TUI_UI.log(f"[bridge]   {idx}. {p.device}  {desc}  score={score_port(p)}")
+
+
+def _host_config_menu(settings):
+    TUI_UI.log("[bridge] --- bridge config (host commands) ---")
+    TUI_UI.log("[bridge] :ports              list USB serial ports")
+    TUI_UI.log("[bridge] :port NAME          set port (e.g. COM3, /dev/ttyUSB0)")
+    TUI_UI.log("[bridge] :port auto          auto-detect best port")
+    TUI_UI.log("[bridge] :baud N             baud rate (default 115200)")
+    TUI_UI.log("[bridge] :http N             loopback HTTP port for the web page")
+    TUI_UI.log("[bridge] :site URL           report-position site base URL")
+    TUI_UI.log("[bridge] :open on|off        open browser on new fixes")
+    TUI_UI.log("[bridge] :verbose on|off     log all serial traffic")
+    TUI_UI.log("[bridge] :save               write ~/.aegis-bridge.json")
+    TUI_UI.log("[bridge] :connect            reconnect serial with current settings")
+    TUI_UI.log("[bridge] :menu               show this menu again")
+    TUI_UI.log(f"[bridge] config file: {CONFIG_PATH}")
+
+
+def _handle_host_line(line, settings, ser_ref, stop, http_holder):
+    """Parse :commands for bridge config; return True if handled (not forwarded)."""
+    low = line.lower()
+    if low in ("quit", "exit"):
+        TUI_UI.log("[bridge] bye")
+        stop.set()
+        return True
+    if not line.startswith(":"):
+        return False
+    parts = line.split(maxsplit=2)
+    cmd = parts[0].lower()
+    arg = parts[1].lower() if len(parts) > 1 else ""
+    rest = line.split(maxsplit=2)[-1] if len(parts) > 2 else (parts[1] if len(parts) > 1 else "")
+
+    if cmd in (":menu", ":help", ":config"):
+        _host_config_menu(settings)
+        return True
+    if cmd == ":ports":
+        _print_port_list()
+        return True
+    if cmd == ":port":
+        tail = line.split(None, 1)[1].strip() if len(line.split(None, 1)) > 1 else ""
+        if not tail or tail.lower() == "auto":
+            settings.port = None
+            settings.auto_port = True
+            TUI_UI.log("[bridge] port set to auto-detect")
+        else:
+            settings.port = tail
+            settings.auto_port = False
+            TUI_UI.log(f"[bridge] port set to {settings.port}")
+        RECONNECT.set()
+        TUI_UI.draw()
+        return True
+    if cmd == ":baud":
+        try:
+            settings.baud = int(arg)
+            TUI_UI.log(f"[bridge] baud set to {settings.baud}")
+            RECONNECT.set()
+            TUI_UI.draw()
+        except ValueError:
+            TUI_UI.log("[bridge] usage: :baud 115200")
+        return True
+    if cmd == ":http":
+        try:
+            new_port = int(arg)
+            if new_port < 1 or new_port > 65535:
+                raise ValueError
+            settings.http_port = new_port
+            restart_http_server(settings, http_holder)
+            TUI_UI.log(f"[bridge] loopback HTTP port set to {new_port}")
+            TUI_UI.draw()
+        except ValueError:
+            TUI_UI.log("[bridge] usage: :http 8765")
+        return True
+    if cmd == ":site":
+        url = line.split(None, 1)[1].strip() if len(line.split(None, 1)) > 1 else ""
+        if not url:
+            TUI_UI.log("[bridge] usage: :site https://aegis-beacon.vercel.app")
+            return True
+        settings.site = url.rstrip("/")
+        TUI_UI.log(f"[bridge] site set to {settings.site}")
+        TUI_UI.draw()
+        return True
+    if cmd == ":open":
+        if arg in ("on", "yes", "1", "true"):
+            settings.no_open = False
+            TUI_UI.log("[bridge] browser open: on")
+        elif arg in ("off", "no", "0", "false"):
+            settings.no_open = True
+            TUI_UI.log("[bridge] browser open: off")
+        else:
+            TUI_UI.log("[bridge] usage: :open on|off")
+        TUI_UI.draw()
+        return True
+    if cmd == ":verbose":
+        if arg in ("on", "yes", "1", "true"):
+            settings.verbose = True
+            TUI_UI.log("[bridge] verbose serial: on")
+        elif arg in ("off", "no", "0", "false"):
+            settings.verbose = False
+            TUI_UI.log("[bridge] verbose serial: off")
+        else:
+            TUI_UI.log("[bridge] usage: :verbose on|off")
+        TUI_UI.draw()
+        return True
+    if cmd == ":save":
+        if save_settings_file(settings):
+            TUI_UI.log(f"[bridge] settings saved to {CONFIG_PATH}")
+        else:
+            TUI_UI.log("[bridge] could not save settings file")
+        return True
+    if cmd == ":connect":
+        RECONNECT.set()
+        TUI_UI.log("[bridge] reconnecting serial...")
+        return True
+    TUI_UI.log(f"[bridge] unknown host command {cmd} (type :menu)")
+    return True
+
+
+def _forward_stdin(ser_ref, stop, settings, http_holder):
+    """Read host lines: :config commands or forward to the device."""
     try:
         while not stop.is_set():
             try:
@@ -446,10 +672,8 @@ def _forward_stdin(ser_ref, stop):
             line = line.strip()
             if not line:
                 continue
-            if line.lower() in ("quit", "exit"):
-                TUI_UI.log("[bridge] bye")
-                stop.set()
-                return
+            if _handle_host_line(line, settings, ser_ref, stop, http_holder):
+                continue
             ser = ser_ref[0]
             if ser is not None and ser.is_open:
                 try:
@@ -458,31 +682,45 @@ def _forward_stdin(ser_ref, stop):
                 except serial.SerialException as exc:
                     TUI_UI.log(f"[bridge] cannot send command ({exc})")
             else:
-                TUI_UI.log("[bridge] device not connected, command ignored")
+                TUI_UI.log("[bridge] device not connected (use :ports · :port · :connect)")
     except Exception:  # noqa: BLE001
         pass
 
 
-def handle_serial(device, baud, site, no_open, verbose):
-    """Open the port (with reconnect), process AEGIS: lines forever and forward
-    terminal commands to the device."""
+def handle_serial(settings, http_holder):
+    """Open the port (with reconnect), process AEGIS: lines forever."""
     ser_ref = [None]
     stop = threading.Event()
-    stdin_thread = threading.Thread(target=_forward_stdin, args=(ser_ref, stop), daemon=True)
+    stdin_thread = threading.Thread(
+        target=_forward_stdin,
+        args=(ser_ref, stop, settings, http_holder),
+        daemon=True,
+    )
     stdin_thread.start()
-    while True:
+    while not stop.is_set():
+        device = settings.resolve_port()
+        if not device:
+            TUI_UI.set_status("waiting for USB · :ports · :port NAME · :menu")
+            if RECONNECT.wait(timeout=2):
+                RECONNECT.clear()
+            continue
+        baud = settings.baud
         try:
             ser = serial.Serial(device, baud, timeout=0.2)
         except serial.SerialException as exc:
             TUI_UI.log(f"[bridge] cannot open {device}: {exc}")
-            TUI_UI.log("[bridge] retrying in 2 s... (plug the device in? try --list)")
-            time.sleep(2)
+            TUI_UI.log("[bridge] retry in 2 s · fix with :port or :ports")
+            if RECONNECT.wait(timeout=2):
+                RECONNECT.clear()
             continue
         ser_ref[0] = ser
         TUI_UI.set_status(f"{device} @ {baud} baud (connected)")
         TUI_UI.log(f"[bridge] connected to {device} @ {baud} baud")
         try:
-            while True:
+            while not stop.is_set():
+                if RECONNECT.is_set():
+                    RECONNECT.clear()
+                    break
                 raw = ser.readline()
                 if not raw:
                     continue
@@ -497,12 +735,14 @@ def handle_serial(device, baud, site, no_open, verbose):
                         data = parse_pos_line(line)
                         if "lat" in data and "lng" in data:
                             STATE.set_position(data)
-                            url = build_site_url(site, data)
+                            url = build_site_url(settings.site, data)
                             TUI_UI.set_position(f"{data['lat']:.6f}, {data['lng']:.6f}")
                             TUI_UI.set_share(url)
                             TUI_UI.log(f"[bridge] share link: {url}")
-                            if no_open:
-                                TUI_UI.log(f"[bridge] position captured: {data['lat']:.6f}, {data['lng']:.6f}")
+                            if settings.no_open:
+                                TUI_UI.log(
+                                    f"[bridge] position captured: {data['lat']:.6f}, {data['lng']:.6f}"
+                                )
                                 continue
                             if STATE.page_is_open():
                                 TUI_UI.log("[bridge] page is open, streaming update to it")
@@ -511,30 +751,34 @@ def handle_serial(device, baud, site, no_open, verbose):
                                 try:
                                     webbrowser.open(url, new=2)
                                 except Exception as exc:  # noqa: BLE001
-                                    TUI_UI.log(f"[bridge] could not open browser ({exc}); paste this link manually:\n  {url}")
+                                    TUI_UI.log(
+                                        f"[bridge] could not open browser ({exc}); paste manually:\n  {url}"
+                                    )
                             else:
                                 TUI_UI.log("[bridge] position unchanged, not opening a new tab")
                         else:
-                            TUI_UI.log("[bridge] AEGIS:POS: line without usable coordinates, ignoring")
+                            TUI_UI.log("[bridge] AEGIS:POS: without usable coordinates, ignoring")
                     elif upper.startswith("AEGIS:HELLO:"):
                         TUI_UI.log("[device] firmware handshake received")
                     elif upper.startswith("AEGIS:CW:"):
-                        pass  # note_aegis_line already updated RX decode panel
+                        pass
                     elif upper.startswith("AEGIS:MODE:") or upper.startswith("AEGIS:OK:"):
                         TUI_UI.log("[bridge] device mode synced with dashboard")
-                    elif verbose:
+                    elif settings.verbose:
                         TUI_UI.log(f"[bridge] (ignored) {line}")
-                elif verbose:
+                elif settings.verbose:
                     TUI_UI.log(f"[serial]  {line}")
         except serial.SerialException as exc:
             TUI_UI.log(f"[bridge] serial error ({exc}); reconnecting...")
-            time.sleep(2)
+            time.sleep(1)
         finally:
             try:
                 ser.close()
             except Exception:  # noqa: BLE001
                 pass
-            TUI_UI.log(f"[bridge] disconnected from {device}, reconnecting...")
+            ser_ref[0] = None
+            if not stop.is_set():
+                TUI_UI.log(f"[bridge] disconnected from {device}, reconnecting...")
 
 
 # ---------------------------------------------------------------------------
@@ -588,8 +832,19 @@ def run_http_server(port):
     server = ThreadingHTTPServer(("127.0.0.1", port), BridgeHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    TUI_UI.log(f"[bridge] loopback server on http://127.0.0.1:{port}/ (stream|ping|state)")
+    TUI_UI.log(f"[bridge] loopback server on 127.0.0.1:{port} (stream|ping|state)")
     return server
+
+
+def restart_http_server(settings, http_holder):
+    """Stop the previous loopback server (if any) and bind the new port."""
+    old = http_holder[0]
+    if old is not None:
+        try:
+            old.shutdown()
+        except Exception:  # noqa: BLE001
+            pass
+    http_holder[0] = run_http_server(settings.http_port)
 
 
 # ---------------------------------------------------------------------------
@@ -630,24 +885,30 @@ def main(argv=None):
             print(f"{p.device:20s} {p.description or ''}  vid={p.vid and hex(p.vid)} pid={p.pid and hex(p.pid)}")
         return 0
 
-    device = detect_port(args.port)
-    if not device:
-        print("No supported serial device found. Plug the beacon in over USB,")
-        print("install its driver (CP210x / CH340), then run with --list to inspect ports,")
-        print("or pass the port explicitly with --port (e.g. COM3, /dev/ttyUSB0).")
-        return 1
+    settings = load_settings_file()
+    settings.apply_cli(args)
+    TUI_UI.settings = settings
+    http_holder = [None]
 
     if not TUI_UI.enabled:
-        print(f"[bridge] Aegis-Beacon serial bridge")
-        print(f"[bridge] site target: {args.site}")
-        print(f"[bridge] opening browser for new positions: {'no' if args.no_open else 'yes'}")
+        print("[bridge] Aegis-Beacon serial bridge")
+        print(f"[bridge] site target: {settings.site}")
+        print(f"[bridge] opening browser: {'no' if settings.no_open else 'yes'}")
+        print(f"[bridge] config file: {CONFIG_PATH}")
     else:
-        TUI_UI.log(f"site target: {args.site}")
-        TUI_UI.log(f"opening browser for new positions: {'no' if args.no_open else 'yes'}")
-    run_http_server(args.http_port)
+        TUI_UI.log(f"site target: {settings.site}")
+        TUI_UI.log(f"opening browser: {'no' if settings.no_open else 'yes'}")
+        if os.path.isfile(CONFIG_PATH):
+            TUI_UI.log(f"loaded settings from {CONFIG_PATH}")
+        TUI_UI.log("type :menu to configure port, baud, HTTP and site from the TUI")
+        if not settings.resolve_port():
+            TUI_UI.log("no USB device yet · plug in the beacon · :ports · :port COM3")
+            _host_config_menu(settings)
+
+    http_holder[0] = run_http_server(settings.http_port)
 
     try:
-        handle_serial(device, args.baud, args.site, args.no_open, args.verbose)
+        handle_serial(settings, http_holder)
     except KeyboardInterrupt:
         if TUI_UI.enabled:
             TUI_UI.log("[bridge] stopped.")

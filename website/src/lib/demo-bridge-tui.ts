@@ -156,7 +156,7 @@ export const renderBridgeTui = (root: HTMLElement | null, snap: BridgeTuiSnapsho
   if (statusHint) {
     statusHint.textContent = snap.connected
       ? modeDeviceLabel(snap.mode, snap.freqMhz, snap.rssi)
-      : 'Run python bridge/aegis-serial-bridge.py --tui'
+      : 'Run python bridge/aegis-serial-bridge.py · :menu in TUI'
   }
 
   const listenCw = snap.mode === 'listen' && snap.connected
