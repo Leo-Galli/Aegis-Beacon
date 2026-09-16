@@ -60,6 +60,7 @@ Useful options:
 | `--verbose`     | Print all serial traffic                                   |
 | `--tui`         | Force the live terminal dashboard on                       |
 | `--no-tui`      | Force plain log lines (no dashboard)                       |
+| `--self-test`   | Run sanity checks (no USB) and exit                        |
 
 The beacon does not need a special mode: the serial commands and position
 reporting work in BEACON, SEARCH and CONFIG modes.

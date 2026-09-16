@@ -66,6 +66,24 @@ POS_PATH = "/report-position"
 RECONNECT = threading.Event()
 
 
+def _enable_vt_mode():
+    """Enable ANSI colors on Windows 10+ consoles."""
+    if sys.platform != "win32":
+        return
+    try:
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        for handle_id in (-11, -12):
+            handle = kernel32.GetStdHandle(handle_id)
+            mode = ctypes.c_ulong()
+            if kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
+                mode.value |= 4
+                kernel32.SetConsoleMode(handle, mode)
+    except Exception:  # noqa: BLE001
+        pass
+
+
 class BridgeSettings:
     """Runtime + persisted bridge options (CLI overrides file on startup)."""
 
@@ -246,7 +264,7 @@ def _parse_aegis_body(line):
 
 class TUI:
     def __init__(self):
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
         self.enabled = sys.stdout.isatty()
         self.lines = []          # rolling log lines (newest last)
         self.last_status = "waiting for USB device..."
@@ -255,14 +273,13 @@ class TUI:
         self.last_url = ""      # public site link for the latest fix (shareable)
         self.last_mode = "UNKNOWN"
         self.last_cw = ""
-        self.hint = "Type :menu for bridge settings · MODE LISTEN to the device"
+        self.hint = "Type :menu for bridge settings | MODE LISTEN to the device"
         self.track = []          # recent fixes: (time, lat, lng, url), newest last
         self.started = time.time()
         self.settings = None
 
     def _clear(self):
-        # Move to home, clear the screen and the scrollback buffer.
-        sys.stdout.write("\x1b[2J\x1b[H\x1b[3J")
+        sys.stdout.write("\x1b[2J\x1b[H")
 
     def _bar(self, label, value, width=34):
         return f"{label:<10} {value}".ljust(width)
@@ -303,27 +320,27 @@ class TUI:
                 self.track.append((now, self.last_pos, url))
                 if len(self.track) > TRACK_MAX:
                     del self.track[: len(self.track) - TRACK_MAX]
-            self.draw()
+        self.draw()
 
     def set_mode(self, mode):
         with self.lock:
             self.last_mode = (mode or "UNKNOWN").upper()
             if self.last_mode == "LISTEN":
-                self.hint = "LISTEN · AEGIS:CW stream · device OLED + speaker"
+                self.hint = "LISTEN | AEGIS:CW stream | device OLED + speaker"
             elif self.last_mode == "SEARCH":
-                self.hint = "SEARCH · RSSI scan on configured frequency"
+                self.hint = "SEARCH | RSSI scan on configured frequency"
             elif self.last_mode == "CONFIG":
-                self.hint = "CONFIG · WiFi portal 192.168.4.1 on the beacon"
+                self.hint = "CONFIG | WiFi portal 192.168.4.1 on the beacon"
             elif self.last_mode == "EMERGENCY":
-                self.hint = "EMERGENCY · SOS Morse TX"
+                self.hint = "EMERGENCY | SOS Morse TX"
             else:
-                self.hint = "BEACON · Morse TX · POS lines to report-position"
-            self.draw()
+                self.hint = "BEACON | Morse TX | POS lines to report-position"
+        self.draw()
 
     def set_cw(self, ch):
         with self.lock:
             self.last_cw = ch
-            self.draw()
+        self.draw()
 
     def note_aegis_line(self, line):
         """Update dashboard fields from a machine-readable AEGIS line."""
@@ -353,17 +370,17 @@ class TUI:
             uptime = int(time.time() - self.started)
             a = _ANSI
             lines = []
-            conn = f"{a['ok']}●{a['reset']}" if "connected" in self.last_status.lower() else f"{a['muted']}○{a['reset']}"
+            conn = f"{a['ok']}[ON]{a['reset']}" if "connected" in self.last_status.lower() else f"{a['muted']}[--]{a['reset']}"
             lines.append("")
             head = (
                 f"  {conn} {a['brand']}{a['bold']}AEGIS-BEACON{a['reset']} "
                 f"{a['accent']}SERIAL BRIDGE{a['reset']}   {a['muted']}{now}   uptime {uptime}s{a['reset']}"
             )
             lines.append(head.ljust(width + len(a["reset"]) * 3))
-            lines.append("  " + a["muted"] + ("─" * (width - 2)) + a["reset"])
+            lines.append("  " + a["muted"] + ("-" * (width - 2)) + a["reset"])
             lines.append("  " + self._mode_badge())
             lines.append(f"  {a['dim']}{self.hint}{a['reset']}")
-            lines.append("  " + a["muted"] + ("─" * (width - 2)) + a["reset"])
+            lines.append("  " + a["muted"] + ("-" * (width - 2)) + a["reset"])
             lines.append("  " + self._bar("Device", self.last_status))
             lines.append("  " + self._bar("Position", self.last_pos))
             share = self.last_url or "(public link appears on first fix)"
@@ -385,11 +402,11 @@ class TUI:
                 cw_line = f"AEGIS:CW:{self.last_cw}"
                 lines.append("  " + self._bar("RX decode", cw_line))
             if self.track:
-                lines.append("  " + a["muted"] + ("─" * (width - 2)) + a["reset"])
+                lines.append("  " + a["muted"] + ("-" * (width - 2)) + a["reset"])
                 lines.append(f"  {a['dim']}Local track (newest last):{a['reset']}")
                 for ts, pos, _url in self.track:
                     lines.append(f"    {a['muted']}{ts}{a['reset']}  {pos}")
-            lines.append("  " + a["muted"] + ("─" * (width - 2)) + a["reset"])
+            lines.append("  " + a["muted"] + ("-" * (width - 2)) + a["reset"])
             lines.append(f"  {a['dim']}Live log:{a['reset']}")
             body = self.lines[- (width // 2) - 8:]
             for line in body:
@@ -397,37 +414,38 @@ class TUI:
                 plain_len = len(line)
                 pad = max(0, width - 2 - plain_len)
                 lines.append("  " + painted + " " * pad)
-            lines.append("  " + a["muted"] + ("─" * (width - 2)) + a["reset"])
+            lines.append("  " + a["muted"] + ("-" * (width - 2)) + a["reset"])
             lines.append(
-                f"  {a['dim']}Host:{a['reset']} :menu :ports :port :save · device: MODE LISTEN FREQ WPM · quit"
+                f"  {a['dim']}Host:{a['reset']} :menu :ports :port :save | device: MODE LISTEN FREQ WPM | quit"
             )
             frame = "\n".join(lines)
             self._clear()
             sys.stdout.write(frame + "\n")
+            sys.stdout.write("\x1b[?25h")
             sys.stdout.flush()
 
     def log(self, msg):
         if not self.enabled:
-            print(msg)
+            print(msg, flush=True)
             return
         with self.lock:
             self.lines.append(msg)
-            self.draw()
+        self.draw()
 
     def set_status(self, status):
         with self.lock:
             self.last_status = status
-            self.draw()
+        self.draw()
 
     def set_position(self, text):
         with self.lock:
             self.last_pos = text
-            self.draw()
+        self.draw()
 
     def set_page(self, text):
         with self.lock:
             self.last_page = text
-            self.draw()
+        self.draw()
 
 
 TUI_UI = TUI()
@@ -659,6 +677,18 @@ def _handle_host_line(line, settings, ser_ref, stop, http_holder):
     return True
 
 
+def _wait_stop_or_reconnect(stop, timeout_s):
+    """Sleep up to timeout_s; return True if RECONNECT was signaled."""
+    deadline = time.monotonic() + timeout_s
+    while time.monotonic() < deadline:
+        if stop.is_set():
+            return False
+        if RECONNECT.wait(timeout=0.2):
+            RECONNECT.clear()
+            return True
+    return False
+
+
 def _forward_stdin(ser_ref, stop, settings, http_holder):
     """Read host lines: :config commands or forward to the device."""
     try:
@@ -682,7 +712,7 @@ def _forward_stdin(ser_ref, stop, settings, http_holder):
                 except serial.SerialException as exc:
                     TUI_UI.log(f"[bridge] cannot send command ({exc})")
             else:
-                TUI_UI.log("[bridge] device not connected (use :ports · :port · :connect)")
+                TUI_UI.log("[bridge] device not connected (use :ports | :port | :connect)")
     except Exception:  # noqa: BLE001
         pass
 
@@ -700,18 +730,16 @@ def handle_serial(settings, http_holder):
     while not stop.is_set():
         device = settings.resolve_port()
         if not device:
-            TUI_UI.set_status("waiting for USB · :ports · :port NAME · :menu")
-            if RECONNECT.wait(timeout=2):
-                RECONNECT.clear()
+            TUI_UI.set_status("waiting for USB | :ports | :port NAME | :menu")
+            _wait_stop_or_reconnect(stop, 2)
             continue
         baud = settings.baud
         try:
             ser = serial.Serial(device, baud, timeout=0.2)
         except serial.SerialException as exc:
             TUI_UI.log(f"[bridge] cannot open {device}: {exc}")
-            TUI_UI.log("[bridge] retry in 2 s · fix with :port or :ports")
-            if RECONNECT.wait(timeout=2):
-                RECONNECT.clear()
+            TUI_UI.log("[bridge] retry in 2 s | fix with :port or :ports")
+            _wait_stop_or_reconnect(stop, 2)
             continue
         ser_ref[0] = ser
         TUI_UI.set_status(f"{device} @ {baud} baud (connected)")
@@ -720,6 +748,8 @@ def handle_serial(settings, http_holder):
             while not stop.is_set():
                 if RECONNECT.is_set():
                     RECONNECT.clear()
+                    break
+                if stop.is_set():
                     break
                 raw = ser.readline()
                 if not raw:
@@ -779,6 +809,46 @@ def handle_serial(settings, http_holder):
             ser_ref[0] = None
             if not stop.is_set():
                 TUI_UI.log(f"[bridge] disconnected from {device}, reconnecting...")
+
+
+def run_self_test():
+    """Quick sanity checks (no USB required)."""
+    errors = []
+
+    data = parse_pos_line("AEGIS:POS:lat=45.5;lng=11.3;fix=1")
+    if data.get("lat") != 45.5 or data.get("lng") != 11.3:
+        errors.append("parse_pos_line")
+
+    tag, kv = _parse_aegis_body("AEGIS:HELLO:ver=6;mode=BEACON")
+    if tag != "HELLO" or kv.get("mode") != "BEACON":
+        errors.append("parse_aegis_hello")
+
+    s = BridgeSettings()
+    s.port = "COM_TEST"
+    s.baud = 9600
+    restored = BridgeSettings.from_dict(s.to_dict())
+    if restored.port != "COM_TEST" or restored.baud != 9600:
+        errors.append("settings_roundtrip")
+
+    buf = __import__("io").StringIO()
+    old_out = sys.stdout
+    tui = TUI()
+    tui.enabled = True
+    sys.stdout = buf
+    try:
+        tui.log("[bridge] self-test log line")
+        tui.set_status("COM_TEST @ 115200 baud (connected)")
+        tui.draw()
+        if "[bridge] self-test" not in buf.getvalue():
+            errors.append("tui_render")
+    finally:
+        sys.stdout = old_out
+
+    if errors:
+        print("[bridge] self-test FAILED:", ", ".join(errors))
+        return 1
+    print("[bridge] self-test OK")
+    return 0
 
 
 # ---------------------------------------------------------------------------
@@ -866,7 +936,11 @@ def main(argv=None):
                         help="render the live terminal dashboard (auto-enabled on a TTY)")
     parser.add_argument("--list", action="store_true", help="list serial ports and exit")
     parser.add_argument("--verbose", action="store_true", help="print all serial traffic")
+    parser.add_argument("--self-test", action="store_true", help="run sanity checks and exit")
     args = parser.parse_args(argv)
+
+    if args.self_test:
+        return run_self_test()
 
     # --tui forces the dashboard on (even when piped); --no-tui disables it.
     if args.tui is False:
@@ -875,6 +949,9 @@ def main(argv=None):
         TUI_UI.enabled = True
     elif not sys.stdout.isatty():
         TUI_UI.enabled = False
+
+    if TUI_UI.enabled:
+        _enable_vt_mode()
 
     if args.list:
         ports = serial.tools.list_ports.comports()
@@ -902,8 +979,9 @@ def main(argv=None):
             TUI_UI.log(f"loaded settings from {CONFIG_PATH}")
         TUI_UI.log("type :menu to configure port, baud, HTTP and site from the TUI")
         if not settings.resolve_port():
-            TUI_UI.log("no USB device yet · plug in the beacon · :ports · :port COM3")
+            TUI_UI.log("no USB device yet | plug in the beacon | :ports | :port COM3")
             _host_config_menu(settings)
+        TUI_UI.draw()
 
     http_holder[0] = run_http_server(settings.http_port)
 
