@@ -1,0 +1,309 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { INTERVIEW_AVATAR, INTERVIEW_GUEST, INTERVIEW_HOST, INTERVIEW_TURNS } from '../lib/interview'
+---
+
+<Layout
+  title="Leo-Galli | Aegis-Beacon"
+  description="Chat with Leo-Galli: written questions in green, voice replies in grey. Listen to each clip before the next message is sent."
+>
+  <div class="iv-page container">
+    <header class="section-head page-head visually-hidden">
+      <h1 class="section-head__title">Leo-Galli</h1>
+    </header>
+
+    <div class="iv-phone">
+      <span class="iv-phone__btn iv-phone__btn--vol" aria-hidden="true"></span>
+      <span class="iv-phone__btn iv-phone__btn--pwr" aria-hidden="true"></span>
+
+      <div class="iv-phone__frame">
+        <div class="iv-phone__ear" aria-hidden="true">
+          <span class="iv-phone__mic"></span>
+          <span class="iv-phone__speaker"></span>
+          <span class="iv-phone__cam"></span>
+        </div>
+
+        <div class="iv-phone__screen">
+          <div class="iv-status" aria-hidden="true">
+            <span class="iv-status__time" id="iv-clock">09:41</span>
+            <span class="iv-status__icons">
+              <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="8" width="2.2" height="4" rx="0.4"/><rect x="3.4" y="5.5" width="2.2" height="6.5" rx="0.4"/><rect x="6.8" y="3" width="2.2" height="9" rx="0.4"/><rect x="10.2" y="0.5" width="2.2" height="11.5" rx="0.4"/></svg>
+              <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="0.6" y="2.4" width="13.2" height="7.2" rx="1.4"/><path d="M15.2 4.8v2.4"/><rect x="2" y="3.8" width="9.2" height="4.4" rx="0.5" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+
+          <div class="iv-pane iv-pane--list" id="iv-list">
+            <div class="iv-list-head">
+              <p class="iv-list-head__title">Chats</p>
+            </div>
+            <button type="button" class="iv-list-row" id="iv-open-chat" aria-label="Open chat with Leo-Galli">
+              <img
+                class="iv-list-row__avatar"
+                src={INTERVIEW_AVATAR}
+                alt=""
+                width="48"
+                height="48"
+                decoding="async"
+              />
+              <span class="iv-list-row__body">
+                <span class="iv-list-row__top">
+                  <span class="iv-list-row__name">{INTERVIEW_GUEST}</span>
+                  <span class="iv-list-row__time" id="iv-list-time">now</span>
+                </span>
+                <span class="iv-list-row__preview" id="iv-list-preview">Tap to open</span>
+              </span>
+            </button>
+          </div>
+
+          <div class="iv-pane iv-pane--chat" id="iv-room" hidden>
+            <header class="iv-chat-head">
+              <button type="button" class="iv-back" id="iv-back" aria-label="Back to chats">
+                <svg width="12" height="20" viewBox="0 0 12 20" fill="none" aria-hidden="true">
+                  <path d="M10.5 1.5 L2 10 l8.5 8.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="iv-chat-head__ident">
+                <img
+                  class="iv-chat-head__avatar"
+                  src={INTERVIEW_AVATAR}
+                  alt={INTERVIEW_GUEST}
+                  width="40"
+                  height="40"
+                  decoding="async"
+                />
+                <p class="iv-chat-head__name">{INTERVIEW_GUEST}</p>
+              </div>
+            </header>
+
+          <section class="iv-thread" id="iv-thread" aria-label="Chat with Leo-Galli">
+            {INTERVIEW_TURNS.map((turn, index) => (
+              <article class="iv-block" data-turn={turn.id} data-index={String(index)} hidden>
+                <p class="iv-ask">
+                  <span class="visually-hidden">{INTERVIEW_HOST}: </span>
+                  {turn.question}
+                </p>
+                {turn.audio && (
+                <button
+                  type="button"
+                  class="iv-ans"
+                  data-audio={turn.audio}
+                  data-index={String(index)}
+                  hidden
+                  aria-pressed="false"
+                  aria-label={`Play ${INTERVIEW_GUEST} voice message`}
+                >
+                  <span class="iv-ans__icon" aria-hidden="true">
+                    <svg class="iv-ans__play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    <svg class="iv-ans__pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+                  </span>
+                  <span class="iv-ans__wave" aria-hidden="true">
+                    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                  </span>
+                  <span class="iv-ans__time" data-time>--</span>
+                  <span class="visually-hidden">{turn.answer}</span>
+                </button>
+                )}
+              </article>
+            ))}
+            <div class="iv-typing" id="iv-typing" hidden aria-live="polite" aria-label="Recording a voice message">
+              <span></span><span></span><span></span>
+            </div>
+          </section>
+          </div>
+
+          <div class="iv-home" aria-hidden="true"></div>
+        </div>
+
+        <div class="iv-phone__chin" aria-hidden="true">
+          <span class="iv-phone__port"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const audio = new Audio()
+  audio.preload = 'metadata'
+  const thread = document.getElementById('iv-thread')
+  const typingEl = document.getElementById('iv-typing')
+  const listEl = document.getElementById('iv-list')
+  const roomEl = document.getElementById('iv-room')
+  const openBtn = document.getElementById('iv-open-chat')
+  const backBtn = document.getElementById('iv-back')
+  const previewEl = document.getElementById('iv-list-preview')
+  const listTimeEl = document.getElementById('iv-list-time')
+  const blocks = Array.from(document.querySelectorAll<HTMLElement>('.iv-block'))
+  let activeBtn: HTMLButtonElement | null = null
+  let current = -1
+  let recording = false
+  let started = false
+  const heard = new Set<number>()
+
+  const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, reduced() ? Math.min(ms, 180) : ms))
+
+  const clock = document.getElementById('iv-clock')
+  const tickClock = () => {
+    if (!clock) return
+    const now = new Date()
+    clock.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+  }
+  tickClock()
+  window.setInterval(tickClock, 30000)
+
+  const formatTime = (seconds: number) => {
+    if (!Number.isFinite(seconds) || seconds < 0) return '0:00'
+    const m = Math.floor(seconds / 60)
+    const s = Math.floor(seconds % 60)
+    return `${m}:${s.toString().padStart(2, '0')}`
+  }
+
+  const setPreview = (text: string) => {
+    if (previewEl) previewEl.textContent = text
+    if (listTimeEl) {
+      listTimeEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+    }
+  }
+
+  const showList = () => {
+    audio.pause()
+    markPlaying(null, false)
+    if (listEl) listEl.hidden = false
+    if (roomEl) roomEl.hidden = true
+  }
+
+  const showRoom = () => {
+    if (listEl) listEl.hidden = true
+    if (roomEl) roomEl.hidden = false
+  }
+
+  const scrollThread = () => {
+    thread?.scrollTo({ top: thread.scrollHeight, behavior: reduced() ? 'auto' : 'smooth' })
+  }
+
+  const answerBtn = (index: number) =>
+    blocks[index]?.querySelector<HTMLButtonElement>('.iv-ans') ?? null
+
+  const markPlaying = (btn: HTMLButtonElement | null, playing: boolean) => {
+    document.querySelectorAll('.iv-ans.is-playing').forEach((el) => {
+      el.classList.remove('is-playing')
+      el.setAttribute('aria-pressed', 'false')
+    })
+    if (btn) {
+      btn.classList.toggle('is-playing', playing)
+      btn.setAttribute('aria-pressed', playing ? 'true' : 'false')
+    }
+    activeBtn = playing ? btn : null
+  }
+
+  const sendQuestion = (index: number) => {
+    const block = blocks[index]
+    if (!block) return
+    current = index
+    block.hidden = false
+    setPreview(block.querySelector('.iv-ask')?.textContent?.trim() ?? 'Message')
+    scrollThread()
+  }
+
+  const recordThenSendAudio = async (index: number) => {
+    if (recording) return
+    recording = true
+    if (typingEl) {
+      typingEl.hidden = false
+      scrollThread()
+    }
+    await wait(2400)
+    if (typingEl) typingEl.hidden = true
+    const btn = answerBtn(index)
+    if (btn) {
+      btn.hidden = false
+      setPreview('Voice message')
+      scrollThread()
+    }
+    recording = false
+  }
+
+  const sendNextQuestion = async () => {
+    const next = current + 1
+    if (next >= blocks.length) return
+    sendQuestion(next)
+    if (!answerBtn(next)) return
+    await wait(550)
+    await recordThenSendAudio(next)
+  }
+
+  const playVoice = (btn: HTMLButtonElement) => {
+    const src = btn.dataset.audio
+    if (!src) return
+    if (activeBtn === btn && !audio.paused) {
+      audio.pause()
+      markPlaying(btn, false)
+      return
+    }
+    if (activeBtn === btn && audio.paused && audio.src) {
+      audio.play().then(() => markPlaying(btn, true)).catch(() => markPlaying(null, false))
+      return
+    }
+    audio.src = src
+    audio.play().then(() => markPlaying(btn, true)).catch(() => markPlaying(null, false))
+  }
+
+  const handleVoiceClick = (event: Event) => {
+    playVoice(event.currentTarget as HTMLButtonElement)
+  }
+
+  const handleAudioFullyHeard = (index: number) => {
+    if (heard.has(index)) return
+    if (index !== current) return
+    heard.add(index)
+    sendNextQuestion()
+  }
+
+  audio.addEventListener('timeupdate', () => {
+    if (!activeBtn) return
+    const timeEl = activeBtn.querySelector<HTMLElement>('[data-time]')
+    if (timeEl && Number.isFinite(audio.duration)) {
+      timeEl.textContent = formatTime(audio.duration - audio.currentTime)
+    }
+  })
+
+  audio.addEventListener('ended', () => {
+    const btn = activeBtn
+    const index = btn ? Number(btn.dataset.index) : -1
+    if (btn) {
+      const timeEl = btn.querySelector<HTMLElement>('[data-time]')
+      if (timeEl && Number.isFinite(audio.duration)) timeEl.textContent = formatTime(audio.duration)
+    }
+    markPlaying(null, false)
+    if (index >= 0) handleAudioFullyHeard(index)
+  })
+
+  document.querySelectorAll<HTMLButtonElement>('.iv-ans').forEach((btn) => {
+    btn.addEventListener('click', handleVoiceClick)
+    if (!btn.dataset.audio) return
+    const probe = new Audio(btn.dataset.audio)
+    probe.preload = 'metadata'
+    probe.addEventListener('loadedmetadata', () => {
+      const timeEl = btn.querySelector<HTMLElement>('[data-time]')
+      if (timeEl && Number.isFinite(probe.duration)) timeEl.textContent = formatTime(probe.duration)
+    })
+  })
+
+  const startChat = async () => {
+    if (started) return
+    started = true
+    sendQuestion(0)
+    if (!answerBtn(0)) return
+    await wait(900)
+    await recordThenSendAudio(0)
+  }
+
+  const handleOpenChat = () => {
+    showRoom()
+    startChat()
+  }
+
+  openBtn?.addEventListener('click', handleOpenChat)
+  backBtn?.addEventListener('click', showList)
+</script>
