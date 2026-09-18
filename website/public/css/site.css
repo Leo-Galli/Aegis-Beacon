@@ -2166,6 +2166,35 @@ body.demo-fs-open .ac-chat { visibility: hidden; pointer-events: none; }
   background: var(--card);
 }
 
+.video-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: var(--space-8);
+}
+.video-page .page-head {
+  width: 100%;
+}
+.video-stage {
+  width: min(56rem, 100%);
+  margin: 0 auto;
+}
+.video-frame {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+.video-player {
+  width: 100%;
+  display: block;
+  border-radius: var(--radius-lg);
+  background: #000;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+
 /* ─── 37. Calmer, more confident surfaces & rhythm ─── */
 .section-head { margin-bottom: 2.75rem; }
 .section-head__title { font-weight: 700; }

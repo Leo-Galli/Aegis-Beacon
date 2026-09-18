@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Project Video | Aegis-Beacon"
+  description="Watch Aegis-Beacon in action: a short overview of the open-source emergency rescue beacon."
+>
+  <div class="video-page container">
+    <header class="section-head page-head">
+      <h1 class="section-head__title">Project Video</h1>
+      <p class="section-head__lead">
+        A short overview of the beacon in the field and on the bench.
+      </p>
+    </header>
+
+    <figure class="video-stage">
+      <div class="video-frame">
+        <video
+          class="video-player"
+          src="/demo.mp4"
+          controls
+          playsinline
+          preload="metadata"
+          aria-label="Aegis-Beacon project overview video"
+        >
+          Your browser does not support video playback.
+        </video>
+      </div>
+    </figure>
+  </div>
+</Layout>

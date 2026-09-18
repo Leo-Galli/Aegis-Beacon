@@ -123,6 +123,7 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
       <nav class="site-nav">
         <a href="/wiki" class:list={["site-nav__link", { active: currentPath.includes('/wiki') }]}>Docs</a>
         <a href="/demo" class:list={["site-nav__link", { active: currentPath === '/demo' }]}>Demo</a>
+        <a href="/video" class:list={["site-nav__link", { active: currentPath === '/video' || currentPath === '/guide' }]}>Video</a>
         <a href="/builder" class:list={["site-nav__link", { active: currentPath === '/builder' }]}>Builder</a>
         <a href="/lab" class:list={["site-nav__link", { active: currentPath === '/lab' }]}>Lab</a>
         <a href="/repeaters" class:list={["site-nav__link", { active: currentPath === '/repeaters' }]}>Repeaters</a>
@@ -145,6 +146,7 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
     <a href="/" class:list={["mobile-menu__link", { active: currentPath === '/' }]}>Home</a>
     <a href="/wiki" class:list={["mobile-menu__link", { active: currentPath.includes('/wiki') }]}>Docs</a>
     <a href="/demo" class:list={["mobile-menu__link", { active: currentPath === '/demo' }]}>Demo</a>
+    <a href="/video" class:list={["mobile-menu__link", { active: currentPath === '/video' || currentPath === '/guide' }]}>Video</a>
     <a href="/builder" class:list={["mobile-menu__link", { active: currentPath === '/builder' }]}>Builder</a>
     <a href="/lab" class:list={["mobile-menu__link", { active: currentPath === '/lab' }]}>Lab</a>
     <a href="/repeaters" class:list={["mobile-menu__link", { active: currentPath === '/repeaters' }]}>Repeaters</a>
@@ -169,6 +171,7 @@ const cleanTitle = baseTitle.includes('Aegis-Beacon') ? baseTitle : `${baseTitle
         <a href="/">Home</a>
         <a href="/wiki">Documentation</a>
         <a href="/demo">Demo</a>
+        <a href="/video">Video</a>
         <a href="/builder">Builder</a>
         <a href="/lab">Lab</a>
         <a href="/repeaters">Repeaters</a>

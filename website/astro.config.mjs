@@ -13,6 +13,9 @@ export default defineConfig({
   build: {
     format: 'directory'
   },
+  redirects: {
+    '/guide': '/video'
+  },
   integrations: [sitemap()],
   markdown: {
     rehypePlugins: [obsidianCallouts, externalLinks, codeBlockHeader]
