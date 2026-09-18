@@ -64,6 +64,7 @@ const requiredMeta = [
 for (const page of pages) {
   const html = readFileSync(page, 'utf8');
   const rel = page.slice(dist.length).replaceAll('\\', '/');
+  if (/<meta\s+http-equiv=["']refresh["']/i.test(html)) continue;
   for (const [name, re] of requiredMeta) {
     if (!re.test(html)) problems.push(`${rel}: missing ${name} meta`);
   }
