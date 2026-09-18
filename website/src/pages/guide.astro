@@ -1,0 +1,50 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Demo Video | Aegis-Beacon"
+  description="Demonstration video of the Aegis-Beacon project."
+>
+  <div class="demo-page container">
+    <header class="section-head page-head">
+      <h1 class="section-head__title">Demo Video</h1>
+      <p class="section-head__lead">
+        An overview of the project in action.
+      </p>
+    </header>
+
+    <div class="demo-layout">
+      <div class="demo-card" data-rv>
+        <video
+          class="demo-video"
+          src="/demo.mp4"
+          controls
+          muted
+          playsinline
+          preload="metadata"
+        >
+          Il tuo browser non supporta il tag video.
+        </video>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .demo-page { padding-bottom: 4rem; }
+  .demo-layout {
+    max-width: 900px; margin: 2.5rem auto 0;
+  }
+  .demo-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-xl); padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .demo-video {
+    width: 100%;
+    display: block;
+    border-radius: var(--radius-lg);
+    background: #000;
+  }
+</style>
