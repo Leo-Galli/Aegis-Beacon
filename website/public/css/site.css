@@ -2195,11 +2195,7 @@ body.demo-fs-open .ac-chat { visibility: hidden; pointer-events: none; }
   object-fit: contain;
 }
 
-.iv-page { padding-top: var(--space-6); padding-bottom: var(--space-8); }
-.iv-page .page-head {
-  padding-top: clamp(1.5rem, 4vw, 2.5rem);
-  padding-bottom: 1rem;
-}
+.iv-page { padding-bottom: var(--space-8); }
 .iv-phone {
   position: relative;
   width: min(20.5rem, 100%);
